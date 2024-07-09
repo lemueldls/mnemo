@@ -1,0 +1,17 @@
+@use "sass:map";
+
+@use "@material/web/tokens";
+
+:root {
+  $shapes: tokens.md-sys-shape-values();
+  $corner-small: map.get($shapes, "corner-small");
+  $corner-medium: map.get($shapes, "corner-medium");
+
+  --md-icon-font: "Material Symbols Rounded";
+  --md-nav-drawer-item-container-shape: #{$corner-medium};
+  --md-switch-track-shape: #{$corner-medium};
+  --md-switch-handle-shape: #{$corner-small};
+  --md-outlined-text-field-container-shape: #{$corner-medium};
+  --md-text-button-container-shape: #{$corner-medium};
+  --md-outlined-select-text-field-container-shape: #{$corner-medium};
+}

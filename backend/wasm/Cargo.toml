@@ -1,0 +1,41 @@
+[package]
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "mnemo-wasm"
+repository.workspace = true
+version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+chrono = "0.4.33"
+comemo = { git = "https://github.com/typst/comemo", rev = "ddb3773" }
+console_error_panic_hook = { version = "0.1.7", optional = true }
+mnemo-wasm-macros = { path = "./macros", version = "*" }
+data-encoding = "2.5.0"
+js-sys = "0.3.67"
+memmap2 = "0.9.4"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6.3"
+tsify = { version = "0.4.5", features = ["js"] }
+# serde_json = "1.0"
+palette = "0.7.3"
+typst = { git = "https://github.com/typst/typst" }
+typst-ide = { git = "https://github.com/typst/typst" }
+typst-render = { git = "https://github.com/typst/typst" }
+# walkdir = "2.3.3"
+wasm-bindgen = "0.2.90"
+web-sys = "0.3.67"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.40"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

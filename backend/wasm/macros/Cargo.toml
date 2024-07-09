@@ -1,0 +1,21 @@
+[package]
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "mnemo-wasm-macros"
+repository.workspace = true
+version.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+bundler = { path = "./packages/bundler" }
+quote = "1.0"
+semver = { version = "1.0", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8.14"
+walkdir = "2"
