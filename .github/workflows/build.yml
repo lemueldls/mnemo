@@ -31,7 +31,7 @@ jobs:
           version: 'latest'
 
       - name: build wasm
-        run: wasm-pack build app/wasm -t web --release
+        run: wasm-pack build backend/wasm -t web --release
 
       - name: optimize wasm
         uses: NiklasEi/wasm-opt-action@v2
