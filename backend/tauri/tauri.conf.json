@@ -5,7 +5,7 @@
   "identifier": "com.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "yarn generate",
-    "beforeDevCommand": "yarn dev",
+    "beforeDevCommand": "yarn dev --host",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../.output/public"
   },
@@ -18,7 +18,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": "appimage"
+    "targets": "all"
   },
   "app": {
     "security": {
