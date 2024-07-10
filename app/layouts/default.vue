@@ -20,7 +20,6 @@ const spaces = listSpaces();
 
 const drawer = ref<boolean>();
 const settings = ref<boolean>();
-const packagesVisible = ref<boolean>();
 
 interface Page {
   path: string;
@@ -40,7 +39,7 @@ const name = useLocalStorage("name", "");
   <m3-theme :color="color" :dark="dark" class="absolute inset-0 h-full">
     <m3-page>
       <m3-nav-drawer v-model="drawer">
-        <h1 id="header">cortyp</h1>
+        <h1 id="header">mnemo</h1>
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">
           <m3-nav-drawer-item :active="$route.path === page.path" :style="{
@@ -111,8 +110,6 @@ const name = useLocalStorage("name", "");
           </label>
         </form>
       </md-dialog>
-
-      <packages v-model="packagesVisible" />
 
       <side-bar />
 
