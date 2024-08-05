@@ -54,7 +54,7 @@
     "eslint-plugin-unicorn": "^54.0.0",
     "firebase": "^10.12.3",
     "firebase-tools": "^13.13.0",
-    "nuxt": "^3.12.3",
+    "nuxt": "^3.12.4",
     "nuxt-ssr-lit": "^1.6.20",
     "nuxt-vuefire": "^1.0.2",
     "postcss-html": "^1.7.0",
