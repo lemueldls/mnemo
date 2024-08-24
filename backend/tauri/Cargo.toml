@@ -17,15 +17,21 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.0-beta.18", features = [] }
 
 [dependencies]
-mnemo-common = { path = "../common" }
-
 dirs = "5.0.1"
 once_cell = "1.19.0"
 serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+ulid = { version = "1.1.3", features = ["serde"] }
+time = { version = "0.3", features = ["serde"] }
 
 tauri = { version = "2.0.0-beta.23", features = [] }
+# tauri-plugin-devtools = "2.0.0-beta"
+# tauri-plugin-devtools-app = "2.0.0-beta"
+# tauri-plugin-dialog = "2.0.0-alpha.2"
+# tauri-plugin-process = "2.0.0-alpha.2"
 tauri-plugin-store = "2.0.0-beta.9"
+# tauri-plugin-updater = "2.0.0-alpha.2"
 
 [features]
 # this feature is used for production builds or when `devUrl` points to the filesystem

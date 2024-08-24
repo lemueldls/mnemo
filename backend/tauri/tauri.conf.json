@@ -2,12 +2,12 @@
   "$schema": "../../node_modules/@tauri-apps/cli/schema.json",
   "version": "0.1.0",
   "productName": "mnemo",
-  "identifier": "com.lemueldls.mnemo",
+  "identifier": "dev.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "yarn generate",
     "beforeDevCommand": "yarn dev --host",
     "devUrl": "http://localhost:3000",
-    "frontendDist": "../../.output/public"
+    "frontendDist": "../../dist"
   },
   "bundle": {
     "active": true,
@@ -26,27 +26,16 @@
     },
     "windows": [
       {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "mnemo",
-        "visible": false,
-        "width": 800
-      },
-      {
-        "center": true,
-        "decorations": false,
-        "closable": false,
-        "hiddenTitle": true,
-        "skipTaskbar": true,
-        "height": 200,
-        "label": "splashscreen",
-        "resizable": false,
-        "shadow": false,
-        "transparent": true,
-        "url": "splashscreen",
-        "width": 400
+        "title": "mnemo"
       }
     ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://cdn.crabnebula.app/update/lemueldls/mnemo/{{target}}-{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERBRjFEOTU0QTg0RDZFMTkKUldRWmJrMm9WTm54Mmw0bFAxZ0dLRVY4aks0V3NIUXhLMUU3L2sxMDVoVVhLcCtrZ0xXdDgxejYK"
+    }
   }
 }
