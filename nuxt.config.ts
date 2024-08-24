@@ -11,14 +11,15 @@ const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  ssr: !!platform,
+  ssr: false,
   devtools: { enabled: true },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
   compatibilityDate: "2024-07-07",
   nitro: {
     esbuild: { options: { target: "esnext" } },
-    moduleSideEffects: ["@material/web"],
+    // moduleSideEffects: ["@material/web"],
+    // prerender: { routes: ['/'], ignore: ["/space"] },
   },
   telemetry: false,
   vite: {
@@ -27,16 +28,15 @@ export default defineNuxtConfig({
     build: { target: ["safari15"] },
     server: {
       strictPort: true,
-      // host: "0.0.0.0",
       hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
     },
     plugins: [wasm()],
   },
-  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
-  routeRules: {
-    "/**": { ssr: false },
-    "/splashscreen": { ssr: !!platform, static: false },
-  },
+  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
+  // routeRules: {
+  //   "/**": { ssr: false },
+  //   "/splashscreen": { ssr: !!platform, static: false },
+  // },
   experimental: {
     typedPages: true,
     componentIslands: true,
@@ -44,7 +44,7 @@ export default defineNuxtConfig({
     headNext: true,
     viewTransition: true,
   },
-  runtimeConfig: {app: { platform } },
+  runtimeConfig: { app: { platform } },
   imports: {
     dirs: [
       "composables",
@@ -61,13 +61,15 @@ export default defineNuxtConfig({
   typescript: { shim: false },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   modules: [
+    // "@nuxt/ui",
+    "@nuxthub/core",
     "@nuxtjs/i18n",
-    // "@nuxtjs/supabase",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    // "nuxt-vuefire",
+    "@nuxtjs/supabase",
     "nuxt-ssr-lit",
   ],
+  hub: { ai: true },
   i18n: {
     lazy: true,
     defaultLocale,
@@ -75,8 +77,14 @@ export default defineNuxtConfig({
     langDir: "locales",
     baseUrl: siteUrl,
   },
-  // supabase: {
-  //   redirect: false,
-  // },
+  supabase: {
+    types: "~~/supabase/database.d.ts",
+    redirectOptions: {
+      login: "/login",
+      confirm: "/confirm",
+      // exclude: ["/", "/space"],
+      cookieRedirect: true,
+    },
+  },
   ssrLit: { litElementPrefix: ["md-"] },
 });
