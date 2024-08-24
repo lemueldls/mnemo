@@ -27,8 +27,8 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - name: build tauri app
-        run: yarn tauri build
+      - name: build app
+        run: yarn build
 
       - name: deploy with nuxthub
         run: yarn dlx nuxthub deploy

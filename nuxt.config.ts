@@ -32,7 +32,7 @@ export default defineNuxtConfig({
     },
     plugins: [wasm()],
   },
-  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
+  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   // routeRules: {
   //   "/**": { ssr: false },
   //   "/splashscreen": { ssr: !!platform, static: false },
