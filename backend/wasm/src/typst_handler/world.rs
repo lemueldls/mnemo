@@ -42,8 +42,8 @@ impl MnemoWorld {
 
         let mut files = HashMap::new();
 
-        let packages = mnemo_wasm_macros::packages!();
-        // let packages = Vec::<(&str, Vec<(&str, &str)>)>::new();
+        // let packages = mnemo_wasm_macros::packages!();
+        let packages = Vec::<(&str, Vec<(&str, &str)>)>::new();
         for (package, pkg_files) in packages {
             let package_spec = Some(PackageSpec::from_str(package).unwrap());
 
