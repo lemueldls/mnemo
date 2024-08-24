@@ -5,8 +5,8 @@ use std::{
     str::FromStr,
 };
 
-use chrono::{Datelike, Local};
 use comemo::Prehashed;
+use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, UtcOffset};
 use typst::{
     compile,
     diag::{FileError, FileResult},
@@ -43,6 +43,7 @@ impl MnemoWorld {
         let mut files = HashMap::new();
 
         let packages = mnemo_wasm_macros::packages!();
+        // let packages = Vec::<(&str, Vec<(&str, &str)>)>::new();
         for (package, pkg_files) in packages {
             let package_spec = Some(PackageSpec::from_str(package).unwrap());
 
@@ -166,12 +167,12 @@ impl World for MnemoWorld {
     }
 
     fn today(&self, offset: Option<i64>) -> Option<Datetime> {
-        let now = Local::now();
+        let now = if let Some(hours) = offset {
+            OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(hours as i8, 0, 0).unwrap())
+        } else {
+            OffsetDateTime::now_utc()
+        };
 
-        Datetime::from_ymd(
-            now.year(),
-            now.month().try_into().ok()?,
-            now.day().try_into().ok()?,
-        )
+        Some(Datetime::Date(now.date()))
     }
 }

@@ -60,22 +60,19 @@ impl FontSearcher {
 
         // Embed default fonts.
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-regular.ttf"
+            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Regular.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-italic.ttf"
+            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-book.ttf"
+            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-bookitalic.ttf"
+            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Bold.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-bold.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-quasi-custom/ttf/iosevka-quasi-custom-bolditalic.ttf"
+            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf"
         ));
 
         search(include_bytes!(
@@ -97,10 +94,10 @@ impl FontSearcher {
             "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bolditalic.ttf"
         ));
 
-        // search(include_bytes!("../../../../public/fonts/LinLibertine_R.ttf"));
-        // search(include_bytes!("../../../../public/fonts/LinLibertine_RB.ttf"));
-        // search(include_bytes!("../../../../public/fonts/LinLibertine_RBI.ttf"));
-        // search(include_bytes!("../../../../public/fonts/LinLibertine_RI.ttf"));
+        // search(include_bytes!("../../../../../public/fonts/LinLibertine_R.ttf"));
+        // search(include_bytes!("../../../../../public/fonts/LinLibertine_RB.ttf"));
+        // search(include_bytes!("../../../../../public/fonts/LinLibertine_RBI.ttf"));
+        // search(include_bytes!("../../../../../public/fonts/LinLibertine_RI.ttf"));
 
         search(include_bytes!(
             "../../../../public/fonts/NewCMMath-Book.otf"
@@ -109,15 +106,15 @@ impl FontSearcher {
             "../../../../public/fonts/NewCMMath-Regular.otf"
         ));
 
-        // search(include_bytes!("../../../../public/fonts/DejaVuSansMono.ttf"
+        // search(include_bytes!("../../../../../public/fonts/DejaVuSansMono.ttf"
         // )); search(include_bytes!(
-        //     "../../../../public/fonts/DejaVuSansMono-Bold.ttf"
+        //     "../../../../../public/fonts/DejaVuSansMono-Bold.ttf"
         // ));
         // search(include_bytes!(
-        //     "../../../../public/fonts/DejaVuSansMono-Oblique.ttf"
+        //     "../../../../../public/fonts/DejaVuSansMono-Oblique.ttf"
         // ));
         // search(include_bytes!(
-        //     "../../../../public/fonts/DejaVuSansMono-BoldOblique.ttf"
+        //     "../../../../../public/fonts/DejaVuSansMono-BoldOblique.ttf"
         // ));
     }
 

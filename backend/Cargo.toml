@@ -1,11 +1,11 @@
 [workspace]
-members = ["wasm", "tauri", "server", "common"]
+members = ["wasm", "tauri"]
 package.authors = ["Lemuel DLS"]
 package.categories = []
 package.edition = "2021"
 package.keywords = [""]
 package.license = "Apache-2.0"
-package.repository = "https://github.com/ldeloss002/mnemo"
+package.repository = "https://github.com/lemueldls/mnemo"
 package.version = "0.1.0"
 resolver = "2"
 

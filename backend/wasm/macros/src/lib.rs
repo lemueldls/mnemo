@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, ffi::OsStr, fs, path::PathBuf, str::FromStr};
+use std::{borrow::Borrow, collections::BTreeSet, ffi::OsStr, fs, path::PathBuf, str::FromStr};
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -63,7 +63,10 @@ pub fn packages(_: TokenStream) -> TokenStream {
                         let file_path = entry.path();
 
                         file_path.extension().and_then(|ext| {
-                            if ext == "typ" || ext == "toml" {
+                            if matches!(
+                                ext.to_string_lossy().borrow(),
+                                "typ" | "toml" | "svg" | "json"
+                            ) {
                                 let path = file_path
                                     .strip_prefix(&pkg_version)
                                     .unwrap()

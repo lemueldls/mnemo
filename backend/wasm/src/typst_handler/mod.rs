@@ -25,6 +25,7 @@ use typst::{
     World, WorldExt,
 };
 use typst_render::{render, render_merged};
+use typst_svg::svg;
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
 
@@ -91,6 +92,14 @@ impl Default for TypstState {
 
 type JsResult<T = JsValue> = Result<T, Error>;
 
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(tag = "kind", rename_all = "camelCase", content = "data")]
+pub enum SyncResult {
+    Ok(Box<[RangedRender]>),
+    Error(Box<[String]>),
+}
+
 #[wasm_bindgen]
 impl TypstState {
     #[wasm_bindgen(constructor)]
@@ -105,7 +114,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, text: &str) -> JsResult {
+    pub fn sync(&mut self, text: &str) -> SyncResult {
         let mut source = format!(
             "#set align(horizon)\n#set text(fill:{:?},size:{}pt,tracking:0.875pt,top-edge:\"ascender\",bottom-edge:\"descender\",overhang:false)\n#set par(leading:0.1375em,linebreaks:\"simple\")\n#set page(width:{},height:{},margin:(x:0pt,y:0.75pt))\n#show math.equation:set text(size:{}pt)\n#show math.equation.where(block:true):set par(leading:12pt)\n#set table(stroke:{:?})\n#show heading.where(level:1):set text(fill:{:?},size:32pt,tracking:0pt,weight:400)\n#show heading.where(level:2):set text(fill:{:?},size:28pt,tracking:0pt,weight:400)\n#show heading.where(level:3):set text(fill:{:?},size:24pt,tracking:0pt,weight:400)\n#show heading.where(level:4):set text(fill:{:?},size:22pt,tracking:0pt,weight:400)\n#show heading.where(level:5):set text(fill:{:?},size:16pt,tracking:0.15pt,weight:500)\n#show heading.where(level:6):set text(fill:{:?},size:14pt,tracking:0.1pt,weight:500)\n#set table(inset:10pt)\n",
             self.color,
@@ -194,7 +203,8 @@ impl TypstState {
                 source += &text[range];
             }
         } else {
-            return serde_wasm_bindgen::to_value::<[(); 0]>(&[]);
+            // return serde_wasm_bindgen::to_value::<[(); 0]>(&[]);
+            return SyncResult::Ok(Box::new([]));
         }
 
         self.world.main_source_mut().replace(&source);
@@ -209,7 +219,9 @@ impl TypstState {
                 let blocks = iter::zip(blocks, pages.iter().cloned())
                     .enumerate()
                     .filter_map(|(index, (block, page))| {
-                        let not_empty = !page.frame.items().len() > 0;
+                        // crate::log(&format!("{:?}", page.frame.items()));
+
+                        let not_empty = page.frame.items().len() > 0;
 
                         not_empty
                             .then(|| RangedRender::new(index, block, encode_frame(page.frame, pt)))
@@ -218,12 +230,13 @@ impl TypstState {
 
                 self.document = Some(document);
 
-                serde_wasm_bindgen::to_value(&blocks)
+                SyncResult::Ok(blocks)
             }
-            Err(error) => {
-                crate::error(&format!("{error:?}"));
+            Err(errors) => {
+                crate::error(&format!("{errors:?}"));
 
-                serde_wasm_bindgen::to_value::<[(); 0]>(&[])
+                // serde_wasm_bindgen::to_value::<[(); 0]>(&[])
+                SyncResult::Error(errors.into_iter().map(|e| e.message.to_string()).collect())
             }
         }
     }
