@@ -7,7 +7,7 @@ export interface ContainerProperties {
   elevation?: number; // 0 | 1 | 2 | 3 | 4 | 5;
 }
 
-const properties = withDefaults(defineProps<ContainerProperties>(), {
+const props = withDefaults(defineProps<ContainerProperties>(), {
   outlineSize: "0",
   ripple: false,
   disabled: false,
@@ -23,7 +23,7 @@ const keyBoxShadow = computed(
       "1px 3px 0px",
       "2px 3px 0px",
       "4px 4px 0px",
-    ][properties.elevation],
+    ][props.elevation],
 );
 
 const ambientBoxShadow = computed(
@@ -35,7 +35,7 @@ const ambientBoxShadow = computed(
       "4px 8px 3px",
       "6px 10px 4px",
       "8px 12px 6px",
-    ][properties.elevation],
+    ][props.elevation],
 );
 
 const stateLayer = ref<HTMLElement>();
@@ -70,7 +70,7 @@ const container = ref<HTMLElement>();
 const pressed = ref(false);
 
 function handleKeyStroke() {
-  if (properties.ripple) {
+  if (props.ripple) {
     pressed.value = !pressed.value;
     container.value?.click();
   }

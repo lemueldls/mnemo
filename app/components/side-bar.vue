@@ -3,6 +3,8 @@ import Today from "./today.vue";
 
 import type { MaterialSymbol } from "material-symbols";
 
+defineProps<{ direction: "horizontal" | "vertical" }>();
+
 const sheet = useCookie<boolean | undefined>("side-bar-sheet");
 const activeItemIndex = useCookie("side-bar-active-item-index", {
   default: () => 0,
@@ -31,7 +33,7 @@ function handleClick(index: number) {
 </script>
 
 <template>
-  <m3-nav-rail>
+  <m3-nav-rail v-if="direction == 'vertical'">
     <m3-nav-rail-item
       v-for="(item, index) in items"
       :key="index"
@@ -45,6 +47,20 @@ function handleClick(index: number) {
       {{ item.name }}
     </m3-nav-rail-item>
   </m3-nav-rail>
+  <m3-nav-bar v-else>
+    <m3-nav-bar-item
+      v-for="(item, index) in items"
+      :key="index"
+      :active="sheet && index === activeItemIndex"
+      @click="handleClick(index)"
+    >
+      <template v-if="item.icon" #leading>
+        <m3-icon :name="item.icon" :fill="sheet && index === activeItemIndex" />
+      </template>
+
+      {{ item.name }}
+    </m3-nav-bar-item>
+  </m3-nav-bar>
 
   <m3-side-sheet v-model="sheet" class="w-80">
     <div class="flex justify-end">
@@ -53,6 +69,6 @@ function handleClick(index: number) {
       </md-icon-button>
     </div>
 
-    <component :is="items[activeItemIndex].component" />
+    <component :is="items[activeItemIndex]!.component" />
   </m3-side-sheet>
 </template>

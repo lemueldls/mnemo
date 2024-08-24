@@ -1,0 +1,44 @@
+@font-face {
+  font-family: "Iosevka Book Web";
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: normal;
+  src:
+    url("/fonts/iosevka-book/woff2/IosevkaBook-Regular.woff2") format("woff2"),
+    url("/fonts/iosevka-book/ttf/IosevkaBook-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Iosevka Book Web";
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: italic;
+  src:
+    url("/fonts/iosevka-book/woff2/IosevkaBook-Italic.woff2") format("woff2"),
+    url("/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Iosevka Book Web";
+  font-display: swap;
+  font-weight: 700;
+  font-stretch: normal;
+  font-style: normal;
+  src:
+    url("/fonts/iosevka-book/woff2/IosevkaBook-Bold.woff2") format("woff2"),
+    url("/fonts/iosevka-book/ttf/IosevkaBook-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Iosevka Book Web";
+  font-display: swap;
+  font-weight: 700;
+  font-stretch: normal;
+  font-style: italic;
+  src:
+    url("/fonts/iosevka-book/woff2/IosevkaBook-BoldItalic.woff2")
+      format("woff2"),
+    url("/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf") format("truetype");
+}

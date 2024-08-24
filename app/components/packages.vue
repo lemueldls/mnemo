@@ -3,7 +3,6 @@ const open = defineModel();
 
 const namespace = "preview";
 
-
 interface Package {
   name: string;
   version: string;
@@ -18,15 +17,15 @@ interface Package {
   updatedAt: number;
 }
 
-const allPackages = await $fetch<Package[]>(`https://packages.typst.org/${namespace}/index.json`);
-allPackages
-  .sort((a, b) => b.version.localeCompare(a.version))
+const allPackages = await $fetch<Package[]>(
+  `https://packages.typst.org/${namespace}/index.json`,
+);
+allPackages.sort((a, b) => b.version.localeCompare(a.version));
 
 const packages: { [name: string]: Package[] } = {};
 for (const pkg of allPackages) {
   packages[pkg.name] ||= [];
   packages[pkg.name]!.push(pkg);
-
 }
 
 watchEffect(() => {
@@ -35,13 +34,11 @@ watchEffect(() => {
 </script>
 
 <template>
-
   <md-dialog :open="open" @closed="open = false">
     <span slot="headline">Packages</span>
 
-
     <form slot="content" method="dialog">
-      <m3-elevated-card v-for="[pkg]  in packages" :key="pkg.name">
+      <m3-elevated-card v-for="[pkg] in packages" :key="pkg.name">
         <div class="flex flex-col gap-2">
           <h1 class="text-m3-on-surface-variant m3-title-large">
             {{ pkg.name }}
@@ -63,7 +60,6 @@ watchEffect(() => {
     </form>
   </md-dialog>
 </template>
-
 
 <style>
 form {

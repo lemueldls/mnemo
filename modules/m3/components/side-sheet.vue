@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const properties = withDefaults(
+const props = withDefaults(
   defineProps<{
     id?: string;
     class?: string;
@@ -12,12 +12,12 @@ const properties = withDefaults(
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
 }>();
-const visible = useVModel(properties, "modelValue", emit);
+const visible = useVModel(props, "modelValue", emit);
 
 const { desktop, expanded } = useBreakpoints(breakpointsM3);
 
 const modal = computed(() =>
-  properties.type === "auto" ? !expanded.value : properties.type === "modal",
+  props.type === "auto" ? !expanded.value : props.type === "modal",
 );
 </script>
 
@@ -28,7 +28,7 @@ const modal = computed(() =>
     :id="id"
     :aria-hidden="true"
     :class="[
-      properties.class,
+      props.class,
       'm3-side-sheet',
       'm3-side-sheet--right',
       modal ? 'm3-side-sheet--modal' : 'm3-side-sheet--standard',

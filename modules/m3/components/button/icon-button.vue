@@ -7,12 +7,12 @@ export interface IconButtonProperties
   extends IconProperties,
     ButtonProperties {}
 
-const properties = defineProps<IconButtonProperties>();
+const props = defineProps<IconButtonProperties>();
 </script>
 
 <template>
-  <abstract-button class="m3-icon-button" v-bind="{ ...properties }">
-    <m3-icon v-bind="{ ...properties }" />
+  <abstract-button class="m3-icon-button" v-bind="{ ...props }">
+    <m3-icon v-bind="{ ...props }" />
   </abstract-button>
 </template>
 

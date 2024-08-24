@@ -22,7 +22,7 @@ const { d, locale } = useI18n();
 //       "Repudiandae quo facilis natus nemo aut dolores. Officia quis non dolore dicta autem. Libero consequatur autem nostrum nesciunt. Nesciunt enim accusamus nulla eveniet nostrum quae dolore cum. Et aperiam maxime ut ducimus commodi quos culpa.",
 //   });
 
-setInterval(
+useIntervalFn(
   () => {
     date.value = new Date();
   },

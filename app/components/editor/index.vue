@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import {
-  // lineNumbers,
-  // highlightActiveLineGutter,
   highlightSpecialChars,
   drawSelection,
   dropCursor,
   rectangularSelection,
   crosshairCursor,
-  // highlightActiveLine,
   keymap,
   placeholder,
   Decoration,
@@ -49,8 +46,6 @@ import { redFromArgb } from "@material/material-color-utilities";
 
 import { Rgb } from "mnemo-wasm";
 
-import { useTypst } from "./state";
-
 import { typst } from "./widget";
 import { underlineKeymap } from "./underline";
 
@@ -62,11 +57,12 @@ import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
 
-const emit = defineEmits<{
-  (event: "update:modelValue", value: string): void;
-}>();
-const properties = defineProps<{ space: string; modelValue: string }>();
-const path = useVModel(properties, "modelValue", emit);
+// const emit = defineEmits<{
+//   (event: "update:modelValue", value: string): void;
+// }>();
+const props = defineProps<{ kind: NoteKind; spaceId: string }>();
+// const path = useVModel(props, "modelValue", emit);
+const path = defineModel<string>({ required: true });
 
 const pixelPerPoint = ref(1);
 
@@ -74,7 +70,7 @@ const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const { palette } = useMaterialTheme()!;
 
-function parseColor (color: Rgba): Rgb {
+function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
@@ -110,32 +106,35 @@ onMounted(() => {
     }),
   });
 
-  watchImmediate(path, async (path, oldPath) => {
-    const typstState = await useTypst();
+  watchImmediate(
+    () => path.value,
+    async (path, oldPath) => {
+      const typstState = await useTypst();
 
-    const text = await readSpaceFile(properties.space, path);
-    typstState.setMain(path, text);
+      const text = await readSpaceFile(props.kind, props.spaceId, path);
+      typstState.setMain(path, text);
 
-    if (oldPath) stateCache[oldPath] = view.state.toJSON();
+      if (oldPath) stateCache[oldPath] = view.state.toJSON();
 
-    const cache = stateCache[path];
-    const stateConfig = createStateConfig(typstState, path);
+      const cache = stateCache[path];
+      const stateConfig = createStateConfig(typstState, path);
 
-    if (cache) view.setState(EditorState.fromJSON(cache, stateConfig));
-    else {
-      stateConfig.doc = text;
-      view.setState(EditorState.create(stateConfig));
-    }
-  });
+      if (cache) view.setState(EditorState.fromJSON(cache, stateConfig));
+      else {
+        stateConfig.doc = text;
+        view.setState(EditorState.create(stateConfig));
+      }
+    },
+  );
 });
 
-function createStateConfig (
+function createStateConfig(
   typstState: TypstState,
   path: string,
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, properties.space, path),
+      typst(typstState, props.kind, props.spaceId, path),
       typstLanguage(),
       underlineKeymap,
 
@@ -143,8 +142,6 @@ function createStateConfig (
       // updateListenerExtension,
 
       placeholder("Go on."),
-      // lineNumbers(),
-      // highlightActiveLineGutter(),
       highlightSpecialChars(),
       history(),
       // foldGutter(),
@@ -155,10 +152,10 @@ function createStateConfig (
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       bracketMatching(),
       closeBrackets(),
+      EditorView.contentAttributes.of({ spellcheck: "true" }),
       autocompletion({ activateOnTyping: false }),
       rectangularSelection(),
       crosshairCursor(),
-      // highlightActiveLine(),
       highlightSelectionMatches(),
       keymap.of([
         indentWithTab,
@@ -173,6 +170,10 @@ function createStateConfig (
     ],
   };
 }
+
+const { secondaryContainer } = palette;
+
+const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.1)`;
 </script>
 
 <template>
@@ -196,22 +197,24 @@ function createStateConfig (
   .cm-line {
     // @apply p-0 pl-1px text-[16px] tracking-0 word-spacing-[4px] [font-kerning:none];
     @apply p-0 pl-1px text-[16px];
-    font-family: "Iosevka Quasi Custom";
-    font-style: normal;
+    /* font-family: "Iosevka Quasi Custom"; */
+    font-family: "Iosevka Book Web";
+    /* font-style: normal;
     font-display: swap;
     font-stretch: normal;
     font-variant-ligatures: none;
-    font-kerning: none;
-    letter-spacing: 0;
+    font-kerning: none; */
+    // letter-spacing: 0;
     // word-spacing: 4px;
-    font-feature-settings: "liga" 0;
-    line-height: 1.5;
+    /* font-feature-settings: "liga" 0; */
+    /* line-height: 1.5; */
   }
 
   .cm-content {
     @apply caret-m3-primary p-0;
 
-    font-family: "Iosevka Quasi Custom";
+    /* font-family: "Iosevka Quasi Custom"; */
+    font-family: "Iosevka Book Web";
   }
 
   .cm-selectionBackground {
@@ -226,6 +229,24 @@ function createStateConfig (
 
   .cm-cursor {
     @apply border-m3-primary;
+  }
+
+  .cm-activeLine {
+    // @apply px-1;
+
+    background-color: v-bind(activeLineBackground);
+  }
+
+  .typst-render {
+    display: inline;
+    vertical-align: bottom;
+    cursor: text;
+    /* overflow: hidden; */
+    /* display: flex; */
+
+    /* &:hover {
+      background-color: v-bind(activeLineBackground);
+    } */
   }
 
   code {

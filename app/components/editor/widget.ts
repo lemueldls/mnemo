@@ -41,9 +41,11 @@ class TypstWidget extends WidgetType {
     super();
 
     // this.#image.style.width = `${view.dom.clientWidth}px`;
-    this.#image.style.display = "inline";
-    this.#image.style.verticalAlign = "bottom";
-    this.#image.style.cursor = "text";
+    // this.#image.style.display = "inline";
+    // this.#image.style.verticalAlign = "bottom";
+    // this.#image.style.cursor = "text";
+
+    this.#image.classList.add("typst-render");
 
     this.#image.addEventListener("click", this.onClick.bind(this));
   }
@@ -89,26 +91,51 @@ class TypstWidget extends WidgetType {
 function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
   const { view, state } = update;
 
-  const blocks = typstState.sync(text);
+  const syncResult = typstState.sync(text);
   const widgets: Range<Decoration>[] = [];
 
-  for (const { index, block, render } of blocks) {
-    const { start, end } = block.range;
-    const inactive = state.selection.ranges.every(
-      (range) =>
-        (range.from < start || range.from > end) &&
-        (range.to < start || range.to > end) &&
-        (start < range.from || start > range.to) &&
-        (end < range.from || end > range.to),
-    );
-
-    if (inactive)
-      widgets.push(
-        Decoration.replace({
-          widget: new TypstWidget(typstState, view, index, render, block),
-          // inclusive: true,
-        }).range(start, end),
+  if (syncResult.kind === "ok") {
+    for (const { index, block, render } of syncResult.data) {
+      const { start, end } = block.range;
+      const inactive = state.selection.ranges.every(
+        (range) =>
+          (range.from < start || range.from > end) &&
+          (range.to < start || range.to > end) &&
+          (start < range.from || start > range.to) &&
+          (end < range.from || end > range.to),
       );
+
+      if (inactive)
+        widgets.push(
+          Decoration.replace({
+            widget: new TypstWidget(typstState, view, index, render, block),
+            // inclusive: true,
+          }).range(start, end),
+        );
+      else {
+        for (let i = start; i < end; i++) {
+          const line = state.doc.lineAt(i);
+          const from = line.from;
+          // const to = line.to;
+
+          let style = "";
+          if (i == start)
+            style +=
+              "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem";
+          if (i == end - 1)
+            style +=
+              "border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem";
+
+          widgets.push(
+            Decoration.line({
+              class: "cm-activeLine",
+              attributes: { style },
+              // inclusive: true,
+            }).range(from),
+          );
+        }
+      }
+    }
   }
 
   return Decoration.set(widgets);
@@ -116,14 +143,19 @@ function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
 
 const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
-export const viewPlugin = (typstState: TypstState,space:string, path: string) =>
+export const viewPlugin = (
+  typstState: TypstState,
+  kind: NoteKind,
+  spaceId: string,
+  path: string,
+) =>
   ViewPlugin.define(() => ({
     update(update: ViewUpdate) {
       if (update.docChanged || update.geometryChanged || update.selectionSet) {
         typstState.resize(update.view.dom.clientWidth - 1);
 
         const text = update.state.doc.toString();
-        void syncSpaceFile(space, path, text);
+        void syncSpaceFile(kind, spaceId, path, text);
 
         const decorations = decorate(typstState, update, text);
 
@@ -134,7 +166,12 @@ export const viewPlugin = (typstState: TypstState,space:string, path: string) =>
     },
   }));
 
-export const typst = (typstState: TypstState,space:string, path: string) =>
+export const typst = (
+  typstState: TypstState,
+  kind: NoteKind,
+  spaceId: string,
+  path: string,
+) =>
   StateField.define({
     create() {
       return Decoration.none;
@@ -163,6 +200,6 @@ export const typst = (typstState: TypstState,space:string, path: string) =>
     provide: (state) => [
       EditorView.decorations.from(state, (decorations) => decorations),
       // EditorView.atomicRanges.from(state, (decorations) => () => decorations),
-      viewPlugin(typstState,space, path),
+      viewPlugin(typstState, kind, spaceId, path),
     ],
   });

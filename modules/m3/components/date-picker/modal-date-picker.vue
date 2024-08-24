@@ -2,8 +2,8 @@
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
 }>();
-const properties = defineProps<{ modelValue: boolean }>();
-const visible = useVModel(properties, "modelValue", emit);
+const props = defineProps<{ modelValue: boolean }>();
+const visible = useVModel(props, "modelValue", emit);
 
 const today = new Date();
 const currentDate = ref(today);

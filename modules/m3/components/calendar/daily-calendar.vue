@@ -47,6 +47,8 @@ const selectedDay = new Date();
 const spaces = listSpaces();
 const { currentEvents } = useEvents();
 
+// console.log({ spaces: spaces.value });
+
 // const currentEvents = computed(() => {
 //   return events.filter((event) => isToday(event.from) || isToday(event.to));
 // });
@@ -93,12 +95,12 @@ const events = computed<CalendarEvent[]>(() =>
       </div>
 
       <div class="relative flex-1">
-        <m3-calendar-item
+        <!-- <m3-calendar-item
           v-for="(event, i) in events"
           :event="event"
           :space="event.space"
           :key="i"
-        />
+        /> -->
 
         <div ref="caret" class="absolute w-full border-(b m3-outline)" />
       </div>

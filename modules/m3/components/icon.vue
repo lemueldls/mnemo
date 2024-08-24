@@ -12,15 +12,15 @@ export interface IconProperties {
   opticalSize?: number;
 }
 
-const properties = defineProps<IconProperties>();
+const props = defineProps<IconProperties>();
 
 const style = computed(() =>
-  properties.rounded ? "rounded" : properties.sharp ? "sharp" : "outlined",
+  props.rounded ? "rounded" : props.sharp ? "sharp" : "outlined",
 );
-const fill = computed(() => (properties.fill ? 1 : 0));
-const weight = computed(() => properties.weight ?? 400);
-const grade = computed(() => properties.grade ?? 0);
-const opticalSize = computed(() => properties.opticalSize ?? 48);
+const fill = computed(() => (props.fill ? 1 : 0));
+const weight = computed(() => props.weight ?? 400);
+const grade = computed(() => props.grade ?? 0);
+const opticalSize = computed(() => props.opticalSize ?? 48);
 </script>
 
 <template>

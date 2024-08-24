@@ -67,7 +67,11 @@ export function listSpaces() {
 
 let activeFile;
 
-export async function readSpaceFile(space: string, path: string) {
+export async function readSpaceFile(
+  kind: NoteKind,
+  name: string,
+  path: string,
+) {
   const storage = useFirebaseStorage();
   const db = useDatabase();
   const user = useCurrentUser();

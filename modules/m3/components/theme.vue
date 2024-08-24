@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { Rgba } from "@material/material-color-utilities";
 
-const properties = defineProps<{
+const props = defineProps<{
   color: string;
   dark: boolean;
   harmonize?: boolean;
 }>();
 
-const { color, dark, harmonize } = toRefs(properties);
+const { color, dark, harmonize } = toRefs(props);
 
 const parentTheme = computed(() =>
   harmonize.value ? useMaterialTheme()?.source : undefined,
@@ -22,8 +22,8 @@ function parse(color: Rgba) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
 
-const { secondaryContainer } = palette;
-const selectionBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.5)`;
+const { tertiaryContainer } = palette;
+const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},${tertiaryContainer.b},0.5)`;
 </script>
 
 <template>
@@ -108,7 +108,7 @@ const selectionBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g
   @apply caret-m3-primary;
 
   ::selection {
-    @apply text-m3-on-secondary-container;
+    @apply text-m3-on-tertiary-container;
     /* stylelint-disable-next-line color-function-notation */
     background-color: v-bind(selectionBackground);
   }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const properties = withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: "basic" | "full-screen" | "auto";
     modelValue?: boolean;
@@ -8,12 +8,12 @@ const properties = withDefaults(
 );
 
 const emit = defineEmits<{ (event: "update:modelValue"): void }>();
-const visible = useVModel(properties, "modelValue", emit);
+const visible = useVModel(props, "modelValue", emit);
 
 const { medium } = useBreakpoints(breakpointsM3);
 
 const basic = computed(() =>
-  properties.type === "auto" ? medium.value : properties.type === "basic",
+  props.type === "auto" ? medium.value : props.type === "basic",
 );
 </script>
 

@@ -4,74 +4,105 @@ import { invoke } from "@tauri-apps/api/core";
 definePageMeta({
   layout: "space",
   pageTransition: { name: "conjure" },
-  middleware ({ query }) {
-    const spaces = listSpaces();
+  // middleware({ query }) {
+  //   let containsSpace = spaces.value!.some(([id, _]) => id === query.id);
 
-    if (!query.id || !spaces.value[query.id as string]) return navigateTo("/");
-  },
+  //   console.log({ query });
+
+  //   if (!query.id || !containsSpace) return navigateTo("/");
+  // },
 });
 
 const { d } = useI18n();
 
 const { query } = useRoute();
-const name = [query.id].flat()[0]!.toString();
+const spaceId = [query.id].flat()[0]!.toString();
 
-const dialog = ref(false);
+const spaces = await listSpaces();
+const space = spaces.value!.find(([id, _]) => id === spaceId)![1];
 
-const space = listSpaces().value[name];
+const { smallerOrEqual } = useBreakpoints(breakpointsM3);
+const mobile = smallerOrEqual("medium");
+
+const showStickyNotes = ref(false);
+
+// const space = [spaceId]!;
 const dark = useDark();
 
-const { data: files } = useAsyncData(
-  "read_dir",
+const { data: notes } = await useAsyncData(
+  "get_daily_notes",
   async () => {
-    const directory = await invoke<[number, string][]>("read_dir", { space: name });
+    const notes = await invoke<Note[]>("get_daily_notes", {
+      spaceId,
+    });
 
+    return notes.map((note) => {
+      const {
+        id,
+        datetime: [year, month, day, hour, minute],
+      } = note;
+      const date = d(new Date(Date.UTC(year, month - 1, day, hour, minute)), {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
 
-
-    return directory.map(([date, name]) => {
-      return { date: new Date(date), name };
+      return { id, date };
     });
   },
-  { server: false, default: () => [] },
+  { default: () => [] },
 );
 
-function getOrCreateFile (date: Date) {
-  const file = files.value.find((file) => file.date.getTime() === date.getTime());
+const currentNoteIndex = ref(0);
+const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
-  if (file) return file;
+const nextDayIndex = computed(() => {
+  const index = notes.value.findIndex(
+    (note) => note.id === currentNote.value!.id,
+  );
 
-  return { date, name: `${useLongDate(date)}.typ` };
+  return index === 0 ? -1 : index - 1;
+});
+const previousDayIndex = computed(() => {
+  const index = notes.value.findIndex(
+    (note) => note.id === currentNote.value!.id,
+  );
+
+  return index === notes.value.length - 1 ? -1 : index + 1;
+});
+
+watchEffect(() => {
+  console.log(notes.value);
+  // console.log(
+  //   currentNoteIndex.value,
+  //   nextDayIndex.value,
+  //   previousDayIndex.value,
+  // );
+  // console.log(currentNote.value, notes.value[currentNoteIndex.value]);
+});
+
+// const stickyNotes = ref(await listStickyNotes(spaceId));
+const stickyNotes = ref([]);
+const activeStickyNotes = ref([]);
+
+async function loadStickyNotes() {
+  stickyNotes.value = await listStickyNotes(spaceId);
 }
 
-const activeFile = ref(getOrCreateFile(new Date()));
+await loadStickyNotes();
+whenever(showStickyNotes, loadStickyNotes);
 
-
-function nextDay () {
-  // activeFile.value = getOrCreateFile(new Date(activeFile.value.date.getTime() + 86400000));
-  const { date } = activeFile.value;
-  activeFile.value = getOrCreateFile(new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate() - 1,
-  ));
-}
-
-function previousDay () {
-  // activeFile.value = getOrCreateFile(new Date(activeFile.value.date.getTime() - 86400000));
-  const { date } = activeFile.value;
-  activeFile.value = getOrCreateFile(new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate() + 1,
-  ));
+async function addStickyNote() {
+  await newStickyNote(spaceId);
+  await loadStickyNotes();
 }
 </script>
 
 <template>
-  <m3-theme id="space-page" :color="space?.color" :dark="dark">
+  <m3-theme id="space-page" :color="space.color" :dark="dark">
     <m3-page>
-      <div class="h-full flex flex-1 overflow-hidden">
-        <div class="h-full flex flex-1 flex-col overflow-hidden">
+      <div class="h-full flex flex-1">
+        <div class="h-full flex flex-1 flex-col">
           <m3-top-app-bar>
             <template #leading>
               <nuxt-link-locale to="/">
@@ -84,7 +115,7 @@ function previousDay () {
             <div class="flex flex-1 items-center justify-center gap-2">
               <md-icon>{{ space.icon }}</md-icon>
 
-              {{ name }}
+              {{ space.name }}
             </div>
 
             <template #trailing>
@@ -94,34 +125,104 @@ function previousDay () {
             </template>
           </m3-top-app-bar>
 
-          <div class="relative h-full max-w-180 w-full self-center overflow-hidden p-6">
-            <div class="absolute left-0 top-16 px-4 transition-all duration-200 hover:p-0">
-              <div class="h-12 w-6 flex items-center justify-center bg-m3-surface-variant text-m3-on-surface-variant">
-                <md-icon>bookmark</md-icon>
-              </div>
-            </div>
+          <div
+            class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
+          >
+            <sticky-note
+              v-for="note in activeStickyNotes"
+              :key="note.id"
+              :space-id="spaceId"
+              :note="note"
+              @close="
+                activeStickyNotes = activeStickyNotes.filter(
+                  (n) => n.id !== note.id,
+                )
+              "
+            />
 
-            <m3-elevated-card id="editor">
-              <div id="editor-title">
-                {{ activeFile.name.split(/\.\w+$/)[0] }}
+            <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
+              <pdf-viewer />
+            </m3-outlined-card> -->
+
+            <div class="flex-1 relative h-full max-w-180 w-full">
+              <div class="flex flex-col gap-4 absolute left--6 top-16">
+                <div class="sidebar-button">
+                  <div class="sidebar-button__inner">
+                    <md-icon>av_timer</md-icon>
+                  </div>
+                </div>
+                <div class="sidebar-button" @click="showStickyNotes = true">
+                  <div class="sidebar-button__inner">
+                    <md-icon>sticky_note</md-icon>
+                  </div>
+                </div>
+              </div>
+
+              <m3-elevated-card id="editor">
+                <!-- <div id="editor-title">
+                {{ currentNote.name.split(/\.\w+$/)[0] }}
 
                 <md-icon-button @click="dialog = true">
                   <md-icon>note_stack</md-icon>
                 </md-icon-button>
-              </div>
+              </div> -->
+                <div id="editor-title" class="items-center gap-2">
+                  <!-- <md-icon-button @click="previousDay">
+                  <md-icon>keyboard_arrow_up</md-icon>
+                </md-icon-button>
+                <md-icon-button @click="nextDay" :disabled="true">
+                  <md-icon>keyboard_arrow_down</md-icon>
+                </md-icon-button> -->
+                  <md-icon-button
+                    @click="currentNoteIndex = nextDayIndex"
+                    :disabled="nextDayIndex === -1"
+                  >
+                    <md-icon>keyboard_arrow_up</md-icon>
+                  </md-icon-button>
+                  <md-icon-button
+                    @click="currentNoteIndex = previousDayIndex"
+                    :disabled="previousDayIndex === -1"
+                  >
+                    <md-icon>keyboard_arrow_down</md-icon>
+                  </md-icon-button>
 
-              <editor :space="name" v-model="activeFile.name" class="h-full flex-1" />
-            </m3-elevated-card>
+                  <div class="h-1px flex-1 bg-m3-outline-variant" />
+
+                  <span class="m3-label-large">
+                    {{ currentNote?.date }}
+                  </span>
+
+                  <div class="h-1px w-2 bg-m3-outline-variant" />
+                </div>
+
+                <editor
+                  v-if="currentNote"
+                  kind="daily"
+                  :space-id="spaceId"
+                  v-model="currentNote.id"
+                  class="h-full flex-1"
+                />
+              </m3-elevated-card>
+            </div>
+
+            <side-bar direction="horizontal" v-if="mobile" />
           </div>
         </div>
       </div>
 
-      <md-dialog :open="dialog" @closed="dialog = false">
-        <span slot="headline">Notes</span>
+      <md-dialog :open="showStickyNotes" @closed="showStickyNotes = false">
+        <span slot="headline" class="flex items-center justify-between">
+          Sticky Notes
+
+          <md-icon-button @click="addStickyNote">
+            <md-icon>add</md-icon>
+          </md-icon-button>
+        </span>
+
         <form slot="content" method="dialog">
           <div class="mb-4 flex items-center gap-4">
-            <span class="flex-1 m3-display-small">
-              {{ useShortDate(activeFile.date) }}
+            <!-- <span class="flex-1 m3-display-small">
+              {{ useShortDate(currentNote) }}
             </span>
 
             <md-icon-button @click="nextDay">
@@ -129,29 +230,35 @@ function previousDay () {
             </md-icon-button>
             <md-icon-button @click="previousDay">
               <md-icon>chevron_right</md-icon>
-            </md-icon-button>
+            </md-icon-button> -->
           </div>
 
           <div class="max-h-100 overflow-auto">
-            <file-tree-item v-for="file in files.toReversed()" :key="file.name" :active="file.name === activeFile.name"
-              class="flex justify-between gap-8" @click="activeFile = file">
+            <file-tree-item
+              v-for="note in stickyNotes.toReversed()"
+              :key="note.name"
+              :active="note.name === currentNote.name"
+              class="flex justify-between gap-8"
+              @click="activeStickyNotes.push(note)"
+            >
               <span class="flex flex-1 items-center gap-2">
                 <md-icon>
-                  {{ file.name === activeFile.name ? "note_filled" : "note" }}
+                  {{ note.name === currentNote.name ? "note_filled" : "note" }}
                 </md-icon>
 
-                {{ file.name }}
+                {{ note.name }}
               </span>
 
               <span class="m3-label-medium">
-                {{ useShortDate(file.date) }}
+                <!-- {{ useShortDate(file.date) }} -->
+                what
               </span>
             </file-tree-item>
           </div>
         </form>
       </md-dialog>
 
-      <side-bar />
+      <side-bar direction="vertical" v-if="!mobile" />
     </m3-page>
   </m3-theme>
 </template>
@@ -172,6 +279,15 @@ function previousDay () {
 #editor-title {
   @apply flex justify-between text-m3-on-primary-container w-full m3-headline-large bg-transparent outline-none;
 
-  font-family: "Iosevka Quasi Custom", sans-serif;
+  /* font-family: "Iosevka Quasi Custom", sans-serif; */
+  font-family: "Iosevka Book Web", sans-serif;
+}
+
+.sidebar-button {
+  @apply transition-all duration-200 pl-4 hover:pl-0;
+
+  &__inner {
+    @apply h-12 w-6 flex items-center justify-center bg-m3-surface-variant cursor-pointer text-m3-on-surface-variant;
+  }
 }
 </style>

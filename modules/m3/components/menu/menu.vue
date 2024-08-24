@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const properties = defineProps<{ modelValue?: boolean }>();
+const props = defineProps<{ modelValue?: boolean }>();
 
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
 }>();
-const visible = useVModel(properties, "modelValue", emit);
+const visible = useVModel(props, "modelValue", emit);
 
 const element = ref<HTMLElement>();
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const properties = withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: "standard" | "modal" | "auto";
     modelValue?: boolean;
@@ -10,24 +10,24 @@ const properties = withDefaults(
 const emits = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
 }>();
-const visible = useVModel(properties, "modelValue", emits);
+const visible = useVModel(props, "modelValue", emits);
 
 const { desktop } = useBreakpoints(breakpointsM3);
 
 const modal = computed(() =>
-  properties.type === "auto" ? !desktop.value : properties.type === "modal",
+  props.type === "auto" ? !desktop.value : props.type === "modal",
 );
 
 const route = useRoute();
 watch(
-  () => route.href,
+  () => route.fullPath,
   () => {
     visible.value = desktop.value;
   },
 );
 
 watchEffect(() => {
-  if (properties.type === "auto") visible.value = desktop.value;
+  if (props.type === "auto") visible.value = desktop.value;
 });
 </script>
 
@@ -45,7 +45,9 @@ watchEffect(() => {
   >
     <md-elevation />
 
-    <slot />
+    <div class="m3-nav-drawer__inner">
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -54,7 +56,7 @@ watchEffect(() => {
 @use "@material/web/tokens";
 
 .m3-nav-drawer {
-  @apply flex flex-col h-full p-3 w-90 translate-x-0 z-1;
+  @apply h-full z-1;
 
   transition-timing-function: map.get(
     tokens.md-sys-motion-values(),
@@ -65,6 +67,10 @@ watchEffect(() => {
     "duration-medium4"
   );
   transition-property: transform, translate;
+
+  &__inner {
+    @apply flex flex-col h-full p-3 w-90 translate-x-0 overflow-auto;
+  }
 
   &--left {
     @apply left-0;
