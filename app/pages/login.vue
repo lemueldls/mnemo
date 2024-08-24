@@ -33,12 +33,16 @@ async function register() {
   <m3-elevated-card class="gap-4 w-120">
     <h1 class="m3-title-large">Login</h1>
 
-    <md-outlined-text-field v-model="email" label="Email" type="email" />
+    <md-outlined-text-field
+      :value="email"
+      @input="email = $event.target.value" label="Email" type="email"
+    />
 
     <md-outlined-text-field
-      v-model="password"
       label="Password"
       type="password"
+      :value="password"
+      @input="password = $event.target.value"
     />
 
     <md-filled-button @click="login"> Login </md-filled-button>
