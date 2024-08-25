@@ -14,7 +14,7 @@ version.workspace = true
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta.18", features = [] }
+tauri-build = { version = "2.0.0-rc.6", features = [] }
 
 [dependencies]
 dirs = "5.0.1"
@@ -25,12 +25,12 @@ tokio = { version = "1", features = ["full"] }
 ulid = { version = "1.1.3", features = ["serde"] }
 time = { version = "0.3", features = ["serde"] }
 
-tauri = { version = "2.0.0-beta.23", features = [] }
+tauri = { version = "2.0.0-rc.6", features = [] }
 # tauri-plugin-devtools = "2.0.0-beta"
 # tauri-plugin-devtools-app = "2.0.0-beta"
 # tauri-plugin-dialog = "2.0.0-alpha.2"
 # tauri-plugin-process = "2.0.0-alpha.2"
-tauri-plugin-store = "2.0.0-beta.9"
+tauri-plugin-store = "2.0.0-rc.2"
 # tauri-plugin-updater = "2.0.0-alpha.2"
 
 [features]
