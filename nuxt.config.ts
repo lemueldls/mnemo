@@ -2,7 +2,7 @@ import wasm from "vite-plugin-wasm";
 
 const defaultLocale = "en";
 const locales = [
-  { code: "en", iso: "en-US", name: "English", file: "en-US.json" },
+  { code: "en", language: "en-US", name: "English", file: "en-US.json" },
 ];
 
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
@@ -32,7 +32,7 @@ export default defineNuxtConfig({
     },
     plugins: [wasm()],
   },
-  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
+  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   // routeRules: {
   //   "/**": { ssr: false },
   //   "/splashscreen": { ssr: !!platform, static: false },
@@ -69,7 +69,7 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "nuxt-ssr-lit",
   ],
-  hub: { ai: true },
+  // hub: { ai: true, blob: true, cache: true, kv: true },
   i18n: {
     lazy: true,
     defaultLocale,
@@ -81,7 +81,7 @@ export default defineNuxtConfig({
     types: "~~/supabase/database.d.ts",
     redirectOptions: {
       login: "/login",
-      confirm: "/confirm",
+      callback: "/confirm",
       // exclude: ["/", "/space"],
       cookieRedirect: true,
     },

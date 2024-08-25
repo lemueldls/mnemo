@@ -1,5 +1,5 @@
-import { Loro } from "loro-crdt";
-import type { LoroText } from "loro-wasm";
+// import { Loro } from "loro-crdt";
+// import type { LoroText } from "loro-wasm";
 
 // import {
 //   ref as storageRef,
@@ -82,9 +82,9 @@ export async function readSpaceFile(
 
   activeFile = dbRef(db, "spaces", user.value.uid, space, path);
 
-  const doc = new Loro();
-  const text: LoroText = doc.getText("text");
-  text.insert(0, "Hello world!");
+  // const doc = new Loro();
+  // const text: LoroText = doc.getText("text");
+  // text.insert(0, "Hello world!");
 
   // activeFile.value = doc.exportSnapshot();
   set(activeFile, doc.exportSnapshot());
