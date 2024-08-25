@@ -75,24 +75,24 @@ impl FontSearcher {
             "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf"
         ));
 
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-regular.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-italic.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-book.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bookitalic.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bold.ttf"
-        ));
-        search(include_bytes!(
-            "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bolditalic.ttf"
-        ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-regular.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-italic.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-book.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bookitalic.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bold.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bolditalic.ttf"
+        // ));
 
         // search(include_bytes!("../../../../../public/fonts/LinLibertine_R.ttf"));
         // search(include_bytes!("../../../../../public/fonts/LinLibertine_RB.ttf"));
