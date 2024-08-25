@@ -79,11 +79,11 @@
   languages = {
     javascript = {
       enable = true;
-      # corepack.enable = true;
-      yarn = {
-        enable = true;
-        package = pkgs.yarn-berry;
-      };
+      corepack.enable = true;
+      # yarn = {
+      #   enable = true;
+      #   package = pkgs.yarn-berry;
+      # };
     };
 
     rust = {
