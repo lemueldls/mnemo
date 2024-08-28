@@ -19,9 +19,8 @@ export default defineNuxtConfig({
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
-    // prerender: { routes: ['/'], ignore: ["/space"] },
+    prerender: { routes: ["/"], ignore: ["/space"] },
   },
-  telemetry: false,
   vite: {
     clearScreen: false,
     envPrefix: ["VITE_", "TAURI_"],
@@ -32,6 +31,7 @@ export default defineNuxtConfig({
     },
     plugins: [wasm()],
   },
+  // devServer: { https: true },
   // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   // routeRules: {
   //   "/**": { ssr: false },
@@ -69,7 +69,7 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "nuxt-ssr-lit",
   ],
-  // hub: { ai: true, blob: true, cache: true, kv: true },
+  hub: { ai: true, blob: true, cache: true, kv: true },
   i18n: {
     lazy: true,
     defaultLocale,

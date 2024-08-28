@@ -47,13 +47,6 @@ function addHeapObject(obj) {
     return idx;
 }
 
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
-    }
-    return instance.ptr;
-}
-
 let WASM_VECTOR_LEN = 0;
 
 const cachedTextEncoder = (typeof TextEncoder !== 'undefined' ? new TextEncoder('utf-8') : { encode: () => { throw Error('TextEncoder not available') } } );
@@ -110,6 +103,39 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8Memory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+    return instance.ptr;
+}
+
+let cachedUint32Memory0 = null;
+
+function getUint32Memory0() {
+    if (cachedUint32Memory0 === null || cachedUint32Memory0.byteLength === 0) {
+        cachedUint32Memory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32Memory0;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    const mem = getUint32Memory0();
+    for (let i = 0; i < array.length; i++) {
+        mem[ptr / 4 + i] = addHeapObject(array[i]);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
 let cachedInt32Memory0 = null;
 
 function getInt32Memory0() {
@@ -126,6 +152,46 @@ function isLikeNone(x) {
 */
 export function start() {
     wasm.start();
+}
+
+const PackageFileFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_packagefile_free(ptr >>> 0));
+/**
+*/
+export class PackageFile {
+
+    static __unwrap(jsValue) {
+        if (!(jsValue instanceof PackageFile)) {
+            return 0;
+        }
+        return jsValue.__destroy_into_raw();
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        PackageFileFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_packagefile_free(ptr);
+    }
+    /**
+    * @param {string} path
+    * @param {Uint8Array} content
+    */
+    constructor(path, content) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(content, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.packagefile_new(ptr0, len0, ptr1, len1);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
 }
 
 const RgbFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -349,6 +415,17 @@ export class TypstState {
         wasm.typststate_setMain(this.__wbg_ptr, ptr0, len0, ptr1, len1);
     }
     /**
+    * @param {string} spec
+    * @param {(PackageFile)[]} files
+    */
+    installPackage(spec, files) {
+        const ptr0 = passStringToWasm0(spec, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArrayJsValueToWasm0(files, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.typststate_installPackage(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+    }
+    /**
     * @param {string} text
     * @returns {SyncResult}
     */
@@ -431,6 +508,10 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
+    imports.wbg.__wbg_packagefile_unwrap = function(arg0) {
+        const ret = PackageFile.__unwrap(takeObject(arg0));
+        return ret;
+    };
     imports.wbg.__wbg_error_eda0b57859301c0b = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
@@ -514,6 +595,7 @@ function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     __wbg_init.__wbindgen_wasm_module = module;
     cachedInt32Memory0 = null;
+    cachedUint32Memory0 = null;
     cachedUint8Memory0 = null;
 
     wasm.__wbindgen_start();

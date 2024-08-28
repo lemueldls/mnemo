@@ -1,21 +1,8 @@
 use std::{fs, path::PathBuf};
 
 use once_cell::sync::Lazy;
+use tauri::{path::BaseDirectory, AppHandle, Manager};
 
-pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
-    let path = dirs::data_dir().unwrap().join("dev.lemueldls.mnemo");
-    fs::create_dir_all(&path).unwrap();
-
-    path
-});
-
-pub static SPACES_DIR: Lazy<PathBuf> = Lazy::new(|| {
-    let path = DATA_DIR.join("spaces");
-    fs::create_dir_all(&path).unwrap();
-
-    path
-});
-
-pub fn spaces() -> &'static PathBuf {
-    &SPACES_DIR
+pub fn spaces(app_handle: &AppHandle) -> PathBuf {
+    app_handle.path().app_data_dir().unwrap().join("spaces")
 }

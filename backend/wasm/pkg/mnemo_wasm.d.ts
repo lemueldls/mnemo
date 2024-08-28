@@ -29,6 +29,16 @@ export interface TypstCompletion {
 
 /**
 */
+export class PackageFile {
+  free(): void;
+/**
+* @param {string} path
+* @param {Uint8Array} content
+*/
+  constructor(path: string, content: Uint8Array);
+}
+/**
+*/
 export class Rgb {
   free(): void;
 /**
@@ -50,6 +60,11 @@ export class TypstState {
 * @param {string} text
 */
   setMain(path: string, text: string): void;
+/**
+* @param {string} spec
+* @param {(PackageFile)[]} files
+*/
+  installPackage(spec: string, files: (PackageFile)[]): void;
 /**
 * @param {string} text
 * @returns {SyncResult}
@@ -109,6 +124,8 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_packagefile_free: (a: number) => void;
+  readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
   readonly __wbg_rgb_free: (a: number) => void;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly __wbg_typststate_free: (a: number) => void;
@@ -134,6 +151,7 @@ export interface InitOutput {
   readonly __wbg_set_typststate_h6: (a: number, b: number) => void;
   readonly typststate_new: () => number;
   readonly typststate_setMain: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly typststate_sync: (a: number, b: number, c: number) => number;
   readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
   readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => void;

@@ -4,15 +4,16 @@ mod world;
 use core::fmt;
 use std::{
     collections::hash_map::DefaultHasher,
-    // fs,
     hash::{Hash, Hasher},
     iter,
     ops::Range,
     path::{Path, PathBuf},
+    str::FromStr,
     sync::Mutex,
 };
 
 use data_encoding::BASE64;
+use js_sys::Uint8Array;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
 use tsify::Tsify;
@@ -20,7 +21,7 @@ use typst::{
     compile,
     layout::{Abs, Frame, FrameItem, Point, Position},
     model::Document,
-    syntax::{ast, FileId, Span, SyntaxKind, VirtualPath},
+    syntax::{ast, package::PackageSpec, FileId, Source, Span, SyntaxKind, VirtualPath},
     visualize::Color,
     World, WorldExt,
 };
@@ -28,6 +29,20 @@ use typst_render::{render, render_merged};
 use typst_svg::svg;
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
+
+#[wasm_bindgen]
+pub struct PackageFile {
+    path: String,
+    content: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl PackageFile {
+    #[wasm_bindgen(constructor)]
+    pub fn new(path: String, content: Vec<u8>) -> Self {
+        Self { path, content }
+    }
+}
 
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
@@ -111,6 +126,18 @@ impl TypstState {
     pub fn set_main(&mut self, path: String, text: String) {
         let id = FileId::new(None, VirtualPath::new(&path));
         self.world.set_main(id, text);
+    }
+
+    #[wasm_bindgen(js_name = installPackage)]
+    pub fn install_package(&mut self, spec: &str, files: Box<[PackageFile]>) {
+        let package_spec = Some(PackageSpec::from_str(spec).unwrap());
+
+        for file in files {
+            let id = FileId::new(package_spec.clone(), VirtualPath::new(&file.path));
+            let source = Source::new(id, String::from_utf8(file.content).unwrap());
+
+            self.world.files.insert(id, source);
+        }
     }
 
     #[wasm_bindgen]

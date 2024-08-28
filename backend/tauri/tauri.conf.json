@@ -5,7 +5,7 @@
   "identifier": "dev.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "yarn generate",
-    "beforeDevCommand": "yarn dev --host",
+    "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../dist"
   },

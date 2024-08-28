@@ -62,8 +62,8 @@ impl NoteKind {
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub fn read_file(kind: NoteKind, space_id: Ulid, path: &str) -> String {
-    let spaces_dir = crate::dir::spaces()
+pub fn read_file(kind: NoteKind, space_id: Ulid, path: &str, app_handle: AppHandle) -> String {
+    let spaces_dir = crate::dir::spaces(&app_handle)
         .join(space_id.to_string())
         .join(kind.as_str());
     let path = spaces_dir.join(path).with_extension("typ");
@@ -101,8 +101,10 @@ impl DailyNote {
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub fn get_daily_notes(space_id: Ulid) -> Vec<DailyNote> {
-    let path = dir::spaces().join(space_id.to_string()).join("daily");
+pub fn get_daily_notes(space_id: Ulid, app_handle: AppHandle) -> Vec<DailyNote> {
+    let path = dir::spaces(&app_handle)
+        .join(space_id.to_string())
+        .join("daily");
 
     let mut add_today = true;
     let today = OffsetDateTime::now_utc().date();
@@ -154,8 +156,8 @@ pub fn get_daily_notes(space_id: Ulid) -> Vec<DailyNote> {
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub fn sync_file(kind: NoteKind, space_id: Ulid, path: &str, text: &str) {
-    let path = dir::spaces()
+pub fn sync_file(kind: NoteKind, space_id: Ulid, path: &str, text: &str, app_handle: AppHandle) {
+    let path = dir::spaces(&app_handle)
         .join(space_id.to_string())
         .join(kind.as_str())
         .join(path)

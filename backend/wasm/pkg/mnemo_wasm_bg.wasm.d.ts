@@ -1,6 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export function __wbg_packagefile_free(a: number): void;
+export function packagefile_new(a: number, b: number, c: number, d: number): number;
 export function __wbg_rgb_free(a: number): void;
 export function rgb_new(a: number, b: number, c: number): number;
 export function __wbg_typststate_free(a: number): void;
@@ -26,6 +28,7 @@ export function __wbg_get_typststate_h6(a: number): number;
 export function __wbg_set_typststate_h6(a: number, b: number): void;
 export function typststate_new(): number;
 export function typststate_setMain(a: number, b: number, c: number, d: number, e: number): void;
+export function typststate_installPackage(a: number, b: number, c: number, d: number, e: number): void;
 export function typststate_sync(a: number, b: number, c: number): number;
 export function typststate_click(a: number, b: number, c: number, d: number): number;
 export function typststate_autocomplete(a: number, b: number, c: number, d: number): void;

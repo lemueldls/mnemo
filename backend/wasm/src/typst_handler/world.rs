@@ -17,11 +17,14 @@ use typst::{
     Library, World,
 };
 
-use super::fonts::{FontSearcher, FontSlot};
+use super::{
+    fonts::{FontSearcher, FontSlot},
+    PackageFile,
+};
 
 pub struct MnemoWorld {
-    main: Option<FileId>,
-    files: HashMap<FileId, Source>,
+    pub main: Option<FileId>,
+    pub files: HashMap<FileId, Source>,
     library: LazyHash<Library>,
     book: LazyHash<FontBook>,
     fonts: Vec<FontSlot>,
@@ -40,24 +43,9 @@ impl MnemoWorld {
         let mut searcher = FontSearcher::new();
         searcher.search(&[]);
 
-        let mut files = HashMap::new();
-
-        // let packages = mnemo_wasm_macros::packages!();
-        let packages = Vec::<(&str, Vec<(&str, &str)>)>::new();
-        for (package, pkg_files) in packages {
-            let package_spec = Some(PackageSpec::from_str(package).unwrap());
-
-            for (path, content) in &*pkg_files {
-                let id = FileId::new(package_spec.clone(), VirtualPath::new(path));
-                let source = Source::new(id, content.to_string());
-
-                files.insert(id, source);
-            }
-        }
-
         Self {
             main: None,
-            files,
+            files: HashMap::new(),
             library: LazyHash::new(typst::Library::builder().build()),
             book: LazyHash::new(searcher.book),
             fonts: searcher.fonts,

@@ -21,7 +21,7 @@ pub fn create_space(
     order: Option<u8>,
     app_handle: AppHandle,
 ) {
-    let mut store = load_spaces(app_handle);
+    let mut store = load_spaces(app_handle.clone());
 
     let id = Ulid::from_datetime(OffsetDateTime::now_utc().into());
     let order = order.unwrap_or_else(|| store.len() as u8);
@@ -40,7 +40,12 @@ pub fn create_space(
 
     store.save().unwrap();
 
-    fs::create_dir_all(crate::dir::spaces().join(id.to_string()).join("daily")).unwrap();
+    fs::create_dir_all(
+        crate::dir::spaces(&app_handle)
+            .join(id.to_string())
+            .join("daily"),
+    )
+    .unwrap();
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,3 +85,5 @@ fn load_spaces(app_handle: AppHandle) -> Store<Wry> {
 
     store
 }
+
+// pub fn install_package
