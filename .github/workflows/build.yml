@@ -53,6 +53,9 @@ jobs:
 
       - name: build
         run: yarn tauri build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
       - uses: actions/upload-artifact@v4
         with:
