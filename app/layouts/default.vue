@@ -34,12 +34,12 @@ const pages: Page[] = [
   { path: "/calendar", name: "Calendar", icon: "calendar_today" },
 ];
 
-const { auth } = useSupabaseClient();
-const user = useSupabaseUser();
+// const { auth } = useSupabaseClient();
+// const user = useSupabaseUser();
 
-watchEffect(() => {
-  console.log({ user: user.value });
-});
+// watchEffect(() => {
+//   console.log({ user: user.value });
+// });
 
 // if (!user.value) await auth.sign();
 
