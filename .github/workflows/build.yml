@@ -26,19 +26,19 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - uses: jetli/wasm-pack-action@v0.4.0
-        with:
-          version: "latest"
+      # - uses: jetli/wasm-pack-action@v0.4.0
+      #   with:
+      #     version: "latest"
 
-      - name: build wasm
-        run: wasm-pack build backend/wasm -t web --release
+      # - name: build wasm
+      #   run: wasm-pack build backend/wasm -t web --release
 
-      - name: optimize wasm
-        uses: NiklasEi/wasm-opt-action@v2
-        with:
-          file: backend/wasm/pkg/*.wasm
-          optimize_all: true
-          options: -O4
+      # - name: optimize wasm
+      #   uses: NiklasEi/wasm-opt-action@v2
+      #   with:
+      #     file: backend/wasm/pkg/*.wasm
+      #     optimize_all: true
+      #     options: -O4
 
       - name: setup node
         uses: actions/setup-node@v4
