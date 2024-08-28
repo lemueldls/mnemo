@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
     prerender: { routes: ["/"], ignore: ["/space"] },
+    experimental: { openAPI: true },
   },
   vite: {
     clearScreen: false,
@@ -44,7 +45,7 @@ export default defineNuxtConfig({
     headNext: true,
     viewTransition: true,
   },
-  runtimeConfig: { app: { platform } },
+  runtimeConfig: { app: { platform }, public: { apiBaseUrl: "" } },
   imports: {
     dirs: [
       "composables",
