@@ -10,7 +10,7 @@
 // } from "firebase/storage";
 // import { ref as dbRef, set } from "firebase/database";
 
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
 // import { schema } from "./generated/client";
 
 // // Initiate your Electric database

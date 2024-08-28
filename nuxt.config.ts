@@ -59,7 +59,6 @@ export default defineNuxtConfig({
     layoutTransition: { name: "conjure" },
     head: { templateParams: { separator: "•" } },
   },
-  typescript: { shim: false },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   modules: [
     // "@nuxt/ui",
@@ -67,7 +66,7 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    "@nuxtjs/supabase",
+    // "@nuxtjs/supabase",
     "nuxt-ssr-lit",
   ],
   hub: { ai: true, blob: true, cache: true, kv: true },
@@ -78,14 +77,14 @@ export default defineNuxtConfig({
     langDir: "locales",
     baseUrl: siteUrl,
   },
-  supabase: {
-    types: "~~/supabase/database.d.ts",
-    redirectOptions: {
-      login: "/login",
-      callback: "/confirm",
-      exclude: ["/"],
-      cookieRedirect: true,
-    },
-  },
+  // supabase: {
+  //   types: "~~/supabase/database.d.ts",
+  //   redirectOptions: {
+  //     login: "/login",
+  //     callback: "/confirm",
+  //     exclude: ["/"],
+  //     cookieRedirect: true,
+  //   },
+  // },
   ssrLit: { litElementPrefix: ["md-"] },
 });
