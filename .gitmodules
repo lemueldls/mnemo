@@ -1,3 +1,0 @@
-[submodule "backend/wasm/macros/packages"]
-	path = backend/wasm/macros/packages
-	url = git@github.com:typst/packages.git
