@@ -19,17 +19,17 @@ export default defineNuxtConfig({
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
-    prerender: { routes: ["/"], ignore: ["/space"] },
+    // prerender: { routes: ["/"], ignore: ["/space"] },
     experimental: { openAPI: true },
   },
   vite: {
-    clearScreen: false,
-    envPrefix: ["VITE_", "TAURI_"],
-    build: { target: ["safari15"] },
-    server: {
-      strictPort: true,
-      hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
-    },
+    // clearScreen: false,
+    // envPrefix: ["VITE_", "TAURI_"],
+    // build: { target: ["safari15"] },
+    // server: {
+    //   strictPort: true,
+    //   hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
+    // },
     plugins: [wasm()],
   },
   // devServer: { https: true },
@@ -83,7 +83,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: "/login",
       callback: "/confirm",
-      // exclude: ["/", "/space"],
+      exclude: ["/"],
       cookieRedirect: true,
     },
   },
