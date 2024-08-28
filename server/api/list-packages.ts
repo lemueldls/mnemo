@@ -14,7 +14,8 @@ export interface Package {
   updatedAt: number;
 }
 
-export default defineCachedEventHandler(
+// export default defineCachedEventHandler(
+export default defineEventHandler(
   async (event) => {
     const { namespace } = await getQuery(event);
 
@@ -30,6 +31,6 @@ export default defineCachedEventHandler(
     }
 
     return packages;
-  },
-  { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path }
+  }
+  // { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path }
 );
