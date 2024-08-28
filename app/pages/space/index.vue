@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api/core";
+import type { Note } from "~/composables/spaces";
 
 definePageMeta({
   layout: "space",
@@ -24,7 +25,12 @@ const space = spaces.value!.find(([id, _]) => id === spaceId)![1];
 const { smallerOrEqual } = useBreakpoints(breakpointsM3);
 const mobile = smallerOrEqual("medium");
 
-const showStickyNotes = ref(false);
+const infoOpen = ref(false);
+
+const preludeOpen = ref(false);
+const focusOpen = ref(false);
+const stickyNotesOpen = ref(false);
+const packagesOpen = ref(false);
 
 // const space = [spaceId]!;
 const dark = useDark();
@@ -82,15 +88,15 @@ watchEffect(() => {
 });
 
 // const stickyNotes = ref(await listStickyNotes(spaceId));
-const stickyNotes = ref([]);
-const activeStickyNotes = ref([]);
+const stickyNotes = ref<StickyNote[]>([]);
+const activeStickyNotes = ref<StickyNote[]>([]);
 
 async function loadStickyNotes() {
   stickyNotes.value = await listStickyNotes(spaceId);
 }
 
 await loadStickyNotes();
-whenever(showStickyNotes, loadStickyNotes);
+whenever(stickyNotesOpen, loadStickyNotes);
 
 async function addStickyNote() {
   await newStickyNote(spaceId);
@@ -119,7 +125,7 @@ async function addStickyNote() {
             </div>
 
             <template #trailing>
-              <md-icon-button>
+              <md-icon-button @click="infoOpen = true">
                 <md-icon>info</md-icon>
               </md-icon-button>
             </template>
@@ -147,13 +153,26 @@ async function addStickyNote() {
             <div class="flex-1 relative h-full max-w-180 w-full">
               <div class="flex flex-col gap-4 absolute left--6 top-16">
                 <div class="sidebar-button">
+                  <div
+                    class="sidebar-button__inner"
+                    @click="preludeOpen = true"
+                  >
+                    <md-icon>code</md-icon>
+                  </div>
+                </div>
+                <div class="sidebar-button" @click="focusOpen = true">
                   <div class="sidebar-button__inner">
                     <md-icon>av_timer</md-icon>
                   </div>
                 </div>
-                <div class="sidebar-button" @click="showStickyNotes = true">
+                <div class="sidebar-button" @click="stickyNotesOpen = true">
                   <div class="sidebar-button__inner">
                     <md-icon>sticky_note</md-icon>
+                  </div>
+                </div>
+                <div class="sidebar-button" @click="packagesOpen = true">
+                  <div class="sidebar-button__inner">
+                    <md-icon>package_2</md-icon>
                   </div>
                 </div>
               </div>
@@ -210,7 +229,21 @@ async function addStickyNote() {
         </div>
       </div>
 
-      <md-dialog :open="showStickyNotes" @closed="showStickyNotes = false">
+      <md-dialog :open="infoOpen" @closed="infoOpen = false">
+        <span slot="headline" class="flex items-center justify-between">
+          {{ space.name }}
+        </span>
+
+        <span slot="content">
+          <pre>
+            <code>
+              {{ spaceId }}
+            </code>
+          </pre>
+        </span>
+      </md-dialog>
+
+      <md-dialog :open="stickyNotesOpen" @closed="stickyNotesOpen = false">
         <span slot="headline" class="flex items-center justify-between">
           Sticky Notes
 
@@ -233,7 +266,7 @@ async function addStickyNote() {
             </md-icon-button> -->
           </div>
 
-          <div class="max-h-100 overflow-auto">
+          <!-- <div class="max-h-100 overflow-auto">
             <file-tree-item
               v-for="note in stickyNotes.toReversed()"
               :key="note.name"
@@ -250,13 +283,14 @@ async function addStickyNote() {
               </span>
 
               <span class="m3-label-medium">
-                <!-- {{ useShortDate(file.date) }} -->
                 what
               </span>
             </file-tree-item>
-          </div>
+          </div> -->
         </form>
       </md-dialog>
+
+      <Packages v-model="packagesOpen" />
 
       <side-bar direction="vertical" v-if="!mobile" />
     </m3-page>

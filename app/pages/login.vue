@@ -4,11 +4,16 @@ definePageMeta({ layout: "auth" });
 const email = ref("");
 const password = ref("");
 
-const router = useRouter();
+const loginLoading = ref(false);
+const registerLoading = ref(false);
+const loading = computed(() => loginLoading.value || registerLoading.value);
 
 const { auth } = useSupabaseClient();
+const router = useRouter();
 
 async function login() {
+  loginLoading.value = true;
+
   const { data, error } = await auth.signInWithPassword({
     email: email.value,
     password: password.value,
@@ -22,10 +27,14 @@ async function login() {
     console.log({ data });
     router.push("/");
   }
+
+  loginLoading.value = false;
 }
 
 async function register() {
+  registerLoading.value = true;
   await auth.signUp({ email: email.value, password: password.value });
+  registerLoading.value = false;
 }
 </script>
 
@@ -35,7 +44,10 @@ async function register() {
 
     <md-outlined-text-field
       :value="email"
-      @input="email = $event.target.value" label="Email" type="email"
+      @input="email = $event.target.value"
+      label="Email"
+      type="email"
+      :disabled="loading"
     />
 
     <md-outlined-text-field
@@ -43,12 +55,21 @@ async function register() {
       type="password"
       :value="password"
       @input="password = $event.target.value"
+      :disabled="loading"
     />
 
-    <md-filled-button @click="login"> Login </md-filled-button>
+    <md-filled-button @click="login" :disabled="loading">
+      <template v-if="loginLoading">
+        <md-progress-circular indeterminate />
+      </template>
+      <template v-else> Login </template>
+    </md-filled-button>
 
-    <md-filled-tonal-button @click="register">
-      Register
+    <md-filled-tonal-button @click="register" :disabled="loading">
+      <template v-if="registerLoading">
+        <md-progress-circular indeterminate />
+      </template>
+      <template v-else> Register </template>
     </md-filled-tonal-button>
   </m3-elevated-card>
 </template>
