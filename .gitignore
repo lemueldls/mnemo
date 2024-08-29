@@ -40,3 +40,4 @@ devenv.local.nix
 .local.properties
 
 .android
+local.properties

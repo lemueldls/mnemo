@@ -1,4 +1,9 @@
 { pkgs, lib, config, inputs, ... }: {
+  certificates = [
+    "localhost"
+    "localhost:3000"
+  ];
+
   packages = with pkgs; [
     # Native
     pkg-config
@@ -84,6 +89,9 @@
       #   enable = true;
       #   package = pkgs.yarn-berry;
       # };
+    };
+    typescript = {
+      enable = true;
     };
 
     rust = {

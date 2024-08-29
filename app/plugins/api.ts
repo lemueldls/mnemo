@@ -8,7 +8,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   //   throw createError({ message: "NUXT_PUBLIC_API_BASE_URL is not set" });
 
   const api = $fetch.create({
-    baseURL: apiBaseUrl,
+    // baseURL: apiBaseUrl,
+    baseURL: "https://mnemo.nuxt.deb",
     headers: useRequestHeaders(["cookie"]),
     // onRequest({ request, options, error }) {
     //   if (session.value?.token) {
