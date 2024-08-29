@@ -11,7 +11,7 @@ const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  // ssr: false,
+  ssr: false,
   devtools: { enabled: true },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
-    // prerender: { routes: ["/"], ignore: ["/space"] },
+    prerender: { routes: ["/"] },
     experimental: { openAPI: true },
   },
   vite: {
