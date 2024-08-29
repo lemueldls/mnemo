@@ -16,7 +16,7 @@ export interface Package {
 
 export default defineCachedEventHandler(
   async (event) => {
-    const { namespace } = await getQuery(event);
+    const { namespace } = getQuery(event);
 
     const allPackages = await $fetch<Package[]>(
       `https://packages.typst.org/${namespace}/index.json`

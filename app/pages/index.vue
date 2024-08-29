@@ -45,8 +45,6 @@ const timeOfDay = computed(() => {
 <template>
   <div id="home-page">
     <div id="main-column">
-      <Packages />
-
       <m3-outlined-card id="intro">
         <div>
           <h1 class="m3-display-medium">

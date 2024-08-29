@@ -94,6 +94,10 @@ const activeStickyNotes = ref<StickyNote[]>([]);
 async function loadStickyNotes() {
   stickyNotes.value = await listStickyNotes(spaceId);
 }
+async function deleteStickyNoteAndReload(id: string) {
+  await deleteStickyNote(spaceId, id);
+  await loadStickyNotes();
+}
 
 await loadStickyNotes();
 whenever(stickyNotesOpen, loadStickyNotes);
@@ -131,20 +135,12 @@ async function addStickyNote() {
             </template>
           </m3-top-app-bar>
 
-          <div
-            class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
-          >
-            <sticky-note
-              v-for="note in activeStickyNotes"
-              :key="note.id"
-              :space-id="spaceId"
-              :note="note"
-              @close="
+          <div class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6">
+            <sticky-note v-for="note in activeStickyNotes" :key="note.id" :space-id="spaceId" :note="note" @close="
                 activeStickyNotes = activeStickyNotes.filter(
                   (n) => n.id !== note.id,
                 )
-              "
-            />
+              " />
 
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
@@ -153,10 +149,7 @@ async function addStickyNote() {
             <div class="flex-1 relative h-full max-w-180 w-full">
               <div class="flex flex-col gap-4 absolute left--6 top-16">
                 <div class="sidebar-button">
-                  <div
-                    class="sidebar-button__inner"
-                    @click="preludeOpen = true"
-                  >
+                  <div class="sidebar-button__inner" @click="preludeOpen = true">
                     <md-icon>code</md-icon>
                   </div>
                 </div>
@@ -186,41 +179,25 @@ async function addStickyNote() {
                 </md-icon-button>
               </div> -->
                 <div id="editor-title" class="items-center gap-2">
-                  <!-- <md-icon-button @click="previousDay">
-                  <md-icon>keyboard_arrow_up</md-icon>
-                </md-icon-button>
-                <md-icon-button @click="nextDay" :disabled="true">
-                  <md-icon>keyboard_arrow_down</md-icon>
-                </md-icon-button> -->
-                  <md-icon-button
-                    @click="currentNoteIndex = nextDayIndex"
-                    :disabled="nextDayIndex === -1"
-                  >
-                    <md-icon>keyboard_arrow_up</md-icon>
-                  </md-icon-button>
-                  <md-icon-button
-                    @click="currentNoteIndex = previousDayIndex"
-                    :disabled="previousDayIndex === -1"
-                  >
-                    <md-icon>keyboard_arrow_down</md-icon>
-                  </md-icon-button>
 
-                  <div class="h-1px flex-1 bg-m3-outline-variant" />
+                  <div class="h-1px w-2 bg-m3-outline-variant" />
 
                   <span class="m3-label-large">
                     {{ currentNote?.date }}
                   </span>
 
-                  <div class="h-1px w-2 bg-m3-outline-variant" />
+                  <div class="h-1px flex-1 bg-m3-outline-variant" />
+
+                  <md-icon-button @click="currentNoteIndex = nextDayIndex" :disabled="nextDayIndex === -1">
+                    <md-icon>keyboard_arrow_up</md-icon>
+                  </md-icon-button>
+                  <md-icon-button @click="currentNoteIndex = previousDayIndex" :disabled="previousDayIndex === -1">
+                    <md-icon>keyboard_arrow_down</md-icon>
+                  </md-icon-button>
                 </div>
 
-                <editor
-                  v-if="currentNote"
-                  kind="daily"
-                  :space-id="spaceId"
-                  v-model="currentNote.id"
-                  class="h-full flex-1"
-                />
+                <editor v-if="currentNote" kind="daily" :space-id="spaceId" v-model="currentNote.id"
+                  class="h-full flex-1" />
               </m3-elevated-card>
             </div>
 
@@ -266,27 +243,22 @@ async function addStickyNote() {
             </md-icon-button> -->
           </div>
 
-          <!-- <div class="max-h-100 overflow-auto">
-            <file-tree-item
-              v-for="note in stickyNotes.toReversed()"
-              :key="note.name"
-              :active="note.name === currentNote.name"
-              class="flex justify-between gap-8"
-              @click="activeStickyNotes.push(note)"
-            >
+          <div class="max-h-100 overflow-auto">
+            <file-tree-item v-for="note in stickyNotes.toReversed()" :key="note.id" :active="false"
+              class="flex justify-between gap-8" @click="activeStickyNotes.push(note)">
               <span class="flex flex-1 items-center gap-2">
                 <md-icon>
-                  {{ note.name === currentNote.name ? "note_filled" : "note" }}
+                  {{ false ? "note_filled" : "note" }}
                 </md-icon>
 
                 {{ note.name }}
               </span>
 
-              <span class="m3-label-medium">
-                what
-              </span>
+              <md-icon-button>
+                <md-icon>more_vert</md-icon>
+              </md-icon-button>
             </file-tree-item>
-          </div> -->
+          </div>
         </form>
       </md-dialog>
 

@@ -27,6 +27,7 @@ pub fn run() {
             handlers::new_sticky_note,
             handlers::rename_sticky_note,
             handlers::update_sticky_note,
+            handlers::delete_sticky_note,
             handlers::list_sticky_notes,
             handlers::read_file,
             handlers::sync_file,

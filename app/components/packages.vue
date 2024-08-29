@@ -2,15 +2,15 @@
 import type { Package } from "~~/server/api/list-packages";
 import { PackageFile } from "mnemo-wasm";
 
+const { $api } = useNuxtApp();
+
 const open = defineModel();
 const typst = useTypst();
-
-// await $fetch("/api/clear-cache");
 
 const search = ref("");
 
 const namespace = "preview" as const;
-const packages = await $fetch("/api/list-packages", {
+const packages = await $api("/api/list-packages", {
   query: { namespace },
 });
 
@@ -27,7 +27,7 @@ const filteredPackages = computed(() => {
 });
 
 async function installPackage(pkg: Package) {
-  const { spec, files } = await $fetch("/api/get-package", {
+  const { spec, files } = await $api("/api/get-package", {
     query: { namespace, name: pkg.name, version: pkg.version },
   });
 

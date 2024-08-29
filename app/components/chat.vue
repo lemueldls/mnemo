@@ -1,7 +1,8 @@
 <script setup lang="ts">
+const { $api } = useNuxtApp();
 
 async function send() {
-  await $fetch("/api/chat", {
+  await $api("/api/chat", {
     method: "post",
     body: { message: "hi" },
   });

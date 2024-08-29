@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{self, PathBuf},
+};
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, EventLoopMessage, Wry};
@@ -44,7 +47,9 @@ pub fn new_sticky_note(space_id: Ulid, app_handle: AppHandle) -> Ulid {
 
     let note = StickyNote::new(id, String::new(), 40.0, 40.0, 100.0, 100.0);
 
-    store.insert(id.to_string(), serde_json::to_value(&note).unwrap());
+    store
+        .insert(id.to_string(), serde_json::to_value(&note).unwrap())
+        .unwrap();
     store.save().unwrap();
 
     id
@@ -89,8 +94,12 @@ pub fn update_sticky_note(
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn delete_sticky_note(space_id: Ulid, note_id: Ulid, app_handle: AppHandle) {
-    // let path = PathBuf::from(space_id.to_string()).join("sticky.json");
-    // fs::remove_file(path).unwrap();
+    let path = crate::dir::spaces(&app_handle)
+        .join(space_id.to_string())
+        .join("sticky")
+        .join(note_id.to_string())
+        .with_extension("typ");
+    fs::remove_file(path).unwrap();
 
     let mut store = load_sticky(space_id, app_handle);
 
@@ -103,9 +112,9 @@ pub fn delete_sticky_note(space_id: Ulid, note_id: Ulid, app_handle: AppHandle) 
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn list_sticky_notes(space_id: Ulid, app_handle: AppHandle) -> Vec<StickyNote> {
-    let mut store = load_sticky(space_id, app_handle);
+    let store = load_sticky(space_id, app_handle);
 
-    let mut entries = store.entries();
+    let entries = store.entries();
 
     let mut notes = entries
         .map(|(id, note)| {
