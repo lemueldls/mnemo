@@ -11,7 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState } from "mnemo-wasm";
+import type { TypstState, FileId } from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
@@ -36,7 +36,7 @@ class TypstWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly index: number,
     private readonly render: string,
-    private readonly block: Block,
+    private readonly block: Block
   ) {
     super();
 
@@ -88,10 +88,15 @@ class TypstWidget extends WidgetType {
   }
 }
 
-function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
+function decorate(
+  typstState: TypstState,
+  update: ViewUpdate,
+  fileId: FileId,
+  text: string
+) {
   const { view, state } = update;
 
-  const syncResult = typstState.sync(text);
+  const syncResult = typstState.sync(fileId, text);
   const widgets: Range<Decoration>[] = [];
 
   if (syncResult.kind === "ok") {
@@ -102,7 +107,7 @@ function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
           (range.from < start || range.from > end) &&
           (range.to < start || range.to > end) &&
           (start < range.from || start > range.to) &&
-          (end < range.from || end > range.to),
+          (end < range.from || end > range.to)
       );
 
       if (inactive)
@@ -110,7 +115,7 @@ function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
           Decoration.replace({
             widget: new TypstWidget(typstState, view, index, render, block),
             // inclusive: true,
-          }).range(start, end),
+          }).range(start, end)
         );
       else {
         for (let i = start; i < end; i++) {
@@ -131,7 +136,7 @@ function decorate(typstState: TypstState, update: ViewUpdate, text: string) {
               class: "cm-activeLine",
               attributes: { style },
               // inclusive: true,
-            }).range(from),
+            }).range(from)
           );
         }
       }
@@ -148,6 +153,7 @@ export const viewPlugin = (
   kind: NoteKind,
   spaceId: string,
   path: string,
+  fileId: FileId
 ) =>
   ViewPlugin.define(() => ({
     update(update: ViewUpdate) {
@@ -157,7 +163,7 @@ export const viewPlugin = (
         const text = update.state.doc.toString();
         void syncSpaceFile(kind, spaceId, path, text);
 
-        const decorations = decorate(typstState, update, text);
+        const decorations = decorate(typstState, update, fileId, text);
 
         queueMicrotask(() => {
           update.view.dispatch({ effects: stateEffect.of({ decorations }) });
@@ -171,6 +177,7 @@ export const typst = (
   kind: NoteKind,
   spaceId: string,
   path: string,
+  fileId: FileId
 ) =>
   StateField.define({
     create() {
@@ -178,14 +185,14 @@ export const typst = (
     },
     update(decorations, transaction) {
       const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect),
+        effect.is(stateEffect)
       );
 
       if (effect) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to),
+          ...transaction.state.selection.ranges.map(({ to }) => to)
         );
 
         return decorations.update({
@@ -200,6 +207,6 @@ export const typst = (
     provide: (state) => [
       EditorView.decorations.from(state, (decorations) => decorations),
       // EditorView.atomicRanges.from(state, (decorations) => () => decorations),
-      viewPlugin(typstState, kind, spaceId, path),
+      viewPlugin(typstState, kind, spaceId, path, fileId),
     ],
   });

@@ -1337,6 +1337,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@interactjs/types@npm:1.10.27":
+  version: 1.10.27
+  resolution: "@interactjs/types@npm:1.10.27"
+  checksum: 10c0/767afe37cd932ed248712dc0aa9c912b18af1104ec26829d655daaeef57d13c8e9e973c9f59e4be978d66fe7e86b77f58dec4688bb2e5d38b838d5a38cb27cf4
+  languageName: node
+  linkType: hard
+
 "@intlify/bundle-utils@npm:^7.4.0":
   version: 7.5.1
   resolution: "@intlify/bundle-utils@npm:7.5.1"
@@ -8015,6 +8022,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"interactjs@npm:^1.10.27":
+  version: 1.10.27
+  resolution: "interactjs@npm:1.10.27"
+  dependencies:
+    "@interactjs/types": "npm:1.10.27"
+  checksum: 10c0/35532c636fc7cf8273999d314c9738994bfc4a1a384fd64658420055e93456aa6333a865e04b1765d39ee4e29f898854c3f3451a7a88a09141e32115cc6112e2
+  languageName: node
+  linkType: hard
+
 "internal-slot@npm:^1.0.7":
   version: 1.0.7
   resolution: "internal-slot@npm:1.0.7"
@@ -9233,6 +9249,7 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.1"
     eslint-plugin-promise: "npm:^7.1.0"
     eslint-plugin-unicorn: "npm:^55.0.0"
+    interactjs: "npm:^1.10.27"
     material-symbols: "npm:^0.22.2"
     nanotar: "npm:^0.1.1"
     nuxt: "npm:^3.13.0"

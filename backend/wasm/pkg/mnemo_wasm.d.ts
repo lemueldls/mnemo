@@ -29,6 +29,11 @@ export interface TypstCompletion {
 
 /**
 */
+export class FileId {
+  free(): void;
+}
+/**
+*/
 export class PackageFile {
   free(): void;
 /**
@@ -58,18 +63,20 @@ export class TypstState {
 /**
 * @param {string} path
 * @param {string} text
+* @returns {FileId}
 */
-  setMain(path: string, text: string): void;
+  insertFile(path: string, text: string): FileId;
 /**
 * @param {string} spec
 * @param {(PackageFile)[]} files
 */
   installPackage(spec: string, files: (PackageFile)[]): void;
 /**
+* @param {FileId} id
 * @param {string} text
 * @returns {SyncResult}
 */
-  sync(text: string): SyncResult;
+  sync(id: FileId, text: string): SyncResult;
 /**
 * @param {number} index
 * @param {number} x
@@ -126,7 +133,6 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_packagefile_free: (a: number) => void;
   readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbg_rgb_free: (a: number) => void;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly __wbg_typststate_free: (a: number) => void;
   readonly __wbg_get_typststate_color: (a: number) => number;
@@ -149,13 +155,15 @@ export interface InitOutput {
   readonly __wbg_set_typststate_h5: (a: number, b: number) => void;
   readonly __wbg_get_typststate_h6: (a: number) => number;
   readonly __wbg_set_typststate_h6: (a: number, b: number) => void;
+  readonly __wbg_fileid_free: (a: number) => void;
   readonly typststate_new: () => number;
-  readonly typststate_setMain: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly typststate_sync: (a: number, b: number, c: number) => number;
+  readonly typststate_sync: (a: number, b: number, c: number, d: number) => number;
   readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
   readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly __wbg_rgb_free: (a: number) => void;
   readonly start: () => void;
   readonly qcms_profile_is_bogus: (a: number) => number;
   readonly qcms_white_point_sRGB: (a: number) => void;

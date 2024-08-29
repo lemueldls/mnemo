@@ -30,6 +30,7 @@
     "@tato30/vue-pdf": "^1.10.0",
     "@tauri-apps/cli": "2.0.0-rc.7",
     "@tauri-apps/plugin-store": "^2.0.0-rc.0",
+    "interactjs": "^1.10.27",
     "material-symbols": "^0.22.2",
     "nanotar": "^0.1.1",
     "octokit": "^4.0.2",

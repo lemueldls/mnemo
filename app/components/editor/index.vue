@@ -56,6 +56,7 @@ import type { TypstState } from "mnemo-wasm";
 import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
+import {FileId} from 'mnemo-wasm';
 
 // const emit = defineEmits<{
 //   (event: "update:modelValue", value: string): void;
@@ -112,12 +113,14 @@ onMounted(() => {
       const typstState = await useTypst();
 
       const text = await readSpaceFile(props.kind, props.spaceId, path);
-      typstState.setMain(path, text);
+      const fileId = typstState.insertFile(path, text);
+
+      console.log({fileId});
 
       if (oldPath) stateCache[oldPath] = view.state.toJSON();
 
       const cache = stateCache[path];
-      const stateConfig = createStateConfig(typstState, path);
+      const stateConfig = createStateConfig(typstState, path, fileId);
 
       if (cache) view.setState(EditorState.fromJSON(cache, stateConfig));
       else {
@@ -131,10 +134,11 @@ onMounted(() => {
 function createStateConfig(
   typstState: TypstState,
   path: string,
+  fileId: FileId,
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, props.kind, props.spaceId, path),
+      typst(typstState, props.kind, props.spaceId, path, fileId),
       typstLanguage(),
       underlineKeymap,
 

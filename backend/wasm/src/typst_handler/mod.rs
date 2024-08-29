@@ -115,6 +115,20 @@ pub enum SyncResult {
     Error(Box<[String]>),
 }
 
+#[derive(Debug, Clone)]
+#[wasm_bindgen(js_name = "FileId")]
+pub struct FileIdWrapper(FileId);
+
+impl FileIdWrapper {
+    fn new(id: FileId) -> Self {
+        Self(id)
+    }
+
+    pub fn inner(&self) -> FileId {
+        self.0
+    }
+}
+
 #[wasm_bindgen]
 impl TypstState {
     #[wasm_bindgen(constructor)]
@@ -122,14 +136,16 @@ impl TypstState {
         Self::default()
     }
 
-    #[wasm_bindgen(js_name = setMain)]
-    pub fn set_main(&mut self, path: String, text: String) {
+    #[wasm_bindgen(js_name = insertFile)]
+    pub fn insert_file(&mut self, path: String, text: String) -> FileIdWrapper {
         let id = FileId::new(None, VirtualPath::new(&path));
-        self.world.set_main(id, text);
+        self.world.insert_file(id, text);
+
+        FileIdWrapper::new(id)
     }
 
     #[wasm_bindgen(js_name = installPackage)]
-    pub fn install_package(&mut self, spec: &str, files: Box<[PackageFile]>) {
+    pub fn install_package(&mut self, spec: &str, files: Vec<PackageFile>) {
         let package_spec = Some(PackageSpec::from_str(spec).unwrap());
 
         for file in files {
@@ -141,7 +157,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, text: &str) -> SyncResult {
+    pub fn sync(&mut self, id: &FileIdWrapper, text: &str) -> SyncResult {
         let mut source = format!(
             "#set align(horizon)\n#set text(fill:{:?},size:{}pt,tracking:0.875pt,top-edge:\"ascender\",bottom-edge:\"descender\",overhang:false)\n#set par(leading:0.1375em,linebreaks:\"simple\")\n#set page(width:{},height:{},margin:(x:0pt,y:0.75pt))\n#show math.equation:set text(size:{}pt)\n#show math.equation.where(block:true):set par(leading:12pt)\n#set table(stroke:{:?})\n#show heading.where(level:1):set text(fill:{:?},size:32pt,tracking:0pt,weight:400)\n#show heading.where(level:2):set text(fill:{:?},size:28pt,tracking:0pt,weight:400)\n#show heading.where(level:3):set text(fill:{:?},size:24pt,tracking:0pt,weight:400)\n#show heading.where(level:4):set text(fill:{:?},size:22pt,tracking:0pt,weight:400)\n#show heading.where(level:5):set text(fill:{:?},size:16pt,tracking:0.15pt,weight:500)\n#show heading.where(level:6):set text(fill:{:?},size:14pt,tracking:0.1pt,weight:500)\n#set table(inset:10pt)\n",
             self.color,
@@ -164,6 +180,7 @@ impl TypstState {
         let mut last_start_byte_offset = 0;
         let mut last_end_byte_offset = 0;
 
+        self.world.main = Some(id.inner());
         self.world.main_source_mut().replace(text);
 
         let children = self.world.main_source().root().children();

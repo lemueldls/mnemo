@@ -154,6 +154,34 @@ export function start() {
     wasm.start();
 }
 
+const FileIdFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_fileid_free(ptr >>> 0));
+/**
+*/
+export class FileId {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(FileId.prototype);
+        obj.__wbg_ptr = ptr;
+        FileIdFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        FileIdFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_fileid_free(ptr);
+    }
+}
+
 const PackageFileFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_packagefile_free(ptr >>> 0));
@@ -406,13 +434,15 @@ export class TypstState {
     /**
     * @param {string} path
     * @param {string} text
+    * @returns {FileId}
     */
-    setMain(path, text) {
+    insertFile(path, text) {
         const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        wasm.typststate_setMain(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.typststate_insertFile(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return FileId.__wrap(ret);
     }
     /**
     * @param {string} spec
@@ -426,13 +456,15 @@ export class TypstState {
         wasm.typststate_installPackage(this.__wbg_ptr, ptr0, len0, ptr1, len1);
     }
     /**
+    * @param {FileId} id
     * @param {string} text
     * @returns {SyncResult}
     */
-    sync(text) {
+    sync(id, text) {
+        _assertClass(id, FileId);
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_sync(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.typststate_sync(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
         return takeObject(ret);
     }
     /**

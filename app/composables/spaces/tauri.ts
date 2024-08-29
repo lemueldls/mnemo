@@ -72,7 +72,7 @@ export async function listSpaces() {
 export async function readSpaceFile(
   kind: NoteKind,
   spaceId: string,
-  path: string,
+  path: string
 ) {
   return invoke<string>("read_file", { kind, spaceId, path });
 }
@@ -81,7 +81,7 @@ export async function syncSpaceFile(
   kind: NoteKind,
   spaceId: string,
   path: string,
-  text: string,
+  text: string
 ) {
   await invoke("sync_file", { kind, spaceId, path, text });
 }

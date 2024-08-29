@@ -110,6 +110,13 @@ async function addStickyNote() {
 
 <template>
   <m3-theme id="space-page" :color="space.color" :dark="dark">
+    <sticky-note v-for="note in activeStickyNotes" :key="note.id" :space-id="spaceId" :note="note" @close="
+      activeStickyNotes = activeStickyNotes.filter(
+        (n) => n.id !== note.id,
+      )
+      "
+    />
+
     <m3-page>
       <div class="h-full flex flex-1">
         <div class="h-full flex flex-1 flex-col">
@@ -136,12 +143,6 @@ async function addStickyNote() {
           </m3-top-app-bar>
 
           <div class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6">
-            <sticky-note v-for="note in activeStickyNotes" :key="note.id" :space-id="spaceId" :note="note" @close="
-                activeStickyNotes = activeStickyNotes.filter(
-                  (n) => n.id !== note.id,
-                )
-              " />
-
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
             </m3-outlined-card> -->

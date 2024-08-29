@@ -52,9 +52,18 @@ impl MnemoWorld {
         }
     }
 
-    pub fn main_path(&self) -> &FileId {
-        self.main.as_ref().unwrap()
-    }
+    // pub fn set_main(&mut self, id: FileId, text: String) {
+    //     let source = Source::new(id, text);
+    //     self.main = Some(id);
+    // }
+
+    // pub fn main_path(&self) -> &FileId {
+    //     self.main.as_ref().unwrap()
+    // }
+
+    // pub fn main_path_mut(&mut self) -> &mut Option<FileId> {
+    //     &mut self.main
+    // }
 
     pub fn main_source(&self) -> &Source {
         self.files.get(self.main.as_ref().unwrap()).unwrap()
@@ -64,11 +73,10 @@ impl MnemoWorld {
         self.files.get_mut(self.main.as_ref().unwrap()).unwrap()
     }
 
-    pub fn set_main(&mut self, id: FileId, text: String) {
+    pub fn insert_file(&mut self, id: FileId, text: String) {
         let source = Source::new(id, text);
 
         self.files.insert(id, source);
-        self.main = Some(id);
     }
 
     pub fn get_source(&self, id: FileId) -> Option<&Source> {
