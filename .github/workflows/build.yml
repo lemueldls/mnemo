@@ -56,6 +56,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          NUXT_PUBLIC_API_BASE_URL: ${{ env.NUXT_PUBLIC_API_BASE_URL }}
 
       - uses: actions/upload-artifact@v4
         with:
