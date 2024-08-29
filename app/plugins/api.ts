@@ -1,15 +1,14 @@
 export default defineNuxtPlugin((nuxtApp) => {
   // const { session } = useUserSession();
 
-  // const runtimeConfig = useRuntimeConfig();
-  // const { apiBaseUrl } = runtimeConfig.public;
+  const runtimeConfig = useRuntimeConfig();
+  const { apiBaseUrl } = runtimeConfig.public;
 
   // if (!apiBaseUrl)
   //   throw createError({ message: "NUXT_PUBLIC_API_BASE_URL is not set" });
 
   const api = $fetch.create({
-    // baseURL: apiBaseUrl,
-    // baseURL: "https://mnemo.nuxt.dev",
+    baseURL: apiBaseUrl,
     headers: useRequestHeaders(["cookie"]),
     // onRequest({ request, options, error }) {
     //   if (session.value?.token) {
