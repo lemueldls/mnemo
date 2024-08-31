@@ -1,11 +1,37 @@
 <script setup lang="ts">
-const name = useLocalStorage("name", "");
+const name = await useStorageItem("name", "");
 
 const dark = useDark();
 const date = ref(new Date());
 
 const { d, locale } = useI18n();
 // const spaces = listSpaces();
+
+const { $api } = useNuxtApp();
+
+// const stream = await $api<ReadableStream>("/api/chat", { method: "post",responseType: "stream"});
+// const intro = ref("...");
+
+// const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+
+// while (true) {
+//   const { value, done } = await reader.read();
+//   if (done) break;
+
+//   intro.value += JSON.parse(`{${value}}`).data;
+// }
+
+const spaces = await listSpaces();
+
+console.log(spaces.value)
+
+const spacesProgress = spaces.value.map((space) => ({
+  space,
+  progress: {
+    current: Math.random() * 5,
+    total: 5,
+  }
+}));
 
 // interface Note {
 //   title: string;
@@ -26,7 +52,7 @@ useIntervalFn(
   () => {
     date.value = new Date();
   },
-  1000 * 60 * 15,
+  1000 * 60 * 15
 );
 
 const timeOfDay = computed(() => {
@@ -56,11 +82,9 @@ const timeOfDay = computed(() => {
           </span>
         </div>
 
-        <div
-          class="text-m3-on-surface-container flex flex-1 items-center justify-center m3-label-large"
-        >
+        <!-- <div class="text-m3-on-surface-container flex flex-1 items-center justify-center m3-label-large">
           Nothing yet
-        </div>
+        </div> -->
 
         <!-- <m3-filled-card>
           <span class="text-m3-on-surface-varient m3-body-large">
@@ -68,45 +92,54 @@ const timeOfDay = computed(() => {
           </span>
         </m3-filled-card> -->
 
-        <!-- <m3-outlined-card class="flex-shrink-0">
-          <h2 class="pb-4 m3-title-large">Stuff</h2>
+        <div class="flex-shrink-0">
+          <!-- <h2 class="pb-4 m3-title-large">Stuff</h2> -->
 
-          <div id="spaces">
-            <nuxt-link
-              v-for="(note, i) in notes"
-              :key="i"
-              :to="`/space?id=${note.space}`"
-            >
-              <m3-theme
-                :color="spaces[note.space].color"
-                :dark="dark"
-                harmonize
-              >
-                <m3-filled-card>
-                  <div class="flex items-center justify-between">
-                    <m3-icon
-                      rounded
-                      :name="spaces[note.space].icon"
-                      :style="{ color: 'var(--m3-primary)' }"
-                    />
+          <!-- <pre>
+            <code>
+              {{ intro }}
+            </code>
+          </pre> -->
 
-                    {{ relativeTime.format(-3, "hours") }}
+          <div id="progress">
+            <nuxt-link v-for="({space: [id, space], progress}, i) in spacesProgress" :key="i" :to="`/space?id=${id}`">
+              <m3-theme :color="space.color" :dark="dark" harmonize>
+
+                <m3-elevated-card class="gap-2 relative">
+                  <md-ripple />
+
+                  <div class="flex items-center gap-2">
+                    <m3-icon rounded :name="space.icon" :style="{ color: 'var(--md-sys-color-primary)' }" />
+
+                    <h3 class="m3-title-large">
+                      {{ space.name }}
+                    </h3>
                   </div>
 
-                  <h3 class="m3-headline-small">
-                    {{ note.title }}
-                  </h3>
+                  <div class="flex flex-col">
+                    <div class="flex items-center justify-between m3-label-large">
+                      <span>Weekly Study Hours</span>
 
-                  <md-divider />
+                      <span>{{ progress.current.toFixed(2) }} / {{ progress.total.toFixed(2) }}</span>
+                    </div>
 
-                  <p class="m3-body-large">
+                    <md-linear-progress :value="progress.current" :max="progress.total" />
+                  </div>
+
+                  <!-- <h3 class="m3-headline-small">
+                    {{ space.name }}
+                  </h3> -->
+
+                  <!-- <md-divider /> -->
+
+                  <!-- <p class="m3-body-large">
                     {{ note.preview }}
-                  </p>
-                </m3-filled-card>
+                  </p> -->
+                </m3-elevated-card>
               </m3-theme>
             </nuxt-link>
           </div>
-        </m3-outlined-card> -->
+        </div>
       </m3-outlined-card>
     </div>
   </div>
@@ -117,7 +150,13 @@ const timeOfDay = computed(() => {
   @apply flex flex-1;
 }
 
-#spaces {
+#progress {
+  @apply grid gap-4;
+
+  grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+}
+
+#notes {
   @apply grid gap-4;
 
   grid-template-columns: repeat(auto-fill, minmax(17.125rem, 1fr));

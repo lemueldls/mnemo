@@ -43,7 +43,7 @@ const pages: Page[] = [
 
 // if (!user.value) await auth.sign();
 
-const name = useLocalStorage("name", "");
+const name = await useStorageItem("name", "");
 </script>
 
 <template>
