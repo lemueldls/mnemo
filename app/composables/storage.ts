@@ -7,7 +7,7 @@ export async function useStorageItem(key: string, initialValue: StorageValue) {
 
   if (key in itemRefs) return itemRefs[key]!;
 
-  const item = ref(await $storage.getItem(key));
+  const item = ref(await $storage.getItem(key, { initialValue }));
   itemRefs[key] = item;
 
   watchThrottled(
@@ -17,9 +17,6 @@ export async function useStorageItem(key: string, initialValue: StorageValue) {
     },
     { throttle: 5000 }
   );
-
-  if (item.value === undefined && initialValue !== undefined)
-    item.value = initialValue;
 
   return item;
 }

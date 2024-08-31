@@ -11,10 +11,10 @@ export default defineNuxtPlugin({
         options,
         name: "mnemo-driver",
         // async hasItem(key, _opts) {},
-        async getItem(key, _opts) {
+        async getItem(key, opts: { initialValue: string }) {
           return await $api("/api/user-storage/get-item", {
             method: "post",
-            body: { key },
+            body: { key, initialValue: opts.initialValue },
           });
         },
         async setItem(key, value, _opts) {
