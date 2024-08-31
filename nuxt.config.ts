@@ -8,6 +8,7 @@ const locales = [
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
+const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -66,10 +67,21 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    // "@nuxtjs/supabase",
+    "@nuxtjs/supabase",
+    // "@sidebase/nuxt-auth",
+    // "nuxt-auth-utils",
+    // "nuxt-authorization",
     "nuxt-ssr-lit",
   ],
-  hub: { ai: true, blob: true, cache: true, kv: true },
+  hub: {
+    // remote: true,
+    ai: true,
+    // blob: true,
+    cache: true,
+    database: true,
+    kv: true,
+    // analytics: true,
+  },
   i18n: {
     lazy: true,
     defaultLocale,
@@ -82,8 +94,26 @@ export default defineNuxtConfig({
   //   redirectOptions: {
   //     login: "/login",
   //     callback: "/confirm",
-  //     exclude: ["/"],
+  //     // exclude: ["/"],
   //     cookieRedirect: true,
+  //   },
+  //   cookieOptions: { sameSite: "lax" },
+  // },
+  // auth: {
+  //   isEnabled: true,
+  //   disableServerSideAuth: false,
+  //   originEnvKey: "AUTH_ORIGIN",
+  //   baseURL: new URL("/api/auth", apiBaseUrl).href,
+  //   // provider: { type: "local" },
+  //   provider: {
+  //     type: "authjs",
+  //     trustHost: true,
+  //     defaultProvider: "github",
+  //     addDefaultCallbackUrl: true,
+  //   },
+  //   sessionRefresh: {
+  //     enablePeriodically: true,
+  //     enableOnWindowFocus: true,
   //   },
   // },
   ssrLit: { litElementPrefix: ["md-"] },
