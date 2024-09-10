@@ -11,7 +11,7 @@ export default defineNuxtPlugin({
 
     const api = useRequestFetch().create({
       // baseURL: apiBaseUrl,
-      // baseURL: "https://mnemo.nuxt.dev",
+      baseURL: "https://mnemo.nuxt.dev",
       headers: useRequestHeaders(["cookie"]),
       // onRequest({ request, options, error }) {
       //   if (session.value?.token) {

@@ -4,7 +4,7 @@
   "productName": "mnemo",
   "identifier": "dev.lemueldls.mnemo",
   "build": {
-    "beforeBuildCommand": "yarn generate",
+    "beforeBuildCommand": "yarn build",
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../dist"

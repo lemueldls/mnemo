@@ -21,7 +21,10 @@ export default defineNuxtConfig({
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
-    prerender: { routes: ["/"] },
+    prerender: {
+      routes: ["/", "/space", "/login", "/auth/github"],
+      crawlLinks: true,
+    },
     experimental: { openAPI: true, websocket: true },
   },
   vite: {
@@ -58,6 +61,7 @@ export default defineNuxtConfig({
       github: {
         clientId: "",
         clientSecret: "",
+        redirectURL: "",
       },
     },
   },
