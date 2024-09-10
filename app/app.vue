@@ -2,27 +2,6 @@
 import "@material/web/all";
 import "material-symbols";
 
-// import { signInAnonymously } from "firebase/auth";
-
-// const auth = useFirebaseAuth();
-// await signInAnonymously(auth!);
-
-// const { auth } = useSupabaseClient();
-// const {
-//   data: { user },
-// } = await auth.getUser();
-// console.log({ user });
-// if (!user) console.log(await auth.signInAnonymously());
-// watchEffect(() => {
-//   // console.log({ client: useSupabaseClient() });
-//   console.log({ session: useSupabaseSession().value });
-//   console.log({ user: useSupabaseUser().value });
-// });
-// // watch(useSupabaseUser(), console.log);
-
-// const supabase = useSupabaseClient();
-// console.log({ anon: await supabase.auth.signInAnonymously() });
-
 const { t } = useI18n();
 
 const route = useRoute();
@@ -32,12 +11,9 @@ const head = useLocaleHead({
   addSeoAttributes: true,
 });
 
-const title = "LMFAO";
-// const title = computed(() => {
-//   const title = route.meta.title as string;
-
-//   return t("app.title", { title: title ? t(title) : "" });
-// });
+const router = useRouter();
+const { ready, loggedIn } = useUserSession();
+whenever(logicAnd(ready, logicNot(loggedIn)), () => router.push("/login"), { immediate: true });
 
 watchEffect(() => {
   const routeTitle = route.meta.title as string | undefined;

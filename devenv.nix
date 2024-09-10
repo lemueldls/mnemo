@@ -35,8 +35,11 @@
     OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
     OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include/";
 
-    # Network
-    GIO_MODULE_DIR = "${pkgs.glib-networking}/lib/gio/modules";
+    # GIO
+    GIO_MODULE_DIR = "${pkgs.glib-networking.out}/lib/gio/modules/";
+    GIO_EXTRA_MODULES = "${pkgs.glib-networking.out}/lib/gio/modules/";
+
+    WEBKIT_DISABLE_COMPOSITING_MODE = "1";
   };
 
   enterShell = ''
@@ -70,15 +73,6 @@
       # "intel-android-sysimage-license"
       # "mips-android-sysimage-license"
     ];
-  };
-
-  processes.supabase = {
-    exec = "yarn supabase start";
-    # process-compose.shutdown = {
-    #   command = "yarn supabase stop";
-    #   signal = 15;
-    #   timeout_seconds = 30;
-    # };
   };
 
   languages = {

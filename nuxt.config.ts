@@ -5,6 +5,7 @@ const locales = [
   { code: "en", language: "en-US", name: "English", file: "en-US.json" },
 ];
 
+const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
@@ -13,7 +14,7 @@ const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
-  devtools: { enabled: true },
+  devtools: { enabled: !platform },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
   compatibilityDate: "2024-07-07",
@@ -21,7 +22,7 @@ export default defineNuxtConfig({
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
     prerender: { routes: ["/"] },
-    experimental: { openAPI: true },
+    experimental: { openAPI: true, websocket: true },
   },
   vite: {
     // clearScreen: false,
@@ -46,7 +47,20 @@ export default defineNuxtConfig({
     headNext: true,
     viewTransition: true,
   },
-  runtimeConfig: { app: { platform }, public: { apiBaseUrl: "" } },
+  runtimeConfig: {
+    app: { platform },
+    public: { apiBaseUrl: "" },
+    session: {
+      maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
+      cookie: { secure: !isDev },
+    },
+    oauth: {
+      github: {
+        clientId: "",
+        clientSecret: "",
+      },
+    },
+  },
   imports: {
     dirs: [
       "composables",
@@ -67,11 +81,8 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    "@nuxtjs/supabase",
-    // "@sidebase/nuxt-auth",
-    // "nuxt-auth-utils",
-    // "nuxt-authorization",
     "nuxt-ssr-lit",
+    "nuxt-auth-utils",
   ],
   hub: {
     // remote: true,
@@ -89,32 +100,5 @@ export default defineNuxtConfig({
     langDir: "locales",
     baseUrl: siteUrl,
   },
-  // supabase: {
-  //   types: "~~/supabase/database.d.ts",
-  //   redirectOptions: {
-  //     login: "/login",
-  //     callback: "/confirm",
-  //     // exclude: ["/"],
-  //     cookieRedirect: true,
-  //   },
-  //   cookieOptions: { sameSite: "lax" },
-  // },
-  // auth: {
-  //   isEnabled: true,
-  //   disableServerSideAuth: false,
-  //   originEnvKey: "AUTH_ORIGIN",
-  //   baseURL: new URL("/api/auth", apiBaseUrl).href,
-  //   // provider: { type: "local" },
-  //   provider: {
-  //     type: "authjs",
-  //     trustHost: true,
-  //     defaultProvider: "github",
-  //     addDefaultCallbackUrl: true,
-  //   },
-  //   sessionRefresh: {
-  //     enablePeriodically: true,
-  //     enableOnWindowFocus: true,
-  //   },
-  // },
   ssrLit: { litElementPrefix: ["md-"] },
 });

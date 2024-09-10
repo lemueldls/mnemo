@@ -17,7 +17,7 @@ const dark = useDark();
 const spaces = await listSpaces();
 
 const { desktop, smallerOrEqual } = useBreakpoints(breakpointsM3);
-const mobile = smallerOrEqual("medium");
+const mobile = smallerOrEqual("expanded");
 
 const drawerOpen = ref<boolean>();
 const settingsOpen = ref<boolean>();
@@ -34,16 +34,12 @@ const pages: Page[] = [
   { path: "/calendar", name: "Calendar", icon: "calendar_today" },
 ];
 
-// const { auth } = useSupabaseClient();
-// const user = useSupabaseUser();
+const { clear, session, user } = useUserSession();
 
-// watchEffect(() => {
-//   console.log({ user: user.value });
-// });
-
-// if (!user.value) await auth.sign();
+// console.log({ session: session.value, user: user.value })
 
 const name = await useStorageItem("name", "");
+
 </script>
 
 <template>
@@ -60,14 +56,11 @@ const name = await useStorageItem("name", "");
         </div>
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">
-          <m3-nav-drawer-item
-            :active="$route.path === page.path"
-            :style="{
+          <m3-nav-drawer-item :active="$route.path === page.path" :style="{
               fontVariationSettings: `'FILL' ${
                 page.path === $route.path ? 1 : 0
               }`,
-            }"
-          >
+            }">
             <template #leading>
               <md-icon>
                 {{ page.icon }}
@@ -80,9 +73,7 @@ const name = await useStorageItem("name", "");
 
         <md-divider class="my-2 px-4" />
 
-        <h3
-          class="flex items-center justify-between p-4 pb-2 pt-0 text-m3-on-surface-variant m3-title-small"
-        >
+        <h3 class="flex items-center justify-between p-4 pb-2 pt-0 text-m3-on-surface-variant m3-title-small">
           Spaces
 
           <md-icon-button @click="newSpaceOpen = true">
@@ -90,11 +81,7 @@ const name = await useStorageItem("name", "");
           </md-icon-button>
         </h3>
 
-        <nuxt-link
-          v-for="[id, space] in spaces"
-          :key="id"
-          :to="`/space?id=${id}`"
-        >
+        <nuxt-link v-for="(space, id) in spaces" :key="id" :to="`/space?id=${id}`">
           <m3-theme :color="space.color" harmonize :dark="dark">
             <m3-nav-drawer-item>
               <template #leading>
@@ -105,6 +92,13 @@ const name = await useStorageItem("name", "");
             </m3-nav-drawer-item>
           </m3-theme>
         </nuxt-link>
+
+        <template #actions>
+
+          <md-outlined-button @click="clear">
+            Logout
+          </md-outlined-button>
+        </template>
       </m3-nav-drawer>
 
       <div class="flex flex-1 flex-col">
@@ -122,7 +116,7 @@ const name = await useStorageItem("name", "");
           </template>
         </m3-top-app-bar>
 
-        <div class="m-6 flex flex-1 flex-col">
+        <div class="m-6 flex flex-1 flex-col h-full overflow-auto">
           <slot />
         </div>
 
@@ -136,20 +130,11 @@ const name = await useStorageItem("name", "");
           <label class="flex items-center justify-between gap-4">
             Dark Theme
 
-            <md-switch
-              aria-label="Dark Theme"
-              icons
-              :selected="dark"
-              @change="dark = $event.target.selected"
-            />
+            <md-switch aria-label="Dark Theme" icons :selected="dark" @change="dark = $event.target.selected" />
           </label>
 
           <label class="flex items-center justify-between gap-4">
-            <md-outlined-text-field
-              label="Name"
-              :value="name"
-              @input="name = $event.target.value"
-            />
+            <md-outlined-text-field label="Name" :value="name" @input="name = $event.target.value" />
           </label>
         </form>
       </md-dialog>
@@ -163,7 +148,7 @@ const name = await useStorageItem("name", "");
 
 <style>
 #header {
-  @apply px-4 pt-4 pb-6 text-m3-primary-fixed-dim m3-title-large;
+  @apply px-4 pt-4 pb-6 text-m3-primary m3-title-large;
 
   /* font-family: "Iosevka Quasi Custom", sans-serif; */
   font-family: "Iosevka Book Web", sans-serif;

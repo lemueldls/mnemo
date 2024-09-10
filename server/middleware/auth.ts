@@ -1,6 +1,4 @@
-// TODO: Authentication
-
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   setHeaders(event, {
     // "Access-Control-Allow-Origin": "Same-Origin",
     // crossOriginResourcePolicy: "same-origin",
