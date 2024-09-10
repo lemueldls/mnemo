@@ -45,7 +45,7 @@ pub fn new_sticky_note(space_id: Ulid, app_handle: AppHandle) -> Ulid {
     let mut store = load_sticky(space_id, app_handle);
     let id = Ulid::new();
 
-    let note = StickyNote::new(id, String::new(), 40.0, 40.0, 100.0, 100.0);
+    let note = StickyNote::new(id, String::new(), 40.0, 40.0, 500.0, 500.0);
 
     store
         .insert(id.to_string(), serde_json::to_value(&note).unwrap())
@@ -99,7 +99,7 @@ pub fn delete_sticky_note(space_id: Ulid, note_id: Ulid, app_handle: AppHandle) 
         .join("sticky")
         .join(note_id.to_string())
         .with_extension("typ");
-    fs::remove_file(path).unwrap();
+    // fs::remove_file(path).unwrap();
 
     let mut store = load_sticky(space_id, app_handle);
 

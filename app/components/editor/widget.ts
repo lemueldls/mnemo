@@ -102,13 +102,15 @@ function decorate(
   if (syncResult.kind === "ok") {
     for (const { index, block, render } of syncResult.data) {
       const { start, end } = block.range;
-      const inactive = state.selection.ranges.every(
-        (range) =>
-          (range.from < start || range.from > end) &&
-          (range.to < start || range.to > end) &&
-          (start < range.from || start > range.to) &&
-          (end < range.from || end > range.to)
-      );
+      const inactive =
+        !view.hasFocus ||
+        state.selection.ranges.every(
+          (range) =>
+            (range.from < start || range.from > end) &&
+            (range.to < start || range.to > end) &&
+            (start < range.from || start > range.to) &&
+            (end < range.from || end > range.to)
+        );
 
       if (inactive)
         widgets.push(
@@ -155,22 +157,28 @@ export const viewPlugin = (
   path: string,
   fileId: FileId
 ) =>
-  ViewPlugin.define(() => ({
-    update(update: ViewUpdate) {
-      if (update.docChanged || update.geometryChanged || update.selectionSet) {
-        typstState.resize(update.view.dom.clientWidth - 1);
+  ViewPlugin.define((view) => {
+    return {
+      update(update: ViewUpdate) {
+        if (
+          update.docChanged ||
+          update.geometryChanged ||
+          update.selectionSet
+        ) {
+          typstState.resize(update.view.dom.clientWidth - 1);
 
-        const text = update.state.doc.toString();
-        void syncSpaceFile(kind, spaceId, path, text);
+          const text = update.state.doc.toString();
+          void syncSpaceFile(kind, spaceId, path, text);
 
-        const decorations = decorate(typstState, update, fileId, text);
+          const decorations = decorate(typstState, update, fileId, text);
 
-        queueMicrotask(() => {
-          update.view.dispatch({ effects: stateEffect.of({ decorations }) });
-        });
-      }
-    },
-  }));
+          queueMicrotask(() => {
+            update.view.dispatch({ effects: stateEffect.of({ decorations }) });
+          });
+        }
+      },
+    };
+  });
 
 export const typst = (
   typstState: TypstState,

@@ -57,16 +57,13 @@ import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
 import {FileId} from 'mnemo-wasm';
+import type { Package } from "~~/server/api/list-packages";
 
-// const emit = defineEmits<{
-//   (event: "update:modelValue", value: string): void;
-// }>();
-const props = defineProps<{ kind: NoteKind; spaceId: string }>();
+const props = defineProps<{ kind: NoteKind; spaceId: string, readonly?: boolean }>();
 // const path = useVModel(props, "modelValue", emit);
 const path = defineModel<string>({ required: true });
 
-const pixelPerPoint = ref(1);
-
+const pixelPerPoint = ref(window.devicePixelRatio);
 const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const { palette } = useMaterialTheme()!;
@@ -90,7 +87,7 @@ watchEffect(async () => {
   typstState.h6 = parseColor(palette.tertiary);
 });
 
-const container = shallowRef<HTMLDivElement>();
+const containerRef = useTemplateRef("container");
 
 // const updateListenerExtension = EditorView.updateListener.of(async (update) => {
 //   // if (update.docChanged) await sync();
@@ -99,9 +96,9 @@ const container = shallowRef<HTMLDivElement>();
 const stateCache: { [key: string]: unknown } = {};
 
 onMounted(() => {
-  const parent = container.value;
+  const container = containerRef.value;
   const view = new EditorView({
-    parent,
+    parent: container,
     state: EditorState.create({
       extensions: [EditorState.readOnly.of(true), placeholder("Loading...")],
     }),
@@ -112,10 +109,13 @@ onMounted(() => {
     async (path, oldPath) => {
       const typstState = await useTypst();
 
+      const packages = await useStorageItem<Package[]>(`spaces/${props.spaceId}/packages.json`, []);
+      watchImmediate(packages, async (packages) => {
+        await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
+      });
+
       const text = await readSpaceFile(props.kind, props.spaceId, path);
       const fileId = typstState.insertFile(path, text);
-
-      console.log({fileId});
 
       if (oldPath) stateCache[oldPath] = view.state.toJSON();
 
@@ -145,6 +145,8 @@ function createStateConfig(
       EditorView.lineWrapping,
       // updateListenerExtension,
 
+      EditorState.readOnly.of(props.readonly),
+
       placeholder("Go on."),
       highlightSpecialChars(),
       history(),
@@ -157,7 +159,7 @@ function createStateConfig(
       bracketMatching(),
       closeBrackets(),
       EditorView.contentAttributes.of({ spellcheck: "true" }),
-      autocompletion({ activateOnTyping: false }),
+      autocompletion({ activateOnTyping: true }),
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
@@ -177,7 +179,7 @@ function createStateConfig(
 
 const { secondaryContainer } = palette;
 
-const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.1)`;
+const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
 </script>
 
 <template>
@@ -208,6 +210,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     font-stretch: normal;
     font-variant-ligatures: none;
     font-kerning: none; */
+    font-kerning: normal !important;
     // letter-spacing: 0;
     // word-spacing: 4px;
     /* font-feature-settings: "liga" 0; */
@@ -243,7 +246,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
 
   .typst-render {
     display: inline;
-    vertical-align: bottom;
+    // vertical-align: bottom;
     cursor: text;
     /* overflow: hidden; */
     /* display: flex; */

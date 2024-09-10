@@ -5,5 +5,5 @@
 </script>
 
 <template>
-  <m3-weekly-calendar id="calendar" />
+  <m3-weekly-calendar />
 </template>

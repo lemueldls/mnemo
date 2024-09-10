@@ -46,8 +46,15 @@ watchEffect(() => {
     <md-elevation />
 
     <div class="m3-nav-drawer__inner">
-      <slot />
+      <slot name="header" />
+
+      <div v-bind="$slots.default" class="m3-nav-drawer__content">
+        <slot />
+      </div>
+
+      <slot name="actions" />
     </div>
+
   </div>
 </template>
 
@@ -56,7 +63,7 @@ watchEffect(() => {
 @use "@material/web/tokens";
 
 .m3-nav-drawer {
-  @apply h-full z-1;
+  @apply h-full z-1 translate-x-0;
 
   transition-timing-function: map.get(
     tokens.md-sys-motion-values(),
@@ -69,7 +76,11 @@ watchEffect(() => {
   transition-property: transform, translate;
 
   &__inner {
-    @apply flex flex-col h-full p-3 w-90 translate-x-0 overflow-auto;
+    @apply flex flex-col h-full p-3 w-90;
+  }
+
+  &__content {
+    @apply flex-1 flex flex-col overflow-auto;
   }
 
   &--left {

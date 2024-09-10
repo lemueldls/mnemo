@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Package } from "~~/server/api/list-packages";
-import { PackageFile } from "mnemo-wasm";
+
+const props = defineProps<{ spaceId: string }>();
 
 const { $api } = useNuxtApp();
 
 const open = defineModel();
-const typst = useTypst();
 
 const search = ref("");
 
@@ -27,18 +27,10 @@ const filteredPackages = computed(() => {
 });
 
 async function installPackage(pkg: Package) {
-  const { spec, files } = await $api("/api/get-package", {
-    query: { namespace, name: pkg.name, version: pkg.version },
-  });
+  installTypstPackage(pkg, namespace);
 
-  console.log({ spec, files });
-
-  (await typst).installPackage(
-    spec,
-    files.map(
-      (file) => new PackageFile(file.path, Uint8Array.from(file.content!)),
-    ),
-  );
+  const packagesItem = await useStorageItem<Package[]>(`spaces/${props.spaceId}/packages.json`, []);
+  packagesItem.value.push(pkg);
 }
 </script>
 

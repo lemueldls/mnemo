@@ -24,7 +24,12 @@ export default defineNuxtPlugin({
           });
         },
         // async removeItem(key, _opts) {},
-        // async getKeys(base, _opts) {},
+        async getKeys(base, _opts) {
+          return await $api("/api/user-storage/get-keys", {
+            method: "post",
+            body: { base },
+          });
+        },
         // async clear(base, _opts) {},
         // async dispose() {},
         // async watch(callback) {},

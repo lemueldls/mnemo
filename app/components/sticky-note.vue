@@ -5,8 +5,8 @@ import { rawListeners } from "process";
 const props = defineProps<{ spaceId: string; note: StickyNote }>();
 defineEmits<{ (event: "close"): void }>();
 
-const root = ref<HTMLElement>();
-const header = ref<HTMLElement>();
+const rootRef = useTemplateRef("root");
+const headerRef = useTemplateRef("header");
 
 const x = ref(props.note.x);
 const y = ref(props.note.y);
@@ -16,16 +16,19 @@ const height = ref(props.note.height);
 const isDragging = ref(false);
 
 onMounted(() => {
-  const el = root.value!;
+  const root = rootRef.value!;
 
-  el.style.transform = `translate(${x.value}px, ${y.value}px)`;
-  el.style.width = width.value + "px";
-  el.style.height = height.value + "px";
+  // x.value = 0;
+  // y.value = 0;
 
-  interact(el).draggable({
+  root.style.transform = `translate(${x.value}px, ${y.value}px)`;
+  root.style.width = width.value + "px";
+  root.style.height = height.value + "px";
+
+  interact(root).draggable({
     inertia: true,
     autoScroll: true,
-    allowFrom: header.value!,
+    allowFrom: headerRef.value!,
      modifiers: [
       // interact.modifiers.restrictRect({
       //   restriction: 'parent',

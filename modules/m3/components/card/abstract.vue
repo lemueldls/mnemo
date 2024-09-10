@@ -14,7 +14,7 @@ defineProps<CardProperties>();
 </template>
 
 <style lang="scss">
-.m3-card {
+:where(.m3-card) {
   @apply relative rounded-xl p-4 flex flex-col;
 }
 </style>

@@ -133,7 +133,7 @@ pub fn get_daily_notes(space_id: Ulid, app_handle: AppHandle) -> Vec<DailyNote> 
                 if has_content {
                     Some(note)
                 } else {
-                    fs::remove_file(path).unwrap();
+                    // fs::remove_file(path).unwrap();
 
                     None
                 }

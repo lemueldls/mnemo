@@ -2,17 +2,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Note } from "~/composables/spaces";
 
-definePageMeta({
-  layout: "space",
-  pageTransition: { name: "conjure" },
-  // middleware({ query }) {
-  //   let containsSpace = spaces.value!.some(([id, _]) => id === query.id);
+import html2canvas from "@html2canvas/html2canvas";
 
-  //   console.log({ query });
-
-  //   if (!query.id || !containsSpace) return navigateTo("/");
-  // },
-});
+definePageMeta({ layout: "space" });
 
 const { d } = useI18n();
 
@@ -20,7 +12,9 @@ const { query } = useRoute();
 const spaceId = [query.id].flat()[0]!.toString();
 
 const spaces = await listSpaces();
-const space = spaces.value!.find(([id, _]) => id === spaceId)![1];
+const space = spaces.value[spaceId]!;
+
+console.log({ spaces, spaceId, space });
 
 const { smallerOrEqual } = useBreakpoints(breakpointsM3);
 const mobile = smallerOrEqual("medium");
@@ -31,9 +25,65 @@ const preludeOpen = ref(false);
 const focusOpen = ref(false);
 const stickyNotesOpen = ref(false);
 const packagesOpen = ref(false);
+const screenshotOpen = ref(false);
 
-// const space = [spaceId]!;
 const dark = useDark();
+
+const screenshotBlob = ref<Blob>();
+const screenshotUrl = ref<string>();
+
+async function screenshot() {
+  screenshotUrl.value = "";
+  screenshotBlob.value = undefined;
+
+  screenshotOpen.value = true;
+
+  const canvas = await html2canvas(document.querySelector("#editor-container")!, {
+    backgroundColor: null,
+    ignoreElements: (el) => el.id === "sidebar",
+    // scale: window.devicePixelRatio * 1,
+    // imageTimeout:
+  });
+
+  canvas.toBlob((blob) => {
+    screenshotBlob.value = blob!;
+    screenshotUrl.value = URL.createObjectURL(blob!);
+  });
+}
+
+function copyScreenshot() {
+  navigator.clipboard.write([new ClipboardItem({ "image/png": screenshotBlob.value! })]);
+}
+
+async function getDailyNotes() {
+  const today = new Date();
+
+  const notes = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+
+  return computed(() => {
+    let addToday = true;
+
+    for (const note of notes.value) {
+      const date = new Date(note.datetime[0], note.datetime[1] , note.datetime[2]);
+      if (date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate()) {
+        addToday = false;
+        break;
+      }
+    }
+
+    // if (addToday) {
+    //   const id = ulid();
+
+    //   const date = new Date(decodeTime(id));
+    //   const datetime: [number, number, number, number, number] = [date.getFullYear(), date.getMonth() , date.getDate(), date.getHours(), date.getMinutes()];
+
+    //   notes.value.push({ id, datetime });
+    // }
+
+    return notes.value;
+  })
+
+}
 
 const { data: notes } = await useAsyncData(
   "get_daily_notes",
@@ -41,6 +91,14 @@ const { data: notes } = await useAsyncData(
     const notes = await invoke<Note[]>("get_daily_notes", {
       spaceId,
     });
+
+    const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+    item.value = notes;
+
+    // const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+    // const notes = item.value!;
+
+    // const notes = (await getDailyNotes()).value;
 
     return notes.map((note) => {
       const {
@@ -77,16 +135,6 @@ const previousDayIndex = computed(() => {
   return index === notes.value.length - 1 ? -1 : index + 1;
 });
 
-watchEffect(() => {
-  console.log(notes.value);
-  // console.log(
-  //   currentNoteIndex.value,
-  //   nextDayIndex.value,
-  //   previousDayIndex.value,
-  // );
-  // console.log(currentNote.value, notes.value[currentNoteIndex.value]);
-});
-
 // const stickyNotes = ref(await listStickyNotes(spaceId));
 const stickyNotes = ref<StickyNote[]>([]);
 const activeStickyNotes = ref<StickyNote[]>([]);
@@ -114,8 +162,7 @@ async function addStickyNote() {
       activeStickyNotes = activeStickyNotes.filter(
         (n) => n.id !== note.id,
       )
-      "
-    />
+      " />
 
     <m3-page>
       <div class="h-full flex flex-1">
@@ -142,31 +189,42 @@ async function addStickyNote() {
             </template>
           </m3-top-app-bar>
 
-          <div class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6">
+          <div class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
+            id="editor-container">
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
             </m3-outlined-card> -->
 
             <div class="flex-1 relative h-full max-w-180 w-full">
-              <div class="flex flex-col gap-4 absolute left--6 top-16">
+              <div class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto" id="sidebar">
                 <div class="sidebar-button">
                   <div class="sidebar-button__inner" @click="preludeOpen = true">
+                    <md-ripple />
                     <md-icon>code</md-icon>
                   </div>
                 </div>
                 <div class="sidebar-button" @click="focusOpen = true">
                   <div class="sidebar-button__inner">
+                    <md-ripple />
                     <md-icon>av_timer</md-icon>
                   </div>
                 </div>
                 <div class="sidebar-button" @click="stickyNotesOpen = true">
                   <div class="sidebar-button__inner">
+                    <md-ripple />
                     <md-icon>sticky_note</md-icon>
                   </div>
                 </div>
                 <div class="sidebar-button" @click="packagesOpen = true">
                   <div class="sidebar-button__inner">
+                    <md-ripple />
                     <md-icon>package_2</md-icon>
+                  </div>
+                </div>
+                <div class="sidebar-button" @click="screenshot">
+                  <div class="sidebar-button__inner">
+                    <md-ripple />
+                    <md-icon>camera</md-icon>
                   </div>
                 </div>
               </div>
@@ -189,10 +247,10 @@ async function addStickyNote() {
 
                   <div class="h-1px flex-1 bg-m3-outline-variant" />
 
-                  <md-icon-button @click="currentNoteIndex = nextDayIndex" :disabled="nextDayIndex === -1">
+                  <md-icon-button @click="currentNoteIndex = previousDayIndex" :disabled="previousDayIndex === -1">
                     <md-icon>keyboard_arrow_up</md-icon>
                   </md-icon-button>
-                  <md-icon-button @click="currentNoteIndex = previousDayIndex" :disabled="previousDayIndex === -1">
+                  <md-icon-button @click="currentNoteIndex = nextDayIndex" :disabled="nextDayIndex === -1">
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
                 </div>
@@ -263,7 +321,20 @@ async function addStickyNote() {
         </form>
       </md-dialog>
 
-      <Packages v-model="packagesOpen" />
+      <Packages v-model="packagesOpen" :space-id="spaceId" />
+
+      <md-dialog :open="screenshotOpen" @closed="screenshotOpen = false">
+        <span slot="headline">Screenshot</span>
+
+        <div slot="content" class="flex items-center justify-center">
+          <img v-if="screenshotUrl" :src="screenshotUrl" class="w-full h-full max-w-full max-h-full" />
+          <md-progress-circular v-else indeterminate />
+        </div>
+
+        <div slot="actions">
+          <md-text-button @click="copyScreenshot">Copy</md-text-button>
+        </div>
+      </md-dialog>
 
       <side-bar direction="vertical" v-if="!mobile" />
     </m3-page>
@@ -280,7 +351,7 @@ async function addStickyNote() {
 }
 
 #editor {
-  @apply flex flex-col gap-4 h-full;
+  @apply flex flex-col gap-3 h-full;
 }
 
 #editor-title {
@@ -291,10 +362,10 @@ async function addStickyNote() {
 }
 
 .sidebar-button {
-  @apply transition-all duration-200 pl-4 hover:pl-0;
+  @apply transition-all duration-200 pl-3.25 hover:pl-0;
 
   &__inner {
-    @apply h-12 w-6 flex items-center justify-center bg-m3-surface-variant cursor-pointer text-m3-on-surface-variant;
+    @apply relative h-12 w-6 flex items-center justify-center bg-m3-surface-container-high cursor-pointer text-m3-on-surface-variant;
   }
 }
 </style>

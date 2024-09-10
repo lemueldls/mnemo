@@ -1,8 +1,17 @@
 @use "sass:map";
 
 @use "@material/web/tokens";
+@use "@material/web/typography/typeface";
+@use "@material/web/typography/typescale";
 
 :root {
+  @include typeface.theme(
+    (
+      "brand": 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      "plain": 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+    )
+  );
+
   $shapes: tokens.md-sys-shape-values();
   $corner-small: map.get($shapes, "corner-small");
   $corner-medium: map.get($shapes, "corner-medium");
@@ -13,6 +22,9 @@
   --md-switch-handle-shape: #{$corner-small};
   --md-outlined-text-field-container-shape: #{$corner-medium};
   --md-text-button-container-shape: #{$corner-medium};
+  --md-filled-button-container-shape: #{$corner-medium};
+  --md-filled-tonal-button-container-shape: #{$corner-medium};
+  --md-outlined-button-container-shape: #{$corner-medium};
   --md-outlined-select-text-field-container-shape: #{$corner-medium};
   --md-linear-progress-track-height: 0.5rem;
   --md-linear-progress-active-indicator-height: 0.5rem;

@@ -7,7 +7,7 @@ export interface Space {
 
 interface Note {
   id: string;
-  name?: string;
+  // name?: string;
   datetime: [number, number, number, number, number];
 }
 

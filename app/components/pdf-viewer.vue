@@ -19,12 +19,12 @@ const list = computed(() =>
 //   console.log({ pages: pages.value, info: info.value });
 // });
 
-const container = ref<HTMLElement | null>(null);
+const containerRef = useTemplateRef("container");
 
 const width = ref(0);
 const height = ref(0);
 
-useResizeObserver(container, (entries) => {
+useResizeObserver(containerRef, (entries) => {
   const { contentRect } = entries[0]!;
 
   width.value = contentRect.width;
@@ -39,7 +39,8 @@ const { surface, primary } = palette;
 // console.log(primary.r, primary.g, primary.b);
 
 function rerender(page: number) {
-  const canvases = container.value!.querySelectorAll("canvas");
+  const container = containerRef.value!;
+  const canvases = container.querySelectorAll("canvas");
   const canvas = canvases[page - 1] as HTMLCanvasElement;
 
   const ctx = canvas.getContext("2d")!;
@@ -48,10 +49,10 @@ function rerender(page: number) {
 
   for (let i = 0; i < data.length; i += 4) {
     // greyscale and invert + primary
-    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    const avg = (data[i]! + data[i + 1]! + data[i + 2]!) / 3;
     let scale = (255 - avg) / 1.25;
     if (dark.value) scale = -scale;
-    
+
     data[i] = surface.r - scale;
     data[i + 1] = surface.g - scale;
     data[i + 2] = surface.b - scale;

@@ -23,15 +23,13 @@ const { $api } = useNuxtApp();
 
 const spaces = await listSpaces();
 
-console.log(spaces.value)
-
-const spacesProgress = spaces.value.map((space) => ({
+const spacesProgress = computed(() => Object.entries(spaces.value).map((space) => ({
   space,
   progress: {
     current: Math.random() * 5,
     total: 5,
   }
-}));
+})));
 
 // interface Note {
 //   title: string;
