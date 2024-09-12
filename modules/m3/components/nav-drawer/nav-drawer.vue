@@ -12,22 +12,22 @@ const emits = defineEmits<{
 }>();
 const visible = useVModel(props, "modelValue", emits);
 
-const { desktop } = useBreakpoints(breakpointsM3);
+const { extraLarge } = useBreakpoints(breakpointsM3);
 
 const modal = computed(() =>
-  props.type === "auto" ? !desktop.value : props.type === "modal",
+  props.type === "auto" ? !extraLarge.value : props.type === "modal",
 );
 
 const route = useRoute();
 watch(
   () => route.fullPath,
   () => {
-    visible.value = desktop.value;
+    visible.value = extraLarge.value;
   },
 );
 
 watchEffect(() => {
-  if (props.type === "auto") visible.value = desktop.value;
+  if (props.type === "auto") visible.value = extraLarge.value;
 });
 </script>
 
@@ -54,7 +54,6 @@ watchEffect(() => {
 
       <slot name="actions" />
     </div>
-
   </div>
 </template>
 

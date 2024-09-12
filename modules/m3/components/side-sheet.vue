@@ -14,10 +14,10 @@ const emit = defineEmits<{
 }>();
 const visible = useVModel(props, "modelValue", emit);
 
-const { desktop, expanded } = useBreakpoints(breakpointsM3);
+const { large } = useBreakpoints(breakpointsM3);
 
 const modal = computed(() =>
-  props.type === "auto" ? !expanded.value : props.type === "modal",
+  props.type === "auto" ? !large.value : props.type === "modal",
 );
 </script>
 

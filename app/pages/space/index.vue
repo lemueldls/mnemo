@@ -16,8 +16,7 @@ const space = spaces.value[spaceId]!;
 
 console.log({ spaces, spaceId, space });
 
-const { smallerOrEqual } = useBreakpoints(breakpointsM3);
-const mobile = smallerOrEqual("medium");
+const { compact } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);
 
@@ -38,12 +37,15 @@ async function screenshot() {
 
   screenshotOpen.value = true;
 
-  const canvas = await html2canvas(document.querySelector("#editor-container")!, {
-    backgroundColor: null,
-    ignoreElements: (el) => el.id === "sidebar",
-    // scale: window.devicePixelRatio * 1,
-    // imageTimeout:
-  });
+  const canvas = await html2canvas(
+    document.querySelector("#editor-container")!,
+    {
+      backgroundColor: null,
+      ignoreElements: (el) => el.id === "sidebar",
+      // scale: window.devicePixelRatio * 1,
+      // imageTimeout:
+    },
+  );
 
   canvas.toBlob((blob) => {
     screenshotBlob.value = blob!;
@@ -52,20 +54,33 @@ async function screenshot() {
 }
 
 function copyScreenshot() {
-  navigator.clipboard.write([new ClipboardItem({ "image/png": screenshotBlob.value! })]);
+  navigator.clipboard.write([
+    new ClipboardItem({ "image/png": screenshotBlob.value! }),
+  ]);
 }
 
 async function getDailyNotes() {
   const today = new Date();
 
-  const notes = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+  const notes = await useStorageItem<Note[]>(
+    `spaces/${spaceId}/daily/notes.json`,
+    [],
+  );
 
   return computed(() => {
     let addToday = true;
 
     for (const note of notes.value) {
-      const date = new Date(note.datetime[0], note.datetime[1] , note.datetime[2]);
-      if (date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate()) {
+      const date = new Date(
+        note.datetime[0],
+        note.datetime[1],
+        note.datetime[2],
+      );
+      if (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      ) {
         addToday = false;
         break;
       }
@@ -81,8 +96,7 @@ async function getDailyNotes() {
     // }
 
     return notes.value;
-  })
-
+  });
 }
 
 const { data: notes } = await useAsyncData(
@@ -92,7 +106,10 @@ const { data: notes } = await useAsyncData(
       spaceId,
     });
 
-    const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+    const item = await useStorageItem<Note[]>(
+      `spaces/${spaceId}/daily/notes.json`,
+      [],
+    );
     item.value = notes;
 
     // const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
@@ -158,11 +175,15 @@ async function addStickyNote() {
 
 <template>
   <m3-theme id="space-page" :color="space.color" :dark="dark">
-    <sticky-note v-for="note in activeStickyNotes" :key="note.id" :space-id="spaceId" :note="note" @close="
-      activeStickyNotes = activeStickyNotes.filter(
-        (n) => n.id !== note.id,
-      )
-      " />
+    <sticky-note
+      v-for="note in activeStickyNotes"
+      :key="note.id"
+      :space-id="spaceId"
+      :note="note"
+      @close="
+        activeStickyNotes = activeStickyNotes.filter((n) => n.id !== note.id)
+      "
+    />
 
     <m3-page>
       <div class="h-full flex flex-1">
@@ -189,16 +210,24 @@ async function addStickyNote() {
             </template>
           </m3-top-app-bar>
 
-          <div class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
-            id="editor-container">
+          <div
+            class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
+            id="editor-container"
+          >
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
             </m3-outlined-card> -->
 
             <div class="flex-1 relative h-full max-w-180 w-full">
-              <div class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto" id="sidebar">
+              <div
+                class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto"
+                id="sidebar"
+              >
                 <div class="sidebar-button">
-                  <div class="sidebar-button__inner" @click="preludeOpen = true">
+                  <div
+                    class="sidebar-button__inner"
+                    @click="preludeOpen = true"
+                  >
                     <md-ripple />
                     <md-icon>code</md-icon>
                   </div>
@@ -238,7 +267,6 @@ async function addStickyNote() {
                 </md-icon-button>
               </div> -->
                 <div id="editor-title" class="items-center gap-2">
-
                   <div class="h-1px w-2 bg-m3-outline-variant" />
 
                   <span class="m3-label-large">
@@ -247,20 +275,31 @@ async function addStickyNote() {
 
                   <div class="h-1px flex-1 bg-m3-outline-variant" />
 
-                  <md-icon-button @click="currentNoteIndex = previousDayIndex" :disabled="previousDayIndex === -1">
+                  <md-icon-button
+                    @click="currentNoteIndex = previousDayIndex"
+                    :disabled="previousDayIndex === -1"
+                  >
                     <md-icon>keyboard_arrow_up</md-icon>
                   </md-icon-button>
-                  <md-icon-button @click="currentNoteIndex = nextDayIndex" :disabled="nextDayIndex === -1">
+                  <md-icon-button
+                    @click="currentNoteIndex = nextDayIndex"
+                    :disabled="nextDayIndex === -1"
+                  >
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
                 </div>
 
-                <editor v-if="currentNote" kind="daily" :space-id="spaceId" v-model="currentNote.id"
-                  class="h-full flex-1" />
+                <editor
+                  v-if="currentNote"
+                  kind="daily"
+                  :space-id="spaceId"
+                  v-model="currentNote.id"
+                  class="h-full flex-1"
+                />
               </m3-elevated-card>
             </div>
 
-            <side-bar direction="horizontal" v-if="mobile" />
+            <side-bar direction="horizontal" v-if="compact" />
           </div>
         </div>
       </div>
@@ -303,8 +342,13 @@ async function addStickyNote() {
           </div>
 
           <div class="max-h-100 overflow-auto">
-            <file-tree-item v-for="note in stickyNotes.toReversed()" :key="note.id" :active="false"
-              class="flex justify-between gap-8" @click="activeStickyNotes.push(note)">
+            <file-tree-item
+              v-for="note in stickyNotes.toReversed()"
+              :key="note.id"
+              :active="false"
+              class="flex justify-between gap-8"
+              @click="activeStickyNotes.push(note)"
+            >
               <span class="flex flex-1 items-center gap-2">
                 <md-icon>
                   {{ false ? "note_filled" : "note" }}
@@ -327,7 +371,11 @@ async function addStickyNote() {
         <span slot="headline">Screenshot</span>
 
         <div slot="content" class="flex items-center justify-center">
-          <img v-if="screenshotUrl" :src="screenshotUrl" class="w-full h-full max-w-full max-h-full" />
+          <img
+            v-if="screenshotUrl"
+            :src="screenshotUrl"
+            class="w-full h-full max-w-full max-h-full"
+          />
           <md-progress-circular v-else indeterminate />
         </div>
 
@@ -336,7 +384,7 @@ async function addStickyNote() {
         </div>
       </md-dialog>
 
-      <side-bar direction="vertical" v-if="!mobile" />
+      <side-bar direction="vertical" v-if="!compact" />
     </m3-page>
   </m3-theme>
 </template>

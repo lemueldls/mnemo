@@ -13,7 +13,7 @@ const activeItemIndex = useCookie("side-bar-active-item-index", {
 
 interface Item {
   icon?: MaterialSymbol;
-  name?: string;
+  name: string;
   component?: Component;
 }
 
@@ -30,6 +30,10 @@ function handleClick(index: number) {
     activeItemIndex.value = index;
     sheet.value = true;
   }
+}
+
+function preloadItem(item: Item) {
+  preloadComponents(item.name);
 }
 </script>
 
@@ -53,6 +57,8 @@ function handleClick(index: number) {
       v-for="(item, index) in items"
       :key="index"
       :active="sheet && index === activeItemIndex"
+      @hover="preloadItem(item)"
+      @focus="preloadItem(item)"
       @click="handleClick(index)"
     >
       <template v-if="item.icon" #leading>

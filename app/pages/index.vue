@@ -23,13 +23,15 @@ const { $api } = useNuxtApp();
 
 const spaces = await listSpaces();
 
-const spacesProgress = computed(() => Object.entries(spaces.value).map((space) => ({
-  space,
-  progress: {
-    current: Math.random() * 5,
-    total: 5,
-  }
-})));
+const spacesProgress = computed(() =>
+  Object.entries(spaces.value).map((space) => ({
+    space,
+    progress: {
+      current: Math.random() * 5,
+      total: 5,
+    },
+  })),
+);
 
 // interface Note {
 //   title: string;
@@ -50,7 +52,7 @@ useIntervalFn(
   () => {
     date.value = new Date();
   },
-  1000 * 60 * 15
+  1000 * 60 * 15,
 );
 
 const timeOfDay = computed(() => {
@@ -100,14 +102,21 @@ const timeOfDay = computed(() => {
           </pre> -->
 
           <div id="progress">
-            <nuxt-link v-for="({space: [id, space], progress}, i) in spacesProgress" :key="i" :to="`/space?id=${id}`">
+            <nuxt-link
+              v-for="({ space: [id, space], progress }, i) in spacesProgress"
+              :key="i"
+              :to="`/space?id=${id}`"
+            >
               <m3-theme :color="space.color" :dark="dark" harmonize>
-
                 <m3-elevated-card class="gap-2 relative">
                   <md-ripple />
 
                   <div class="flex items-center gap-2">
-                    <m3-icon rounded :name="space.icon" :style="{ color: 'var(--md-sys-color-primary)' }" />
+                    <m3-icon
+                      rounded
+                      :name="space.icon"
+                      :style="{ color: 'var(--md-sys-color-primary)' }"
+                    />
 
                     <h3 class="m3-title-large">
                       {{ space.name }}
@@ -115,13 +124,21 @@ const timeOfDay = computed(() => {
                   </div>
 
                   <div class="flex flex-col">
-                    <div class="flex items-center justify-between m3-label-large">
+                    <div
+                      class="flex items-center justify-between m3-label-large"
+                    >
                       <span>Weekly Study Hours</span>
 
-                      <span>{{ progress.current.toFixed(2) }} / {{ progress.total.toFixed(2) }}</span>
+                      <span
+                        >{{ progress.current.toFixed(2) }} /
+                        {{ progress.total.toFixed(2) }}</span
+                      >
                     </div>
 
-                    <md-linear-progress :value="progress.current" :max="progress.total" />
+                    <md-linear-progress
+                      :value="progress.current"
+                      :max="progress.total"
+                    />
                   </div>
 
                   <!-- <h3 class="m3-headline-small">
@@ -151,7 +168,7 @@ const timeOfDay = computed(() => {
 #progress {
   @apply grid gap-4;
 
-  grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
 }
 
 #notes {
