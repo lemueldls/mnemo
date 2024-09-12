@@ -24,7 +24,7 @@ export async function useStorageItem<T extends StorageValue>(
       item.value = value;
       await updateStorageItem(key, value);
     },
-    { debounce: 500, maxWait: 0, deep: true }
+    { debounce: 500, deep: true }
   );
 
   return item;
