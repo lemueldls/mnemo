@@ -6,32 +6,22 @@ export async function useStorageItem<T extends StorageValue>(
   key: string,
   initialValue: T
 ) {
-  if (key in itemRefs) {
-    const item = itemRefs[key] as Ref<T>;
-    useLocalStorage(key, initialValue).value = item.value;
-
-    return item;
-  }
+  if (key in itemRefs) return itemRefs[key] as Ref<T>;
 
   const { $storage } = useNuxtApp();
+
   const localItem = useLocalStorage<T>(`app:user:${key}`, initialValue);
+  const item = ref(localItem);
+  itemRefs[key] = ref(item!);
 
-  const { data: item } = await useAsyncData<T>(
-    `storage:${key}`,
-    async () => {
-      const item = await $storage.getItem<T>(key, { initialValue });
-      itemRefs[key] = ref(item!) as Ref<T>;
-      localItem.value = item!;
-
-      return item! as Awaited<T>;
-    },
-    { default: () => localItem }
-  );
+  $storage.getItem<T>(key, { initialValue }).then((value) => {
+    item.value = value;
+  });
 
   watchDebounced(
     item,
     async (value) => {
-      localItem.value = value as T;
+      item.value = value;
       await updateStorageItem(key, value);
     },
     { debounce: 500, maxWait: 0, deep: true }
