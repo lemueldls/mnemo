@@ -32,6 +32,7 @@ pub fn run() {
             handlers::read_file,
             handlers::sync_file,
         ])
+        // .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         // .plugin(tauri_plugin_updater::Builder::new().build())
         // .plugin(tauri_plugin_dialog::init())

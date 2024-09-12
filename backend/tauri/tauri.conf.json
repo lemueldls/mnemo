@@ -31,6 +31,21 @@
     ]
   },
   "plugins": {
+    "deep-link": {
+      "mobile": [
+        {
+          "host": "mnemo.nuxt.dev"
+        },
+        {
+          "host": "mnemo.pages.dev"
+        }
+      ],
+      "desktop": {
+        "schemes": [
+          "mnemo"
+        ]
+      }
+    },
     "updater": {
       "endpoints": [
         "https://cdn.crabnebula.app/update/lemueldls/mnemo/{{target}}-{{arch}}/{{current_version}}"

@@ -5,7 +5,6 @@ export default oauthGitHubEventHandler({
   config: { emailRequired: true },
   async onSuccess(event, { user, tokens }) {
     const { email, name } = user;
-    console.log({ email, name });
     await login(event, email, name);
 
     return sendRedirect(event, "/");
