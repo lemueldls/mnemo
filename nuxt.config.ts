@@ -55,7 +55,9 @@ export default defineNuxtConfig({
     public: { apiBaseUrl: "" },
     session: {
       maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
-      cookie: { secure: !isDev },
+      cookie: isDev
+        ? { sameSite: "none", secure: true }
+        : { sameSite: "lax", secure: false },
     },
     oauth: {
       github: {
