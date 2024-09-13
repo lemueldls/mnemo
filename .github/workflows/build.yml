@@ -54,6 +54,7 @@ jobs:
       - name: build
         run: yarn tauri build
         env:
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
           NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
           NUXT_OAUTH_GITHUB_CLIENT_ID:
             ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
