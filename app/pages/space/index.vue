@@ -16,7 +16,7 @@ const space = spaces.value[spaceId]!;
 
 console.log({ spaces, spaceId, space });
 
-const { compact } = useBreakpoints(breakpointsM3);
+const { medium } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);
 
@@ -82,6 +82,7 @@ async function getDailyNotes() {
         date.getDate() === today.getDate()
       ) {
         addToday = false;
+
         break;
       }
     }
@@ -299,7 +300,7 @@ async function addStickyNote() {
               </m3-elevated-card>
             </div>
 
-            <side-bar direction="horizontal" v-if="compact" />
+            <side-bar direction="horizontal" v-if="!medium" />
           </div>
         </div>
       </div>
@@ -384,7 +385,7 @@ async function addStickyNote() {
         </div>
       </md-dialog>
 
-      <side-bar direction="vertical" v-if="!compact" />
+      <side-bar direction="vertical" v-if="medium" />
     </m3-page>
   </m3-theme>
 </template>
