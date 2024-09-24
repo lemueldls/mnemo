@@ -19,7 +19,7 @@ use serde_wasm_bindgen::Error;
 use tsify::Tsify;
 use typst::{
     compile,
-    layout::{Abs, Frame, FrameItem, Point, Position},
+    layout::{Abs, Frame, FrameItem, Page, Point, Position},
     model::Document,
     syntax::{ast, package::PackageSpec, FileId, Source, Span, SyntaxKind, VirtualPath},
     visualize::Color,
@@ -46,6 +46,55 @@ impl PackageFile {
 
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
+pub struct ThemeColors {
+    primary: Rgb,
+    secondary: Rgb,
+    tertiary: Rgb,
+    outline: Rgb,
+    on_primary_container: Rgb,
+    on_secondary_container: Rgb,
+    on_tertiary_container: Rgb,
+    on_background: Rgb,
+}
+
+#[wasm_bindgen]
+impl ThemeColors {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        primary: Rgb,
+        secondary: Rgb,
+        tertiary: Rgb,
+        outline: Rgb,
+        on_primary_container: Rgb,
+        on_secondary_container: Rgb,
+        on_tertiary_container: Rgb,
+        on_background: Rgb,
+    ) -> Self {
+        Self {
+            primary,
+            secondary,
+            tertiary,
+            outline,
+            on_primary_container,
+            on_secondary_container,
+            on_tertiary_container,
+            on_background,
+        }
+    }
+}
+
+impl fmt::Display for ThemeColors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "(primary:{},secondary:{},tertiary:{},outline:{},on-primary-container:{},on-secondary-container:{},on-tertiary-container:{},on-background:{})",
+            self.primary, self.secondary, self.tertiary, self.outline, self.on_primary_container, self.on_secondary_container, self.on_tertiary_container, self.on_background
+        )
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
 pub struct Rgb(u8, u8, u8);
 
 #[wasm_bindgen]
@@ -56,13 +105,9 @@ impl Rgb {
     }
 }
 
-impl fmt::Debug for Rgb {
+impl fmt::Display for Rgb {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("rgb")
-            .field(&self.0)
-            .field(&self.1)
-            .field(&self.2)
-            .finish()
+        write!(f, "rgb({},{},{})", self.0, self.1, self.2)
     }
 }
 
@@ -72,16 +117,9 @@ pub struct TypstState {
     document: Option<Document>,
     width: String,
     height: String,
-    pub color: Rgb,
-    pub stroke: Rgb,
     pub pt: f32,
     pub size: f32,
-    pub h1: Rgb,
-    pub h2: Rgb,
-    pub h3: Rgb,
-    pub h4: Rgb,
-    pub h5: Rgb,
-    pub h6: Rgb,
+    pub theme: ThemeColors,
 }
 
 impl Default for TypstState {
@@ -91,21 +129,21 @@ impl Default for TypstState {
             document: None,
             width: String::from("auto"),
             height: String::from("auto"),
-            stroke: Rgb(0, 0, 0),
-            color: Rgb(0, 0, 0),
             pt: 0_f32,
             size: 0_f32,
-            h1: Rgb(0, 0, 0),
-            h2: Rgb(0, 0, 0),
-            h3: Rgb(0, 0, 0),
-            h4: Rgb(0, 0, 0),
-            h5: Rgb(0, 0, 0),
-            h6: Rgb(0, 0, 0),
+            theme: ThemeColors::new(
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+                Rgb(0, 0, 0),
+            ),
         }
     }
 }
-
-type JsResult<T = JsValue> = Result<T, Error>;
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -159,19 +197,29 @@ impl TypstState {
     #[wasm_bindgen]
     pub fn sync(&mut self, id: &FileIdWrapper, text: &str) -> SyncResult {
         let mut source = format!(
-            "#set align(horizon)\n#set text(fill:{:?},size:{}pt,tracking:0pt,top-edge:\"ascender\",bottom-edge:\"descender\",overhang:false)\n#set par(leading:0em,linebreaks:\"simple\")\n#set page(width:{},height:{},margin:(x:0pt,y:0pt))\n#show math.equation:set text(size:{}pt)\n#show math.equation.where(block:true):set par(leading:12pt)\n#set table(stroke:{:?})\n#show heading.where(level:1):set text(fill:{:?},size:32pt,tracking:0pt,weight:400)\n#show heading.where(level:2):set text(fill:{:?},size:28pt,tracking:0pt,weight:400)\n#show heading.where(level:3):set text(fill:{:?},size:24pt,tracking:0pt,weight:400)\n#show heading.where(level:4):set text(fill:{:?},size:22pt,tracking:0pt,weight:400)\n#show heading.where(level:5):set text(fill:{:?},size:16pt,tracking:0.15pt,weight:500)\n#show heading.where(level:6):set text(fill:{:?},size:14pt,tracking:0.1pt,weight:500)\n#set table(inset:10pt)\n",
-            self.color,
-            self.size,
-            self.width,
-            self.height,
-            self.size * 1.1875,
-            self.stroke,
-            self.h1,
-            self.h2,
-            self.h3,
-            self.h4,
-            self.h5,
-            self.h6,
+            r#"
+                #let theme={theme}
+                #set align(horizon)
+                #set text(fill:theme.on-background,size:{size}pt,tracking:0pt,top-edge:"ascender",bottom-edge:"descender",overhang:false)
+                #set par(leading:0em,linebreaks:"simple")
+                #set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:1pt)
+                #context {{show math.equation:set text(size:text.size*1.75)}}
+                #show math.equation.where(block:true):set text(size:{size}pt*1.125)
+                #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
+
+                #set table(stroke:theme.outline,inset:10pt)
+
+                #show heading.where(level:1):set text(fill:theme.on-primary-container,size:32pt,tracking:0pt,weight:400)
+                #show heading.where(level:2):set text(fill:theme.on-secondary-container,size:28pt,tracking:0pt,weight:400)
+                #show heading.where(level:3):set text(fill:theme.on-primary-container,size:24pt,tracking:0pt,weight:400)
+                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,tracking:0pt,weight:400)
+                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,tracking:0.15pt,weight:500)
+                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,tracking:0.1pt,weight:500)
+            "#,
+            theme = self.theme,
+            size = self.size + 1.0,
+            width = self.width,
+            height = self.height,
         );
 
         let mut blocks = Vec::<Block>::new();
@@ -260,15 +308,22 @@ impl TypstState {
 
                 let pt = self.pt;
 
+                // crate::log(&format!(
+                //     "{:#?}",
+                //     iter::zip(blocks.clone(), pages.iter().cloned()).collect::<Vec<_>>()
+                // ));
+
                 let blocks = iter::zip(blocks, pages.iter().cloned())
                     .enumerate()
                     .filter_map(|(index, (block, page))| {
-                        // crate::log(&format!("{:?}", page.frame.items()));
+                        let not_empty = page
+                            .frame
+                            .items()
+                            .filter(|(_point, item)| !matches!(item, FrameItem::Tag(..)))
+                            .count()
+                            > 0;
 
-                        let not_empty = page.frame.items().len() > 0;
-
-                        not_empty
-                            .then(|| RangedRender::new(index, block, encode_frame(page.frame, pt)))
+                        not_empty.then(|| RangedRender::new(index, block, encode_frame(page, pt)))
                     })
                     .collect::<Box<[_]>>();
 
@@ -305,7 +360,6 @@ impl TypstState {
             Ok(document) => document,
             Err(..) => return serde_wasm_bindgen::to_value(&(0, Vec::<TypstCompletion>::new())),
         };
-        let frames = &document.pages;
         let source = self.world.main_source();
 
         let results =
@@ -368,9 +422,8 @@ impl RangedRender {
 //     }
 // }
 
-#[derive(Tsify, Serialize, Deserialize, Debug)]
+#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-
 pub struct Block {
     pub range: Range<usize>,
     pub offset: usize,
@@ -382,10 +435,8 @@ impl Block {
     }
 }
 
-type Rgba = palette::rgb::Rgba<palette::encoding::Srgb, f32>;
-const TRANSPARENT: Color = Color::Rgb(Rgba::new(0.0, 0.0, 0.0, 0.0));
-fn encode_frame(frame: Frame, pt: f32) -> String {
-    let canvas = &render(&frame, pt, TRANSPARENT);
+fn encode_frame(frame: Page, pt: f32) -> String {
+    let canvas = &render(&frame, pt);
 
     BASE64.encode(&canvas.encode_png().unwrap())
 }

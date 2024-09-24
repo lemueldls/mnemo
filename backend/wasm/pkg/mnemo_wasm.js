@@ -229,14 +229,6 @@ const RgbFinalization = (typeof FinalizationRegistry === 'undefined')
 */
 export class Rgb {
 
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(Rgb.prototype);
-        obj.__wbg_ptr = ptr;
-        RgbFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
@@ -260,6 +252,65 @@ export class Rgb {
     }
 }
 
+const ThemeColorsFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_themecolors_free(ptr >>> 0));
+/**
+*/
+export class ThemeColors {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(ThemeColors.prototype);
+        obj.__wbg_ptr = ptr;
+        ThemeColorsFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        ThemeColorsFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_themecolors_free(ptr);
+    }
+    /**
+    * @param {Rgb} primary
+    * @param {Rgb} secondary
+    * @param {Rgb} tertiary
+    * @param {Rgb} outline
+    * @param {Rgb} on_primary_container
+    * @param {Rgb} on_secondary_container
+    * @param {Rgb} on_tertiary_container
+    * @param {Rgb} on_background
+    */
+    constructor(primary, secondary, tertiary, outline, on_primary_container, on_secondary_container, on_tertiary_container, on_background) {
+        _assertClass(primary, Rgb);
+        var ptr0 = primary.__destroy_into_raw();
+        _assertClass(secondary, Rgb);
+        var ptr1 = secondary.__destroy_into_raw();
+        _assertClass(tertiary, Rgb);
+        var ptr2 = tertiary.__destroy_into_raw();
+        _assertClass(outline, Rgb);
+        var ptr3 = outline.__destroy_into_raw();
+        _assertClass(on_primary_container, Rgb);
+        var ptr4 = on_primary_container.__destroy_into_raw();
+        _assertClass(on_secondary_container, Rgb);
+        var ptr5 = on_secondary_container.__destroy_into_raw();
+        _assertClass(on_tertiary_container, Rgb);
+        var ptr6 = on_tertiary_container.__destroy_into_raw();
+        _assertClass(on_background, Rgb);
+        var ptr7 = on_background.__destroy_into_raw();
+        const ret = wasm.themecolors_new(ptr0, ptr1, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+
 const TypstStateFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_typststate_free(ptr >>> 0));
@@ -277,36 +328,6 @@ export class TypstState {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_typststate_free(ptr);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get color() {
-        const ret = wasm.__wbg_get_typststate_color(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set color(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_color(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get stroke() {
-        const ret = wasm.__wbg_get_typststate_stroke(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set stroke(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_stroke(this.__wbg_ptr, ptr0);
     }
     /**
     * @returns {number}
@@ -335,94 +356,19 @@ export class TypstState {
         wasm.__wbg_set_typststate_size(this.__wbg_ptr, arg0);
     }
     /**
-    * @returns {Rgb}
+    * @returns {ThemeColors}
     */
-    get h1() {
-        const ret = wasm.__wbg_get_typststate_h1(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
+    get theme() {
+        const ret = wasm.__wbg_get_typststate_theme(this.__wbg_ptr);
+        return ThemeColors.__wrap(ret);
     }
     /**
-    * @param {Rgb} arg0
+    * @param {ThemeColors} arg0
     */
-    set h1(arg0) {
-        _assertClass(arg0, Rgb);
+    set theme(arg0) {
+        _assertClass(arg0, ThemeColors);
         var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h1(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get h2() {
-        const ret = wasm.__wbg_get_typststate_h2(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set h2(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h2(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get h3() {
-        const ret = wasm.__wbg_get_typststate_h3(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set h3(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h3(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get h4() {
-        const ret = wasm.__wbg_get_typststate_h4(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set h4(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h4(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get h5() {
-        const ret = wasm.__wbg_get_typststate_h5(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set h5(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h5(this.__wbg_ptr, ptr0);
-    }
-    /**
-    * @returns {Rgb}
-    */
-    get h6() {
-        const ret = wasm.__wbg_get_typststate_h6(this.__wbg_ptr);
-        return Rgb.__wrap(ret);
-    }
-    /**
-    * @param {Rgb} arg0
-    */
-    set h6(arg0) {
-        _assertClass(arg0, Rgb);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_h6(this.__wbg_ptr, ptr0);
+        wasm.__wbg_set_typststate_theme(this.__wbg_ptr, ptr0);
     }
     /**
     */

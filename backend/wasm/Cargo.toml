@@ -27,13 +27,19 @@ time = { version = "0.3", features = ["serde"] }
 tsify = { version = "0.4.5", features = ["js"] }
 # serde_json = "1.0"
 palette = "0.7.3"
-typst = { git = "https://github.com/typst/typst" }
-typst-ide = { git = "https://github.com/typst/typst" }
-typst-render = { git = "https://github.com/typst/typst" }
-typst-svg = { git = "https://github.com/typst/typst" }
+typst = { git = "https://github.com/typst/typst", rev = "a2f91c" }
+typst-ide = { git = "https://github.com/typst/typst", rev = "a2f91c" }
+typst-render = { git = "https://github.com/typst/typst", rev = "a2f91c" }
+typst-svg = { git = "https://github.com/typst/typst", rev = "a2f91c" }
 # walkdir = "2.3.3"
 wasm-bindgen = "0.2.92"
 web-sys = "0.3.69"
+
+image = { version = "0.25.2", default-features = false, features = [
+  "png",
+  "jpeg",
+  "gif",
+] }
 
 # sync-lsp = { git = "https://github.com/Myriad-Dreamin/tinymist" }
 # tinymist = { git = "https://github.com/Myriad-Dreamin/tinymist" }

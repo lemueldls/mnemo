@@ -133,8 +133,8 @@ impl World for MnemoWorld {
         &self.book
     }
 
-    fn main(&self) -> Source {
-        self.files.get(self.main.as_ref().unwrap()).unwrap().clone()
+    fn main(&self) -> FileId {
+        self.main.unwrap()
     }
 
     fn source(&self, id: FileId) -> FileResult<Source> {

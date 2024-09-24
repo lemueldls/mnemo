@@ -1,7 +1,7 @@
 {
   "name": "mnemo",
   "private": true,
-  "packageManager": "yarn@4.4.1",
+  "packageManager": "pnpm@9.11.0",
   "type": "module",
   "workspaces": [
     "backend/wasm/pkg"

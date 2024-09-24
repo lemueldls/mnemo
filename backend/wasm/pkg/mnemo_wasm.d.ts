@@ -55,6 +55,22 @@ export class Rgb {
 }
 /**
 */
+export class ThemeColors {
+  free(): void;
+/**
+* @param {Rgb} primary
+* @param {Rgb} secondary
+* @param {Rgb} tertiary
+* @param {Rgb} outline
+* @param {Rgb} on_primary_container
+* @param {Rgb} on_secondary_container
+* @param {Rgb} on_tertiary_container
+* @param {Rgb} on_background
+*/
+  constructor(primary: Rgb, secondary: Rgb, tertiary: Rgb, outline: Rgb, on_primary_container: Rgb, on_secondary_container: Rgb, on_tertiary_container: Rgb, on_background: Rgb);
+}
+/**
+*/
 export class TypstState {
   free(): void;
 /**
@@ -97,34 +113,13 @@ export class TypstState {
   resize(width?: number, height?: number): void;
 /**
 */
-  color: Rgb;
-/**
-*/
-  h1: Rgb;
-/**
-*/
-  h2: Rgb;
-/**
-*/
-  h3: Rgb;
-/**
-*/
-  h4: Rgb;
-/**
-*/
-  h5: Rgb;
-/**
-*/
-  h6: Rgb;
-/**
-*/
   pt: number;
 /**
 */
   size: number;
 /**
 */
-  stroke: Rgb;
+  theme: ThemeColors;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -133,28 +128,16 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_packagefile_free: (a: number) => void;
   readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_themecolors_free: (a: number) => void;
+  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly __wbg_typststate_free: (a: number) => void;
-  readonly __wbg_get_typststate_color: (a: number) => number;
-  readonly __wbg_set_typststate_color: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_stroke: (a: number) => number;
-  readonly __wbg_set_typststate_stroke: (a: number, b: number) => void;
   readonly __wbg_get_typststate_pt: (a: number) => number;
   readonly __wbg_set_typststate_pt: (a: number, b: number) => void;
   readonly __wbg_get_typststate_size: (a: number) => number;
   readonly __wbg_set_typststate_size: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h1: (a: number) => number;
-  readonly __wbg_set_typststate_h1: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h2: (a: number) => number;
-  readonly __wbg_set_typststate_h2: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h3: (a: number) => number;
-  readonly __wbg_set_typststate_h3: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h4: (a: number) => number;
-  readonly __wbg_set_typststate_h4: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h5: (a: number) => number;
-  readonly __wbg_set_typststate_h5: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_h6: (a: number) => number;
-  readonly __wbg_set_typststate_h6: (a: number, b: number) => void;
+  readonly __wbg_get_typststate_theme: (a: number) => number;
+  readonly __wbg_set_typststate_theme: (a: number, b: number) => void;
   readonly __wbg_fileid_free: (a: number) => void;
   readonly typststate_new: () => number;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
