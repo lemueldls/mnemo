@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import type { H3Event } from "h3";
 
-export default oauthGitHubEventHandler({
+export default defineOAuthGitHubEventHandler({
   config: { emailRequired: true },
   async onSuccess(event, { user, tokens }) {
     const { email, name } = user;
