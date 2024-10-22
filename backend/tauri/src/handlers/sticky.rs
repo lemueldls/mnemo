@@ -1,6 +1,7 @@
 use std::{
     fs,
     path::{self, PathBuf},
+    sync::Arc,
 };
 
 use serde::{Deserialize, Serialize};
@@ -42,14 +43,12 @@ impl StickyNote {
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn new_sticky_note(space_id: Ulid, app_handle: AppHandle) -> Ulid {
-    let mut store = load_sticky(space_id, app_handle);
+    let mut store = load_sticky(space_id, &app_handle);
     let id = Ulid::new();
 
     let note = StickyNote::new(id, String::new(), 40.0, 40.0, 500.0, 500.0);
 
-    store
-        .insert(id.to_string(), serde_json::to_value(&note).unwrap())
-        .unwrap();
+    store.set(id.to_string(), serde_json::to_value(&note).unwrap());
     store.save().unwrap();
 
     id
@@ -57,14 +56,14 @@ pub fn new_sticky_note(space_id: Ulid, app_handle: AppHandle) -> Ulid {
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn rename_sticky_note(space_id: Ulid, note_id: Ulid, name: String, app_handle: AppHandle) {
-    let mut store = load_sticky(space_id, app_handle);
+    let mut store = load_sticky(space_id, &app_handle);
 
     let note = store.get(note_id.to_string()).unwrap();
     let mut note = serde_json::from_value::<StickyNote>(note.clone()).unwrap();
 
     note.name = name;
 
-    store.insert(note_id.to_string(), serde_json::to_value(&note).unwrap());
+    store.set(note_id.to_string(), serde_json::to_value(note).unwrap());
     store.save().unwrap();
 }
 
@@ -78,7 +77,7 @@ pub fn update_sticky_note(
     height: f64,
     app_handle: AppHandle,
 ) {
-    let mut store = load_sticky(space_id, app_handle);
+    let mut store = load_sticky(space_id, &app_handle);
 
     let note = store.get(note_id.to_string()).unwrap();
     let mut note = serde_json::from_value::<StickyNote>(note.clone()).unwrap();
@@ -88,7 +87,7 @@ pub fn update_sticky_note(
     note.width = width;
     note.height = height;
 
-    store.insert(note_id.to_string(), serde_json::to_value(&note).unwrap());
+    store.set(note_id.to_string(), serde_json::to_value(note).unwrap());
     store.save().unwrap();
 }
 
@@ -101,24 +100,25 @@ pub fn delete_sticky_note(space_id: Ulid, note_id: Ulid, app_handle: AppHandle) 
         .with_extension("typ");
     // fs::remove_file(path).unwrap();
 
-    let mut store = load_sticky(space_id, app_handle);
+    let mut store = load_sticky(space_id, &app_handle);
 
     let note = store.get(note_id.to_string()).unwrap();
     let mut note = serde_json::from_value::<StickyNote>(note.clone()).unwrap();
 
-    store.delete(note_id.to_string()).unwrap();
+    store.delete(note_id.to_string());
     store.save().unwrap();
 }
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn list_sticky_notes(space_id: Ulid, app_handle: AppHandle) -> Vec<StickyNote> {
-    let store = load_sticky(space_id, app_handle);
+    let store = load_sticky(space_id, &app_handle);
 
     let entries = store.entries();
 
     let mut notes = entries
+        .into_iter()
         .map(|(id, note)| {
-            let id = Ulid::from_string(id).unwrap();
+            let id = Ulid::from_string(&id).unwrap();
             let note = serde_json::from_value::<StickyNote>(note.clone()).unwrap();
 
             note
@@ -130,15 +130,15 @@ pub fn list_sticky_notes(space_id: Ulid, app_handle: AppHandle) -> Vec<StickyNot
     notes
 }
 
-fn load_sticky(space_id: Ulid, app_handle: AppHandle) -> Store<Wry> {
+fn load_sticky(space_id: Ulid, app_handle: &AppHandle) -> Arc<Store<Wry>> {
     let path = PathBuf::from(space_id.to_string()).join("sticky.json");
 
-    let mut store = StoreBuilder::new(path).build(app_handle);
+    let mut store = StoreBuilder::new(app_handle, path).build().unwrap();
 
-    match store.load() {
-        Ok(..) => {}
-        Err(..) => store.save().unwrap(),
-    }
+    // match store.load() {
+    //     Ok(..) => {}
+    //     Err(..) => store.save().unwrap(),
+    // }
 
     store
 }

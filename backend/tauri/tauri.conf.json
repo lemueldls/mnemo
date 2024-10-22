@@ -4,8 +4,8 @@
   "productName": "mnemo",
   "identifier": "dev.lemueldls.mnemo",
   "build": {
-    "beforeBuildCommand": "pnpm build",
-    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../dist"
   },
@@ -26,7 +26,8 @@
     },
     "windows": [
       {
-        "title": "mnemo"
+        "title": "mnemo",
+        "decorations": false
       }
     ]
   },

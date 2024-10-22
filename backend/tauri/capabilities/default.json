@@ -1,9 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default-plugins",
-  "description": "enables the default permissions",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
   "windows": [
     "main"
   ],
-  "permissions": []
+  "permissions": [
+    "core:window:default",
+    "core:window:allow-start-dragging"
+  ]
 }
