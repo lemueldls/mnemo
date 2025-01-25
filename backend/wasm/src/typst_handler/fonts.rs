@@ -66,9 +66,6 @@ impl FontSearcher {
             "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
-        ));
-        search(include_bytes!(
             "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Bold.ttf"
         ));
         search(include_bytes!(
@@ -102,9 +99,9 @@ impl FontSearcher {
         search(include_bytes!(
             "../../../../public/fonts/NewCMMath-Book.otf"
         ));
-        search(include_bytes!(
-            "../../../../public/fonts/NewCMMath-Regular.otf"
-        ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/NewCMMath-Regular.otf"
+        // ));
 
         // search(include_bytes!("../../../../../public/fonts/DejaVuSansMono.ttf"
         // )); search(include_bytes!(

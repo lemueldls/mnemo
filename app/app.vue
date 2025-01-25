@@ -11,9 +11,11 @@ const head = useLocaleHead({
   addSeoAttributes: true,
 });
 
-const router = useRouter();
-const { ready, loggedIn } = useUserSession();
-whenever(logicAnd(ready, logicNot(loggedIn)), () => router.push("/login"), { immediate: true });
+// const router = useRouter();
+// const { ready, loggedIn } = useUserSession();
+// whenever(logicAnd(ready, logicNot(loggedIn)), () => router.push("/login"), {
+//   immediate: true,
+// });
 
 watchEffect(() => {
   const routeTitle = route.meta.title as string | undefined;

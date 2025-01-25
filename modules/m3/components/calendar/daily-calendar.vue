@@ -102,7 +102,7 @@ onMounted(() => {
           </span>
         </m3-theme>
 
-        <div ref="caret" class="absolute w-full border-(b m3-outline)" />
+        <div ref="caret" class="absolute w-full border-(b m3-error) scale-115" />
       </div>
     </div>
   </div>

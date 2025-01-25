@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api/core";
 import type { Note } from "~/composables/spaces";
+import { ulid, decodeTime } from "ulid";
 
 import html2canvas from "@html2canvas/html2canvas";
 
@@ -8,13 +9,15 @@ definePageMeta({ layout: "space" });
 
 const { d } = useI18n();
 
-const { query } = useRoute();
-const spaceId = [query.id].flat()[0]!.toString();
+// const { query } = useRoute();
+// const spaceId = [query.id].flat()[0]!.toString();
+
+const spaceId = useRouteQuery("id");
+
+console.log({ spaceId: spaceId.value });
 
 const spaces = await listSpaces();
-const space = spaces.value[spaceId]!;
-
-console.log({ spaces, spaceId, space });
+const space = computed(() => spaces.value[spaceId.value]!);
 
 const { medium } = useBreakpoints(breakpointsM3);
 
@@ -63,7 +66,7 @@ async function getDailyNotes() {
   const today = new Date();
 
   const notes = await useStorageItem<Note[]>(
-    `spaces/${spaceId}/daily/notes.json`,
+    `spaces/${spaceId.value}/daily/notes.json`,
     [],
   );
 
@@ -87,14 +90,20 @@ async function getDailyNotes() {
       }
     }
 
-    // if (addToday) {
-    //   const id = ulid();
+    if (addToday) {
+      const id = ulid();
 
-    //   const date = new Date(decodeTime(id));
-    //   const datetime: [number, number, number, number, number] = [date.getFullYear(), date.getMonth() , date.getDate(), date.getHours(), date.getMinutes()];
+      const date = new Date(decodeTime(id));
+      const datetime: [number, number, number, number, number] = [
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+      ];
 
-    //   notes.value.push({ id, datetime });
-    // }
+      notes.value.unshift({ id, datetime });
+    }
 
     return notes.value;
   });
@@ -104,11 +113,11 @@ const { data: notes } = await useAsyncData(
   "get_daily_notes",
   async () => {
     const notes = await invoke<Note[]>("get_daily_notes", {
-      spaceId,
+      spaceId: spaceId.value,
     });
 
     const item = await useStorageItem<Note[]>(
-      `spaces/${spaceId}/daily/notes.json`,
+      `spaces/${spaceId.value}/daily/notes.json`,
       [],
     );
     item.value = notes;
@@ -158,10 +167,10 @@ const stickyNotes = ref<StickyNote[]>([]);
 const activeStickyNotes = ref<StickyNote[]>([]);
 
 async function loadStickyNotes() {
-  stickyNotes.value = await listStickyNotes(spaceId);
+  stickyNotes.value = await listStickyNotes(spaceId.value);
 }
 async function deleteStickyNoteAndReload(id: string) {
-  await deleteStickyNote(spaceId, id);
+  await deleteStickyNote(spaceId.value, id);
   await loadStickyNotes();
 }
 
@@ -169,7 +178,7 @@ await loadStickyNotes();
 whenever(stickyNotesOpen, loadStickyNotes);
 
 async function addStickyNote() {
-  await newStickyNote(spaceId);
+  await newStickyNote(spaceId.value);
   await loadStickyNotes();
 }
 </script>
@@ -177,13 +186,25 @@ async function addStickyNote() {
 <template>
   <m3-theme id="space-page" :color="space.color" :dark="dark">
     <sticky-note
-      v-for="note in activeStickyNotes"
+      v-for="(note, i) in activeStickyNotes"
       :key="note.id"
       :space-id="spaceId"
       :note="note"
-      @close="
-        activeStickyNotes = activeStickyNotes.filter((n) => n.id !== note.id)
+      @mousedown="
+        () => {
+          const lastNote = activeStickyNotes.at(-1);
+
+          if (lastNote) {
+            const currentNote = activeStickyNotes[i];
+
+            // activeStickyNotes[i] = lastNote;
+
+            // if (currentNote)
+            //   activeStickyNotes[activeStickyNotes.length - 1] = currentNote;
+          }
+        }
       "
+      @close="activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)"
     />
 
     <m3-page>
@@ -317,6 +338,15 @@ async function addStickyNote() {
             </code>
           </pre>
         </span>
+      </md-dialog>
+
+      <md-dialog :open="preludeOpen" @closed="preludeOpen = false">
+        <!-- <editor
+          :space-id="spaceId"
+          v-model="currentNote.id"
+          kind="prelude"
+          class="h-full flex-1"
+        /> -->
       </md-dialog>
 
       <md-dialog :open="stickyNotesOpen" @closed="stickyNotesOpen = false">

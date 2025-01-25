@@ -22,6 +22,8 @@ const drawerOpen = ref<boolean>();
 const settingsOpen = ref<boolean>();
 const newSpaceOpen = ref<boolean>();
 
+const { ready, loggedIn } = useUserSession();
+
 interface Page {
   path: string;
   name: string;
@@ -34,8 +36,6 @@ const pages: Page[] = [
 ];
 
 const { clear, session, user } = useUserSession();
-
-// console.log({ session: session.value, user: user.value })
 
 const name = await useStorageItem("name", "");
 </script>

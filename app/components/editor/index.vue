@@ -56,7 +56,7 @@ import type { TypstState } from "mnemo-wasm";
 import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
-import {FileId} from 'mnemo-wasm';
+import { ThemeColors, FileId } from 'mnemo-wasm';
 import type { Package } from "~~/server/api/list-packages";
 
 const props = defineProps<{ kind: NoteKind; spaceId: string, readonly?: boolean }>();
@@ -75,16 +75,18 @@ function parseColor(color: Rgba): Rgb {
 watchEffect(async () => {
   const typstState = await useTypst();
 
-  typstState.color = parseColor(palette.onBackground);
-  typstState.stroke = parseColor(palette.outline);
   typstState.pt = pixelPerPoint.value;
   typstState.size = 16 / pixelPerPoint.value;
-  typstState.h1 = parseColor(palette.onPrimaryContainer);
-  typstState.h2 = parseColor(palette.onSecondaryContainer);
-  typstState.h3 = parseColor(palette.onTertiaryContainer);
-  typstState.h4 = parseColor(palette.primary);
-  typstState.h5 = parseColor(palette.secondary);
-  typstState.h6 = parseColor(palette.tertiary);
+  typstState.theme = new ThemeColors(
+    parseColor(palette.primary),
+    parseColor(palette.secondary),
+    parseColor(palette.tertiary),
+    parseColor(palette.outline),
+    parseColor(palette.onPrimaryContainer),
+    parseColor(palette.onSecondaryContainer),
+    parseColor(palette.onTertiaryContainer),
+    parseColor(palette.onBackground),
+  );
 });
 
 const containerRef = useTemplateRef("container");
@@ -248,6 +250,9 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     display: inline;
     // vertical-align: bottom;
     cursor: text;
+    user-drag: none;
+    user-select: none;
+    // pointer-events: none;
     /* overflow: hidden; */
     /* display: flex; */
 

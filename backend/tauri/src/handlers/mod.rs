@@ -1,23 +1,23 @@
 mod space;
 mod sticky;
 
-use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::{
     collections::BTreeMap,
     fs,
     path::PathBuf,
     time::{Duration, SystemTime},
 };
+
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+pub use space::*;
+pub use sticky::*;
 use tauri::{App, AppHandle, EventLoopMessage, Manager, Wry};
 use tauri_plugin_store::{Store, StoreBuilder};
 use time::{Date, Month, OffsetDateTime, UtcOffset};
 use ulid::Ulid;
 
 use crate::dir;
-
-pub use space::*;
-pub use sticky::*;
 
 // #[tauri::command(rename_all = "camelCase")]
 // async pub fn close_splashscreen(window: tauri::Window) {
@@ -48,6 +48,7 @@ pub use sticky::*;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum NoteKind {
+    Prelude,
     Daily,
     Sticky,
 }
@@ -55,6 +56,7 @@ pub enum NoteKind {
 impl NoteKind {
     pub const fn as_str(&self) -> &'static str {
         match self {
+            NoteKind::Prelude => "prelude",
             NoteKind::Daily => "daily",
             NoteKind::Sticky => "sticky",
         }

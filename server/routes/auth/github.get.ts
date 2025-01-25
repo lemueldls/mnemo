@@ -5,17 +5,19 @@ export default defineOAuthGitHubEventHandler({
   config: { emailRequired: true },
   async onSuccess(event, { user, tokens }) {
     const { email, name } = user;
+    console.log(1, { email, name });
     await login(event, email, name);
 
     return sendRedirect(event, "/");
   },
-  // onError(event, error) {
-  //   console.error("GitHub OAuth error:", error);
-  //   return sendRedirect(event, "/");
-  // },
+  onError(event, error) {
+    console.error("GitHub OAuth error:", error);
+    return sendRedirect(event, "/");
+  },
 });
 
 async function login(event: H3Event, email: string, name: string) {
+  console.log(2, { email, name });
   const drizzle = useDrizzle();
 
   const user = await drizzle
@@ -40,7 +42,7 @@ async function login(event: H3Event, email: string, name: string) {
     date.getUTCDate(),
     date.getUTCHours(),
     date.getUTCMinutes(),
-    date.getUTCSeconds()
+    date.getUTCSeconds(),
   );
 
   const createdAt = new Date(now_utc);

@@ -36,7 +36,7 @@ class TypstWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly index: number,
     private readonly render: string,
-    private readonly block: Block
+    private readonly block: Block,
   ) {
     super();
 
@@ -44,13 +44,17 @@ class TypstWidget extends WidgetType {
     // this.#image.style.display = "inline";
     // this.#image.style.verticalAlign = "bottom";
     // this.#image.style.cursor = "text";
+    this.#image.draggable = false;
 
     this.#image.classList.add("typst-render");
 
-    this.#image.addEventListener("click", this.onClick.bind(this));
+    this.#image.addEventListener("click", this.handleJump.bind(this));
+    // this.#image.addEventListener("mousedown", this.handleJump.bind(this));
   }
 
-  private async onClick(event: MouseEvent) {
+  private async handleJump(event: MouseEvent) {
+    event.preventDefault();
+
     const { typstState, index, block, view } = this;
     const { top, left } = this.#image.getBoundingClientRect();
 
@@ -92,7 +96,7 @@ function decorate(
   typstState: TypstState,
   update: ViewUpdate,
   fileId: FileId,
-  text: string
+  text: string,
 ) {
   const { view, state } = update;
 
@@ -109,7 +113,7 @@ function decorate(
             (range.from < start || range.from > end) &&
             (range.to < start || range.to > end) &&
             (start < range.from || start > range.to) &&
-            (end < range.from || end > range.to)
+            (end < range.from || end > range.to),
         );
 
       if (inactive)
@@ -117,7 +121,7 @@ function decorate(
           Decoration.replace({
             widget: new TypstWidget(typstState, view, index, render, block),
             // inclusive: true,
-          }).range(start, end)
+          }).range(start, end),
         );
       else {
         for (let i = start; i < end; i++) {
@@ -138,11 +142,13 @@ function decorate(
               class: "cm-activeLine",
               attributes: { style },
               // inclusive: true,
-            }).range(from)
+            }).range(from),
           );
         }
       }
     }
+  } else {
+    // return view.decoration
   }
 
   return Decoration.set(widgets);
@@ -155,7 +161,7 @@ export const viewPlugin = (
   kind: NoteKind,
   spaceId: string,
   path: string,
-  fileId: FileId
+  fileId: FileId,
 ) =>
   ViewPlugin.define((view) => {
     return {
@@ -170,11 +176,15 @@ export const viewPlugin = (
           const text = update.state.doc.toString();
           void syncSpaceFile(kind, spaceId, path, text);
 
-          const decorations = decorate(typstState, update, fileId, text);
+          useStorageItem(`spaces/${spaceId}/${kind}/${path}.typ`, "").then(
+            (item) => {
+              item.value = text;
+            },
+          );
 
-          queueMicrotask(() => {
-            update.view.dispatch({ effects: stateEffect.of({ decorations }) });
-          });
+          const decorations = decorate(typstState, update, fileId, text);
+          const effects = stateEffect.of({ decorations });
+          queueMicrotask(() => update.view.dispatch({ effects }));
         }
       },
     };
@@ -185,7 +195,7 @@ export const typst = (
   kind: NoteKind,
   spaceId: string,
   path: string,
-  fileId: FileId
+  fileId: FileId,
 ) =>
   StateField.define({
     create() {
@@ -193,14 +203,14 @@ export const typst = (
     },
     update(decorations, transaction) {
       const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect)
+        effect.is(stateEffect),
       );
 
       if (effect) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to)
+          ...transaction.state.selection.ranges.map(({ to }) => to),
         );
 
         return decorations.update({
@@ -212,9 +222,8 @@ export const typst = (
 
       return decorations;
     },
-    provide: (state) => [
-      EditorView.decorations.from(state, (decorations) => decorations),
-      // EditorView.atomicRanges.from(state, (decorations) => () => decorations),
+    provide: (field) => [
+      EditorView.decorations.from(field, (decorations) => decorations),
       viewPlugin(typstState, kind, spaceId, path, fileId),
     ],
   });

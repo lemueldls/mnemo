@@ -28,21 +28,25 @@ onMounted(() => {
   interact(root).draggable({
     inertia: true,
     autoScroll: true,
-    allowFrom: headerRef.value!,
-     modifiers: [
-      // interact.modifiers.restrictRect({
-      //   restriction: 'parent',
-      //   endOnly: true
-      // })
+    // allowFrom: headerRef.value!,
+    modifiers: [
+      interact.modifiers.restrictRect({
+        restriction: 'parent',
+        endOnly: true
+      })
     ],
     listeners: {
-      move (event) {
-        const {target} = event
+      move(event) {
+        isDragging.value = true;
+        const { target } = event;
 
         x.value += event.dx;
         y.value += event.dy;
 
         target.style.transform = `translate(${x.value}px, ${y.value}px)`
+      },
+      end() {
+        isDragging.value = false;
       }
     }
   })
@@ -50,15 +54,15 @@ onMounted(() => {
     inertia: true,
     edges: { left: true, right: true, bottom: true, top: true },
     modifiers: [
-      // interact.modifiers.restrictEdges({
-      //   outer: 'parent'
-      // }),
+      interact.modifiers.restrictEdges({
+        outer: 'parent'
+      }),
       interact.modifiers.restrictSize({
         min: { width: 100, height: 100 }
       })
     ],
     listeners: {
-      move (event) {
+      move(event) {
         const { target } = event;
 
         width.value = event.rect.width;
@@ -112,7 +116,7 @@ watchEffect(async () => {
             v-model="title"
           />
 
-          <md-icon-button @click="$emit('close')">
+          <md-icon-button @click.prevent="$emit('close')">
             <md-icon>close</md-icon>
           </md-icon-button>
         </div>

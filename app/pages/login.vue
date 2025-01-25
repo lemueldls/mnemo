@@ -1,5 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "auth" });
+
+console.log("lmfao");
 </script>
 
 <template>
@@ -9,6 +11,5 @@ definePageMeta({ layout: "auth" });
     <md-filled-button href="/auth/github">
       Continue with GitHub
     </md-filled-button>
-
   </m3-elevated-card>
 </template>

@@ -8,12 +8,13 @@ const locales = [
 const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
+const internalHost = process.env.TAURI_DEV_HOST || "localhost";
+
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
 const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  ssr: false,
   devtools: { enabled: !platform },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
@@ -22,10 +23,10 @@ export default defineNuxtConfig({
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
     prerender: {
-      routes: ["/", "/space", "/login", "/auth/github"],
+      routes: ["/", "/space", "/login"],
       crawlLinks: true,
     },
-    experimental: { openAPI: true, websocket: true },
+    // experimental: { openAPI: true, websocket: true },
   },
   vite: {
     // clearScreen: false,
@@ -53,12 +54,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     app: { platform },
     public: { apiBaseUrl: "" },
-    session: {
-      maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
-      cookie: isDev
-        ? { sameSite: "none", secure: true }
-        : { sameSite: "lax", secure: false },
-    },
+    // session: {
+    //   maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
+    //   cookie: isDev
+    //     ? { sameSite: "none", secure: true }
+    //     : { sameSite: "lax", secure: false },
+    // },
     oauth: {
       github: {
         clientId: "",
@@ -71,9 +72,10 @@ export default defineNuxtConfig({
     dirs: [
       "composables",
       "composables/*/index.{ts,js,mjs,mts}",
-      platform
-        ? "composables/*/tauri.{ts,js,mjs,mts}"
-        : "composables/*/server.{ts,js,mjs,mts}",
+      // platform
+      //   ? "composables/*/tauri.{ts,js,mjs,mts}"
+      //   : "composables/*/server.{ts,js,mjs,mts}",
+      "composables/*/server.{ts,js,mjs,mts}",
     ],
   },
   app: {
@@ -82,13 +84,15 @@ export default defineNuxtConfig({
   },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   modules: [
-    // "@nuxt/ui",
     "@nuxthub/core",
+    "@nuxt/eslint",
+    "@nuxtjs/color-mode",
     "@nuxtjs/i18n",
     "@vueuse/nuxt",
     "@unocss/nuxt",
     "nuxt-ssr-lit",
     "nuxt-auth-utils",
+    "reka-ui/nuxt",
   ],
   hub: {
     // remote: true,

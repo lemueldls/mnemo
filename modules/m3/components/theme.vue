@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import type { Rgba } from "@material/material-color-utilities";
+import { Primitive, type PrimitiveProps } from "reka-ui";
 
-const props = defineProps<{
+interface Props extends PrimitiveProps {
   color: string;
   dark: boolean;
   harmonize?: boolean;
-}>();
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  as: "div",
+});
 
 const { color, dark, harmonize } = toRefs(props);
 
@@ -27,7 +32,9 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
 </script>
 
 <template>
-  <div
+  <Primitive
+    :as
+    :asChild
     class="m3-theme"
     :style="{
       '--md-sys-color-background': parse(palette.background),
@@ -100,7 +107,7 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
     }"
   >
     <slot />
-  </div>
+  </Primitive>
 </template>
 
 <style lang="scss">

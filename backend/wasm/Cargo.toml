@@ -27,10 +27,11 @@ time = { version = "0.3", features = ["serde"] }
 tsify = { version = "0.4.5", features = ["js"] }
 # serde_json = "1.0"
 palette = "0.7.3"
-typst = { git = "https://github.com/typst/typst", rev = "a2f91c" }
-typst-ide = { git = "https://github.com/typst/typst", rev = "a2f91c" }
-typst-render = { git = "https://github.com/typst/typst", rev = "a2f91c" }
-typst-svg = { git = "https://github.com/typst/typst", rev = "a2f91c" }
+typst = { version = "0.12.0" }
+typst-ide = { version = "0.12.0" }
+typst-render = { version = "0.12.0" }
+# typst-svg = { version = "0.12.0" }
+typst-pdf = { version = "0.12.0" }
 # walkdir = "2.3.3"
 wasm-bindgen = "0.2.92"
 web-sys = "0.3.69"

@@ -25,8 +25,9 @@ use typst::{
     visualize::Color,
     World, WorldExt,
 };
+// use typst_svg::{svg, svg_merged};
+use typst_pdf::{pdf, PdfOptions, PdfStandard};
 use typst_render::{render, render_merged};
-use typst_svg::svg;
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
 
@@ -88,7 +89,14 @@ impl fmt::Display for ThemeColors {
         write!(
             f,
             "(primary:{},secondary:{},tertiary:{},outline:{},on-primary-container:{},on-secondary-container:{},on-tertiary-container:{},on-background:{})",
-            self.primary, self.secondary, self.tertiary, self.outline, self.on_primary_container, self.on_secondary_container, self.on_tertiary_container, self.on_background
+            self.primary,
+            self.secondary,
+            self.tertiary,
+            self.outline,
+            self.on_primary_container,
+            self.on_secondary_container,
+            self.on_tertiary_container,
+            self.on_background
         )
     }
 }
@@ -102,6 +110,11 @@ impl Rgb {
     #[wasm_bindgen(constructor)]
     pub fn new(r: u8, g: u8, b: u8) -> Self {
         Self(r, g, b)
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("rgb({},{},{})", self.0, self.1, self.2)
     }
 }
 
@@ -194,9 +207,8 @@ impl TypstState {
         }
     }
 
-    #[wasm_bindgen]
-    pub fn sync(&mut self, id: &FileIdWrapper, text: &str) -> SyncResult {
-        let mut source = format!(
+    fn prelude(&self) -> String {
+        format!(
             r#"
                 #let theme={theme}
                 #set align(horizon)
@@ -220,7 +232,12 @@ impl TypstState {
             size = self.size + 1.0,
             width = self.width,
             height = self.height,
-        );
+        )
+    }
+
+    #[wasm_bindgen]
+    pub fn sync(&mut self, id: &FileIdWrapper, text: &str) -> SyncResult {
+        let mut source = self.prelude();
 
         let mut blocks = Vec::<Block>::new();
         let mut in_block = false;
@@ -340,6 +357,42 @@ impl TypstState {
         }
     }
 
+    // #[wasm_bindgen(js_name = renderSvg)]
+    // pub fn render_svg(&mut self, id: &FileIdWrapper) -> String {
+    //     self.world.main = Some(id.inner());
+
+    //     let mut source = self.prelude();
+    //     source += self.world.main_source().text();
+
+    //     self.world.main_source_mut().replace(&source);
+
+    //     let compiled = compile(&self.world);
+    //     match compiled.output {
+    //         Ok(document) => svg_merged(&document, Abs::zero()),
+    //         Err(..) => String::new(),
+    //     }
+    // }
+
+    #[wasm_bindgen(js_name = renderPdf)]
+    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> String {
+        self.world.main = Some(id.inner());
+
+        let mut source = self.prelude();
+        source += self.world.main_source().text();
+
+        self.world.main_source_mut().replace(&source);
+
+        let compiled = compile(&self.world);
+        match compiled.output {
+            Ok(document) => {
+                let bytes = pdf(&document, &PdfOptions::default()).unwrap();
+
+                BASE64.encode(&bytes)
+            }
+            Err(..) => String::new(),
+        }
+    }
+
     #[wasm_bindgen]
     pub fn click(&mut self, index: usize, x: f64, y: f64) -> Option<TypstJump> {
         let document = self.document.as_ref().unwrap();
@@ -366,13 +419,15 @@ impl TypstState {
             typst_ide::autocomplete(&self.world, Some(&document), source, cursor, explicit);
 
         serde_wasm_bindgen::to_value(&match results {
-            Some((offset, completions)) => (
-                offset,
-                completions
-                    .into_iter()
-                    .map(TypstCompletion::from)
-                    .collect::<Vec<TypstCompletion>>(),
-            ),
+            Some((offset, completions)) => {
+                (
+                    offset,
+                    completions
+                        .into_iter()
+                        .map(TypstCompletion::from)
+                        .collect::<Vec<TypstCompletion>>(),
+                )
+            }
             None => (0_usize, Vec::<TypstCompletion>::new()),
         })
     }

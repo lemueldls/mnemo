@@ -4,7 +4,7 @@ const itemRefs: { [key: string]: Ref<StorageValue> } = {};
 
 export async function useStorageItem<T extends StorageValue>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ) {
   if (key in itemRefs) return itemRefs[key] as Ref<T>;
 
@@ -14,17 +14,21 @@ export async function useStorageItem<T extends StorageValue>(
   const item = ref(localItem);
   itemRefs[key] = ref(item!);
 
-  $storage.getItem<T>(key, { initialValue }).then((value) => {
-    item.value = value;
+  const { ready, loggedIn } = useUserSession();
+
+  whenever(logicAnd(ready, loggedIn), () => {
+    $storage.getItem<T>(key, { initialValue }).then((value) => {
+      item.value = value;
+    });
   });
 
   watchDebounced(
     item,
     async (value) => {
       item.value = value;
-      await updateStorageItem(key, value);
+      if (loggedIn.value) await updateStorageItem(key, value);
     },
-    { debounce: 500, deep: true }
+    { debounce: 500, deep: true },
   );
 
   return item;

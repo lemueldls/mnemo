@@ -1,25 +1,51 @@
 { pkgs, lib, config, inputs, ... }: {
-  certificates = [
-    "localhost"
-    "localhost:3000"
-  ];
+  cachix.enable = false;
+
+  # certificates = [
+  #   "localhost"
+  #   "localhost:3000"
+  # ];
 
   packages = with pkgs; [
     # Native
+    wrapGAppsHook4
     pkg-config
 
+    # Wasm
+    wasm-pack
+    binaryen
+
     # Tauri
-    openssl
-    glib
-    pango
-    atk
-    gdk-pixbuf
-    gtk3
-    webkitgtk_4_1
-    cairo
+    # gobject-introspection
+    # cargo-tauri
+
+    # libGL
+
+    # openssl
+    # glib
+    # pango
+    # atk
+    # gdk-pixbuf
+    # gtk3
+    # webkitgtk_4_1
+    # cairo
+    # atkmm
+    # libsoup_3
+    # glib-networking
+    at-spi2-atk
     atkmm
+    cairo
+    gdk-pixbuf
+    glib
+    gtk3
+    harfbuzz
+    librsvg
     libsoup_3
-    glib-networking
+    pango
+    webkitgtk_4_1
+    openssl
+
+    xdg-utils
   ];
 
   # scripts = {
@@ -40,6 +66,7 @@
     GIO_EXTRA_MODULES = "${pkgs.glib-networking.out}/lib/gio/modules/";
 
     WEBKIT_DISABLE_COMPOSITING_MODE = "1";
+    WEBKIT_DISABLE_DMABUF_RENDERER = "1";
   };
 
   enterShell = ''
