@@ -57,7 +57,7 @@ async function screenshot() {
 }
 
 function copyScreenshot() {
-  navigator.clipboard.write([
+  window.navigator.clipboard.write([
     new ClipboardItem({ "image/png": screenshotBlob.value! }),
   ]);
 }

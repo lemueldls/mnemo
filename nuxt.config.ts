@@ -15,6 +15,7 @@ const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: false,
   devtools: { enabled: !platform },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
@@ -23,7 +24,7 @@ export default defineNuxtConfig({
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
     prerender: {
-      routes: ["/", "/space", "/login"],
+      routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
     // experimental: { openAPI: true, websocket: true },
@@ -39,7 +40,7 @@ export default defineNuxtConfig({
     plugins: [wasm()],
   },
   // devServer: { https: true },
-  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
+  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   // routeRules: {
   //   "/**": { ssr: false },
   //   "/splashscreen": { ssr: !!platform, static: false },
@@ -110,5 +111,5 @@ export default defineNuxtConfig({
     langDir: "locales",
     baseUrl: siteUrl,
   },
-  ssrLit: { litElementPrefix: ["md-"] },
+  // ssrLit: { litElementPrefix: ["md-"] },
 });
