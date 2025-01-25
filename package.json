@@ -31,7 +31,7 @@
     "@material/web": "^2.2.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@tato30/vue-pdf": "^1.11.3",
-    "@tauri-apps/plugin-store": "^2.2.0",
+    "@tauri-apps/plugin-store": "~2",
     "@vueuse/math": "^12.5.0",
     "@vueuse/router": "^12.5.0",
     "drizzle-orm": "^0.38.3",

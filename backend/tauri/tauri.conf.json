@@ -18,7 +18,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": "all"
+    "targets": "all",
+    "createUpdaterArtifacts": true,
+    "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0REVCRDBBNzBDODcyOUIKUldTYmNzaHdDcjNlRkdSOEF1NFRxeWM3bXdXWVBrV3BRd1RIZWtpRmpFZlE4VTg5ZlFlbGdTcHEK"
   },
   "app": {
     "security": {

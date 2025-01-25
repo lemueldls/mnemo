@@ -17,6 +17,7 @@ use ulid::Ulid;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             // handlers::close_splashscreen,
             // handlers::sync_packages,
