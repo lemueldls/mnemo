@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import interact from "interactjs"
+import interact from "interactjs";
 import { rawListeners } from "process";
 
 const props = defineProps<{ spaceId: string; note: StickyNote }>();
@@ -15,6 +15,16 @@ const height = ref(props.note.height);
 
 const isDragging = ref(false);
 
+const notes = await useStorageItem<StickyNote[]>(
+  `spaces/${props.spaceId}/sticky/notes.json`,
+  [],
+);
+
+const storageItem = await useStorageItem<string>(
+  `spaces/${props.spaceId}/sticky/${props.note.id}.typ`,
+  "",
+);
+
 onMounted(() => {
   const root = rootRef.value!;
 
@@ -25,59 +35,60 @@ onMounted(() => {
   root.style.width = width.value + "px";
   root.style.height = height.value + "px";
 
-  interact(root).draggable({
-    inertia: true,
-    autoScroll: true,
-    // allowFrom: headerRef.value!,
-    modifiers: [
-      interact.modifiers.restrictRect({
-        restriction: 'parent',
-        endOnly: true
-      })
-    ],
-    listeners: {
-      move(event) {
-        isDragging.value = true;
-        const { target } = event;
+  interact(root)
+    .draggable({
+      inertia: true,
+      autoScroll: true,
+      // allowFrom: headerRef.value!,
+      modifiers: [
+        interact.modifiers.restrictRect({
+          restriction: "parent",
+          endOnly: true,
+        }),
+      ],
+      listeners: {
+        move(event) {
+          isDragging.value = true;
+          const { target } = event;
 
-        x.value += event.dx;
-        y.value += event.dy;
+          x.value += event.dx;
+          y.value += event.dy;
 
-        target.style.transform = `translate(${x.value}px, ${y.value}px)`
+          target.style.transform = `translate(${x.value}px, ${y.value}px)`;
+        },
+        end() {
+          isDragging.value = false;
+        },
       },
-      end() {
-        isDragging.value = false;
-      }
-    }
-  })
-  .resizable({
-    inertia: true,
-    edges: { left: true, right: true, bottom: true, top: true },
-    modifiers: [
-      interact.modifiers.restrictEdges({
-        outer: 'parent'
-      }),
-      interact.modifiers.restrictSize({
-        min: { width: 100, height: 100 }
-      })
-    ],
-    listeners: {
-      move(event) {
-        const { target } = event;
+    })
+    .resizable({
+      inertia: true,
+      edges: { left: true, right: true, bottom: true, top: true },
+      modifiers: [
+        interact.modifiers.restrictEdges({
+          outer: "parent",
+        }),
+        interact.modifiers.restrictSize({
+          min: { width: 100, height: 100 },
+        }),
+      ],
+      listeners: {
+        move(event) {
+          const { target } = event;
 
-        width.value = event.rect.width;
-        height.value = event.rect.height;
+          width.value = event.rect.width;
+          height.value = event.rect.height;
 
-        target.style.width = `${width.value}px`
-        target.style.height = `${height.value}px`
+          target.style.width = `${width.value}px`;
+          target.style.height = `${height.value}px`;
 
-        x.value += event.deltaRect.left;
-        y.value += event.deltaRect.top;
+          x.value += event.deltaRect.left;
+          y.value += event.deltaRect.top;
 
-        target.style.transform = `translate(${x.value}px,${y.value}px)`
-      }
-    },
-  })
+          target.style.transform = `translate(${x.value}px,${y.value}px)`;
+        },
+      },
+    });
 });
 
 watchEffect(async () => {
@@ -99,8 +110,8 @@ watchEffect(async () => {
 
 <template>
   <div
-    :class="['sticky-note', { 'sticky-note--dragging': isDragging }]"
     ref="root"
+    :class="['sticky-note', { 'sticky-note--dragging': isDragging }]"
   >
     <md-elevation />
 
@@ -108,12 +119,12 @@ watchEffect(async () => {
       class="flex-1 flex flex-col gap-4 p-4 rounded-xl bg-m3-tertiary-container!"
     >
       <div class="flex-1 h-full flex flex-col gap-4">
-        <div class="flex items-center gap-2" ref="header">
+        <div ref="header" class="flex items-center gap-2">
           <input
+            v-model="title"
             type="text"
             class="sticky-note__title"
             placeholder="Title"
-            v-model="title"
           />
 
           <md-icon-button @click.prevent="$emit('close')">
@@ -122,9 +133,9 @@ watchEffect(async () => {
         </div>
 
         <editor
+          v-model="note.id"
           kind="sticky"
           :space-id="spaceId"
-          v-model="note.id"
           class="flex-1 h-full"
         />
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// const spaces = listSpaces();
+// const spaces = useSpaces();
 
 // const events = []
 </script>

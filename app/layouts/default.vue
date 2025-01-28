@@ -14,7 +14,7 @@ import type { MaterialSymbol } from "material-symbols";
 const color = "#16161d";
 const dark = useDark();
 
-const spaces = await listSpaces();
+const spaces = await useSpaces();
 
 const { medium, extraLarge } = useBreakpoints(breakpointsM3);
 
@@ -120,11 +120,16 @@ const name = await useStorageItem("name", "");
           </template>
         </m3-top-app-bar>
 
-        <div class="m-6 flex flex-1 flex-col h-full overflow-auto">
+        <div
+          :class="[
+            'mb-3 flex flex-1 flex-col h-full overflow-auto',
+            { 'ml-3': !extraLarge },
+          ]"
+        >
           <slot />
         </div>
 
-        <side-bar direction="horizontal" v-if="!medium" />
+        <side-bar v-if="!medium" direction="horizontal" />
       </div>
 
       <md-dialog :open="settingsOpen" @closed="settingsOpen = false">
@@ -154,14 +159,14 @@ const name = await useStorageItem("name", "");
 
       <new-space v-model="newSpaceOpen" />
 
-      <side-bar direction="vertical" v-if="medium" />
+      <side-bar v-if="medium" direction="vertical" />
     </m3-page>
   </m3-theme>
 </template>
 
 <style>
 #header {
-  @apply px-4 pt-4 pb-6 text-m3-primary m3-title-large;
+  @apply px-4 pt-4 pb-6 text-m3-primary m3-title-medium;
 
   /* font-family: "Iosevka Quasi Custom", sans-serif; */
   font-family: "Iosevka Book Web", sans-serif;

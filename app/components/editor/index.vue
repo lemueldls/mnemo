@@ -42,7 +42,7 @@ import {
 } from "@codemirror/autocomplete";
 import { lintKeymap } from "@codemirror/lint";
 
-import { redFromArgb } from "@material/material-color-utilities";
+// import { redFromArgb } from "@material/material-color-utilities";
 
 import { Rgb } from "mnemo-wasm";
 
@@ -51,15 +51,17 @@ import { underlineKeymap } from "./underline";
 
 import { typstLanguage } from "./languague";
 
-import type { TypstState } from "mnemo-wasm";
-
 import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
-import { ThemeColors, FileId } from 'mnemo-wasm';
+import { ThemeColors, type TypstState, type FileId } from "mnemo-wasm";
 import type { Package } from "~~/server/api/list-packages";
 
-const props = defineProps<{ kind: NoteKind; spaceId: string, readonly?: boolean }>();
+const props = defineProps<{
+  kind: NoteKind;
+  spaceId: string;
+  readonly?: boolean;
+}>();
 // const path = useVModel(props, "modelValue", emit);
 const path = defineModel<string>({ required: true });
 
@@ -97,6 +99,13 @@ const containerRef = useTemplateRef("container");
 
 const stateCache: { [key: string]: unknown } = {};
 
+const storageItem = await useRefStorageItem(
+  computed(() => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`),
+  "",
+);
+
+// const storageItem = ref("");
+
 onMounted(() => {
   const container = containerRef.value;
   const view = new EditorView({
@@ -109,14 +118,37 @@ onMounted(() => {
   watchImmediate(
     () => path.value,
     async (path, oldPath) => {
+      if (oldPath) await until(storageItem).changed();
+
+      // const note = await useStorageItem(
+      //   `spaces/${props.spaceId}/${props.kind}/${path}.typ`,
+      //   "",
+      // );
+
+      // watchOnce(note, (note) => {
+      //   storageItem.value = note;
+      // });
+
+      // watchEffect(() => {
+      //   console.log({ path, note: note.value });
+      // });
+
+      // watchImmediate(note, (note) => {
+      //   storageItem.value = note;
+      // });
+
       const typstState = await useTypst();
 
-      const packages = await useStorageItem<Package[]>(`spaces/${props.spaceId}/packages.json`, []);
+      const packages = await useStorageItem<Package[]>(
+        `spaces/${props.spaceId}/packages.json`,
+        [],
+      );
       watchImmediate(packages, async (packages) => {
         await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
       });
 
-      const text = await readSpaceFile(props.kind, props.spaceId, path);
+      const text = storageItem.value;
+      console.log({ text });
       const fileId = typstState.insertFile(path, text);
 
       if (oldPath) stateCache[oldPath] = view.state.toJSON();
@@ -140,7 +172,7 @@ function createStateConfig(
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, props.kind, props.spaceId, path, fileId),
+      typst(typstState, storageItem, fileId),
       typstLanguage(),
       underlineKeymap,
 

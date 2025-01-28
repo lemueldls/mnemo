@@ -7,7 +7,7 @@ const { d } = useI18n();
 
 const spaceId = useRouteQuery("space");
 
-const spaces = await listSpaces();
+const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 </script>
 

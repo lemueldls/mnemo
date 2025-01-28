@@ -7,7 +7,7 @@ interface CalendarEvent extends Event {
 defineProps<{ event: CalendarEvent; space: Space }>();
 
 const dark = useDark();
-const spaces = listSpaces();
+const spaces = useSpaces();
 </script>
 
 <template>

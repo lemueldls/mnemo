@@ -1,4 +1,4 @@
-import wasm from "vite-plugin-wasm";
+// import wasm from "vite-plugin-wasm";
 
 const defaultLocale = "en";
 const locales = [
@@ -8,7 +8,7 @@ const locales = [
 const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
-const internalHost = process.env.TAURI_DEV_HOST || "localhost";
+// const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
 const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
@@ -27,7 +27,7 @@ export default defineNuxtConfig({
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
-    // experimental: { openAPI: true, websocket: true },
+    experimental: { openAPI: true, websocket: true },
   },
   vite: {
     // clearScreen: false,
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
     //   strictPort: true,
     //   hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
     // },
-    plugins: [wasm()],
+    // plugins: [wasm()],
   },
   // devServer: { https: true },
   vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },

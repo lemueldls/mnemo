@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { redFromArgb } from "@material/material-color-utilities";
 
-import { Rgb } from "mnemo-wasm";
+import { Rgb, ThemeColors, FileId } from "mnemo-wasm";
 
 import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
-import { ThemeColors, FileId } from "mnemo-wasm";
 import type { Package } from "~~/server/api/list-packages";
 
 const dark = useDark();
@@ -15,7 +14,7 @@ const { d } = useI18n();
 
 const spaceId = useRouteQuery("space");
 
-const spaces = await listSpaces();
+const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
 const dailyNoteRefs = await useStorageKeys(`spaces/${spaceId.value}/daily`);

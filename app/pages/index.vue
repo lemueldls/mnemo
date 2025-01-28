@@ -5,7 +5,7 @@ const dark = useDark();
 const date = ref(new Date());
 
 const { d, locale } = useI18n();
-// const spaces = listSpaces();
+// const spaces = useSpaces();
 
 const { $api } = useNuxtApp();
 
@@ -21,7 +21,7 @@ const { $api } = useNuxtApp();
 //   intro.value += JSON.parse(`{${value}}`).data;
 // }
 
-const spaces = await listSpaces();
+const spaces = await useSpaces();
 
 const spacesProgress = computed(() =>
   Object.entries(spaces.value).map((space) => ({
@@ -123,7 +123,7 @@ const timeOfDay = computed(() => {
                     </h3>
                   </div>
 
-                  <div class="flex flex-col">
+                  <!-- <div class="flex flex-col">
                     <div
                       class="flex items-center justify-between m3-label-large"
                     >
@@ -139,7 +139,7 @@ const timeOfDay = computed(() => {
                       :value="progress.current"
                       :max="progress.total"
                     />
-                  </div>
+                  </div> -->
 
                   <!-- <h3 class="m3-headline-small">
                     {{ space.name }}

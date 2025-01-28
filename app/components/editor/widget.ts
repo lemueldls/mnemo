@@ -7,8 +7,6 @@ import {
   EditorView,
 } from "@codemirror/view";
 
-import { invoke } from "@tauri-apps/api/core";
-
 import { StateEffect, StateField } from "@codemirror/state";
 
 import type { TypstState, FileId } from "mnemo-wasm";
@@ -100,7 +98,8 @@ function decorate(
 ) {
   const { view, state } = update;
 
-  const syncResult = typstState.sync(fileId, text);
+  const syncResult = syncTypstState(typstState, fileId, text);
+
   const widgets: Range<Decoration>[] = [];
 
   if (syncResult.kind === "ok") {
@@ -158,9 +157,7 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
 export const viewPlugin = (
   typstState: TypstState,
-  kind: NoteKind,
-  spaceId: string,
-  path: string,
+  item: Ref<string>,
   fileId: FileId,
 ) =>
   ViewPlugin.define((view) => {
@@ -174,16 +171,11 @@ export const viewPlugin = (
           typstState.resize(update.view.dom.clientWidth - 1);
 
           const text = update.state.doc.toString();
-          void syncSpaceFile(kind, spaceId, path, text);
-
-          useStorageItem(`spaces/${spaceId}/${kind}/${path}.typ`, "").then(
-            (item) => {
-              item.value = text;
-            },
-          );
+          item.value = text;
 
           const decorations = decorate(typstState, update, fileId, text);
           const effects = stateEffect.of({ decorations });
+
           queueMicrotask(() => update.view.dispatch({ effects }));
         }
       },
@@ -192,9 +184,7 @@ export const viewPlugin = (
 
 export const typst = (
   typstState: TypstState,
-  kind: NoteKind,
-  spaceId: string,
-  path: string,
+  item: Ref<string>,
   fileId: FileId,
 ) =>
   StateField.define({
@@ -224,6 +214,24 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, kind, spaceId, path, fileId),
+      viewPlugin(typstState, item, fileId),
     ],
   });
+
+function syncTypstState(typstState: TypstState, fileId: FileId, text: string) {
+  let result;
+
+  try {
+    result = typstState.sync(fileId, text);
+  } catch (error) {
+    console.error("LMFAO");
+    console.error(error);
+    console.log("retrying...");
+
+    result = syncTypstState(typstState, fileId, text);
+
+    // throw error;
+  }
+
+  return result;
+}

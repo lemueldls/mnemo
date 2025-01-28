@@ -27,7 +27,7 @@ onMounted(() => {
       }
     },
     1000 * 60,
-    { immediateCallback: true }
+    { immediateCallback: true },
   );
 });
 
@@ -42,7 +42,7 @@ function isToday(date: Date) {
 }
 
 const days = [1, 2, 3, 4, 5].map((day) =>
-  d(Date.UTC(0, 0, day + 1), { weekday: "short" })
+  d(Date.UTC(0, 0, day + 1), { weekday: "short" }),
 );
 
 const dark = useDark();
@@ -50,7 +50,6 @@ const dark = useDark();
 const newSpaceDay = ref();
 const newSpaceFrom = ref();
 const newSpaceTo = ref();
-
 
 function openDialog(day: number, hour: number) {
   newSpaceDay.value = day;
@@ -83,14 +82,12 @@ function hourToTime(hour: number) {
 }
 
 function minutesToTime(minutes: number) {
-  return `${Math.floor(minutes / 60).toString().padStart(2, "0")}:${
-    (minutes % 60)
-      .toString()
-      .padStart(2, "0")
-  }`;
+  return `${Math.floor(minutes / 60)
+    .toString()
+    .padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
 }
 
-const spaces = await listSpaces();
+const spaces = await useSpaces();
 const schedule = await useSchedule();
 
 // console.log({ schedule: schedule.value });
@@ -151,26 +148,44 @@ function timeToMinutes(time: string) {
 
     <div ref="container" class="m3-calendar__body">
       <div class="w-16">
-        <span v-for="hour in 24" :key="hour" class="m3-label-medium h-12 flex items-start justify-end pr-2">
+        <span
+          v-for="hour in 24"
+          :key="hour"
+          class="m3-label-medium h-12 flex items-start justify-end pr-2"
+        >
           {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
       </div>
 
-      <div v-for="day in days.length" :key="day" class="m3-calendar__body-column">
-        <div v-for="hour in 24" :key="hour" class="m3-calendar__cell relative cursor-pointer flex items-center"
-          @click="openDialog(day, hour)">
+      <div
+        v-for="day in days.length"
+        :key="day"
+        class="m3-calendar__body-column"
+      >
+        <div
+          v-for="hour in 24"
+          :key="hour"
+          class="m3-calendar__cell relative cursor-pointer flex items-center"
+          @click="openDialog(day, hour)"
+        >
           <md-ripple />
 
           <div class="w-full border-(b m3-outline-variant) b-b-dashed" />
         </div>
 
-        <m3-theme v-for="({ spaceId, from, to }, i) in schedule[day]" :key="i" :color="spaces![spaceId]!.color"
-          :dark="dark" harmonize :style="{
+        <m3-theme
+          v-for="({ spaceId, from, to }, i) in schedule[day]"
+          :key="i"
+          :color="spaces![spaceId]!.color"
+          :dark="dark"
+          harmonize
+          :style="{
             top: `${(from / 60) * (scrollHeight / 24)}px`,
             height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
           }"
           class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-center text-m3-on-primary-container m3-body-small"
-          @click="openEditDialog(day, i)">
+          @click="openEditDialog(day, i)"
+        >
           <md-ripple />
 
           <span class="w-full font-semibold truncate">
@@ -178,8 +193,19 @@ function timeToMinutes(time: string) {
           </span>
 
           <span class="w-full truncate">
-            {{ $d(new Date(0, 0, 0, 0, from), { hour: "numeric", minute: "numeric" }) }} -
-            {{ $d(new Date(0, 0, 0, 0, to), { hour: "numeric", minute: "numeric" }) }}
+            {{
+              $d(new Date(0, 0, 0, 0, from), {
+                hour: "numeric",
+                minute: "numeric",
+              })
+            }}
+            -
+            {{
+              $d(new Date(0, 0, 0, 0, to), {
+                hour: "numeric",
+                minute: "numeric",
+              })
+            }}
           </span>
         </m3-theme>
       </div>
@@ -188,21 +214,41 @@ function timeToMinutes(time: string) {
     </div>
   </div>
 
-  <md-dialog :open="newSpaceDialogOpen" @closed="newSpaceDialogOpen = false" @submit.prevent="createScheduleItem">
+  <md-dialog
+    :open="newSpaceDialogOpen"
+    @closed="newSpaceDialogOpen = false"
+    @submit.prevent="createScheduleItem"
+  >
     <span slot="headline">New Space</span>
 
-    <form slot="content" id="weekly-calendar-new-form" class="flex flex-col gap-4 p-4" method="dialog">
+    <form
+      slot="content"
+      id="weekly-calendar-new-form"
+      class="flex flex-col gap-4 p-4"
+      method="dialog"
+    >
       <span class="m3-label-large">Space</span>
 
       <div class="grid grid-cols-2 gap-4">
-        <m3-theme v-for="(space, id) in spaces" :key="id" :color="space.color" :dark="dark" harmonize>
+        <m3-theme
+          v-for="(space, id) in spaces"
+          :key="id"
+          :color="space.color"
+          :dark="dark"
+          harmonize
+        >
           <label>
             <m3-elevated-card>
               <md-ripple />
 
               <div class="flex flex-row gap-2 items-center justify-between">
                 <md-icon class="text-m3-primary">{{ space.icon }}</md-icon>
-                <md-radio name="space" :value="id" touch-target="wrapper" required />
+                <md-radio
+                  name="space"
+                  :value="id"
+                  touch-target="wrapper"
+                  required
+                />
               </div>
               <span class="m3-title-medium flex-1">{{ space.name }}</span>
             </m3-elevated-card>
@@ -216,8 +262,13 @@ function timeToMinutes(time: string) {
           <md-ripple />
 
           <label class="flex gap-4">
-            <md-radio name="day" :value="i + 1" :checked="newSpaceDay === i + 1" @change="newSpaceDay = i + 1"
-              required />
+            <md-radio
+              name="day"
+              :value="i + 1"
+              :checked="newSpaceDay === i + 1"
+              @change="newSpaceDay = i + 1"
+              required
+            />
             <span class="m3-label-large">{{ day }}</span>
           </label>
         </m3-filled-card>
@@ -225,10 +276,24 @@ function timeToMinutes(time: string) {
 
       <span class="m3-label-large">Time</span>
       <div class="flex gap-2">
-        <md-outlined-text-field class="flex-1" label="From" name="from" type="time" :value="newSpaceFrom"
-          @input="newSpaceFrom = $event.target.value" required />
-        <md-outlined-text-field class="flex-1" label="To" name="to" type="time" :value="newSpaceTo"
-          @input="newSpaceTo = $event.target.value" required />
+        <md-outlined-text-field
+          class="flex-1"
+          label="From"
+          name="from"
+          type="time"
+          :value="newSpaceFrom"
+          @input="newSpaceFrom = $event.target.value"
+          required
+        />
+        <md-outlined-text-field
+          class="flex-1"
+          label="To"
+          name="to"
+          type="time"
+          :value="newSpaceTo"
+          @input="newSpaceTo = $event.target.value"
+          required
+        />
       </div>
     </form>
 
@@ -243,19 +308,41 @@ function timeToMinutes(time: string) {
   <md-dialog :open="editSpaceDialogOpen" @closed="editSpaceDialogOpen = false">
     <span slot="headline">Edit Space</span>
 
-    <form slot="content" id="weekly-calendar-edit-form" class="flex flex-col gap-4 p-4 min-w-lg" method="dialog"
-      @submit.prevent="editScheduleItem">
+    <form
+      slot="content"
+      id="weekly-calendar-edit-form"
+      class="flex flex-col gap-4 p-4 min-w-lg"
+      method="dialog"
+      @submit.prevent="editScheduleItem"
+    >
       <div class="flex gap-4">
-        <md-outlined-text-field class="flex-1" label="From" name="from" type="time" :value="editingScheduleFrom"
-          @input="editingScheduleFrom = $event.target.value" required />
-        <md-outlined-text-field class="flex-1" label="To" name="to" type="time" :value="editingScheduleTo"
-          @input="editingScheduleTo = $event.target.value" required />
+        <md-outlined-text-field
+          class="flex-1"
+          label="From"
+          name="from"
+          type="time"
+          :value="editingScheduleFrom"
+          @input="editingScheduleFrom = $event.target.value"
+          required
+        />
+        <md-outlined-text-field
+          class="flex-1"
+          label="To"
+          name="to"
+          type="time"
+          :value="editingScheduleTo"
+          @input="editingScheduleTo = $event.target.value"
+          required
+        />
       </div>
     </form>
 
     <div slot="actions" class="flex mt-4 gap-2">
-      <md-filled-tonal-button form="weekly-calendar-edit-form"
-      class="flex-[2]" @click.prevent="deleteScheduleItem">
+      <md-filled-tonal-button
+        form="weekly-calendar-edit-form"
+        class="flex-[2]"
+        @click.prevent="deleteScheduleItem"
+      >
         Delete
       </md-filled-tonal-button>
       <md-filled-button form="weekly-calendar-edit-form" class="flex-[3]">

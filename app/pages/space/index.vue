@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { invoke } from "@tauri-apps/api/core";
-import type { Note } from "~/composables/spaces";
-import { ulid, decodeTime } from "ulid";
+import { ulid } from "ulid";
 
 import html2canvas from "@html2canvas/html2canvas";
 
@@ -12,12 +10,22 @@ const { d } = useI18n();
 // const { query } = useRoute();
 // const spaceId = [query.id].flat()[0]!.toString();
 
-const spaceId = useRouteQuery("id");
+const spaceId = useRouteQuery<string>("id");
 
-console.log({ spaceId: spaceId.value });
+// console.log({ spaceId: spaceId.value });
 
-const spaces = await listSpaces();
-const space = computed(() => spaces.value[spaceId.value]!);
+watchImmediate(spaceId, (spaceId) => {
+  if (!spaceId) throw createError({ status: 404 });
+});
+
+const spaces = await useSpaces();
+const space = computed(() => spaces.value[spaceId.value!]!);
+
+// move
+function updateSpace() {
+  console.log(spaces.value[spaceId.value], space.value);
+  spaces.value[spaceId.value] = space;
+}
 
 const { medium } = useBreakpoints(breakpointsM3);
 
@@ -62,77 +70,34 @@ function copyScreenshot() {
   ]);
 }
 
-async function getDailyNotes() {
-  const today = new Date();
-
-  const notes = await useStorageItem<Note[]>(
-    `spaces/${spaceId.value}/daily/notes.json`,
-    [],
-  );
-
-  return computed(() => {
-    let addToday = true;
-
-    for (const note of notes.value) {
-      const date = new Date(
-        note.datetime[0],
-        note.datetime[1],
-        note.datetime[2],
-      );
-      if (
-        date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate()
-      ) {
-        addToday = false;
-
-        break;
-      }
-    }
-
-    if (addToday) {
-      const id = ulid();
-
-      const date = new Date(decodeTime(id));
-      const datetime: [number, number, number, number, number] = [
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-      ];
-
-      notes.value.unshift({ id, datetime });
-    }
-
-    return notes.value;
-  });
-}
+const spaceNotes = await useSpaceNotes(spaceId);
 
 const { data: notes } = await useAsyncData(
   "get_daily_notes",
   async () => {
-    const notes = await invoke<Note[]>("get_daily_notes", {
-      spaceId: spaceId.value,
-    });
+    // const notes = await invoke<Note[]>("get_daily_notes", {
+    //   spaceId: spaceId.value,
+    // });
 
-    const item = await useStorageItem<Note[]>(
-      `spaces/${spaceId.value}/daily/notes.json`,
-      [],
-    );
-    item.value = notes;
+    // const item = await useStorageItem<Note[]>(
+    //   `spaces/${spaceId.value}/daily/notes.json`,
+    //   [],
+    // );
+    // item.value = notes;
 
     // const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
     // const notes = item.value!;
 
-    // const notes = (await getDailyNotes()).value;
+    console.log({ spaceNotes: spaceNotes.value });
+
+    const notes = await loadDailyNotes(spaceNotes);
 
     return notes.map((note) => {
       const {
         id,
         datetime: [year, month, day, hour, minute],
       } = note;
-      const date = d(new Date(Date.UTC(year, month - 1, day, hour, minute)), {
+      const date = d(new Date(Date.UTC(year, month, day, hour, minute)), {
         weekday: "long",
         month: "long",
         day: "numeric",
@@ -163,23 +128,21 @@ const previousDayIndex = computed(() => {
 });
 
 // const stickyNotes = ref(await listStickyNotes(spaceId));
-const stickyNotes = ref<StickyNote[]>([]);
+const stickyNotes = await useStorageItem<StickyNote[]>(
+  `spaces/${spaceId}/sticky/notes.json`,
+  [],
+);
 const activeStickyNotes = ref<StickyNote[]>([]);
 
-async function loadStickyNotes() {
-  stickyNotes.value = await listStickyNotes(spaceId.value);
-}
-async function deleteStickyNoteAndReload(id: string) {
-  await deleteStickyNote(spaceId.value, id);
-  await loadStickyNotes();
-}
-
-await loadStickyNotes();
-whenever(stickyNotesOpen, loadStickyNotes);
-
-async function addStickyNote() {
-  await newStickyNote(spaceId.value);
-  await loadStickyNotes();
+async function createStickyNote() {
+  stickyNotes.value.push({
+    id: ulid(),
+    name: "",
+    x: 40,
+    y: 40,
+    width: 500,
+    height: 500,
+  });
 }
 </script>
 
@@ -204,7 +167,9 @@ async function addStickyNote() {
           }
         }
       "
-      @close="activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)"
+      @close="
+        activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)
+      "
     />
 
     <m3-page>
@@ -233,8 +198,8 @@ async function addStickyNote() {
           </m3-top-app-bar>
 
           <div
-            class="flex items-center justify-center gap-6 h-full w-full overflow-hidden self-center p-6"
             id="editor-container"
+            class="flex items-center justify-center gap-3 h-full w-full overflow-hidden self-center pl-6 pb-3"
           >
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
@@ -242,8 +207,8 @@ async function addStickyNote() {
 
             <div class="flex-1 relative h-full max-w-180 w-full">
               <div
-                class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto"
                 id="sidebar"
+                class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto"
               >
                 <div class="sidebar-button">
                   <div
@@ -298,14 +263,14 @@ async function addStickyNote() {
                   <div class="h-1px flex-1 bg-m3-outline-variant" />
 
                   <md-icon-button
-                    @click="currentNoteIndex = previousDayIndex"
                     :disabled="previousDayIndex === -1"
+                    @click="currentNoteIndex = previousDayIndex"
                   >
                     <md-icon>keyboard_arrow_up</md-icon>
                   </md-icon-button>
                   <md-icon-button
-                    @click="currentNoteIndex = nextDayIndex"
                     :disabled="nextDayIndex === -1"
+                    @click="currentNoteIndex = nextDayIndex"
                   >
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
@@ -313,15 +278,15 @@ async function addStickyNote() {
 
                 <editor
                   v-if="currentNote"
+                  v-model="currentNote.id"
                   kind="daily"
                   :space-id="spaceId"
-                  v-model="currentNote.id"
                   class="h-full flex-1"
                 />
               </m3-elevated-card>
             </div>
 
-            <side-bar direction="horizontal" v-if="!medium" />
+            <side-bar v-if="!medium" direction="horizontal" />
           </div>
         </div>
       </div>
@@ -331,13 +296,21 @@ async function addStickyNote() {
           {{ space.name }}
         </span>
 
-        <span slot="content">
+        <!-- <span slot="content">
           <pre>
-            <code>
-              {{ spaceId }}
-            </code>
-          </pre>
-        </span>
+                <code>
+                {{ spaceId }}
+                </code>
+            </pre>
+        </span> -->
+
+        <form slot="content" method="dialog" class="flex flex-col gap-8">
+          <edit-space v-model="space">
+            <template #actions>
+              <md-text-button @click="updateSpace">Confirm</md-text-button>
+            </template>
+          </edit-space>
+        </form>
       </md-dialog>
 
       <md-dialog :open="preludeOpen" @closed="preludeOpen = false">
@@ -353,7 +326,7 @@ async function addStickyNote() {
         <span slot="headline" class="flex items-center justify-between">
           Sticky Notes
 
-          <md-icon-button @click="addStickyNote">
+          <md-icon-button @click="createStickyNote">
             <md-icon>add</md-icon>
           </md-icon-button>
         </span>
@@ -415,7 +388,7 @@ async function addStickyNote() {
         </div>
       </md-dialog>
 
-      <side-bar direction="vertical" v-if="medium" />
+      <side-bar v-if="medium" direction="vertical" />
     </m3-page>
   </m3-theme>
 </template>
