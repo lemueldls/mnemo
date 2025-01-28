@@ -1,8 +1,12 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-import { createInsertSchema, createSelectSchema } from "drizzle-valibot";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-valibot";
 import { createId } from "@paralleldrive/cuid2";
-import { cuid2, string, parse, number, pipe, email } from "valibot";
+import { cuid2, string, pipe, email } from "valibot";
 
 export const users = sqliteTable("users", {
   id: text("id", { length: 128 }).notNull().primaryKey(),
@@ -10,11 +14,10 @@ export const users = sqliteTable("users", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-// Schema for inserting a user - can be used to validate API requests
 export const insertUserSchema = createInsertSchema(users, {
-  id: cuid2(),
+  id: pipe(string(), cuid2()),
   email: pipe(string(), email()),
 });
-
-// Schema for selecting a user - can be used to validate API responses
 export const selectUserSchema = createSelectSchema(users);
+
+// export const spaces.
