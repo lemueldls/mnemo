@@ -8,4 +8,5 @@ export default defineEventHandler(async (event) => {
 
   const userStorage = await useUserStorage(event);
   await userStorage.setItem(key, value);
+  await userStorage.setMeta(key, { updatedAt: Date.now() });
 });

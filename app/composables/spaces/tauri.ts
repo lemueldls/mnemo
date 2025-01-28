@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Space } from ".";
 
-export async function listSpaces() {
+export async function useSpaces() {
   const { data: spaces } = await useAsyncData("list_spaces", async () => {
     return Object.fromEntries(await invoke<[string, Space][]>("list_spaces"));
   });
@@ -15,7 +15,7 @@ export async function listSpaces() {
 export async function readSpaceFile(
   kind: NoteKind,
   spaceId: string,
-  path: string
+  path: string,
 ) {
   const file = await useStorageItem(`spaces/${spaceId}/${kind}/${path}`, "");
 
@@ -26,7 +26,7 @@ export async function syncSpaceFile(
   kind: NoteKind,
   spaceId: string,
   path: string,
-  text: string
+  text: string,
 ) {
   const file = await useStorageItem(`spaces/${spaceId}/${kind}/${path}`, "");
   file.value = text;

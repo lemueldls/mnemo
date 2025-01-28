@@ -36,10 +36,10 @@ export default defineNuxtPlugin({
       };
     });
 
-    const storage = createStorage({
+    const sync = createStorage({
       driver: driver({}),
     });
 
-    return { provide: { storage } };
+    return { provide: { sync } };
   },
 });
