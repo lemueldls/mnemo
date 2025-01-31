@@ -157,7 +157,7 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
 export const viewPlugin = (
   typstState: TypstState,
-  item: Ref<string>,
+  item: Ref<Ref<string>>,
   fileId: FileId,
 ) =>
   ViewPlugin.define((view) => {
@@ -171,7 +171,7 @@ export const viewPlugin = (
           typstState.resize(update.view.dom.clientWidth - 1);
 
           const text = update.state.doc.toString();
-          item.value = text;
+          item.value.value = text;
 
           const decorations = decorate(typstState, update, fileId, text);
           const effects = stateEffect.of({ decorations });
@@ -184,7 +184,7 @@ export const viewPlugin = (
 
 export const typst = (
   typstState: TypstState,
-  item: Ref<string>,
+  item: Ref<Ref<string>>,
   fileId: FileId,
 ) =>
   StateField.define({
@@ -226,9 +226,11 @@ function syncTypstState(typstState: TypstState, fileId: FileId, text: string) {
   } catch (error) {
     console.error("LMFAO");
     console.error(error);
-    console.log("retrying...");
+    // console.log("retrying...");
 
-    result = syncTypstState(typstState, fileId, text);
+    // result = syncTypstState(typstState, fileId, text);
+
+    window.location.reload();
 
     // throw error;
   }

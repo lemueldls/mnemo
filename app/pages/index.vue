@@ -33,6 +33,8 @@ const spacesProgress = computed(() =>
   })),
 );
 
+// console.log({ spaces: spaces.value, spacesProgress: spacesProgress.value });
+
 // interface Note {
 //   title: string;
 //   space: string;

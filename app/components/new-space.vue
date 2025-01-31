@@ -4,6 +4,7 @@ import { createId } from "@paralleldrive/cuid2";
 const open = defineModel();
 
 const dark = useDark();
+const router = useRouter();
 
 const spaces = await useSpaces();
 const space = ref({
@@ -14,11 +15,11 @@ const space = ref({
 });
 
 function createSpace() {
-  // const id = createId();
-  // spaces.value[id] = space;
+  const id = createId();
+  spaces.value[id] = space.value;
 
-  console.log(spaces.value, space.value);
-  spaces.value.push(space.value);
+  // void router.push(`/space?id=${id}`);
+  // open.value = false;
 }
 </script>
 

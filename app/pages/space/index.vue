@@ -10,9 +10,7 @@ const { d } = useI18n();
 // const { query } = useRoute();
 // const spaceId = [query.id].flat()[0]!.toString();
 
-const spaceId = useRouteQuery<string>("id");
-
-// console.log({ spaceId: spaceId.value });
+const spaceId = usePageRouteQuery("id");
 
 watchImmediate(spaceId, (spaceId) => {
   if (!spaceId) throw createError({ status: 404 });
@@ -20,12 +18,6 @@ watchImmediate(spaceId, (spaceId) => {
 
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value!]!);
-
-// move
-function updateSpace() {
-  console.log(spaces.value[spaceId.value], space.value);
-  spaces.value[spaceId.value] = space;
-}
 
 const { medium } = useBreakpoints(breakpointsM3);
 
@@ -38,6 +30,19 @@ const packagesOpen = ref(false);
 const screenshotOpen = ref(false);
 
 const dark = useDark();
+
+const router = useRouter();
+
+function deleteSpace() {
+  delete spaces.value[spaceId.value];
+
+  void router.push("/");
+  infoOpen.value = false;
+}
+
+function updateSpace() {
+  spaces.value[spaceId.value] = space;
+}
 
 const screenshotBlob = ref<Blob>();
 const screenshotUrl = ref<string>();
@@ -85,7 +90,7 @@ const { data: notes } = await useAsyncData(
     // );
     // item.value = notes;
 
-    // const item = await useStorageItem<Note[]>(`spaces/${spaceId}/daily/notes.json`, []);
+    // const item = await useStorageItem<Note[]>(`spaces/${spaceId.value}/daily/notes.json`, []);
     // const notes = item.value!;
 
     console.log({ spaceNotes: spaceNotes.value });
@@ -106,7 +111,7 @@ const { data: notes } = await useAsyncData(
       return { id, date };
     });
   },
-  { default: () => [] },
+  { watch: [spaceNotes], default: () => [] },
 );
 
 const currentNoteIndex = ref(0);
@@ -127,9 +132,13 @@ const previousDayIndex = computed(() => {
   return index === notes.value.length - 1 ? -1 : index + 1;
 });
 
-// const stickyNotes = ref(await listStickyNotes(spaceId));
-const stickyNotes = await useStorageItem<StickyNote[]>(
-  `spaces/${spaceId}/sticky/notes.json`,
+watch(spaceId, () => {
+  currentNoteIndex.value = 0;
+});
+
+// const stickyNotes = ref(await listStickyNotes(spaceId.value));
+const stickyNotes = await useRefStorageItem<StickyNote[]>(
+  computed(() => `spaces/${spaceId.value}/sticky/notes.json`),
   [],
 );
 const activeStickyNotes = ref<StickyNote[]>([]);
@@ -307,6 +316,9 @@ async function createStickyNote() {
         <form slot="content" method="dialog" class="flex flex-col gap-8">
           <edit-space v-model="space">
             <template #actions>
+              <md-text-button class="text-error" @click="deleteSpace"
+                >Delete</md-text-button
+              >
               <md-text-button @click="updateSpace">Confirm</md-text-button>
             </template>
           </edit-space>

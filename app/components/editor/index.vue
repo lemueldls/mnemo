@@ -99,10 +99,18 @@ const containerRef = useTemplateRef("container");
 
 const stateCache: { [key: string]: unknown } = {};
 
-const storageItem = await useRefStorageItem(
-  computed(() => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`),
-  "",
-);
+// const syncing = ref(false);
+
+// const fullPath = computed(
+//   () => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`,
+// );
+// const storageItem = await useRefStorageItem(fullPath, "");
+
+const storageItem = ref() as Ref<Ref<string>>;
+storageItem.value = ref("");
+
+// watch(fullPath, (fullPath) => console.log({ fullPath }));
+// watch(storageItem, (storageItem) => console.log({ storageItem }));
 
 // const storageItem = ref("");
 
@@ -116,9 +124,13 @@ onMounted(() => {
   });
 
   watchImmediate(
-    () => path.value,
-    async (path, oldPath) => {
-      if (oldPath) await until(storageItem).changed();
+    [() => path.value, () => props.spaceId],
+    async ([path, spaceId], [oldPath, oldSpace]) => {
+      console.log({ path, spaceId, oldPath, oldSpace });
+      storageItem.value = await useStorageItem(
+        `spaces/${spaceId}/${props.kind}/${path}.typ`,
+        "",
+      );
 
       // const note = await useStorageItem(
       //   `spaces/${props.spaceId}/${props.kind}/${path}.typ`,
@@ -140,15 +152,15 @@ onMounted(() => {
       const typstState = await useTypst();
 
       const packages = await useStorageItem<Package[]>(
-        `spaces/${props.spaceId}/packages.json`,
+        `spaces/${spaceId}/packages.json`,
         [],
       );
+      // check if spamming
       watchImmediate(packages, async (packages) => {
         await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
       });
 
-      const text = storageItem.value;
-      console.log({ text });
+      const text = storageItem.value.value;
       const fileId = typstState.insertFile(path, text);
 
       if (oldPath) stateCache[oldPath] = view.state.toJSON();

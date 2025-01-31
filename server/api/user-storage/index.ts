@@ -1,22 +1,14 @@
-export default defineWebSocketHandler({
-  open(peer) {
-    peer.send({ user: "server", message: `Welcome ${peer}!` });
-    peer.publish("chat", { user: "server", message: `${peer} joined!` });
-    peer.subscribe("chat");
-  },
-  message(peer, message) {
-    if (message.text().includes("ping")) {
-      peer.send({ user: "server", message: "pong" });
-    } else {
-      const msg = {
-        user: peer.toString(),
-        message: message.toString(),
-      };
-      peer.send(msg); // echo
-      peer.publish("chat", msg);
-    }
-  },
-  close(peer) {
-    peer.publish("chat", { user: "server", message: `${peer} left!` });
-  },
-});
+// import { createH3StorageHandler } from "unstorage/server";
+
+// const storage = hubKV();
+
+// export default createH3StorageHandler(storage, {
+//   authorize(req) {
+//     // req: { key, type, event }
+//     if (req.type === "read" && req.key.startsWith("private:")) {
+//       throw new Error("Unauthorized Read");
+//     }
+//   },
+// });
+
+export default defineEventHandler(() => {});

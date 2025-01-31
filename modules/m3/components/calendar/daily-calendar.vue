@@ -92,33 +92,38 @@ onMounted(() => {
           :color="spaces![spaceId]!.color"
           :dark="dark"
           harmonize
-          :style="{
-            top: `${(from / 60) * (scrollHeight / 24)}px`,
-            height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
-          }"
-          class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-center text-m3-on-primary-container m3-body-small"
+          as-child
         >
-          <md-ripple />
+          <nuxt-link
+            :to="`/space?id=${spaceId}`"
+            :style="{
+              top: `${(from / 60) * (scrollHeight / 24)}px`,
+              height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
+            }"
+            class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-center text-m3-on-primary-container m3-body-small"
+          >
+            <md-ripple />
 
-          <span class="w-full font-semibold truncate">
-            {{ spaces![spaceId]!.name }}
-          </span>
+            <span class="w-full font-semibold truncate">
+              {{ spaces![spaceId]!.name }}
+            </span>
 
-          <span class="w-full truncate">
-            {{
-              $d(new Date(0, 0, 0, 0, from), {
-                hour: "numeric",
-                minute: "numeric",
-              })
-            }}
-            -
-            {{
-              $d(new Date(0, 0, 0, 0, to), {
-                hour: "numeric",
-                minute: "numeric",
-              })
-            }}
-          </span>
+            <span class="w-full truncate">
+              {{
+                $d(new Date(0, 0, 0, 0, from), {
+                  hour: "numeric",
+                  minute: "numeric",
+                })
+              }}
+              -
+              {{
+                $d(new Date(0, 0, 0, 0, to), {
+                  hour: "numeric",
+                  minute: "numeric",
+                })
+              }}
+            </span>
+          </nuxt-link>
         </m3-theme>
 
         <div

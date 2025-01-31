@@ -45,12 +45,20 @@ const name = await useStorageItem("name", "");
     <m3-page>
       <m3-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
-          <!-- <div class="flex flex-col">
-            <span class="m3-title-large">{{ user.email }}</span>
-            <span class="m3-label-large">@{{ user.id }}</span>
+          <div class="flex flex-col">
+            <!-- <span class="m3-title-large">{{ user.email }}</span>
+            <span class="m3-label-large">@{{ user.id }}</span> -->
+            <!-- <span class="m3-title-medium">lemueldls@pm.me</span>
+            <span class="m3-label-medium">@c0pw798239gft7cktutyt</span> -->
+          </div>
+
+          <!-- <div>
+            <h2 class="text-m3-primary m3-title-medium">mnemo</h2>
           </div> -->
 
-          mnemo
+          <md-icon-button>
+            <md-icon>sync</md-icon>
+          </md-icon-button>
         </div>
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">
@@ -100,9 +108,9 @@ const name = await useStorageItem("name", "");
           </m3-theme>
         </nuxt-link>
 
-        <template #actions>
+        <!-- <template #actions>
           <md-outlined-button @click="clear"> Logout </md-outlined-button>
-        </template>
+        </template> -->
       </m3-nav-drawer>
 
       <div class="flex flex-1 flex-col">
@@ -166,7 +174,7 @@ const name = await useStorageItem("name", "");
 
 <style>
 #header {
-  @apply px-4 pt-4 pb-6 text-m3-primary m3-title-medium;
+  @apply px-4 pt-2 pb-4;
 
   /* font-family: "Iosevka Quasi Custom", sans-serif; */
   font-family: "Iosevka Book Web", sans-serif;

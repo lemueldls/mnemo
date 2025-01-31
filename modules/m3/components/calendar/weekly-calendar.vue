@@ -47,12 +47,14 @@ const days = [1, 2, 3, 4, 5].map((day) =>
 
 const dark = useDark();
 
-const newSpaceDay = ref();
+const newSpaceId = ref();
+const newSpaceDays = reactive(new Set<number>());
 const newSpaceFrom = ref();
 const newSpaceTo = ref();
 
 function openDialog(day: number, hour: number) {
-  newSpaceDay.value = day;
+  newSpaceDays.clear();
+  newSpaceDays.add(day);
   newSpaceFrom.value = hourToTime(hour - 1);
   newSpaceTo.value = hourToTime(hour);
 
@@ -93,18 +95,29 @@ const schedule = await useSchedule();
 // console.log({ schedule: schedule.value });
 
 function createScheduleItem(event: SubmitEvent) {
-  const formData = new FormData(event.target as HTMLFormElement);
+  // const formData = new FormData(event.target as HTMLFormElement);
 
-  const spaceId = formData.get("space") as string;
-  const from = formData.get("from") as string;
-  const to = formData.get("to") as string;
-  const day = formData.get("day") as string;
+  // const spaceId = formData.get("space") as string;
+  // const from = formData.get("from") as string;
+  // const to = formData.get("to") as string;
+  // const day = formData.get("day") as string;
 
-  schedule.value[Number.parseInt(day)]!.push({
-    spaceId,
-    from: timeToMinutes(from),
-    to: timeToMinutes(to),
-  });
+  // schedule.value[Number.parseInt(day)]!.push({
+  //   spaceId,
+  //   from: timeToMinutes(from),
+  //   to: timeToMinutes(to),
+  // });
+
+  for (const day of newSpaceDays) {
+    const spaceId = newSpaceId.value;
+    if (!spaceId) throw createError("space required");
+
+    schedule.value[day]!.push({
+      spaceId,
+      from: timeToMinutes(newSpaceFrom.value),
+      to: timeToMinutes(newSpaceTo.value),
+    });
+  }
 }
 
 function editScheduleItem(event: SubmitEvent) {
@@ -246,8 +259,10 @@ function timeToMinutes(time: string) {
                 <md-radio
                   name="space"
                   :value="id"
+                  :checked="id === newSpaceId"
                   touch-target="wrapper"
                   required
+                  @change="newSpaceId = id"
                 />
               </div>
               <span class="m3-title-medium flex-1">{{ space.name }}</span>
@@ -262,12 +277,15 @@ function timeToMinutes(time: string) {
           <md-ripple />
 
           <label class="flex gap-4">
-            <md-radio
+            <md-checkbox
               name="day"
               :value="i + 1"
-              :checked="newSpaceDay === i + 1"
-              @change="newSpaceDay = i + 1"
-              required
+              :checked="newSpaceDays.has(i + 1)"
+              @change="
+                newSpaceDays.has(i + 1)
+                  ? newSpaceDays.delete(i + 1)
+                  : newSpaceDays.add(i + 1)
+              "
             />
             <span class="m3-label-large">{{ day }}</span>
           </label>

@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { createStorage, snapshot, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
@@ -5,7 +6,70 @@ const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
+// const i = "1"; // mbhdsscpbc32qwor9a692fpe - nz8qqnr8i1d6n2ayy1oms8lk
+// const id = createId();
+// const id = "nz5x3j9umirtfbxemqwumoe2";
+// const keys = await localDb.getKeys(`app:spaces:${i}`);
+// console.log({ keys });
+// console.log({ keys: await localDb.getKeys(`app::spaces`) });
+
+// const spaces = await localDb.getItem("spaces.json");
+// console.log({ spaces });
+// spaces[id] = spaces[i];
+// delete spaces[i];
+// await localDb.setItem("spaces.json", spaces);
+// console.log(spaces, Object.entries(spaces));
+
+// const schedule = await localDb.getItem("schedule.json", []);
+// console.log({ schedule });
+
+// for (const weekday of schedule) {
+//   for (const item of weekday) {
+//     // console.log({ item });
+//     if (item.spaceId === "0") item.spaceId = "j77m2xuea1l39ewaxvl4sfl9";
+//     if (item.spaceId === "1") item.spaceId = "nz5x3j9umirtfbxemqwumoe2";
+//   }
+// }
+
+// await localDb.setItem("schedule.json", schedule);
+
+// await localDb.setItem(
+//   "spaces.json",
+//   Object.fromEntries(spaces.map((space, i) => [i, space])),
+// );
+
+// for await (const key of keys) {
+//   const k = key.slice(4);
+
+//   if (key.includes("undefined") || key.includes("[object Object]")) {
+//     await localDb.removeItem(k, { removeMeta: true });
+//   }
+
+//   // const content = await localDb.getItem(k);
+
+//   // console.log({ k, content });
+
+//   // await localDb.setItem(k.replace(i.toString(), id), content);
+//   // await localDb.removeItem(k, { removeMeta: true });
+// }
+
+// for await (const key of await localDb.getKeys()) {
+//   const k = key.slice(4);
+
+//   if (key.includes("undefined") || key.includes("[object Object]")) {
+//     await localDb.removeItem(k, { removeMeta: true });
+//   }
+
+//   console.log({ k });
+// }
+
+// for await (const [key, value] of Object.entries(await snapshot(localDb, "/"))) {
+//   console.log({ key, value });
+// }
+
 // console.log({ snapshot: await snapshot(localDb) });
+
+// useWebSocket("/api/user-storage");
 
 const itemRefs: { [key: string]: Ref<StorageValue> } = {};
 
@@ -43,7 +107,7 @@ export async function useStorageItem<T extends StorageValue>(
   watchDebounced(
     item,
     async (value) => {
-      console.log({ key, value });
+      // console.log({ key, value });
 
       await localDb.setItem(key, value);
       await localDb.setMeta(key, { updatedAt: Date.now() });
