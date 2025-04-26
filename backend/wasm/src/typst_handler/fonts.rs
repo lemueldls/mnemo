@@ -4,7 +4,7 @@ use std::{
     sync::OnceLock,
 };
 
-use memmap2::Mmap;
+// use memmap2::Mmap;
 use typst::{
     foundations::Bytes,
     text::{Font, FontBook, FontInfo},
@@ -48,7 +48,7 @@ impl FontSearcher {
     // #[cfg(feature = "embed-fonts")]
     fn search_embedded(&mut self) {
         let mut search = |bytes: &'static [u8]| {
-            for (i, font) in Font::iter(Bytes::from_static(bytes)).enumerate() {
+            for (i, font) in Font::iter(Bytes::new(bytes)).enumerate() {
                 self.book.push(font.info().clone());
                 self.fonts.push(FontSlot {
                     path: PathBuf::new(),

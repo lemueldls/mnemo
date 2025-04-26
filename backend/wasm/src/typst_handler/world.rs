@@ -6,20 +6,23 @@ use std::{
 };
 
 use comemo::Prehashed;
+use serde::{Deserialize, Serialize};
 use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, UtcOffset};
+use tsify::Tsify;
 use typst::{
-    compile,
+    Feature, Features, Library, World, compile,
     diag::{FileError, FileResult},
     foundations::{Bytes, Datetime},
-    syntax::{package::PackageSpec, FileId, Source, VirtualPath},
+    layout::PagedDocument,
+    syntax::{FileId, Source, VirtualPath, package::PackageSpec},
     text::{Font, FontBook},
     utils::LazyHash,
-    Library, World,
 };
+use typst_ide::IdeWorld;
 
 use super::{
-    fonts::{FontSearcher, FontSlot},
     PackageFile,
+    fonts::{FontSearcher, FontSlot},
 };
 
 pub struct MnemoWorld {
@@ -43,10 +46,13 @@ impl MnemoWorld {
         let mut searcher = FontSearcher::new();
         searcher.search(&[]);
 
+        let features = [Feature::Html].into_iter().collect();
+        let library = typst::Library::builder().with_features(features).build();
+
         Self {
             main: None,
             files: HashMap::new(),
-            library: LazyHash::new(typst::Library::builder().build()),
+            library: LazyHash::new(library),
             book: LazyHash::new(searcher.book),
             fonts: searcher.fonts,
         }
@@ -93,11 +99,11 @@ impl MnemoWorld {
     }
 
     pub fn compile(&self) {
-        let compiled = compile(self);
+        let compiled = compile::<PagedDocument>(self);
         for warning in compiled.warnings {
             crate::warn(&warning.message);
         }
-        let document = compiled.output.unwrap();
+        // let document = compiled.output.unwrap();
 
         // for page in document.pages {
         //     for (point, item) in page.items() {
@@ -143,7 +149,7 @@ impl World for MnemoWorld {
 
     fn file(&self, id: FileId) -> FileResult<Bytes> {
         self.get_source(id)
-            .map(|source| Bytes::from(source.text().as_bytes()))
+            .map(|source| Bytes::from_string(source.text().to_string()))
             .ok_or(FileError::Other(None))
     }
 
@@ -170,5 +176,11 @@ impl World for MnemoWorld {
         };
 
         Some(Datetime::Date(now.date()))
+    }
+}
+
+impl IdeWorld for MnemoWorld {
+    fn upcast(&self) -> &dyn World {
+        self
     }
 }

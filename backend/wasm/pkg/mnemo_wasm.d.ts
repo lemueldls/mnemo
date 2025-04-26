@@ -12,11 +12,8 @@ export interface RangedRender {
 export interface Block {
     range: { start: number; end: number };
     offset: number;
+    errors: TypstError[];
 }
-
-export type TypstJump = { type: "Source"; position: number };
-
-export type TypstCompletionKind = "Syntax" | "Function" | "Parameter" | "Constant" | "Symbol" | "Type";
 
 export interface TypstCompletion {
     kind: TypstCompletionKind;
@@ -25,83 +22,51 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
+export type TypstCompletionKind = "Syntax" | "Func" | "Type" | "Param" | "Constant" | "Path" | "Package" | "Label" | "Font" | "Symbol";
+
+export type TypstJump = { type: "File"; position: number };
+
+export interface TypstError {
+    range: { start: number; end: number };
+    message: string;
+    hints: string[];
+}
+
+export interface TypstDiagnostic {
+    range: { start: number; end: number };
+    severity: TypstDiagnosticSeverity;
+    message: string;
+    hints: string[];
+}
+
+export type TypstDiagnosticSeverity = "Error" | "Warning";
+
 export class FileId {
+  private constructor();
   free(): void;
 }
 export class PackageFile {
   free(): void;
-  /**
-   * @param {string} path
-   * @param {Uint8Array} content
-   */
   constructor(path: string, content: Uint8Array);
 }
 export class Rgb {
   free(): void;
-  /**
-   * @param {number} r
-   * @param {number} g
-   * @param {number} b
-   */
   constructor(r: number, g: number, b: number);
+  toString(): string;
 }
 export class ThemeColors {
   free(): void;
-  /**
-   * @param {Rgb} primary
-   * @param {Rgb} secondary
-   * @param {Rgb} tertiary
-   * @param {Rgb} outline
-   * @param {Rgb} on_primary_container
-   * @param {Rgb} on_secondary_container
-   * @param {Rgb} on_tertiary_container
-   * @param {Rgb} on_background
-   */
   constructor(primary: Rgb, secondary: Rgb, tertiary: Rgb, outline: Rgb, on_primary_container: Rgb, on_secondary_container: Rgb, on_tertiary_container: Rgb, on_background: Rgb);
 }
 export class TypstState {
   free(): void;
   constructor();
-  /**
-   * @param {string} path
-   * @param {string} text
-   * @returns {FileId}
-   */
   insertFile(path: string, text: string): FileId;
-  /**
-   * @param {string} spec
-   * @param {(PackageFile)[]} files
-   */
-  installPackage(spec: string, files: (PackageFile)[]): void;
-  /**
-   * @param {FileId} id
-   * @param {string} text
-   * @returns {SyncResult}
-   */
-  sync(id: FileId, text: string): SyncResult;
-  /**
-   * @param {FileId} id
-   * @returns {string}
-   */
-  renderPdf(id: FileId): string;
-  /**
-   * @param {number} index
-   * @param {number} x
-   * @param {number} y
-   * @returns {TypstJump | undefined}
-   */
+  installPackage(spec: string, files: PackageFile[]): void;
+  sync(id: FileId, text: string, prelude: string): SyncResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
-  /**
-   * @param {number} cursor
-   * @param {boolean} explicit
-   * @returns {any}
-   */
   autocomplete(cursor: number, explicit: boolean): any;
-  /**
-   * @param {number | undefined} [width]
-   * @param {number | undefined} [height]
-   */
-  resize(width?: number, height?: number): void;
+  resize(width?: number | null, height?: number | null): void;
   pt: number;
   size: number;
   theme: ThemeColors;
@@ -116,6 +81,7 @@ export interface InitOutput {
   readonly __wbg_themecolors_free: (a: number, b: number) => void;
   readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
+  readonly rgb_toString: (a: number) => [number, number];
   readonly __wbg_typststate_free: (a: number, b: number) => void;
   readonly __wbg_get_typststate_pt: (a: number) => number;
   readonly __wbg_set_typststate_pt: (a: number, b: number) => void;
@@ -127,13 +93,12 @@ export interface InitOutput {
   readonly typststate_new: () => number;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly typststate_sync: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_renderPdf: (a: number, b: number) => Array;
-  readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_autocomplete: (a: number, b: number, c: number) => Array;
+  readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
+  readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
+  readonly typststate_autocomplete: (a: number, b: number, c: number) => [number, number, number];
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly __wbg_rgb_free: (a: number, b: number) => void;
   readonly start: () => void;
+  readonly __wbg_rgb_free: (a: number, b: number) => void;
   readonly qcms_profile_is_bogus: (a: number) => number;
   readonly qcms_white_point_sRGB: (a: number) => void;
   readonly qcms_profile_precache_output_transform: (a: number) => void;
@@ -147,11 +112,11 @@ export interface InitOutput {
   readonly qcms_enable_iccv4: () => void;
   readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
   readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
-  readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __externref_table_alloc: () => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export_3: WebAssembly.Table;
+  readonly __externref_table_alloc: () => number;
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_start: () => void;
 }

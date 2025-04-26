@@ -1,5 +1,6 @@
 mod fonts;
 mod world;
+mod wrappers;
 
 use core::fmt;
 use std::{
@@ -13,23 +14,27 @@ use std::{
 };
 
 use data_encoding::BASE64;
-use js_sys::Uint8Array;
+// use js_sys::Uint8Array;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
 use tsify::Tsify;
 use typst::{
-    compile,
-    layout::{Abs, Frame, FrameItem, Page, Point, Position},
-    model::Document,
-    syntax::{ast, package::PackageSpec, FileId, Source, Span, SyntaxKind, VirtualPath},
+    World, WorldExt, compile,
+    diag::SourceDiagnostic,
+    ecow::{EcoString, EcoVec},
+    layout::{Abs, Frame, FrameItem, Page, PagedDocument, Point, Position},
+    syntax::{
+        FileId, Source, Span, SyntaxError, SyntaxKind, VirtualPath, ast, package::PackageSpec,
+    },
     visualize::Color,
-    World, WorldExt,
 };
 // use typst_svg::{svg, svg_merged};
-use typst_pdf::{pdf, PdfOptions, PdfStandard};
+// use typst_pdf::{PdfOptions, PdfStandard, pdf};
+// use typst_html::html;
 use typst_render::{render, render_merged};
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
+use wrappers::{TypstCompletion, TypstDiagnostic, TypstError, TypstJump};
 
 #[wasm_bindgen]
 pub struct PackageFile {
@@ -125,11 +130,15 @@ impl fmt::Display for Rgb {
 }
 
 #[wasm_bindgen]
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct TypstState {
     world: MnemoWorld,
-    document: Option<Document>,
+    document: Option<PagedDocument>,
+    diagnostics: Vec<TypstDiagnostic>,
     width: String,
     height: String,
+    // last_working_edit: String,
     pub pt: f32,
     pub size: f32,
     pub theme: ThemeColors,
@@ -140,6 +149,7 @@ impl Default for TypstState {
         Self {
             world: MnemoWorld::new(),
             document: None,
+            diagnostics: Vec::new(),
             width: String::from("auto"),
             height: String::from("auto"),
             pt: 0_f32,
@@ -207,14 +217,24 @@ impl TypstState {
         }
     }
 
-    fn prelude(&self) -> String {
+    fn prelude(&self, config_page: bool) -> String {
+        let page_config = if config_page {
+            format!(
+                "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:1pt)",
+                width = self.width,
+                height = self.height,
+            )
+        } else {
+            format!("")
+        };
+
         format!(
             r#"
                 #let theme={theme}
-                #set align(horizon)
                 #set text(fill:theme.on-background,size:{size}pt,tracking:0pt,top-edge:"ascender",bottom-edge:"descender",overhang:false)
+                #set align(horizon)
                 #set par(leading:0em,linebreaks:"simple")
-                #set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:1pt)
+                {page_config}
                 #context {{show math.equation:set text(size:text.size*1.75)}}
                 #show math.equation.where(block:true):set text(size:{size}pt*1.125)
                 #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
@@ -230,14 +250,12 @@ impl TypstState {
             "#,
             theme = self.theme,
             size = self.size + 1.0,
-            width = self.width,
-            height = self.height,
         )
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, id: &FileIdWrapper, text: &str) -> SyncResult {
-        let mut source = self.prelude();
+    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> SyncResult {
+        let mut source = self.prelude(true) + prelude;
 
         let mut blocks = Vec::<Block>::new();
         let mut in_block = false;
@@ -249,6 +267,8 @@ impl TypstState {
         self.world.main_source_mut().replace(text);
 
         let children = self.world.main_source().root().children();
+        let mut errors = Vec::new();
+
         for node in children {
             let mut range = self.world.range(node.span()).unwrap();
 
@@ -266,7 +286,9 @@ impl TypstState {
                         in_block = false;
                         source += "[]";
 
-                        blocks.last_mut().unwrap().range.end = range.end;
+                        if let Some(block) = blocks.last_mut() {
+                            block.range.end = range.end;
+                        }
 
                         continue;
                     }
@@ -287,11 +309,22 @@ impl TypstState {
                     source += &text[range];
                     source += "\n#pagebreak()\n";
                 }
+            } else if node.erroneous() {
+                in_block = false;
+
+                errors.extend(node.errors());
+
+                continue;
             } else if in_block {
                 blocks.last_mut().unwrap().range.end = range.end;
             } else {
                 in_block = true;
-                blocks.push(Block::new(range, source.encode_utf16().count()));
+
+                blocks.push(Block::new(
+                    range,
+                    source.encode_utf16().count(),
+                    TypstError::drain_from_errors(&mut errors, &self.world),
+                ));
             }
 
             match node.kind() {
@@ -316,9 +349,14 @@ impl TypstState {
             return SyncResult::Ok(Box::new([]));
         }
 
+        crate::log(&format!(
+            "[SOURCE]: {}",
+            &source[(self.prelude(true) + prelude).len()..]
+        ));
+
         self.world.main_source_mut().replace(&source);
 
-        let compiled = compile(&self.world);
+        let compiled = compile::<PagedDocument>(&self.world);
         match compiled.output {
             Ok(document) => {
                 let pages = &document.pages;
@@ -346,13 +384,22 @@ impl TypstState {
 
                 self.document = Some(document);
 
+                // self.last_working_edit
+
                 SyncResult::Ok(blocks)
             }
             Err(errors) => {
                 crate::error(&format!("{errors:?}"));
+                // crate::log(&format!(
+                //     "[ERRORS]: {:?}",
+                //     // node.errors(),
+                //     TypstError::drain_from_errors(&mut errors.clone(), &self.world)
+                // ));
 
                 // serde_wasm_bindgen::to_value::<[(); 0]>(&[])
                 SyncResult::Error(errors.into_iter().map(|e| e.message.to_string()).collect())
+
+                // for error in errors {}
             }
         }
     }
@@ -373,25 +420,22 @@ impl TypstState {
     //     }
     // }
 
-    #[wasm_bindgen(js_name = renderPdf)]
-    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> String {
-        self.world.main = Some(id.inner());
+    // #[wasm_bindgen(js_name = renderHtml)]
+    // pub fn render_html(&mut self, id: &FileIdWrapper) -> String {
+    //     self.world.main = Some(id.inner());
 
-        let mut source = self.prelude();
-        source += self.world.main_source().text();
+    //     let mut source = self.prelude(false);
+    //     source += self.world.main_source().text();
 
-        self.world.main_source_mut().replace(&source);
+    //     self.world.main_source_mut().replace(&source);
 
-        let compiled = compile(&self.world);
-        match compiled.output {
-            Ok(document) => {
-                let bytes = pdf(&document, &PdfOptions::default()).unwrap();
-
-                BASE64.encode(&bytes)
-            }
-            Err(..) => String::new(),
-        }
-    }
+    //     let compiled = compile(&self.world);
+    //     // match compiled.output {
+    //     //     Ok(document) => html(&document).unwrap(),
+    //     //     Err(..) => String::from("error"),
+    //     // }
+    //     html(&compiled.output.unwrap()).unwrap()
+    // }
 
     #[wasm_bindgen]
     pub fn click(&mut self, index: usize, x: f64, y: f64) -> Option<TypstJump> {
@@ -482,11 +526,16 @@ impl RangedRender {
 pub struct Block {
     pub range: Range<usize>,
     pub offset: usize,
+    pub errors: Box<[TypstError]>,
 }
 
 impl Block {
-    pub fn new(range: Range<usize>, offset: usize) -> Self {
-        Self { range, offset }
+    pub fn new(range: Range<usize>, offset: usize, errors: Box<[TypstError]>) -> Self {
+        Self {
+            range,
+            offset,
+            errors,
+        }
     }
 }
 
@@ -494,79 +543,4 @@ fn encode_frame(frame: Page, pt: f32) -> String {
     let canvas = &render(&frame, pt);
 
     BASE64.encode(&canvas.encode_png().unwrap())
-}
-
-#[derive(Tsify, Serialize, Deserialize, Debug)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-#[serde(tag = "type")]
-pub enum TypstJump {
-    Source {
-        // id: u64,
-        position: usize,
-    },
-    // Url(String),
-    // Position(Position),
-}
-
-impl From<typst_ide::Jump> for TypstJump {
-    fn from(jump: typst_ide::Jump) -> Self {
-        match jump {
-            typst_ide::Jump::Source(id, position) => {
-                // let mut state = DefaultHasher::new();
-                // id.hash(&mut state);
-
-                Self::Source {
-                    // id: state.finish(),
-                    position,
-                }
-            }
-            typst_ide::Jump::Url(..) => todo!(),
-            typst_ide::Jump::Position(..) => todo!(),
-        }
-    }
-}
-
-#[derive(Tsify, Serialize, Deserialize, Debug)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-
-pub enum TypstCompletionKind {
-    Syntax,
-    Function,
-    Parameter,
-    Constant,
-    Symbol,
-    Type,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-
-pub struct TypstCompletion {
-    kind: TypstCompletionKind,
-    label: String,
-    apply: Option<String>,
-    detail: Option<String>,
-}
-
-pub struct TypstCompleteResponse {
-    offset: usize,
-    completions: Vec<TypstCompletion>,
-}
-
-impl From<typst_ide::Completion> for TypstCompletion {
-    fn from(value: typst_ide::Completion) -> Self {
-        Self {
-            kind: match value.kind {
-                typst_ide::CompletionKind::Syntax => TypstCompletionKind::Syntax,
-                typst_ide::CompletionKind::Func => TypstCompletionKind::Function,
-                typst_ide::CompletionKind::Param => TypstCompletionKind::Parameter,
-                typst_ide::CompletionKind::Constant => TypstCompletionKind::Constant,
-                typst_ide::CompletionKind::Symbol(..) => TypstCompletionKind::Symbol,
-                typst_ide::CompletionKind::Type => TypstCompletionKind::Type,
-            },
-            label: value.label.to_string(),
-            apply: value.apply.map(|s| s.to_string()),
-            detail: value.detail.map(|s| s.to_string()),
-        }
-    }
 }
