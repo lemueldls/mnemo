@@ -7,6 +7,7 @@ import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
 import type { Package } from "~~/server/api/list-packages";
+import type { Note } from "~/composables/spaces";
 
 const dark = useDark();
 
@@ -17,19 +18,25 @@ const spaceId = useRouteQuery("space");
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
-const dailyNoteRefs = await useStorageKeys(`spaces/${spaceId.value}/daily`);
+const dailyNotesRef = await useStorageItem<Note[]>(
+  `spaces/${spaceId.value}/daily/notes.json`,
+  []
+);
 
 const dailyNotes = await Promise.all(
-  dailyNoteRefs.map(async (noteRef) => {
-    const item = await useStorageItem(noteRef, "");
+  dailyNotesRef.value.toReversed().map(async (note) => {
+    const item = await useStorageItem<string>(
+      `spaces/${spaceId.value}/daily/${note.id}.typ`,
+      ""
+    );
+
     return item.value;
-  }),
-);
+  })
+).then((notes) => notes.filter((note) => note));
 
 const typstState = await useTypst();
 
 const pixelPerPoint = ref(window.devicePixelRatio);
-const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const { palette } = useMaterialTheme()!;
 
@@ -47,29 +54,35 @@ typstState.theme = new ThemeColors(
   parseColor(palette.onPrimaryContainer),
   parseColor(palette.onSecondaryContainer),
   parseColor(palette.onTertiaryContainer),
-  parseColor(palette.onBackground),
+  parseColor(palette.onBackground)
 );
 
 const packages = await useStorageItem<Package[]>(
   `spaces/${spaceId.value}/packages.json`,
-  [],
+  []
 );
 // watchImmediate(packages, async (packages) => {
 //   await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
 // });
 await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
 
-typstState.resize(200);
+// typstState.resize(200);
 
-const path = `spaces/${spaceId.value}/render.typ`;
-const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
-const pdfEncoded = typstState.renderPdf(fileId);
-
-const pdfUrl = `data:application/pdf;base64,${pdfEncoded}`;
+// const path = `spaces/${spaceId.value}/render.typ`;
+// const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
+// const html = typstState.renderHtml(fileId);
 </script>
 
 <template>
-  <iframe :src="pdfUrl" class="w-full h-full" />
+  <div>
+    [[render]]
+    <pre>
+      <code>
+        {{ dailyNotes }}
+      </code>
+    </pre>
+    <!-- <div class="w-full h-full" v-html="html" /> -->
+  </div>
 </template>
 
 <style lang="scss">

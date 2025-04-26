@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createId } from "@paralleldrive/cuid2";
 
-const open = defineModel();
+const open = defineModel<boolean>();
 
 const dark = useDark();
 const router = useRouter();
@@ -19,7 +19,7 @@ function createSpace() {
   spaces.value[id] = space.value;
 
   // void router.push(`/space?id=${id}`);
-  // open.value = false;
+  open.value = false;
 }
 </script>
 

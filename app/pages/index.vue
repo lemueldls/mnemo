@@ -84,15 +84,19 @@ const timeOfDay = computed(() => {
           </span>
         </div>
 
-        <!-- <div class="text-m3-on-surface-container flex flex-1 items-center justify-center m3-label-large">
-          Nothing yet
-        </div> -->
-
         <!-- <m3-filled-card>
           <span class="text-m3-on-surface-varient m3-body-large">
             There is nothing left to do...
           </span>
         </m3-filled-card> -->
+
+        <!-- <m3-outlined-card>
+          <h3 class="m3-label-large">Recommended</h3>
+
+          <span class="text-m3-on-surface-varient m3-body-large">
+            Nothing yet...
+          </span>
+        </m3-outlined-card> -->
 
         <div class="flex-shrink-0">
           <!-- <h2 class="pb-4 m3-title-large">Stuff</h2> -->
@@ -119,11 +123,11 @@ const timeOfDay = computed(() => {
                       :name="space.icon"
                       :style="{ color: 'var(--md-sys-color-primary)' }"
                     />
-
-                    <h3 class="m3-title-large">
-                      {{ space.name }}
-                    </h3>
                   </div>
+
+                  <h3 class="m3-title-large">
+                    {{ space.name }}
+                  </h3>
 
                   <!-- <div class="flex flex-col">
                     <div
@@ -157,6 +161,14 @@ const timeOfDay = computed(() => {
             </nuxt-link>
           </div>
         </div>
+
+        <m3-filled-card>
+          <h3 class="m3-label-large">Todo</h3>
+
+          <span class="text-m3-on-surface-varient m3-body-large">
+            Nothing yet...
+          </span>
+        </m3-filled-card>
       </m3-outlined-card>
     </div>
   </div>
@@ -170,13 +182,15 @@ const timeOfDay = computed(() => {
 #progress {
   @apply grid gap-4;
 
-  grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
+  /* grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr)); */
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
 }
 
 #notes {
   @apply grid gap-4;
 
   grid-template-columns: repeat(auto-fill, minmax(17.125rem, 1fr));
+  /* grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); */
 }
 
 #main-column {

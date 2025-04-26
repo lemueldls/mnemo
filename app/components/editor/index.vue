@@ -29,6 +29,7 @@ import {
   defaultKeymap,
   historyKeymap,
   indentWithTab,
+  historyField,
 } from "@codemirror/commands";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import {
@@ -40,7 +41,7 @@ import {
   type CompletionContext,
   type CompletionResult,
 } from "@codemirror/autocomplete";
-import { lintKeymap } from "@codemirror/lint";
+import { linter, lintKeymap } from "@codemirror/lint";
 
 // import { redFromArgb } from "@material/material-color-utilities";
 
@@ -65,8 +66,9 @@ const props = defineProps<{
 // const path = useVModel(props, "modelValue", emit);
 const path = defineModel<string>({ required: true });
 
-const pixelPerPoint = ref(window.devicePixelRatio);
-const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
+const pixelPerPoint = ref(1);
+// const pixelPerPoint = ref(window.devicePixelRatio);
+// const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const { palette } = useMaterialTheme()!;
 
@@ -114,6 +116,22 @@ storageItem.value = ref("");
 
 // const storageItem = ref("");
 
+const preludeItem = await useRefStorageItem(
+  computed(() => `spaces/${props.spaceId}/prelude/main.typ`),
+  "",
+);
+const prelude = computed(() =>
+  props.kind === "prelude" ? "" : preludeItem.value,
+);
+
+// watchEffect(() => {
+//   console.log({
+//     preludeItem: preludeItem.value,
+//     prelude: prelude.value,
+//     kind: props.kind,
+//   });
+// });
+
 onMounted(() => {
   const container = containerRef.value;
   const view = new EditorView({
@@ -126,9 +144,9 @@ onMounted(() => {
   watchImmediate(
     [() => path.value, () => props.spaceId],
     async ([path, spaceId], [oldPath, oldSpace]) => {
-      console.log({ path, spaceId, oldPath, oldSpace });
+      // console.log({ path, spaceId, oldPath, oldSpace });
       storageItem.value = await useStorageItem(
-        `spaces/${spaceId}/${props.kind}/${path}.typ`,
+        `spaces/${oldSpace || spaceId}/${props.kind}/${path}.typ`,
         "",
       );
 
@@ -152,7 +170,7 @@ onMounted(() => {
       const typstState = await useTypst();
 
       const packages = await useStorageItem<Package[]>(
-        `spaces/${spaceId}/packages.json`,
+        `spaces/${oldSpace || spaceId}/packages.json`,
         [],
       );
       // check if spamming
@@ -161,14 +179,20 @@ onMounted(() => {
       });
 
       const text = storageItem.value.value;
+      // if (!text) console.log("[DELETING]");
+      // console.log({ path, text });
       const fileId = typstState.insertFile(path, text);
 
-      if (oldPath) stateCache[oldPath] = view.state.toJSON();
+      if (oldPath)
+        stateCache[oldPath] = view.state.toJSON({ history: historyField });
 
       const cache = stateCache[path];
       const stateConfig = createStateConfig(typstState, path, fileId);
 
-      if (cache) view.setState(EditorState.fromJSON(cache, stateConfig));
+      if (cache)
+        view.setState(
+          EditorState.fromJSON(cache, stateConfig, { history: historyField }),
+        );
       else {
         stateConfig.doc = text;
         view.setState(EditorState.create(stateConfig));
@@ -184,8 +208,14 @@ function createStateConfig(
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, storageItem, fileId),
+      typst(typstState, storageItem, prelude, fileId),
       typstLanguage(),
+      // linter(view => {
+      //   console.log(typstState.);
+
+      //   return []
+      // }),
+
       underlineKeymap,
 
       EditorView.lineWrapping,
@@ -229,12 +259,14 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
 </script>
 
 <template>
-  <div ref="container" class="editor" />
+  <div class="overflow-auto">
+    <div ref="container" class="editor size-full " />
+  </div>
 </template>
 
 <style lang="scss">
 .editor {
-  @apply overflow-auto;
+  // @apply overflow-auto;
 
   // &,
   // * {

@@ -9,23 +9,23 @@ import { UseVirtualList } from "@vueuse/components";
 const space = defineModel<Space>();
 
 const colors = [
-  { name: "Red", hex: "#ef4444" },
-  { name: "Orange", hex: "#f97316" },
-  { name: "Amber", hex: "#f59e0b" },
-  { name: "Yellow", hex: "#eab308" },
-  { name: "Lime", hex: "#84cc16" },
-  { name: "Green", hex: "#22c55e" },
-  { name: "Emerald", hex: "#10b981" },
-  { name: "Teal", hex: "#14b8a6" },
-  { name: "Cyan", hex: "#06b6d4" },
-  { name: "Sky", hex: "#0ea5e9" },
-  { name: "Blue", hex: "#3b82f6" },
-  { name: "Indigo", hex: "#6366f1" },
-  { name: "Violet", hex: "#8b5cf6" },
-  { name: "Purple", hex: "#a855f7" },
-  { name: "Fuchsia", hex: "#d946ef" },
-  { name: "Pink", hex: "#ec4899" },
-  { name: "Rose", hex: "#f43f5e" },
+  { name: "Red", hex: "#fb2c36" }, // oklch(.637 .237 25.331)
+  { name: "Orange", hex: "#ff6900" }, // oklch(.705 .213 47.604)
+  { name: "Amber", hex: "#fd9a00" }, // oklch(.769 .188 70.08)
+  { name: "Yellow", hex: "#efb100" }, // oklch(.795 .184 86.047)
+  { name: "Lime", hex: "#7ccf00" }, // oklch(.768 .233 130.85)
+  { name: "Green", hex: "#00c951" }, // oklch(.723 .219 149.579)
+  { name: "Emerald", hex: "#00bc7d" }, // oklch(.696 .17 162.48)
+  { name: "Teal", hex: "#00bba7" }, // oklch(.704 .14 182.503)
+  { name: "Cyan", hex: "#00b8db" }, // oklch(.715 .143 215.221)
+  { name: "Sky", hex: "#00a6f4" }, // oklch(.685 .169 237.323)
+  { name: "Blue", hex: "#2b7fff" }, // oklch(.623 .214 259.815)
+  { name: "Indigo", hex: "#615fff" }, // oklch(.585 .233 277.117)
+  { name: "Violet", hex: "#8e51ff" }, // oklch(.606 .25 292.717)
+  { name: "Purple", hex: "#ad46ff" }, // oklch(.627 .265 303.9)
+  { name: "Fuchsia", hex: "#e12afb" }, // oklch(.667 .295 322.15)
+  { name: "Pink", hex: "#f6339a" }, // oklch(.656 .241 354.308)
+  { name: "Rose", hex: "#ff2056" }, // oklch(.645 .246 16.439)
 ];
 
 // const name = ref<string>("");

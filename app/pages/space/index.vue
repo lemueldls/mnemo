@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ulid } from "ulid";
+import { createId } from "@paralleldrive/cuid2";
 
 import html2canvas from "@html2canvas/html2canvas";
+import { StickyNote } from "#components";
 
 definePageMeta({ layout: "space" });
 
@@ -10,7 +11,8 @@ const { d } = useI18n();
 // const { query } = useRoute();
 // const spaceId = [query.id].flat()[0]!.toString();
 
-const spaceId = usePageRouteQuery("id");
+const spaceId = useRouteQuery("id");
+// const noteId = useRouteQuery("note");
 
 watchImmediate(spaceId, (spaceId) => {
   if (!spaceId) throw createError({ status: 404 });
@@ -60,7 +62,7 @@ async function screenshot() {
       ignoreElements: (el) => el.id === "sidebar",
       // scale: window.devicePixelRatio * 1,
       // imageTimeout:
-    },
+    }
   );
 
   canvas.toBlob((blob) => {
@@ -76,6 +78,7 @@ function copyScreenshot() {
 }
 
 const spaceNotes = await useSpaceNotes(spaceId);
+const preludePath = ref("main");
 
 const { data: notes } = await useAsyncData(
   "get_daily_notes",
@@ -93,7 +96,7 @@ const { data: notes } = await useAsyncData(
     // const item = await useStorageItem<Note[]>(`spaces/${spaceId.value}/daily/notes.json`, []);
     // const notes = item.value!;
 
-    console.log({ spaceNotes: spaceNotes.value });
+    // console.log({ spaceNotes: spaceNotes.value });
 
     const notes = await loadDailyNotes(spaceNotes);
 
@@ -111,7 +114,7 @@ const { data: notes } = await useAsyncData(
       return { id, date };
     });
   },
-  { watch: [spaceNotes], default: () => [] },
+  { watch: [spaceNotes], default: () => [] }
 );
 
 const currentNoteIndex = ref(0);
@@ -119,14 +122,14 @@ const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
 const nextDayIndex = computed(() => {
   const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
+    (note) => note.id === currentNote.value!.id
   );
 
   return index === 0 ? -1 : index - 1;
 });
 const previousDayIndex = computed(() => {
   const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
+    (note) => note.id === currentNote.value!.id
   );
 
   return index === notes.value.length - 1 ? -1 : index + 1;
@@ -137,21 +140,38 @@ watch(spaceId, () => {
 });
 
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
-const stickyNotes = await useRefStorageItem<StickyNote[]>(
+const stickyNotes = await useRefStorageItem<{ [id: string]: StickyNote }>(
   computed(() => `spaces/${spaceId.value}/sticky/notes.json`),
-  [],
+  {}
 );
+// stickyNotes.value = {};
+watchEffect(() => {
+  console.log({ stickyNotes: stickyNotes.value });
+});
 const activeStickyNotes = ref<StickyNote[]>([]);
 
 async function createStickyNote() {
-  stickyNotes.value.push({
-    id: ulid(),
-    name: "",
-    x: 40,
-    y: 40,
-    width: 500,
-    height: 500,
+  const datetime = d(Date.now(), {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
   });
+
+  const id = createId();
+  const note = {
+    id,
+    title: datetime,
+    x: 128,
+    y: 128,
+    width: 512,
+    height: 256,
+  };
+
+  stickyNotes.value[id] = note;
+  activeStickyNotes.value.push(note);
+
+  stickyNotesOpen.value = false;
 }
 </script>
 
@@ -160,8 +180,8 @@ async function createStickyNote() {
     <sticky-note
       v-for="(note, i) in activeStickyNotes"
       :key="note.id"
+      v-model="activeStickyNotes[i]"
       :space-id="spaceId"
-      :note="note"
       @mousedown="
         () => {
           const lastNote = activeStickyNotes.at(-1);
@@ -255,22 +275,7 @@ async function createStickyNote() {
               </div>
 
               <m3-elevated-card id="editor">
-                <!-- <div id="editor-title">
-                {{ currentNote.name.split(/\.\w+$/)[0] }}
-
-                <md-icon-button @click="dialog = true">
-                  <md-icon>note_stack</md-icon>
-                </md-icon-button>
-              </div> -->
                 <div id="editor-title" class="items-center gap-2">
-                  <div class="h-1px w-2 bg-m3-outline-variant" />
-
-                  <span class="m3-label-large">
-                    {{ currentNote?.date }}
-                  </span>
-
-                  <div class="h-1px flex-1 bg-m3-outline-variant" />
-
                   <md-icon-button
                     :disabled="previousDayIndex === -1"
                     @click="currentNoteIndex = previousDayIndex"
@@ -283,6 +288,14 @@ async function createStickyNote() {
                   >
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
+
+                  <div class="h-1px flex-1 bg-m3-outline-variant" />
+
+                  <span class="m3-label-large">
+                    {{ currentNote?.date }}
+                  </span>
+
+                  <div class="h-1px w-2 bg-m3-outline-variant" />
                 </div>
 
                 <editor
@@ -326,12 +339,18 @@ async function createStickyNote() {
       </md-dialog>
 
       <md-dialog :open="preludeOpen" @closed="preludeOpen = false">
-        <!-- <editor
-          :space-id="spaceId"
-          v-model="currentNote.id"
-          kind="prelude"
-          class="h-full flex-1"
-        /> -->
+        <span slot="headline" class="flex items-center justify-between">
+          Prelude
+        </span>
+
+        <div slot="content">
+          <editor
+            v-model="preludePath"
+            kind="prelude"
+            :space-id="spaceId"
+            class="h-64 w-96 flex-1"
+          />
+        </div>
       </md-dialog>
 
       <md-dialog :open="stickyNotesOpen" @closed="stickyNotesOpen = false">
@@ -359,7 +378,7 @@ async function createStickyNote() {
 
           <div class="max-h-100 overflow-auto">
             <file-tree-item
-              v-for="note in stickyNotes.toReversed()"
+              v-for="note in Object.values(stickyNotes).toReversed()"
               :key="note.id"
               :active="false"
               class="flex justify-between gap-8"
@@ -370,7 +389,7 @@ async function createStickyNote() {
                   {{ false ? "note_filled" : "note" }}
                 </md-icon>
 
-                {{ note.name }}
+                {{ note.title }}
               </span>
 
               <md-icon-button>
@@ -415,7 +434,7 @@ async function createStickyNote() {
 }
 
 #editor {
-  @apply flex flex-col gap-3 h-full;
+  @apply flex flex-col h-full;
 }
 
 #editor-title {

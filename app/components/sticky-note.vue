@@ -1,62 +1,86 @@
 <script setup lang="ts">
 import interact from "interactjs";
-import { rawListeners } from "process";
 
-const props = defineProps<{ spaceId: string; note: StickyNote }>();
+const model = defineModel<StickyNote>();
+const note = toReactive(model);
+
+defineProps<{ spaceId: string }>();
+// const { spaceId, noteId } = toRefs(props);
+
 defineEmits<{ (event: "close"): void }>();
 
 const rootRef = useTemplateRef("root");
 const headerRef = useTemplateRef("header");
 
-const x = ref(props.note.x);
-const y = ref(props.note.y);
-const width = ref(props.note.width);
-const height = ref(props.note.height);
-
 const isDragging = ref(false);
 
-const notes = await useStorageItem<StickyNote[]>(
-  `spaces/${props.spaceId}/sticky/notes.json`,
-  [],
-);
+// const notes = await useStorageItem<{ [id: string]: StickyNote }>(
+//   `spaces/${spaceId.value}/sticky/notes.json`,
+//   {},
+// );
 
-const storageItem = await useStorageItem<string>(
-  `spaces/${props.spaceId}/sticky/${props.note.id}.typ`,
-  "",
-);
+// watchEffect(() => {
+//   console.log({
+//     props,
+//     spaceId: spaceId.value,
+//     noteId: noteId.value,
+//     notes: notes.value,
+//   });
+// });
+
+// const note = reactive(notes.value[noteId.value]);
+// // console.log({ note });
+// watch(note, (note) => {
+//   notes.value[noteId.value] = note;
+// });
 
 onMounted(() => {
   const root = rootRef.value!;
 
-  // x.value = 0;
-  // y.value = 0;
+  // x = 0;
+  // y = 0;
 
-  root.style.transform = `translate(${x.value}px, ${y.value}px)`;
-  root.style.width = width.value + "px";
-  root.style.height = height.value + "px";
+  root.style.transform = `translate(${note.x}px, ${note.y}px)`;
+  root.style.width = note.width + "px";
+  root.style.height = note.height + "px";
 
   interact(root)
     .draggable({
       inertia: true,
-      autoScroll: true,
-      // allowFrom: headerRef.value!,
+      autoScroll: false,
+      allowFrom: headerRef.value!,
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: "parent",
           endOnly: true,
         }),
+        interact.modifiers.snap({
+          targets: [
+            interact.snappers.grid({ x: 8, y: 8 })
+          ],
+          range: Infinity,
+          relativePoints: [ { x: 0, y: 0 } ]
+        }),
       ],
       listeners: {
         move(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
           isDragging.value = true;
           const { target } = event;
 
-          x.value += event.dx;
-          y.value += event.dy;
+          note.x += event.dx;
+          note.y += event.dy;
 
-          target.style.transform = `translate(${x.value}px, ${y.value}px)`;
+          target.style.transform = `translate(${note.x}px, ${note.y}px)`;
         },
-        end() {
+        end(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
           isDragging.value = false;
         },
       },
@@ -74,38 +98,41 @@ onMounted(() => {
       ],
       listeners: {
         move(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
           const { target } = event;
 
-          width.value = event.rect.width;
-          height.value = event.rect.height;
+          note.width = event.rect.width;
+          note.height = event.rect.height;
 
-          target.style.width = `${width.value}px`;
-          target.style.height = `${height.value}px`;
+          target.style.width = `${note.width}px`;
+          target.style.height = `${note.height}px`;
 
-          x.value += event.deltaRect.left;
-          y.value += event.deltaRect.top;
+          note.x += event.deltaRect.left;
+          note.y += event.deltaRect.top;
 
-          target.style.transform = `translate(${x.value}px,${y.value}px)`;
+          target.style.transform = `translate(${note.x}px,${note.y}px)`;
         },
       },
     });
 });
 
-watchEffect(async () => {
-  await updateStickyNote(
-    props.spaceId,
-    props.note.id,
-    x.value,
-    y.value,
-    width.value,
-    height.value,
-  );
-});
-const title = ref(props.note.name);
+// watchEffect(async () => {
+//   await updateStickyNote(
+//     spaceId.value,
+//     props.note.id,
+//     x,
+//     y,
+//     width,
+//     height,
+//   );
+// });
 
-watchEffect(async () => {
-  await renameStickyNote(props.spaceId, props.note.id, title.value);
-});
+// watchEffect(async () => {
+//   await renameStickyNote(spaceId.value, props.note.id, title.value);
+// });
 </script>
 
 <template>
@@ -121,7 +148,7 @@ watchEffect(async () => {
       <div class="flex-1 h-full flex flex-col gap-4">
         <div ref="header" class="flex items-center gap-2">
           <input
-            v-model="title"
+            v-model="note.title"
             type="text"
             class="sticky-note__title"
             placeholder="Title"

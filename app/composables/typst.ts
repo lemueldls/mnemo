@@ -1,9 +1,7 @@
 import init, { TypstState, PackageFile } from "mnemo-wasm";
 import type { Package } from "~~/server/api/list-packages";
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
-let state = init().then(() => new TypstState());
-
+const state = init().then(() => new TypstState());
 export const useTypst = () => state;
 
 export async function installTypstPackage(pkg: Package, namespace = "preview") {
@@ -13,7 +11,7 @@ export async function installTypstPackage(pkg: Package, namespace = "preview") {
     query: { namespace, name: pkg.name, version: pkg.version },
   });
 
-  console.log({ spec, files });
+  // console.log({ spec, files });
 
   const typstState = await useTypst();
   typstState.installPackage(

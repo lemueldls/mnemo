@@ -18,6 +18,7 @@ import type { Range } from "@codemirror/state";
 interface Block {
   range: { start: number; end: number };
   offset: number;
+  errors: object[];
 }
 
 interface RangedRender {
@@ -34,7 +35,7 @@ class TypstWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly index: number,
     private readonly render: string,
-    private readonly block: Block,
+    private readonly block: Block
   ) {
     super();
 
@@ -59,7 +60,7 @@ class TypstWidget extends WidgetType {
     const x = event.clientX - left;
     const y = event.clientY - top;
 
-    const jump = typstState.click(index, x, y);
+    const jump = typstState.click(index, x, y); // can crash
     const position = jump
       ? block.range.start + (jump.position - block.offset)
       : block.range.end;
@@ -86,7 +87,7 @@ class TypstWidget extends WidgetType {
   }
 
   public override destroy() {
-    this.#image.removeEventListener("click", this.onClick);
+    this.#image.removeEventListener("click", this.handleJump);
   }
 }
 
@@ -95,15 +96,18 @@ function decorate(
   update: ViewUpdate,
   fileId: FileId,
   text: string,
+  prelude: string
 ) {
   const { view, state } = update;
 
-  const syncResult = syncTypstState(typstState, fileId, text);
+  const syncResult = syncTypstState(typstState, fileId, text, prelude);
 
   const widgets: Range<Decoration>[] = [];
 
   if (syncResult.kind === "ok") {
     for (const { index, block, render } of syncResult.data) {
+      console.log({ index, block, render });
+
       const { start, end } = block.range;
       const inactive =
         !view.hasFocus ||
@@ -112,7 +116,7 @@ function decorate(
             (range.from < start || range.from > end) &&
             (range.to < start || range.to > end) &&
             (start < range.from || start > range.to) &&
-            (end < range.from || end > range.to),
+            (end < range.from || end > range.to)
         );
 
       if (inactive)
@@ -120,7 +124,7 @@ function decorate(
           Decoration.replace({
             widget: new TypstWidget(typstState, view, index, render, block),
             // inclusive: true,
-          }).range(start, end),
+          }).range(start, end)
         );
       else {
         for (let i = start; i < end; i++) {
@@ -141,7 +145,7 @@ function decorate(
               class: "cm-activeLine",
               attributes: { style },
               // inclusive: true,
-            }).range(from),
+            }).range(from)
           );
         }
       }
@@ -158,9 +162,10 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 export const viewPlugin = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
-  fileId: FileId,
+  prelude: Ref<string>,
+  fileId: FileId
 ) =>
-  ViewPlugin.define((view) => {
+  ViewPlugin.define((_view) => {
     return {
       update(update: ViewUpdate) {
         if (
@@ -173,7 +178,13 @@ export const viewPlugin = (
           const text = update.state.doc.toString();
           item.value.value = text;
 
-          const decorations = decorate(typstState, update, fileId, text);
+          const decorations = decorate(
+            typstState,
+            update,
+            fileId,
+            text,
+            prelude.value
+          );
           const effects = stateEffect.of({ decorations });
 
           queueMicrotask(() => update.view.dispatch({ effects }));
@@ -185,7 +196,8 @@ export const viewPlugin = (
 export const typst = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
-  fileId: FileId,
+  prelude: Ref<string>,
+  fileId: FileId
 ) =>
   StateField.define({
     create() {
@@ -193,14 +205,14 @@ export const typst = (
     },
     update(decorations, transaction) {
       const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect),
+        effect.is(stateEffect)
       );
 
       if (effect) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to),
+          ...transaction.state.selection.ranges.map(({ to }) => to)
         );
 
         return decorations.update({
@@ -214,15 +226,20 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, item, fileId),
+      viewPlugin(typstState, item, prelude, fileId),
     ],
   });
 
-function syncTypstState(typstState: TypstState, fileId: FileId, text: string) {
+function syncTypstState(
+  typstState: TypstState,
+  fileId: FileId,
+  text: string,
+  prelude: string
+) {
   let result;
 
   try {
-    result = typstState.sync(fileId, text);
+    result = typstState.sync(fileId, text, prelude);
   } catch (error) {
     console.error("LMFAO");
     console.error(error);
@@ -232,7 +249,7 @@ function syncTypstState(typstState: TypstState, fileId: FileId, text: string) {
 
     window.location.reload();
 
-    // throw error;
+    throw error;
   }
 
   return result;

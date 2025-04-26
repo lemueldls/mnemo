@@ -64,18 +64,19 @@ const localDb = createStorage({
 // }
 
 // for await (const [key, value] of Object.entries(await snapshot(localDb, "/"))) {
-//   console.log({ key, value });
+//   // console.log({ key, value });
+//   if (key.includes("sticky")) console.log(await localDb.getItem(key.slice(4)));
 // }
 
 // console.log({ snapshot: await snapshot(localDb) });
 
-// useWebSocket("/api/user-storage");
+// const { status, data, send, open, close } = useWebSocket("/api/user-storage", { immediate: false });
 
 const itemRefs: { [key: string]: Ref<StorageValue> } = {};
 
 export async function useStorageItem<T extends StorageValue>(
   key: string,
-  initialValue: T,
+  initialValue: T
 ) {
   // console.log({ key });
   if (key in itemRefs) return itemRefs[key] as Ref<T>;
@@ -114,7 +115,7 @@ export async function useStorageItem<T extends StorageValue>(
 
       // if (loggedIn.value) await updateStorageItem(key, value);
     },
-    { debounce: 500, deep: true },
+    { debounce: 500, deep: true }
   );
 
   itemRefs[key] = item!;
@@ -133,12 +134,12 @@ async function updateLocalItem<T extends StorageValue>(key: string, value: T) {
 
 export async function useRefStorageItem<T extends StorageValue>(
   key: Ref<string>,
-  initialValue: T,
+  initialValue: T
 ) {
   const { error, data: item } = await useAsyncData(
     `app:${key.value}`,
     async () => await useStorageItem(key.value, initialValue),
-    { watch: [key] },
+    { watch: [key] }
   );
 
   watchImmediate(error, (error) => {

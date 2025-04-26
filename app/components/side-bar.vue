@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import Chat from "./chat.vue";
+// import Chat from "./chat.vue";
 import Today from "./today.vue";
+import Tasks from "./tasks.vue";
+import Sync from "./sync.vue";
 
 import type { MaterialSymbol } from "material-symbols";
 
@@ -18,10 +20,12 @@ interface Item {
 }
 
 const items: Item[] = [
-  { icon: "chat", name: "Chat", component: Chat },
+  // { icon: "chat", name: "Chat", component: Chat },
   { icon: "calendar_today", name: "Today", component: Today },
+  { icon: "pinboard", name: "Tasks", component: Tasks },
   { icon: "school", name: "Study" },
-  { icon: "quiz", name: "Quiz" },
+  // { icon: "quiz", name: "Quiz" },
+  { icon: "sync", name: "Sync", component: Sync },
 ];
 
 function handleClick(index: number) {

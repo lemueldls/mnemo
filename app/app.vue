@@ -2,6 +2,34 @@
 import "@material/web/all";
 import "material-symbols";
 
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+// when using `"withGlobalTauri": true`, you may use
+// const { onOpenUrl } = window.__TAURI__.deepLink;
+
+await onOpenUrl((urls) => {
+  console.log("deep link:", urls);
+});
+
+// const runtimeConfig = useRuntimeConfig();
+// const { platform } = runtimeConfig.public;
+
+// if (platform)
+//   onMounted(async () => {
+//     if (!window.__TAURI_INTERNALS__) return;
+
+//     const { onOpenUrl } = await import("@tauri-apps/plugin-deep-link");
+
+//     console.log("listenning..");
+//     const unlisten = await onOpenUrl((urls) => {
+//       console.log("deep link:", urls);
+//     });
+//     console.log("still listenning..");
+
+//     // tryOnUnmounted(() => {
+//     //   unlisten();
+//     // });
+//   });
+
 // onMounted(async () => {
 //   const entries = Object.entries(localStorage)
 //     .filter(([key]) => key.startsWith("app:user"))

@@ -131,7 +131,7 @@ const name = await useStorageItem("name", "");
         <div
           :class="[
             'mb-3 flex flex-1 flex-col h-full overflow-auto',
-            { 'ml-3': !extraLarge },
+            { 'ml-3': !extraLarge, 'mr-3': !medium },
           ]"
         >
           <slot />
