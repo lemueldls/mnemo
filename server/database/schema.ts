@@ -3,9 +3,9 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import {
   createInsertSchema,
   createSelectSchema,
-  createUpdateSchema,
+  // createUpdateSchema,
 } from "drizzle-valibot";
-import { createId } from "@paralleldrive/cuid2";
+// import { createId } from "@paralleldrive/cuid2";
 import { cuid2, string, pipe, email } from "valibot";
 
 export const users = sqliteTable("users", {

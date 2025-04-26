@@ -1,14 +1,13 @@
-// import { createH3StorageHandler } from "unstorage/server";
-
-// const storage = hubKV();
-
-// export default createH3StorageHandler(storage, {
-//   authorize(req) {
-//     // req: { key, type, event }
-//     if (req.type === "read" && req.key.startsWith("private:")) {
-//       throw new Error("Unauthorized Read");
-//     }
-//   },
-// });
-
-export default defineEventHandler(() => {});
+export default defineWebSocketHandler({
+  async upgrade(request) {
+    await requireUserSession(request);
+  },
+  async open(peer) {
+    const { user } = await requireUserSession(peer);
+    const username = Object.values(user).filter(Boolean).join(" ");
+    peer.send(`Hello, ${username}!`);
+  },
+  message(peer, message) {
+    peer.send(`Echo: ${message}`);
+  },
+});

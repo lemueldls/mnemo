@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     app: { platform },
-    public: { apiBaseUrl: "" },
+    public: { platform, apiBaseUrl: "" },
     // session: {
     //   maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
     //   cookie: isDev
@@ -96,13 +96,15 @@ export default defineNuxtConfig({
     "reka-ui/nuxt",
   ],
   hub: {
+    analytics: true,
+    workers: true,
     // remote: true,
     ai: true,
     // blob: true,
     cache: true,
     database: true,
     kv: true,
-    // analytics: true,
+    vectorize: {},
   },
   i18n: {
     lazy: true,
