@@ -96,7 +96,7 @@ export default defineNuxtConfig({
     "reka-ui/nuxt",
   ],
   hub: {
-    analytics: true,
+    // analytics: true,
     // workers: true,
     // remote: true,
     ai: true,
