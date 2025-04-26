@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { color, dark, harmonize } = toRefs(props);
 
 const parentTheme = computed(() =>
-  harmonize.value ? useMaterialTheme()?.source : undefined,
+  harmonize.value ? useMaterialTheme()?.source : undefined
 );
 const theme = createTheme(color, dark, parentTheme.value);
 
@@ -27,14 +27,16 @@ function parse(color: Rgba) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
 
-const { tertiaryContainer } = palette;
-const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},${tertiaryContainer.b},0.5)`;
+const selectionBackground = computed(() => {
+  const { r, g, b } = palette.tertiaryContainer;
+  return `rgba(${r},${g},${b},0.5)`;
+});
 </script>
 
 <template>
   <Primitive
     :as
-    :asChild
+    :as-child
     class="m3-theme"
     :style="{
       '--md-sys-color-background': parse(palette.background),
@@ -43,17 +45,17 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
       '--md-sys-color-surface-dim': parse(palette.surfaceDim),
       '--md-sys-color-surface-bright': parse(palette.surfaceBright),
       '--md-sys-color-surface-container-lowest': parse(
-        palette.surfaceContainerLowest,
+        palette.surfaceContainerLowest
       ),
       '--md-sys-color-surface-container-low': parse(
-        palette.surfaceContainerLow,
+        palette.surfaceContainerLow
       ),
       '--md-sys-color-surface-container': parse(palette.surfaceContainer),
       '--md-sys-color-surface-container-high': parse(
-        palette.surfaceContainerHigh,
+        palette.surfaceContainerHigh
       ),
       '--md-sys-color-surface-container-highest': parse(
-        palette.surfaceContainerHighest,
+        palette.surfaceContainerHighest
       ),
       '--md-sys-color-on-surface': parse(palette.onSurface),
       '--md-sys-color-surface-variant': parse(palette.surfaceVariant),
@@ -74,13 +76,13 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
       '--md-sys-color-on-secondary': parse(palette.onSecondary),
       '--md-sys-color-secondary-container': parse(palette.secondaryContainer),
       '--md-sys-color-on-secondary-container': parse(
-        palette.onSecondaryContainer,
+        palette.onSecondaryContainer
       ),
       '--md-sys-color-tertiary': parse(palette.tertiary),
       '--md-sys-color-on-tertiary': parse(palette.onTertiary),
       '--md-sys-color-tertiary-container': parse(palette.tertiaryContainer),
       '--md-sys-color-on-tertiary-container': parse(
-        palette.onTertiaryContainer,
+        palette.onTertiaryContainer
       ),
       '--md-sys-color-error': parse(palette.error),
       '--md-sys-color-on-error': parse(palette.onError),
@@ -90,19 +92,19 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
       '--md-sys-color-primary-fixed-dim': parse(palette.primaryFixedDim),
       '--md-sys-color-on-primary-fixed': parse(palette.onPrimaryFixed),
       '--md-sys-color-on-primary-fixed-variant': parse(
-        palette.onPrimaryFixedVariant,
+        palette.onPrimaryFixedVariant
       ),
       '--md-sys-color-secondary-fixed': parse(palette.secondaryFixed),
       '--md-sys-color-secondary-fixed-dim': parse(palette.secondaryFixedDim),
       '--md-sys-color-on-secondary-fixed': parse(palette.onSecondaryFixed),
       '--md-sys-color-on-secondary-fixed-variant': parse(
-        palette.onSecondaryFixedVariant,
+        palette.onSecondaryFixedVariant
       ),
       '--md-sys-color-tertiary-fixed': parse(palette.tertiaryFixed),
       '--md-sys-color-tertiary-fixed-dim': parse(palette.tertiaryFixedDim),
       '--md-sys-color-on-tertiary-fixed': parse(palette.onTertiaryFixed),
       '--md-sys-color-on-tertiary-fixed-variant': parse(
-        palette.onTertiaryFixedVariant,
+        palette.onTertiaryFixedVariant
       ),
     }"
   >
@@ -113,6 +115,18 @@ const selectionBackground = `rgba(${tertiaryContainer.r},${tertiaryContainer.g},
 <style lang="scss">
 .m3-theme {
   @apply caret-m3-primary;
+
+  scrollbar-color: var(--md-sys-color-primary) v-bind(selectionBackground);
+
+  ::-webkit-scrollbar {
+    width: 0; // TODO: make float
+    background: v-bind(selectionBackground);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-lg;
+    background: var(--md-sys-color-primary);
+  }
 
   ::selection {
     @apply text-m3-on-tertiary-container;

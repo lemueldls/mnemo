@@ -1,6 +1,6 @@
 import {
   defineConfig,
-  presetUno,
+  presetWind3,
   presetTypography,
   // presetIcons,
   transformerVariantGroup,
@@ -8,11 +8,11 @@ import {
   transformerCompileClass,
 } from "unocss";
 
-import { presetM3 } from "./modules/m3/uno.config";
+import { presetM3 } from "./modules/m3/uno.config.ts";
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind3(),
     presetTypography(),
     // presetIcons({ warn: true }),
     presetM3(),

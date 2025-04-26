@@ -1,5 +1,8 @@
 <script setup lang="ts">
-const day = ref(new Date());
+import { today, getLocalTimeZone, getDayOfWeek } from "@internationalized/date";
+
+const timeZone = getLocalTimeZone();
+const day = ref(today(timeZone));
 
 const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
@@ -10,16 +13,20 @@ const datePicker = ref(false);
 
 const dark = useDark();
 
-const { d } = useI18n();
+const { d, locale } = useI18n();
 
-const title = d(new Date(), { month: "short", day: "numeric" });
+const title = computed(() =>
+  d(day.value.toDate(timeZone), { month: "short", day: "numeric" }),
+);
 
 const spaces = await useSpaces();
 const schedule = await useSchedule();
 
-// console.log({ spaces: spaces.value });
+const todaysSchedule = computed(
+  () => schedule.value[getDayOfWeek(day.value, locale.value)],
+);
 
-const todaysSchedule = computed(() => schedule.value[day.value.getDay()]);
+// useConsole.log({ todaysSchedule });
 
 onMounted(() => {
   const container = containerRef.value!;
@@ -39,6 +46,14 @@ onMounted(() => {
     { immediateCallback: true },
   );
 });
+
+function nextDay() {
+  day.value = day.value.add({ days: 1 });
+}
+
+function previousDay() {
+  day.value = day.value.subtract({ days: 1 });
+}
 
 // const events = computed<CalendarEvent[]>(() =>
 //   currentEvents[selectedDay.getDay()].map((event) => {
@@ -65,10 +80,10 @@ onMounted(() => {
       </span>
 
       <div class="flex">
-        <md-icon-button>
+        <md-icon-button @click="previousDay">
           <md-icon>chevron_left</md-icon>
         </md-icon-button>
-        <md-icon-button>
+        <md-icon-button @click="nextDay">
           <md-icon>chevron_right</md-icon>
         </md-icon-button>
       </div>
@@ -100,7 +115,7 @@ onMounted(() => {
               top: `${(from / 60) * (scrollHeight / 24)}px`,
               height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
             }"
-            class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-center text-m3-on-primary-container m3-body-small"
+            class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-50 text-center text-m3-on-primary-container m3-body-small"
           >
             <md-ripple />
 

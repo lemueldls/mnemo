@@ -3,7 +3,7 @@ import { MaterialDynamicColors } from "@material/material-color-utilities";
 import {
   breakpointsM3,
   verticalBreakpointsM3,
-} from "./composables/breakpoints";
+} from "./composables/breakpoints.ts";
 
 import type { Preset } from "unocss";
 

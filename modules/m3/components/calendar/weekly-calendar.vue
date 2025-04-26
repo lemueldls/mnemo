@@ -27,7 +27,7 @@ onMounted(() => {
       }
     },
     1000 * 60,
-    { immediateCallback: true },
+    { immediateCallback: true }
   );
 });
 
@@ -42,7 +42,7 @@ function isToday(date: Date) {
 }
 
 const days = [1, 2, 3, 4, 5].map((day) =>
-  d(Date.UTC(0, 0, day + 1), { weekday: "short" }),
+  d(Date.UTC(0, 0, day + 1), { weekday: "short" })
 );
 
 const dark = useDark();
@@ -235,8 +235,8 @@ function timeToMinutes(time: string) {
     <span slot="headline">New Space</span>
 
     <form
-      slot="content"
       id="weekly-calendar-new-form"
+      slot="content"
       class="flex flex-col gap-4 p-4"
       method="dialog"
     >
@@ -300,8 +300,8 @@ function timeToMinutes(time: string) {
           name="from"
           type="time"
           :value="newSpaceFrom"
-          @input="newSpaceFrom = $event.target.value"
           required
+          @input="newSpaceFrom = $event.target.value"
         />
         <md-outlined-text-field
           class="flex-1"
@@ -309,8 +309,8 @@ function timeToMinutes(time: string) {
           name="to"
           type="time"
           :value="newSpaceTo"
-          @input="newSpaceTo = $event.target.value"
           required
+          @input="newSpaceTo = $event.target.value"
         />
       </div>
     </form>
@@ -327,8 +327,8 @@ function timeToMinutes(time: string) {
     <span slot="headline">Edit Space</span>
 
     <form
-      slot="content"
       id="weekly-calendar-edit-form"
+      slot="content"
       class="flex flex-col gap-4 p-4 min-w-lg"
       method="dialog"
       @submit.prevent="editScheduleItem"
@@ -340,8 +340,8 @@ function timeToMinutes(time: string) {
           name="from"
           type="time"
           :value="editingScheduleFrom"
-          @input="editingScheduleFrom = $event.target.value"
           required
+          @input="editingScheduleFrom = $event.target.value"
         />
         <md-outlined-text-field
           class="flex-1"
@@ -349,8 +349,8 @@ function timeToMinutes(time: string) {
           name="to"
           type="time"
           :value="editingScheduleTo"
-          @input="editingScheduleTo = $event.target.value"
           required
+          @input="editingScheduleTo = $event.target.value"
         />
       </div>
     </form>
@@ -379,7 +379,7 @@ function timeToMinutes(time: string) {
   }
 
   &__body {
-    @apply overflow-auto flex h-full relative;
+    @apply overflow-y-auto flex h-full relative;
   }
 
   &__cell {
