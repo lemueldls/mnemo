@@ -35,17 +35,12 @@
   "plugins": {
     "deep-link": {
       "mobile": [
-        {
-          "host": "mnemo.nuxt.dev"
-        },
-        {
-          "host": "mnemo.pages.dev"
-        }
+        { "host": "mnemo.nuxt.dev" },
+        { "host": "mnemo.pages.dev" },
+        { "host": "notes.lemueldls.dev" }
       ],
       "desktop": {
-        "schemes": [
-          "mnemo"
-        ]
+        "schemes": ["mnemo"]
       }
     },
     "updater": {
