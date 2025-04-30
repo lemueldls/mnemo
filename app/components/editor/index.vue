@@ -79,17 +79,19 @@ function parseColor(color: Rgba): Rgb {
 watchEffect(async () => {
   const typstState = await useTypst();
 
-  typstState.pt = pixelPerPoint.value;
-  typstState.size = 16 / pixelPerPoint.value;
-  typstState.theme = new ThemeColors(
-    parseColor(palette.primary),
-    parseColor(palette.secondary),
-    parseColor(palette.tertiary),
-    parseColor(palette.outline),
-    parseColor(palette.onPrimaryContainer),
-    parseColor(palette.onSecondaryContainer),
-    parseColor(palette.onTertiaryContainer),
-    parseColor(palette.onBackground),
+  typstState.setPt(pixelPerPoint.value);
+  typstState.setSize(16 / pixelPerPoint.value);
+  typstState.setTheme(
+    new ThemeColors(
+      parseColor(palette.primary),
+      parseColor(palette.secondary),
+      parseColor(palette.tertiary),
+      parseColor(palette.outline),
+      parseColor(palette.onPrimaryContainer),
+      parseColor(palette.onSecondaryContainer),
+      parseColor(palette.onTertiaryContainer),
+      parseColor(palette.onBackground)
+    )
   );
 });
 
@@ -118,10 +120,10 @@ storageItem.value = ref("");
 
 const preludeItem = await useRefStorageItem(
   computed(() => `spaces/${props.spaceId}/prelude/main.typ`),
-  "",
+  ""
 );
 const prelude = computed(() =>
-  props.kind === "prelude" ? "" : preludeItem.value,
+  props.kind === "prelude" ? "" : preludeItem.value
 );
 
 // watchEffect(() => {
@@ -147,7 +149,7 @@ onMounted(() => {
       // console.log({ path, spaceId, oldPath, oldSpace });
       storageItem.value = await useStorageItem(
         `spaces/${oldSpace || spaceId}/${props.kind}/${path}.typ`,
-        "",
+        ""
       );
 
       // const note = await useStorageItem(
@@ -171,7 +173,7 @@ onMounted(() => {
 
       const packages = await useStorageItem<Package[]>(
         `spaces/${oldSpace || spaceId}/packages.json`,
-        [],
+        []
       );
       // check if spamming
       watchImmediate(packages, async (packages) => {
@@ -191,20 +193,20 @@ onMounted(() => {
 
       if (cache)
         view.setState(
-          EditorState.fromJSON(cache, stateConfig, { history: historyField }),
+          EditorState.fromJSON(cache, stateConfig, { history: historyField })
         );
       else {
         stateConfig.doc = text;
         view.setState(EditorState.create(stateConfig));
       }
-    },
+    }
   );
 });
 
 function createStateConfig(
   typstState: TypstState,
   path: string,
-  fileId: FileId,
+  fileId: FileId
 ): EditorStateConfig {
   return {
     extensions: [
@@ -260,7 +262,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
 
 <template>
   <div class="overflow-auto">
-    <div ref="container" class="editor size-full " />
+    <div ref="container" class="editor size-full" />
   </div>
 </template>
 

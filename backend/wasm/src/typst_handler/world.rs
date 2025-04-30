@@ -25,6 +25,7 @@ use super::{
     fonts::{FontSearcher, FontSlot},
 };
 
+#[derive(Default)]
 pub struct MnemoWorld {
     pub main: Option<FileId>,
     pub files: HashMap<FileId, Source>,

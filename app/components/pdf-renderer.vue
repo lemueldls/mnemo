@@ -44,17 +44,19 @@ function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
-typstState.pt = pixelPerPoint.value;
-typstState.size = 16 / pixelPerPoint.value;
-typstState.theme = new ThemeColors(
-  parseColor(palette.primary),
-  parseColor(palette.secondary),
-  parseColor(palette.tertiary),
-  parseColor(palette.outline),
-  parseColor(palette.onPrimaryContainer),
-  parseColor(palette.onSecondaryContainer),
-  parseColor(palette.onTertiaryContainer),
-  parseColor(palette.onBackground)
+typstState.setPt(pixelPerPoint.value);
+typstState.setSize(16 / pixelPerPoint.value);
+typstState.setTheme(
+  new ThemeColors(
+    parseColor(palette.primary),
+    parseColor(palette.secondary),
+    parseColor(palette.tertiary),
+    parseColor(palette.outline),
+    parseColor(palette.onPrimaryContainer),
+    parseColor(palette.onSecondaryContainer),
+    parseColor(palette.onTertiaryContainer),
+    parseColor(palette.onBackground)
+  )
 );
 
 const packages = await useStorageItem<Package[]>(

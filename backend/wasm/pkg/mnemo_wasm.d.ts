@@ -1,6 +1,32 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
+export type TypstDiagnosticSeverity = "Error" | "Warning";
+
+export interface TypstDiagnostic {
+    range: { start: number; end: number };
+    severity: TypstDiagnosticSeverity;
+    message: string;
+    hints: string[];
+}
+
+export interface TypstError {
+    range: { start: number; end: number };
+    message: string;
+    hints: string[];
+}
+
+export type TypstJump = { type: "File"; position: number };
+
+export type TypstCompletionKind = "Syntax" | "Func" | "Type" | "Param" | "Constant" | "Path" | "Package" | "Label" | "Font" | "Symbol";
+
+export interface TypstCompletion {
+    kind: TypstCompletionKind;
+    label: string;
+    apply: string | undefined;
+    detail: string | undefined;
+}
+
 export type SyncResult = { kind: "ok"; data: RangedRender[] } | { kind: "error"; data: string[] };
 
 export interface RangedRender {
@@ -14,32 +40,6 @@ export interface Block {
     offset: number;
     errors: TypstError[];
 }
-
-export interface TypstCompletion {
-    kind: TypstCompletionKind;
-    label: string;
-    apply: string | undefined;
-    detail: string | undefined;
-}
-
-export type TypstCompletionKind = "Syntax" | "Func" | "Type" | "Param" | "Constant" | "Path" | "Package" | "Label" | "Font" | "Symbol";
-
-export type TypstJump = { type: "File"; position: number };
-
-export interface TypstError {
-    range: { start: number; end: number };
-    message: string;
-    hints: string[];
-}
-
-export interface TypstDiagnostic {
-    range: { start: number; end: number };
-    severity: TypstDiagnosticSeverity;
-    message: string;
-    hints: string[];
-}
-
-export type TypstDiagnosticSeverity = "Error" | "Warning";
 
 export class FileId {
   private constructor();
@@ -61,15 +61,19 @@ export class ThemeColors {
 export class TypstState {
   free(): void;
   constructor();
+  diagnostics(): TypstDiagnostic[];
+  pt(): number;
+  setPt(pt: number): void;
+  size(): number;
+  setSize(size: number): void;
+  theme(): ThemeColors;
+  setTheme(theme: ThemeColors): void;
   insertFile(path: string, text: string): FileId;
   installPackage(spec: string, files: PackageFile[]): void;
   sync(id: FileId, text: string, prelude: string): SyncResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
   autocomplete(cursor: number, explicit: boolean): any;
   resize(width?: number | null, height?: number | null): void;
-  pt: number;
-  size: number;
-  theme: ThemeColors;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -83,14 +87,15 @@ export interface InitOutput {
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number) => [number, number];
   readonly __wbg_typststate_free: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_pt: (a: number) => number;
-  readonly __wbg_set_typststate_pt: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_size: (a: number) => number;
-  readonly __wbg_set_typststate_size: (a: number, b: number) => void;
-  readonly __wbg_get_typststate_theme: (a: number) => number;
-  readonly __wbg_set_typststate_theme: (a: number, b: number) => void;
   readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly typststate_new: () => number;
+  readonly typststate_diagnostics: (a: number) => [number, number];
+  readonly typststate_pt: (a: number) => number;
+  readonly typststate_setPt: (a: number, b: number) => void;
+  readonly typststate_size: (a: number) => number;
+  readonly typststate_setSize: (a: number, b: number) => void;
+  readonly typststate_theme: (a: number) => number;
+  readonly typststate_setTheme: (a: number, b: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
@@ -116,6 +121,7 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_3: WebAssembly.Table;
+  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_start: () => void;

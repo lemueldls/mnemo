@@ -96,6 +96,17 @@ function _assertClass(instance, klass) {
     }
 }
 
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_3.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
+}
+
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
     wasm.__wbindgen_export_3.set(idx, obj);
@@ -314,52 +325,61 @@ export class TypstState {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_typststate_free(ptr, 0);
     }
-    /**
-     * @returns {number}
-     */
-    get pt() {
-        const ret = wasm.__wbg_get_typststate_pt(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} arg0
-     */
-    set pt(arg0) {
-        wasm.__wbg_set_typststate_pt(this.__wbg_ptr, arg0);
-    }
-    /**
-     * @returns {number}
-     */
-    get size() {
-        const ret = wasm.__wbg_get_typststate_size(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} arg0
-     */
-    set size(arg0) {
-        wasm.__wbg_set_typststate_size(this.__wbg_ptr, arg0);
-    }
-    /**
-     * @returns {ThemeColors}
-     */
-    get theme() {
-        const ret = wasm.__wbg_get_typststate_theme(this.__wbg_ptr);
-        return ThemeColors.__wrap(ret);
-    }
-    /**
-     * @param {ThemeColors} arg0
-     */
-    set theme(arg0) {
-        _assertClass(arg0, ThemeColors);
-        var ptr0 = arg0.__destroy_into_raw();
-        wasm.__wbg_set_typststate_theme(this.__wbg_ptr, ptr0);
-    }
     constructor() {
         const ret = wasm.typststate_new();
         this.__wbg_ptr = ret >>> 0;
         TypstStateFinalization.register(this, this.__wbg_ptr, this);
         return this;
+    }
+    /**
+     * @returns {TypstDiagnostic[]}
+     */
+    diagnostics() {
+        const ret = wasm.typststate_diagnostics(this.__wbg_ptr);
+        var v1 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
+    }
+    /**
+     * @returns {number}
+     */
+    pt() {
+        const ret = wasm.typststate_pt(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} pt
+     */
+    setPt(pt) {
+        wasm.typststate_setPt(this.__wbg_ptr, pt);
+    }
+    /**
+     * @returns {number}
+     */
+    size() {
+        const ret = wasm.typststate_size(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} size
+     */
+    setSize(size) {
+        wasm.typststate_setSize(this.__wbg_ptr, size);
+    }
+    /**
+     * @returns {ThemeColors}
+     */
+    theme() {
+        const ret = wasm.typststate_theme(this.__wbg_ptr);
+        return ThemeColors.__wrap(ret);
+    }
+    /**
+     * @param {ThemeColors} theme
+     */
+    setTheme(theme) {
+        _assertClass(theme, ThemeColors);
+        var ptr0 = theme.__destroy_into_raw();
+        wasm.typststate_setTheme(this.__wbg_ptr, ptr0);
     }
     /**
      * @param {string} path

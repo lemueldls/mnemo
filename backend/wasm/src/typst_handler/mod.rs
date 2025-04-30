@@ -51,7 +51,9 @@ impl PackageFile {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct ThemeColors {
     primary: Rgb,
     secondary: Rgb,
@@ -107,7 +109,9 @@ impl fmt::Display for ThemeColors {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Rgb(u8, u8, u8);
 
 #[wasm_bindgen]
@@ -139,9 +143,9 @@ pub struct TypstState {
     width: String,
     height: String,
     // last_working_edit: String,
-    pub pt: f32,
-    pub size: f32,
-    pub theme: ThemeColors,
+    pt: f32,
+    size: f32,
+    theme: ThemeColors,
 }
 
 impl Default for TypstState {
@@ -195,6 +199,37 @@ impl TypstState {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn diagnostics(&self) -> Vec<TypstDiagnostic> {
+        self.diagnostics.clone()
+    }
+
+    pub fn pt(&self) -> f32 {
+        self.pt
+    }
+
+    #[wasm_bindgen(js_name = "setPt")]
+    pub fn set_pt(&mut self, pt: f32) {
+        self.pt = pt;
+    }
+
+    pub fn size(&self) -> f32 {
+        self.size
+    }
+
+    #[wasm_bindgen(js_name = "setSize")]
+    pub fn set_size(&mut self, size: f32) {
+        self.size = size;
+    }
+
+    pub fn theme(&self) -> ThemeColors {
+        self.theme
+    }
+
+    #[wasm_bindgen(js_name = "setTheme")]
+    pub fn set_theme(&mut self, theme: ThemeColors)  {
+        self.theme = theme;
     }
 
     #[wasm_bindgen(js_name = insertFile)]

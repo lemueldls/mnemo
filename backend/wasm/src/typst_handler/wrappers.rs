@@ -13,6 +13,7 @@ use typst::{
     },
     visualize::Color,
 };
+use wasm_bindgen::prelude::*;
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -30,6 +31,7 @@ impl TypstDiagnosticSeverity {
     }
 }
 
+// #[wasm_bindgen]
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct TypstDiagnostic {
