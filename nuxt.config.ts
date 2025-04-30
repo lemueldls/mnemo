@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   devtools: { enabled: !platform },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
-  compatibilityDate: "2024-07-07",
+  compatibilityDate: "2025-05-30",
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
@@ -47,9 +47,7 @@ export default defineNuxtConfig({
   // },
   experimental: {
     typedPages: true,
-    componentIslands: true,
     asyncContext: true,
-    headNext: true,
     viewTransition: true,
   },
   runtimeConfig: {
