@@ -20,6 +20,6 @@ function login() {
   <m3-outlined-card>
     <!-- <h1 class="m3-title-large">Login</h1> -->
 
-    <md-filled-button @click="login"> Continue with GitHub </md-filled-button>
+    <!-- <md-filled-button @click="login"> Continue with GitHub </md-filled-button> -->
   </m3-outlined-card>
 </template>
