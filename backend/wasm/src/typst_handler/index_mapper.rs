@@ -1,7 +1,6 @@
-
 #[derive(Debug, Default)]
 pub struct IndexMapper {
-    changes: Vec<(usize, usize)>
+    changes: Vec<(usize, usize)>,
 }
 
 impl IndexMapper {
@@ -10,11 +9,16 @@ impl IndexMapper {
     }
 
     pub fn map_offset(&self, offset: usize) -> usize {
-        crate::log(&format!("[CHANGES]: {:?}", &self.changes));
-
-        let inflection = self.changes.iter().rfind(|(_, change)| offset > *change);
+        let inflection = self.changes.iter().rfind(|(_, change)| offset >= *change);
         let (index, change) = inflection.unwrap();
 
         index + (offset - change)
+    }
+
+    pub fn map_index(&self, index: usize) -> usize {
+        let inflection = self.changes.iter().rfind(|(change, _)| index >= *change);
+        let (change, offset) = inflection.unwrap();
+
+        offset + (index - change)
     }
 }

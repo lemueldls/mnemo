@@ -19,11 +19,12 @@ use super::index_mapper::IndexMapper;
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(rename_all = "kebab-case")]
 pub enum TypstDiagnosticSeverity {
-    #[serde(rename = "error")]
     Error,
-    #[serde(rename = "warning")]
     Warning,
+    Info,
+    Lint,
 }
 
 impl TypstDiagnosticSeverity {
@@ -46,7 +47,7 @@ pub struct TypstDiagnostic {
 }
 
 impl TypstDiagnostic {
-    pub fn from_errors(errors:  Vec<SyntaxError>, world: &dyn WorldExt) -> Box<[Self]> {
+    pub fn from_errors(errors: Vec<SyntaxError>, world: &dyn WorldExt) -> Box<[Self]> {
         errors
             .into_iter()
             .map(|error| {
@@ -71,7 +72,10 @@ impl TypstDiagnostic {
                 let range = world.range(diagnostic.span).unwrap();
 
                 crate::log(&format!("[RANGE]: {range:?}"));
-                crate::log(&format!("[MAPPED]: {:?}", index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end)));
+                crate::log(&format!(
+                    "[MAPPED]: {:?}",
+                    index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end)
+                ));
 
                 TypstDiagnostic {
                     range: index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end),
@@ -143,6 +147,7 @@ impl From<typst_ide::Jump> for TypstJump {
 
 #[derive(Tsify, Serialize, Deserialize, Debug)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(rename_all = "kebab-case")]
 pub enum TypstCompletionKind {
     Syntax,
     Func,
@@ -160,6 +165,7 @@ pub enum TypstCompletionKind {
 #[tsify(into_wasm_abi, from_wasm_abi)]
 
 pub struct TypstCompletion {
+    #[serde(rename = "type")]
     kind: TypstCompletionKind,
     label: String,
     apply: Option<String>,

@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export type TypstDiagnosticSeverity = "error" | "warning";
+export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "lint";
 
 export interface TypstDiagnostic {
     range: { start: number; end: number };
@@ -18,10 +18,10 @@ export interface TypstError {
 
 export type TypstJump = { type: "File"; position: number };
 
-export type TypstCompletionKind = "Syntax" | "Func" | "Type" | "Param" | "Constant" | "Path" | "Package" | "Label" | "Font" | "Symbol";
+export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
 
 export interface TypstCompletion {
-    kind: TypstCompletionKind;
+    type: TypstCompletionKind;
     label: string;
     apply: string | undefined;
     detail: string | undefined;

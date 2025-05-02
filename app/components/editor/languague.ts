@@ -8,49 +8,49 @@ import type {
   CompletionResult,
   Completion,
 } from "@codemirror/autocomplete";
+import type { TypstState } from "~~/backend/wasm/pkg/mnemo_wasm";
 
-export const language = LRLanguage.define({
-  name: "typst",
-  parser,
-  languageData: {
-    closeBrackets: {
-      brackets: [
-        "(",
-        "[",
-        "{",
-        "'",
-        '"',
-        "`",
-        "```",
-        "*",
-        "**",
-        "_",
-        "__",
-        "$",
-      ],
+export const createLanguage = (typstState) =>
+  LRLanguage.define({
+    name: "typst",
+    parser,
+    languageData: {
+      closeBrackets: {
+        brackets: [
+          "(",
+          "[",
+          "{",
+          "'",
+          '"',
+          "`",
+          "```",
+          "*",
+          "**",
+          "_",
+          "__",
+          "$",
+        ],
+      },
+      commentTokens: { line: "//" },
+      autocomplete: (context) => autocomplete(typstState, context),
     },
-    commentTokens: { line: "//" },
-    // autocomplete,
-  },
-});
+  });
 
 async function autocomplete(
+  typstState: TypstState,
   context: CompletionContext,
 ): Promise<CompletionResult> {
   const { pos, explicit } = context;
 
-  const [offset, completions] = await invoke<[number, Completion[]]>(
-    "typst_autocomplete",
-    { cursor: pos, explicit },
-  );
-
-  // console.log({ offset, completions });
+  console.log({ context });
+  const [offset, completions] = typstState.autocomplete(pos, explicit);
+  console.log({ offset, completions });
 
   return { from: offset, options: completions };
 }
 
 // const fold = foldable()
 
-export function typstLanguage() {
-  return new LanguageSupport(language);
+export function typstLanguage(typstState: TypstState) {
+  return new LanguageSupport(createLanguage(typstState));
 }

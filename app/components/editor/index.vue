@@ -41,7 +41,7 @@ import {
   type CompletionContext,
   type CompletionResult,
 } from "@codemirror/autocomplete";
-import { linter, lintKeymap } from "@codemirror/lint";
+import { lintKeymap } from "@codemirror/lint";
 
 // import { redFromArgb } from "@material/material-color-utifies";
 
@@ -90,8 +90,8 @@ watchEffect(async () => {
       parseColor(palette.onPrimaryContainer),
       parseColor(palette.onSecondaryContainer),
       parseColor(palette.onTertiaryContainer),
-      parseColor(palette.onBackground)
-    )
+      parseColor(palette.onBackground),
+    ),
   );
 });
 
@@ -120,10 +120,10 @@ storageItem.value = ref("");
 
 const preludeItem = await useRefStorageItem(
   computed(() => `spaces/${props.spaceId}/prelude/main.typ`),
-  ""
+  "",
 );
 const prelude = computed(() =>
-  props.kind === "prelude" ? "" : preludeItem.value
+  props.kind === "prelude" ? "" : preludeItem.value,
 );
 
 // watchEffect(() => {
@@ -149,7 +149,7 @@ onMounted(() => {
       // console.log({ path, spaceId, oldPath, oldSpace });
       storageItem.value = await useStorageItem(
         `spaces/${oldSpace || spaceId}/${props.kind}/${path}.typ`,
-        ""
+        "",
       );
 
       // const note = await useStorageItem(
@@ -173,7 +173,7 @@ onMounted(() => {
 
       const packages = await useStorageItem<Package[]>(
         `spaces/${oldSpace || spaceId}/packages.json`,
-        []
+        [],
       );
       // check if spamming
       watchImmediate(packages, async (packages) => {
@@ -193,30 +193,25 @@ onMounted(() => {
 
       if (cache)
         view.setState(
-          EditorState.fromJSON(cache, stateConfig, { history: historyField })
+          EditorState.fromJSON(cache, stateConfig, { history: historyField }),
         );
       else {
         stateConfig.doc = text;
         view.setState(EditorState.create(stateConfig));
       }
-    }
+    },
   );
 });
 
 function createStateConfig(
   typstState: TypstState,
   path: string,
-  fileId: FileId
+  fileId: FileId,
 ): EditorStateConfig {
   return {
     extensions: [
       typst(typstState, storageItem, prelude, fileId),
-      typstLanguage(),
-      // linter(view => {
-      //   console.log(typstState.);
-
-      //   return []
-      // }),
+      typstLanguage(typstState),
 
       underlineKeymap,
 
@@ -237,7 +232,7 @@ function createStateConfig(
       bracketMatching(),
       closeBrackets(),
       EditorView.contentAttributes.of({ spellcheck: "true" }),
-      autocompletion({ activateOnTyping: true }),
+      autocompletion(),
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
@@ -290,7 +285,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     font-stretch: normal;
     font-variant-ligatures: none;
     font-kerning: none; */
-    font-kerning: normal !important;
+    /* font-kerning: normal !important; */
     // letter-spacing: 0;
     // word-spacing: 4px;
     /* font-feature-settings: "liga" 0; */
@@ -319,16 +314,141 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   }
 
   .cm-activeLine {
-    // @apply px-1;
-
     background-color: v-bind(activeLineBackground);
+  }
+
+  .cm-lintPoint-error::after {
+    @apply border-b-m3-error;
+  }
+
+  .cm-lintRange {
+    @apply bg-none decoration-underline decoration-wavy;
+  }
+
+  .cm-lintRange-error {
+    @apply decoration-m3-error;
+  }
+
+  /* .cm-lintRange-hint {
+    @apply decoration-m3-error;
+  } */
+
+  .cm-tooltip {
+    @apply bg-m3-surface-container-lowest rounded border-none shadow max-w-xl p-0 m-0;
+
+    /* font-family: "Iosevka Book Web"; */
+
+    [aria-selected="true"] {
+      @apply bg-m3-secondary-container! text-m3-on-secondary-container!;
+    }
+
+    li {
+      @apply p-1!;
+    }
+  }
+
+  .cm-tooltip-lint {
+    @apply -translate-x-1;
+
+    li {
+      @apply first:b-t-2 first:rounded-t last:rounded-b p-1!;
+    }
+  }
+
+  .cm-tooltip-autocomplete {
+    @apply flex flex-col gap-1 p-1 text-sm;
+
+    li {
+      @apply rounded;
+    }
+  }
+
+  .cm-completionIcon {
+    @apply translate-y-0.5;
+  }
+
+  /* .cm-completionDetail {
+    @apply flex-1;
+
+    text-wrap: ellipsis;
+  } */
+
+  .cm-completionIcon-syntax::after {
+    content: "code";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-function::after {
+    content: "function";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-type::after {
+    content: "category";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-param::after {
+    content: "settings";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-constant::after {
+    content: "special_character";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-path::after {
+    content: "folder";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-package::after {
+    content: "package";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-label::after {
+    content: "label";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-font::after {
+    content: "font_download";
+    font-family: var(--md-icon-font);
+  }
+
+  .cm-completionIcon-symbol::after {
+    content: "tag";
+    font-family: var(--md-icon-font);
+  }
+
+  /* .cm-tooltip-above {
+    @apply rounded-bl-0;
+  }
+
+  .cm-tooltip-below {
+    @apply rounded-tl-0;
+  } */
+
+  .cm-diagnostic {
+    @apply b-l-6;
+  }
+
+  .cm-diagnostic-error {
+    @apply text-m3-error border-m3-error;
+  }
+
+  .cm-diagnostic-hint {
+    @apply text-m3-outline border-m3-outline;
   }
 
   .typst-render {
     display: inline;
     // vertical-align: bottom;
     cursor: text;
-    user-drag: none;
+    -wekkit-user-drag: none;
+    -moz-user-drag: none;
     user-select: none;
     // pointer-events: none;
     /* overflow: hidden; */

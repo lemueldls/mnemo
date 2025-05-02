@@ -1,7 +1,7 @@
 mod fonts;
+mod index_mapper;
 mod world;
 mod wrappers;
-mod index_mapper;
 
 use core::fmt;
 use std::{
@@ -141,6 +141,7 @@ impl fmt::Display for Rgb {
 pub struct TypstState {
     world: MnemoWorld,
     document: Option<PagedDocument>,
+    index_mapper: IndexMapper,
     width: String,
     height: String,
     // last_working_edit: String,
@@ -154,6 +155,7 @@ impl Default for TypstState {
         Self {
             world: MnemoWorld::new(),
             document: None,
+            index_mapper: IndexMapper::default(),
             width: String::from("auto"),
             height: String::from("auto"),
             pt: 0_f32,
@@ -224,7 +226,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
-    pub fn set_theme(&mut self, theme: ThemeColors)  {
+    pub fn set_theme(&mut self, theme: ThemeColors) {
         self.theme = theme;
     }
 
@@ -288,8 +290,8 @@ impl TypstState {
     pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> Box<[RangedRender]> {
         let mut source = self.prelude(true) + prelude;
 
-        let mut index_mapper = IndexMapper::default();
-        index_mapper.add_change(0, source.len());
+        self.index_mapper = IndexMapper::default();
+        self.index_mapper.add_change(0, source.len());
 
         let mut blocks = Vec::<Block>::new();
         let mut in_block = false;
@@ -314,10 +316,9 @@ impl TypstState {
             range.start -= last_end_byte_offset;
             range.end -= byte_offset;
 
-            // index_mapper.add_change(range.end, source.len());
-
             if let Some(last_block) = blocks.last() {
-                index_mapper.add_change(last_block.range.start, source.len());
+                self.index_mapper
+                    .add_change(last_block.range.start, source.len());
             }
 
             if let Some(ast::Expr::FuncCall(call)) = node.cast() {
@@ -345,10 +346,9 @@ impl TypstState {
                     let mut range = last_range.range.clone();
                     range.start += last_start_byte_offset;
                     range.end += last_end_byte_offset;
-                    
+
                     source += &text[range];
                     source += "\n#pagebreak()\n";
-
                 }
             } else if node.erroneous() {
                 in_block = false;
@@ -360,13 +360,8 @@ impl TypstState {
                     source.encode_utf16().count(),
                     TypstDiagnostic::from_errors(node.errors(), &self.world),
                 ));
-                // errors.extend(TypstDiagnostic::from_errors(node.errors(), &self.world));
-
-                // continue;
 
                 source += "\n#pagebreak()\n";
-
-                // index_mapper.add_change(end_range, source.len());
             } else if in_block {
                 blocks.last_mut().unwrap().range.end = range.end;
             } else {
@@ -375,8 +370,7 @@ impl TypstState {
                 blocks.push(Block::new(
                     range,
                     source.encode_utf16().count(),
-                    // errors.drain(..).collect::<Box<[_]>>(),
-                    Box::new([])
+                    Box::new([]),
                 ));
             }
 
@@ -391,10 +385,9 @@ impl TypstState {
                 range.start += last_start_byte_offset;
                 range.end += last_end_byte_offset;
 
-                index_mapper.add_change(range.start, source.len());
+                self.index_mapper.add_change(range.start, source.len());
 
                 source += &text[range];
-
             }
         }
         // else {
@@ -416,23 +409,31 @@ impl TypstState {
 
         self.world.main_source_mut().replace(&source);
 
-        crate::log(&format!("[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"));
+        crate::log(&format!(
+            "[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"
+        ));
         crate::log(&format!("[LAST_END_BYTE_OFFSET]: {last_end_byte_offset:?}"));
 
         let compiled = compile::<PagedDocument>(&self.world);
-        errors.extend(TypstDiagnostic::from_diagnostics(compiled.warnings, &index_mapper, &self.world));
+        errors.extend(TypstDiagnostic::from_diagnostics(
+            compiled.warnings,
+            &self.index_mapper,
+            &self.world,
+        ));
         match compiled.output {
             Ok(document) => {
                 if blocks.is_empty() {
                     self.document = Some(document);
 
-                    Box::new([
-                        RangedRender {
-                            index: 0,
-                            block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
-                            render: None,
-                        }
-                    ])
+                    Box::new([RangedRender {
+                        index: 0,
+                        block: Block::new(
+                            0..text.encode_utf16().count(),
+                            0,
+                            errors.into_boxed_slice(),
+                        ),
+                        render: None,
+                    }])
                 } else {
                     let pages = &document.pages;
 
@@ -447,7 +448,11 @@ impl TypstState {
                                 > 0;
 
                             // not_empty.then(|| RangedRender::new(index, block, encode_frame(page, pt)))
-                            RangedRender::new(index, block, not_empty.then(|| encode_frame(page, self.pt)))
+                            RangedRender::new(
+                                index,
+                                block,
+                                not_empty.then(|| encode_frame(page, self.pt)),
+                            )
                         })
                         .collect::<Box<[_]>>();
 
@@ -462,15 +467,17 @@ impl TypstState {
                 crate::log(&format!("[ERRORS]: {errors:?}"));
                 crate::log(&format!("[DIAGNOSTICS]: {diagnostics:?}"));
 
-                errors.extend(TypstDiagnostic::from_diagnostics(diagnostics, &index_mapper, &self.world));
+                errors.extend(TypstDiagnostic::from_diagnostics(
+                    diagnostics,
+                    &self.index_mapper,
+                    &self.world,
+                ));
 
-                Box::new([
-                    RangedRender {
-                        index: 0,
-                        block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
-                        render: None,
-                    }
-                ])
+                Box::new([RangedRender {
+                    index: 0,
+                    block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
+                    render: None,
+                }])
             }
         }
     }
@@ -523,20 +530,25 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn autocomplete(&self, cursor: usize, explicit: bool) -> Result<JsValue, Error> {
-        let compiled = compile(&self.world);
-        let document = match compiled.output {
-            Ok(document) => document,
-            Err(..) => return serde_wasm_bindgen::to_value(&(0, Vec::<TypstCompletion>::new())),
-        };
+        // let compiled = compile(&self.world);
+        // let document = match compiled.output {
+        //     Ok(document) => document,
+        //     Err(..) => return serde_wasm_bindgen::to_value(&(0, Vec::<TypstCompletion>::new())),
+        // };
         let source = self.world.main_source();
 
-        let results =
-            typst_ide::autocomplete(&self.world, Some(&document), source, cursor, explicit);
+        let results = typst_ide::autocomplete(
+            &self.world,
+            self.document.as_ref(),
+            source,
+            self.index_mapper.map_index(cursor),
+            explicit,
+        );
 
         serde_wasm_bindgen::to_value(&match results {
             Some((offset, completions)) => {
                 (
-                    offset,
+                    self.index_mapper.map_offset(offset),
                     completions
                         .into_iter()
                         .map(TypstCompletion::from)

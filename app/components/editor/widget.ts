@@ -14,7 +14,7 @@ import type { TypstState, FileId, Block } from "mnemo-wasm";
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
 import type { Range } from "@codemirror/state";
-import { setDiagnostics } from "@codemirror/lint";
+import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
 
 class TypstWidget extends WidgetType {
   #image = document.createElement("img");
@@ -24,7 +24,7 @@ class TypstWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly index: number,
     private readonly render: string,
-    private readonly block: Block
+    private readonly block: Block,
   ) {
     super();
 
@@ -85,7 +85,7 @@ function decorate(
   update: ViewUpdate,
   fileId: FileId,
   text: string,
-  prelude: string
+  prelude: string,
 ) {
   const { view, state } = update;
 
@@ -94,14 +94,27 @@ function decorate(
   const widgets: Range<Decoration>[] = [];
 
   const diagnostics = syncResult.flatMap(({ block }) =>
-    block.errors.map((error) => {
-      return {
-        from: error.range.start,
-        to: error.range.end,
-        severity: error.severity,
-        message: error.message,
-      };
-    })
+    block.errors.flatMap((diagnostic) => {
+      const diagnostics: Diagnostic[] = [
+        {
+          from: diagnostic.range.start,
+          to: diagnostic.range.end,
+          severity: diagnostic.severity,
+          message: diagnostic.message,
+        },
+      ];
+
+      for (const hint of diagnostic.hints) {
+        diagnostics.push({
+          from: diagnostic.range.start,
+          to: diagnostic.range.end,
+          severity: "hint",
+          message: hint,
+        });
+      }
+
+      return diagnostics;
+    }),
   );
   const transaction = setDiagnostics(state, diagnostics);
   queueMicrotask(() => view.dispatch(transaction));
@@ -120,7 +133,7 @@ function decorate(
             (range.from < start || range.from > end) &&
             (range.to < start || range.to > end) &&
             (start < range.from || start > range.to) &&
-            (end < range.from || end > range.to)
+            (end < range.from || end > range.to),
         );
 
       if (inactive)
@@ -128,7 +141,7 @@ function decorate(
           Decoration.replace({
             widget: new TypstWidget(typstState, view, index, render, block),
             // inclusive: true,
-          }).range(start, end)
+          }).range(start, end),
         );
       else {
         for (let i = start; i < end; i++) {
@@ -149,7 +162,7 @@ function decorate(
               class: "cm-activeLine",
               attributes: { style },
               // inclusive: true,
-            }).range(from)
+            }).range(from),
           );
         }
       }
@@ -165,7 +178,7 @@ export const viewPlugin = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
   prelude: Ref<string>,
-  fileId: FileId
+  fileId: FileId,
 ) =>
   ViewPlugin.define((_view) => {
     return {
@@ -185,7 +198,7 @@ export const viewPlugin = (
             update,
             fileId,
             text,
-            prelude.value
+            prelude.value,
           );
           const effects = stateEffect.of({ decorations });
 
@@ -199,7 +212,7 @@ export const typst = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
   prelude: Ref<string>,
-  fileId: FileId
+  fileId: FileId,
 ) =>
   StateField.define({
     create() {
@@ -207,14 +220,14 @@ export const typst = (
     },
     update(decorations, transaction) {
       const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect)
+        effect.is(stateEffect),
       );
 
       if (effect) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to)
+          ...transaction.state.selection.ranges.map(({ to }) => to),
         );
 
         return decorations.update({
@@ -236,7 +249,7 @@ function syncTypstState(
   typstState: TypstState,
   fileId: FileId,
   text: string,
-  prelude: string
+  prelude: string,
 ) {
   let result;
 
