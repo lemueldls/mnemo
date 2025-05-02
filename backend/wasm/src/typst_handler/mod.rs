@@ -1,6 +1,7 @@
 mod fonts;
 mod world;
 mod wrappers;
+mod index_mapper;
 
 use core::fmt;
 use std::{
@@ -14,6 +15,7 @@ use std::{
 };
 
 use data_encoding::BASE64;
+use index_mapper::IndexMapper;
 // use js_sys::Uint8Array;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
@@ -139,7 +141,6 @@ impl fmt::Display for Rgb {
 pub struct TypstState {
     world: MnemoWorld,
     document: Option<PagedDocument>,
-    diagnostics: Vec<TypstDiagnostic>,
     width: String,
     height: String,
     // last_working_edit: String,
@@ -153,7 +154,6 @@ impl Default for TypstState {
         Self {
             world: MnemoWorld::new(),
             document: None,
-            diagnostics: Vec::new(),
             width: String::from("auto"),
             height: String::from("auto"),
             pt: 0_f32,
@@ -172,13 +172,13 @@ impl Default for TypstState {
     }
 }
 
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-#[serde(tag = "kind", rename_all = "camelCase", content = "data")]
-pub enum SyncResult {
-    Ok(Box<[RangedRender]>),
-    Error(Box<[String]>),
-}
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
+// #[serde(tag = "kind", rename_all = "camelCase", content = "data")]
+// pub enum SyncResult {
+//     Ok(Box<[RangedRender]>),
+//     Error(Box<[String]>),
+// }
 
 #[derive(Debug, Clone)]
 #[wasm_bindgen(js_name = "FileId")]
@@ -199,10 +199,6 @@ impl TypstState {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub fn diagnostics(&self) -> Vec<TypstDiagnostic> {
-        self.diagnostics.clone()
     }
 
     pub fn pt(&self) -> f32 {
@@ -289,8 +285,11 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> SyncResult {
+    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> Box<[RangedRender]> {
         let mut source = self.prelude(true) + prelude;
+
+        let mut index_mapper = IndexMapper::default();
+        index_mapper.add_change(0, source.len());
 
         let mut blocks = Vec::<Block>::new();
         let mut in_block = false;
@@ -314,6 +313,12 @@ impl TypstState {
 
             range.start -= last_end_byte_offset;
             range.end -= byte_offset;
+
+            // index_mapper.add_change(range.end, source.len());
+
+            if let Some(last_block) = blocks.last() {
+                index_mapper.add_change(last_block.range.start, source.len());
+            }
 
             if let Some(ast::Expr::FuncCall(call)) = node.cast() {
                 if let ast::Expr::Ident(ident) = call.callee() {
@@ -340,16 +345,28 @@ impl TypstState {
                     let mut range = last_range.range.clone();
                     range.start += last_start_byte_offset;
                     range.end += last_end_byte_offset;
-
+                    
                     source += &text[range];
                     source += "\n#pagebreak()\n";
+
                 }
             } else if node.erroneous() {
                 in_block = false;
 
-                errors.extend(node.errors());
+                let end_range = range.end;
 
-                continue;
+                blocks.push(Block::new(
+                    range,
+                    source.encode_utf16().count(),
+                    TypstDiagnostic::from_errors(node.errors(), &self.world),
+                ));
+                // errors.extend(TypstDiagnostic::from_errors(node.errors(), &self.world));
+
+                // continue;
+
+                source += "\n#pagebreak()\n";
+
+                // index_mapper.add_change(end_range, source.len());
             } else if in_block {
                 blocks.last_mut().unwrap().range.end = range.end;
             } else {
@@ -358,12 +375,9 @@ impl TypstState {
                 blocks.push(Block::new(
                     range,
                     source.encode_utf16().count(),
-                    TypstError::drain_from_errors(&mut errors, &self.world),
+                    // errors.drain(..).collect::<Box<[_]>>(),
+                    Box::new([])
                 ));
-            }
-
-            match node.kind() {
-                _ => {}
             }
 
             last_start_byte_offset = last_end_byte_offset;
@@ -377,12 +391,23 @@ impl TypstState {
                 range.start += last_start_byte_offset;
                 range.end += last_end_byte_offset;
 
+                index_mapper.add_change(range.start, source.len());
+
                 source += &text[range];
+
             }
-        } else {
-            // return serde_wasm_bindgen::to_value::<[(); 0]>(&[]);
-            return SyncResult::Ok(Box::new([]));
         }
+        // else {
+        //     // return serde_wasm_bindgen::to_value::<[(); 0]>(&[]);
+        //     // return SyncResult::Ok(Box::new([]));
+        //     return SyncResult::Ok(Box::new([
+        //         RangedRender {
+        //             index: 0,
+        //             block: Block::new(0..utf16_count, 0, diagnostics.drain(..).collect::<Box<[_]>>(),),
+        //             render: None,
+        //         }
+        //     ]));
+        // }
 
         crate::log(&format!(
             "[SOURCE]: {}",
@@ -391,50 +416,61 @@ impl TypstState {
 
         self.world.main_source_mut().replace(&source);
 
+        crate::log(&format!("[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"));
+        crate::log(&format!("[LAST_END_BYTE_OFFSET]: {last_end_byte_offset:?}"));
+
         let compiled = compile::<PagedDocument>(&self.world);
+        errors.extend(TypstDiagnostic::from_diagnostics(compiled.warnings, &index_mapper, &self.world));
         match compiled.output {
             Ok(document) => {
-                let pages = &document.pages;
+                if blocks.is_empty() {
+                    self.document = Some(document);
 
-                let pt = self.pt;
+                    Box::new([
+                        RangedRender {
+                            index: 0,
+                            block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
+                            render: None,
+                        }
+                    ])
+                } else {
+                    let pages = &document.pages;
 
-                // crate::log(&format!(
-                //     "{:#?}",
-                //     iter::zip(blocks.clone(), pages.iter().cloned()).collect::<Vec<_>>()
-                // ));
+                    let blocks = iter::zip(blocks, pages.iter().cloned())
+                        .enumerate()
+                        .map(|(index, (block, page))| {
+                            let not_empty = page
+                                .frame
+                                .items()
+                                .filter(|(_point, item)| !matches!(item, FrameItem::Tag(..)))
+                                .count()
+                                > 0;
 
-                let blocks = iter::zip(blocks, pages.iter().cloned())
-                    .enumerate()
-                    .filter_map(|(index, (block, page))| {
-                        let not_empty = page
-                            .frame
-                            .items()
-                            .filter(|(_point, item)| !matches!(item, FrameItem::Tag(..)))
-                            .count()
-                            > 0;
+                            // not_empty.then(|| RangedRender::new(index, block, encode_frame(page, pt)))
+                            RangedRender::new(index, block, not_empty.then(|| encode_frame(page, self.pt)))
+                        })
+                        .collect::<Box<[_]>>();
 
-                        not_empty.then(|| RangedRender::new(index, block, encode_frame(page, pt)))
-                    })
-                    .collect::<Box<[_]>>();
+                    self.document = Some(document);
 
-                self.document = Some(document);
-
-                // self.last_working_edit
-
-                SyncResult::Ok(blocks)
+                    blocks
+                }
             }
-            Err(errors) => {
+            Err(diagnostics) => {
                 crate::error(&format!("{errors:?}"));
-                // crate::log(&format!(
-                //     "[ERRORS]: {:?}",
-                //     // node.errors(),
-                //     TypstError::drain_from_errors(&mut errors.clone(), &self.world)
-                // ));
 
-                // serde_wasm_bindgen::to_value::<[(); 0]>(&[])
-                SyncResult::Error(errors.into_iter().map(|e| e.message.to_string()).collect())
+                crate::log(&format!("[ERRORS]: {errors:?}"));
+                crate::log(&format!("[DIAGNOSTICS]: {diagnostics:?}"));
 
-                // for error in errors {}
+                errors.extend(TypstDiagnostic::from_diagnostics(diagnostics, &index_mapper, &self.world));
+
+                Box::new([
+                    RangedRender {
+                        index: 0,
+                        block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
+                        render: None,
+                    }
+                ])
             }
         }
     }
@@ -528,11 +564,11 @@ impl TypstState {
 pub struct RangedRender {
     pub index: usize,
     pub block: Block,
-    pub render: String,
+    pub render: Option<String>,
 }
 
 impl RangedRender {
-    pub fn new(index: usize, block: Block, render: String) -> Self {
+    pub fn new(index: usize, block: Block, render: Option<String>) -> Self {
         Self {
             index,
             block,
@@ -561,11 +597,11 @@ impl RangedRender {
 pub struct Block {
     pub range: Range<usize>,
     pub offset: usize,
-    pub errors: Box<[TypstError]>,
+    pub errors: Box<[TypstDiagnostic]>,
 }
 
 impl Block {
-    pub fn new(range: Range<usize>, offset: usize, errors: Box<[TypstError]>) -> Self {
+    pub fn new(range: Range<usize>, offset: usize, errors: Box<[TypstDiagnostic]>) -> Self {
         Self {
             range,
             offset,

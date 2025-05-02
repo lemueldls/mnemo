@@ -15,10 +15,14 @@ use typst::{
 };
 use wasm_bindgen::prelude::*;
 
+use super::index_mapper::IndexMapper;
+
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum TypstDiagnosticSeverity {
+    #[serde(rename = "error")]
     Error,
+    #[serde(rename = "warning")]
     Warning,
 }
 
@@ -42,9 +46,9 @@ pub struct TypstDiagnostic {
 }
 
 impl TypstDiagnostic {
-    pub fn drain_from_errors(errors: &mut Vec<SyntaxError>, world: &dyn WorldExt) -> Box<[Self]> {
+    pub fn from_errors(errors:  Vec<SyntaxError>, world: &dyn WorldExt) -> Box<[Self]> {
         errors
-            .drain(..)
+            .into_iter()
             .map(|error| {
                 TypstDiagnostic {
                     range: world.range(error.span).unwrap(),
@@ -57,14 +61,20 @@ impl TypstDiagnostic {
     }
 
     pub fn from_diagnostics(
-        diagnostics: &mut Vec<SourceDiagnostic>,
+        diagnostics: EcoVec<SourceDiagnostic>,
+        index_mapper: &IndexMapper,
         world: &dyn WorldExt,
     ) -> Box<[Self]> {
         diagnostics
-            .drain(..)
+            .into_iter()
             .map(|diagnostic| {
+                let range = world.range(diagnostic.span).unwrap();
+
+                crate::log(&format!("[RANGE]: {range:?}"));
+                crate::log(&format!("[MAPPED]: {:?}", index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end)));
+
                 TypstDiagnostic {
-                    range: world.range(diagnostic.span).unwrap(),
+                    range: index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end),
                     severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
                     message: diagnostic.message.to_string(),
                     hints: diagnostic

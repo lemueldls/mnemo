@@ -43,7 +43,7 @@ import {
 } from "@codemirror/autocomplete";
 import { linter, lintKeymap } from "@codemirror/lint";
 
-// import { redFromArgb } from "@material/material-color-utilities";
+// import { redFromArgb } from "@material/material-color-utifies";
 
 import { Rgb } from "mnemo-wasm";
 

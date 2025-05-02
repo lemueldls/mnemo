@@ -9,23 +9,12 @@ import {
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState, FileId } from "mnemo-wasm";
+import type { TypstState, FileId, Block } from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
 import type { Range } from "@codemirror/state";
-
-interface Block {
-  range: { start: number; end: number };
-  offset: number;
-  errors: object[];
-}
-
-interface RangedRender {
-  index: number;
-  block: Block;
-  render: string;
-}
+import { setDiagnostics } from "@codemirror/lint";
 
 class TypstWidget extends WidgetType {
   #image = document.createElement("img");
@@ -104,10 +93,25 @@ function decorate(
 
   const widgets: Range<Decoration>[] = [];
 
-  if (syncResult.kind === "ok") {
-    for (const { index, block, render } of syncResult.data) {
-      console.log({ index, block, render });
+  const diagnostics = syncResult.flatMap(({ block }) =>
+    block.errors.map((error) => {
+      return {
+        from: error.range.start,
+        to: error.range.end,
+        severity: error.severity,
+        message: error.message,
+      };
+    })
+  );
+  const transaction = setDiagnostics(state, diagnostics);
+  queueMicrotask(() => view.dispatch(transaction));
 
+  console.log({ syncResult, diagnostics });
+
+  for (const { index, block, render } of syncResult) {
+    // console.log({ index, block, render });
+
+    if (render) {
       const { start, end } = block.range;
       const inactive =
         !view.hasFocus ||
@@ -150,8 +154,6 @@ function decorate(
         }
       }
     }
-  } else {
-    // return view.decoration
   }
 
   return Decoration.set(widgets);

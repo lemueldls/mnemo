@@ -96,17 +96,6 @@ function _assertClass(instance, klass) {
     }
 }
 
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_3.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
-}
-
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
     wasm.__wbindgen_export_3.set(idx, obj);
@@ -121,6 +110,17 @@ function passArrayJsValueToWasm0(array, malloc) {
     }
     WASM_VECTOR_LEN = array.length;
     return ptr;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_3.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
 }
 
 function takeFromExternrefTable0(idx) {
@@ -332,15 +332,6 @@ export class TypstState {
         return this;
     }
     /**
-     * @returns {TypstDiagnostic[]}
-     */
-    diagnostics() {
-        const ret = wasm.typststate_diagnostics(this.__wbg_ptr);
-        var v1 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-        return v1;
-    }
-    /**
      * @returns {number}
      */
     pt() {
@@ -409,7 +400,7 @@ export class TypstState {
      * @param {FileId} id
      * @param {string} text
      * @param {string} prelude
-     * @returns {SyncResult}
+     * @returns {RangedRender[]}
      */
     sync(id, text, prelude) {
         _assertClass(id, FileId);
@@ -418,7 +409,9 @@ export class TypstState {
         const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.typststate_sync(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
-        return ret;
+        var v3 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v3;
     }
     /**
      * @param {number} index
