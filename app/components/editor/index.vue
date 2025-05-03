@@ -231,7 +231,6 @@ function createStateConfig(
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       bracketMatching(),
       closeBrackets(),
-      EditorView.contentAttributes.of({ spellcheck: "true" }),
       autocompletion(),
       rectangularSelection(),
       crosshairCursor(),
