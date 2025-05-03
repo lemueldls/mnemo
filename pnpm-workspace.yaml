@@ -1,5 +1,8 @@
+packages:
+  - backend/wasm/pkg
+
 onlyBuiltDependencies:
-  - '@parcel/watcher'
+  - "@parcel/watcher"
   - esbuild
   - sharp
   - unrs-resolver

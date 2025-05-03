@@ -235,6 +235,8 @@ importers:
         specifier: ^4.14.0
         version: 4.14.1(@cloudflare/workers-types@4.20250503.0)
 
+  backend/wasm/pkg: {}
+
 packages:
 
   '@adonisjs/hash@9.0.5':
