@@ -409,11 +409,6 @@ impl TypstState {
 
         self.world.main_source_mut().replace(&source);
 
-        crate::log(&format!(
-            "[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"
-        ));
-        crate::log(&format!("[LAST_END_BYTE_OFFSET]: {last_end_byte_offset:?}"));
-
         let compiled = compile::<PagedDocument>(&self.world);
         errors.extend(TypstDiagnostic::from_diagnostics(
             compiled.warnings,
@@ -462,11 +457,6 @@ impl TypstState {
                 }
             }
             Err(diagnostics) => {
-                crate::error(&format!("{errors:?}"));
-
-                crate::log(&format!("[ERRORS]: {errors:?}"));
-                crate::log(&format!("[DIAGNOSTICS]: {diagnostics:?}"));
-
                 errors.extend(TypstDiagnostic::from_diagnostics(
                     diagnostics,
                     &self.index_mapper,
@@ -525,7 +515,7 @@ impl TypstState {
             &document.pages[index].frame,
             Point::new(Abs::raw(x), Abs::raw(y)),
         )
-        .map(TypstJump::from)
+        .map(|jump| TypstJump::from_mapped(jump, &self.index_mapper))
     }
 
     #[wasm_bindgen]
@@ -631,9 +621,12 @@ pub struct EncodedFrame {
 
 fn encode_frame(frame: Page, pt: f32) -> EncodedFrame {
     let canvas = &render(&frame, pt);
-    let render = BASE64.encode(&canvas.encode_png().unwrap()).into_boxed_str();
+    let render = BASE64
+        .encode(&canvas.encode_png().unwrap())
+        .into_boxed_str();
 
-    crate::log(&format!("[HEIGHT]: {}", canvas.height()));
-
-    EncodedFrame { render, height: canvas.height() }
+    EncodedFrame {
+        render,
+        height: canvas.height(),
+    }
 }

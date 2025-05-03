@@ -277,7 +277,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
 
   .cm-line {
     // @apply p-0 pl-1px text-[16px] tracking-0 word-spacing-[4px] [font-kerning:none];
-    @apply pl-1px p-0 text-[16px];
+    @apply p-0 px-[1px] text-[16px];
     /* font-family: "Iosevka Quasi Custom"; */
     font-family: "Iosevka Book Web";
     /* font-style: normal;
@@ -367,12 +367,6 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     @apply translate-y-0.5;
   }
 
-  /* .cm-completionDetail {
-    @apply flex-1;
-
-    text-wrap: ellipsis;
-  } */
-
   .cm-completionIcon-syntax::after {
     content: "code";
     font-family: var(--md-icon-font);
@@ -449,7 +443,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     cursor: text;
     -wekkit-user-drag: none;
     -moz-user-drag: none;
-    user-select: none;
+    // user-select: none;
     // pointer-events: none;
     /* overflow: hidden; */
     /* display: flex; */

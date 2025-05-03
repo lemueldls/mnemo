@@ -42,9 +42,7 @@ class TypstWidget extends WidgetType {
     const y = event.clientY - top;
 
     const jump = typstState.click(index, x, y); // can crash
-    const position = jump
-      ? block.range.start + (jump.position - block.offset)
-      : block.range.end;
+    const position = jump ? jump.position : block.range.end;
 
     view.dispatch({ selection: { anchor: position } });
   }
@@ -117,10 +115,12 @@ function decorate(
   console.log({ syncResult, diagnostics });
 
   for (const { index, block, render } of syncResult) {
-    // console.log({ index, block, render });
-
     if (render) {
-      const { start, end } = block.range;
+      const { from: start, number: startLine } = state.doc.lineAt(
+        block.range.start,
+      );
+      const { to: end, number: endLine } = state.doc.lineAt(block.range.end);
+
       const inactive =
         !view.hasFocus ||
         state.selection.ranges.every(
@@ -139,9 +139,6 @@ function decorate(
           }).range(start, end),
         );
       else {
-        const { number: startLine } = state.doc.lineAt(start);
-        const { number: endLine } = state.doc.lineAt(end);
-
         let lineHeight = 0;
 
         for (
@@ -190,7 +187,7 @@ export const viewPlugin = (
           update.geometryChanged ||
           update.selectionSet
         ) {
-          typstState.resize(update.view.dom.clientWidth - 1);
+          typstState.resize(update.view.dom.clientWidth - 2);
 
           const text = update.state.doc.toString();
           item.value.value = text;

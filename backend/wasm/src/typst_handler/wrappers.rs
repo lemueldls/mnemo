@@ -71,12 +71,6 @@ impl TypstDiagnostic {
             .map(|diagnostic| {
                 let range = world.range(diagnostic.span).unwrap();
 
-                crate::log(&format!("[RANGE]: {range:?}"));
-                crate::log(&format!(
-                    "[MAPPED]: {:?}",
-                    index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end)
-                ));
-
                 TypstDiagnostic {
                     range: index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end),
                     severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
@@ -127,8 +121,8 @@ pub enum TypstJump {
     // Position(Position),
 }
 
-impl From<typst_ide::Jump> for TypstJump {
-    fn from(jump: typst_ide::Jump) -> Self {
+impl TypstJump {
+    pub fn from_mapped(jump: typst_ide::Jump, index_mapper: &IndexMapper) -> Self {
         match jump {
             typst_ide::Jump::File(id, position) => {
                 // let mut state = DefaultHasher::new();
@@ -136,7 +130,7 @@ impl From<typst_ide::Jump> for TypstJump {
 
                 Self::File {
                     // id: state.finish(),
-                    position,
+                    position: index_mapper.map_offset(position),
                 }
             }
             typst_ide::Jump::Url(..) => todo!(),

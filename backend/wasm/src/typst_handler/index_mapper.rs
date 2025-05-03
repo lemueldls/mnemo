@@ -1,24 +1,34 @@
 #[derive(Debug, Default)]
 pub struct IndexMapper {
-    changes: Vec<(usize, usize)>,
+    inflections: Vec<(usize, usize)>,
 }
 
 impl IndexMapper {
     pub fn add_change(&mut self, index: usize, offset: usize) {
-        self.changes.push((index, offset));
+        self.inflections.push((index, offset));
     }
 
     pub fn map_offset(&self, offset: usize) -> usize {
-        let inflection = self.changes.iter().rfind(|(_, change)| offset >= *change);
-        let (index, change) = inflection.unwrap_or(&(0, 0));
+        let inflection = self
+            .inflections
+            .iter()
+            .rfind(|(_, change)| offset >= *change);
 
-        index + (offset - change)
+        match inflection {
+            Some((index, change)) => index + (offset - change),
+            None => 0,
+        }
     }
 
     pub fn map_index(&self, index: usize) -> usize {
-        let inflection = self.changes.iter().rfind(|(change, _)| index >= *change);
-        let (change, offset) = inflection.unwrap_or(&(0, 0));
+        let inflection = self
+            .inflections
+            .iter()
+            .rfind(|(change, _)| index >= *change);
 
-        offset + (index - change)
+        match inflection {
+            Some((change, offset)) => offset + (index - change),
+            None => 0,
+        }
     }
 }
