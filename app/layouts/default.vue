@@ -4,7 +4,7 @@
 import type { MaterialSymbol } from "material-symbols";
 
 // const runtimeConfig = useRuntimeConfig();
-// const { platform } = runtimeConfig.app;
+// const { platform } = runtimeConfig.public;
 
 // if (platform && import.meta.env.PROD)
 //   onMounted(async () => {

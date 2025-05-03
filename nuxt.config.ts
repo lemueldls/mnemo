@@ -51,7 +51,6 @@ export default defineNuxtConfig({
     viewTransition: true,
   },
   runtimeConfig: {
-    app: { platform },
     public: { platform, apiBaseUrl: "" },
     // session: {
     //   maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
