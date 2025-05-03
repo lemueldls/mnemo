@@ -5,7 +5,7 @@ const props = defineProps<{ spaceId: string }>();
 
 const { $api } = useNuxtApp();
 
-const open = defineModel();
+const open = defineModel<boolean>();
 
 const search = ref("");
 
@@ -38,16 +38,16 @@ async function installPackage(pkg: Package) {
 </script>
 
 <template>
-  <md-dialog :open="open" @closed="open = false" class="min-w-xl min-h-xl">
-    <div class="flex justify-between gap-4" slot="headline">
+  <md-dialog :open="open" class="min-w-xl min-h-xl" @closed="open = false">
+    <div slot="headline" class="flex justify-between gap-4">
       <span>Packages</span>
 
       <md-outlined-text-field
         :value="search"
-        @input="search = $event.target.value"
         placeholder="Search packages"
         class="flex-1"
-      ></md-outlined-text-field>
+        @input="search = $event.target.value"
+      />
 
       <!-- <md-icon-button @click="open = false">
         <md-icon>close</md-icon>
@@ -55,36 +55,15 @@ async function installPackage(pkg: Package) {
     </div>
 
     <form slot="content" method="dialog">
-      <m3-elevated-card
-        v-if="Object.keys(filteredPackages).length > 0"
-        v-for="[pkg] in filteredPackages"
-        :key="pkg.name"
-        class="flex flex-col gap-2"
-      >
-        <h1 class="text-m3-on-surface-variant m3-title-large">
-          {{ pkg.name }}
-        </h1>
-
-        <span class="text-m3-on-surface-variant m3-body-large">
-          Version: {{ pkg.version }}
-        </span>
-
-        <div class="flex flex-1 flex-col gap-2">
-          <span class="text-m3-on-surface-variant m3-body-large">
-            {{ pkg.description }}
-          </span>
-        </div>
-
-        <div class="flex gap-2">
-          <div class="flex-[2]" />
-          <md-outlined-button
-            class="flex-[3]"
-            @click.prevent="installPackage(pkg)"
-          >
-            Install
-          </md-outlined-button>
-        </div>
-      </m3-elevated-card>
+      <template v-if="Object.keys(filteredPackages).length > 0">
+        <package-card
+          v-for="(pkgs, i) in filteredPackages"
+          :key="i"
+          :packages="pkgs"
+          class="flex flex-col gap-2"
+          @install="installPackage"
+        />
+      </template>
       <span v-else>No packages found</span>
     </form>
   </md-dialog>

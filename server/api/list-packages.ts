@@ -1,5 +1,3 @@
-import { parseTarGzip } from "nanotar";
-
 export interface Package {
   name: string;
   version: string;
@@ -9,17 +7,34 @@ export interface Package {
   description: string;
   repository: string;
   keywords: string[];
+  categories: string[];
   compiler: string;
   exclude: string[];
   updatedAt: number;
 }
 
+const notPackage = new Set([
+  "book",
+  "report",
+  "paper",
+  "thesis",
+  "poster",
+  "flyer",
+  "presentation",
+  "cv",
+  "office",
+]);
+
 export default defineCachedEventHandler(
   async (event) => {
     const { namespace } = getQuery(event);
 
-    const allPackages = await $fetch<Package[]>(
+    let allPackages = await $fetch<Package[]>(
       `https://packages.typst.org/${namespace}/index.json`,
+    );
+    allPackages = allPackages.filter(
+      (pkg) =>
+        pkg.categories && notPackage.isDisjointFrom(new Set(pkg.categories)),
     );
     allPackages.sort((a, b) => b.version.localeCompare(a.version));
 
