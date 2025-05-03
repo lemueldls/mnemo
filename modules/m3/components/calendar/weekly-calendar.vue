@@ -134,12 +134,16 @@ function editScheduleItem(event: SubmitEvent) {
     from: timeToMinutes(from),
     to: timeToMinutes(to),
   };
+
+  editSpaceDialogOpen.value = false;
 }
 
 function deleteScheduleItem() {
   const day = editScheduleDay.value!;
   const index = editScheduleIndex.value!;
   schedule.value[day]!.splice(index, 1);
+
+  editSpaceDialogOpen.value = false;
 }
 
 function timeToMinutes(time: string) {
