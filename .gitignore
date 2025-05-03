@@ -1,5 +1,3 @@
-.yarn/install-state.gz
-
 # Nuxt dev/build outputs
 .output
 .data

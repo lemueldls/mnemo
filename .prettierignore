@@ -1,8 +1,8 @@
-backend/
 .data/
 .devenv/
 .nuxt/
 .output/
+backend/
 dist/
 node_modules/
 
