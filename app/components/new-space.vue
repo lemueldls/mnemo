@@ -4,7 +4,7 @@ import { createId } from "@paralleldrive/cuid2";
 const open = defineModel<boolean>();
 
 const dark = useDark();
-const router = useRouter();
+// const router = useRouter();
 
 const spaces = await useSpaces();
 const space = ref({

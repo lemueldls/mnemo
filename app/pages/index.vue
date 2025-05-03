@@ -2,53 +2,15 @@
 const name = await useStorageItem("name", "");
 
 const dark = useDark();
+
 const date = ref(new Date());
+// const { d, locale } = useI18n();
 
-const { d, locale } = useI18n();
-// const spaces = useSpaces();
+// const { $api } = useNuxtApp();
 
-const { $api } = useNuxtApp();
-
-// const stream = await $api<ReadableStream>("/api/chat", { method: "post",responseType: "stream"});
-// const intro = ref("...");
-
-// const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
-
-// while (true) {
-//   const { value, done } = await reader.read();
-//   if (done) break;
-
-//   intro.value += JSON.parse(`{${value}}`).data;
-// }
+const newSpaceOpen = useNewSpaceOpen();
 
 const spaces = await useSpaces();
-
-const spacesProgress = computed(() =>
-  Object.entries(spaces.value).map((space) => ({
-    space,
-    progress: {
-      current: Math.random() * 5,
-      total: 5,
-    },
-  })),
-);
-
-// console.log({ spaces: spaces.value, spacesProgress: spacesProgress.value });
-
-// interface Note {
-//   title: string;
-//   space: string;
-//   preview: string;
-// }
-// const notes: Note[] = [];
-
-// for (const space of Object.keys(spaces.value))
-//   notes.push({
-//     title: d(date.value, { dateStyle: "long" }),
-//     space,
-//     preview:
-//       "Repudiandae quo facilis natus nemo aut dolores. Officia quis non dolore dicta autem. Libero consequatur autem nostrum nesciunt. Nesciunt enim accusamus nulla eveniet nostrum quae dolore cum. Et aperiam maxime ut ducimus commodi quos culpa.",
-//   });
 
 useIntervalFn(
   () => {
@@ -84,33 +46,11 @@ const timeOfDay = computed(() => {
           </span>
         </div>
 
-        <!-- <m3-filled-card>
-          <span class="text-m3-on-surface-varient m3-body-large">
-            There is nothing left to do...
-          </span>
-        </m3-filled-card> -->
-
-        <!-- <m3-outlined-card>
-          <h3 class="m3-label-large">Recommended</h3>
-
-          <span class="text-m3-on-surface-varient m3-body-large">
-            Nothing yet...
-          </span>
-        </m3-outlined-card> -->
-
         <div class="flex-shrink-0">
-          <!-- <h2 class="pb-4 m3-title-large">Stuff</h2> -->
-
-          <!-- <pre>
-            <code>
-              {{ intro }}
-            </code>
-          </pre> -->
-
           <div id="progress">
             <nuxt-link
-              v-for="({ space: [id, space], progress }, i) in spacesProgress"
-              :key="i"
+              v-for="(space, id) in spaces"
+              :key="id"
               :to="`/space?id=${id}`"
             >
               <m3-theme :color="space.color" :dark="dark" harmonize>
@@ -121,44 +61,30 @@ const timeOfDay = computed(() => {
                     <m3-icon
                       rounded
                       :name="space.icon"
-                      :style="{ color: 'var(--md-sys-color-primary)' }"
+                      class="text-m3-primary"
                     />
                   </div>
 
                   <h3 class="m3-title-large">
                     {{ space.name }}
                   </h3>
-
-                  <!-- <div class="flex flex-col">
-                    <div
-                      class="flex items-center justify-between m3-label-large"
-                    >
-                      <span>Weekly Study Hours</span>
-
-                      <span
-                        >{{ progress.current.toFixed(2) }} /
-                        {{ progress.total.toFixed(2) }}</span
-                      >
-                    </div>
-
-                    <md-linear-progress
-                      :value="progress.current"
-                      :max="progress.total"
-                    />
-                  </div> -->
-
-                  <!-- <h3 class="m3-headline-small">
-                    {{ space.name }}
-                  </h3> -->
-
-                  <!-- <md-divider /> -->
-
-                  <!-- <p class="m3-body-large">
-                    {{ note.preview }}
-                  </p> -->
                 </m3-elevated-card>
               </m3-theme>
             </nuxt-link>
+
+            <m3-elevated-card
+              v-if="Object.keys(spaces).length < 1"
+              class="relative cursor-pointer gap-2"
+              @click="newSpaceOpen = true"
+            >
+              <md-ripple />
+
+              <div class="flex items-center gap-2">
+                <m3-icon rounded name="add" class="text-m3-primary" />
+              </div>
+
+              <h3 class="m3-title-large">Create New Space</h3>
+            </m3-elevated-card>
           </div>
         </div>
 

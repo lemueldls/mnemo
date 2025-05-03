@@ -18,11 +18,11 @@ const spaces = await useSpaces();
 
 const { medium, extraLarge } = useBreakpoints(breakpointsM3);
 
-const drawerOpen = ref<boolean>();
-const settingsOpen = ref<boolean>();
-const newSpaceOpen = ref<boolean>();
+const drawerOpen = ref<boolean>(false);
+const settingsOpen = ref<boolean>(false);
+const newSpaceOpen = useNewSpaceOpen();
 
-const { ready, loggedIn } = useUserSession();
+// const { ready, loggedIn } = useUserSession();
 
 interface Page {
   path: string;

@@ -47,6 +47,8 @@ const days = [1, 2, 3, 4, 5].map((day) =>
 
 const dark = useDark();
 
+const newSpaceOpen = useNewSpaceOpen();
+
 const newSpaceId = ref();
 const newSpaceDays = reactive(new Set<number>());
 const newSpaceFrom = ref();
@@ -254,25 +256,36 @@ function timeToMinutes(time: string) {
           :dark="dark"
           harmonize
         >
-          <label>
-            <m3-elevated-card>
-              <md-ripple />
+          <m3-elevated-card @click="newSpaceId = id">
+            <md-ripple />
 
-              <div class="flex flex-row items-center justify-between gap-2">
-                <md-icon class="text-m3-primary">{{ space.icon }}</md-icon>
-                <md-radio
-                  name="space"
-                  :value="id"
-                  :checked="id === newSpaceId"
-                  touch-target="wrapper"
-                  required
-                  @change="newSpaceId = id"
-                />
-              </div>
-              <span class="m3-title-medium flex-1">{{ space.name }}</span>
-            </m3-elevated-card>
-          </label>
+            <div class="flex flex-row items-center justify-between gap-2">
+              <md-icon class="text-m3-primary">{{ space.icon }}</md-icon>
+              <md-radio
+                name="space"
+                :value="id"
+                :checked="id === newSpaceId"
+                required
+              />
+            </div>
+            <span class="m3-title-medium flex-1">
+              {{ space.name }}
+            </span>
+          </m3-elevated-card>
         </m3-theme>
+
+        <m3-elevated-card
+          v-if="Object.keys(spaces).length < 1"
+          class="cursor-pointer"
+          @click="newSpaceOpen = true"
+        >
+          <md-ripple />
+
+          <div class="flex flex-row items-center justify-between gap-2">
+            <md-icon class="text-m3-primary">add</md-icon>
+          </div>
+          <span class="m3-title-medium flex-1">New Space</span>
+        </m3-elevated-card>
       </div>
 
       <span class="m3-label-large">Day</span>

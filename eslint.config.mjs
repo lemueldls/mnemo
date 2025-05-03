@@ -8,7 +8,9 @@ export default withNuxt({
     "vue/multi-word-component-names": "off",
     "vue/max-attributes-per-line": ["warn", { singleline: 3 }],
     "vue/singleline-html-element-content-newline": "off",
+    "vue/no-deprecated-slot-attribute": "off",
     "nuxt/nuxt-config-keys-order": "warn",
+
     // "@stylistic/arrow-parens": ["warn", "always"],
   },
 });
