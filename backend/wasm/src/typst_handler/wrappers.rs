@@ -24,7 +24,7 @@ pub enum TypstDiagnosticSeverity {
     Error,
     Warning,
     Info,
-    Lint,
+    Hint,
 }
 
 impl TypstDiagnosticSeverity {

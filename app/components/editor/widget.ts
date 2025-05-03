@@ -1,5 +1,3 @@
-import { syntaxTree } from "@codemirror/language";
-
 import {
   Decoration,
   ViewPlugin,
@@ -9,7 +7,7 @@ import {
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState, FileId, Block } from "mnemo-wasm";
+import type { TypstState, FileId, Block, EncodedFrame } from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
@@ -23,19 +21,13 @@ class TypstWidget extends WidgetType {
     private readonly typstState: TypstState,
     private readonly view: EditorView,
     private readonly index: number,
-    private readonly render: string,
-    private readonly block: Block,
+    private readonly frame: EncodedFrame,
+    private readonly block: Block
   ) {
     super();
 
-    // this.#image.style.width = `${view.dom.clientWidth}px`;
-    // this.#image.style.display = "inline";
-    // this.#image.style.verticalAlign = "bottom";
-    // this.#image.style.cursor = "text";
     this.#image.draggable = false;
-
     this.#image.classList.add("typst-render");
-
     this.#image.addEventListener("click", this.handleJump.bind(this));
     // this.#image.addEventListener("mousedown", this.handleJump.bind(this));
   }
@@ -58,17 +50,20 @@ class TypstWidget extends WidgetType {
   }
 
   public override eq(other: TypstWidget) {
-    return other.render === this.render;
+    return (
+      other.frame.height === this.frame.height &&
+      other.frame.render === this.frame.render
+    );
   }
 
   public toDOM() {
-    this.#image.src = `data:image/png;base64,${this.render}`;
+    this.#image.src = `data:image/png;base64,${this.frame.render}`;
 
     return this.#image;
   }
 
   public override get estimatedHeight() {
-    return this.#image.height;
+    return this.#image.height || this.frame.height || -1;
   }
 
   public override ignoreEvent(event: Event) {
@@ -85,7 +80,7 @@ function decorate(
   update: ViewUpdate,
   fileId: FileId,
   text: string,
-  prelude: string,
+  prelude: string
 ) {
   const { view, state } = update;
 
@@ -114,7 +109,7 @@ function decorate(
       }
 
       return diagnostics;
-    }),
+    })
   );
   const transaction = setDiagnostics(state, diagnostics);
   queueMicrotask(() => view.dispatch(transaction));
@@ -133,7 +128,7 @@ function decorate(
             (range.from < start || range.from > end) &&
             (range.to < start || range.to > end) &&
             (start < range.from || start > range.to) &&
-            (end < range.from || end > range.to),
+            (end < range.from || end > range.to)
         );
 
       if (inactive)
@@ -141,28 +136,35 @@ function decorate(
           Decoration.replace({
             widget: new TypstWidget(typstState, view, index, render, block),
             // inclusive: true,
-          }).range(start, end),
+          }).range(start, end)
         );
       else {
-        for (let i = start; i < end; i++) {
-          const line = state.doc.lineAt(i);
-          const from = line.from;
-          // const to = line.to;
+        const { number: startLine } = state.doc.lineAt(start);
+        const { number: endLine } = state.doc.lineAt(end);
+
+        let lineHeight = 0;
+
+        for (
+          let currentLine = startLine;
+          currentLine <= endLine;
+          currentLine++
+        ) {
+          const line = state.doc.line(currentLine);
 
           let style = "";
-          if (i == start)
+          if (currentLine == startLine)
             style +=
-              "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem";
-          if (i == end - 1)
-            style +=
-              "border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem";
+              "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
+          if (currentLine == endLine)
+            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${render.height - lineHeight}px`;
+          else lineHeight += view.lineBlockAt(line.from).height;
 
           widgets.push(
             Decoration.line({
               class: "cm-activeLine",
               attributes: { style },
               // inclusive: true,
-            }).range(from),
+            }).range(line.from)
           );
         }
       }
@@ -178,7 +180,7 @@ export const viewPlugin = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
   prelude: Ref<string>,
-  fileId: FileId,
+  fileId: FileId
 ) =>
   ViewPlugin.define((_view) => {
     return {
@@ -198,7 +200,7 @@ export const viewPlugin = (
             update,
             fileId,
             text,
-            prelude.value,
+            prelude.value
           );
           const effects = stateEffect.of({ decorations });
 
@@ -212,7 +214,7 @@ export const typst = (
   typstState: TypstState,
   item: Ref<Ref<string>>,
   prelude: Ref<string>,
-  fileId: FileId,
+  fileId: FileId
 ) =>
   StateField.define({
     create() {
@@ -220,14 +222,14 @@ export const typst = (
     },
     update(decorations, transaction) {
       const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect),
+        effect.is(stateEffect)
       );
 
       if (effect) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to),
+          ...transaction.state.selection.ranges.map(({ to }) => to)
         );
 
         return decorations.update({
@@ -249,7 +251,7 @@ function syncTypstState(
   typstState: TypstState,
   fileId: FileId,
   text: string,
-  prelude: string,
+  prelude: string
 ) {
   let result;
 

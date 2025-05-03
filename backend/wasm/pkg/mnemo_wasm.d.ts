@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "lint";
+export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
 
 export interface TypstDiagnostic {
     range: { start: number; end: number };
@@ -30,13 +30,18 @@ export interface TypstCompletion {
 export interface RangedRender {
     index: number;
     block: Block;
-    render: string | undefined;
+    render: EncodedFrame | undefined;
 }
 
 export interface Block {
     range: { start: number; end: number };
     offset: number;
     errors: TypstDiagnostic[];
+}
+
+export interface EncodedFrame {
+    render: string;
+    height: number;
 }
 
 export class FileId {

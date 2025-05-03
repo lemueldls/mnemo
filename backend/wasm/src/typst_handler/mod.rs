@@ -576,11 +576,11 @@ impl TypstState {
 pub struct RangedRender {
     pub index: usize,
     pub block: Block,
-    pub render: Option<String>,
+    pub render: Option<EncodedFrame>,
 }
 
 impl RangedRender {
-    pub fn new(index: usize, block: Block, render: Option<String>) -> Self {
+    pub fn new(index: usize, block: Block, render: Option<EncodedFrame>) -> Self {
         Self {
             index,
             block,
@@ -622,8 +622,18 @@ impl Block {
     }
 }
 
-fn encode_frame(frame: Page, pt: f32) -> String {
-    let canvas = &render(&frame, pt);
+#[derive(Debug, Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct EncodedFrame {
+    render: Box<str>,
+    height: u32,
+}
 
-    BASE64.encode(&canvas.encode_png().unwrap())
+fn encode_frame(frame: Page, pt: f32) -> EncodedFrame {
+    let canvas = &render(&frame, pt);
+    let render = BASE64.encode(&canvas.encode_png().unwrap()).into_boxed_str();
+
+    crate::log(&format!("[HEIGHT]: {}", canvas.height()));
+
+    EncodedFrame { render, height: canvas.height() }
 }
