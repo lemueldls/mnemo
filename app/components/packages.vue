@@ -29,14 +29,17 @@ const filteredPackages = computed(() => {
 async function installPackage(pkg: Package) {
   installTypstPackage(pkg, namespace);
 
-  const packagesItem = await useStorageItem<Package[]>(`spaces/${props.spaceId}/packages.json`, []);
+  const packagesItem = await useStorageItem<Package[]>(
+    `spaces/${props.spaceId}/packages.json`,
+    [],
+  );
   packagesItem.value.push(pkg);
 }
 </script>
 
 <template>
   <md-dialog :open="open" @closed="open = false" class="min-w-xl min-h-xl">
-    <div class="flex gap-4 justify-between" slot="headline">
+    <div class="flex justify-between gap-4" slot="headline">
       <span>Packages</span>
 
       <md-outlined-text-field
@@ -66,7 +69,7 @@ async function installPackage(pkg: Package) {
           Version: {{ pkg.version }}
         </span>
 
-        <div class="flex-1 flex flex-col gap-2">
+        <div class="flex flex-1 flex-col gap-2">
           <span class="text-m3-on-surface-variant m3-body-large">
             {{ pkg.description }}
           </span>

@@ -6,6 +6,6 @@
 
 <style scoped>
 #space-layout {
-  @apply absolute inset-0 w-full h-full overflow-hidden;
+  @apply absolute inset-0 h-full w-full overflow-hidden;
 }
 </style>

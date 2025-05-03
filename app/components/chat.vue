@@ -10,11 +10,9 @@ async function send() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col gap-2">
-    <div class="flex-1"/>
+  <div class="flex flex-1 flex-col gap-2">
+    <div class="flex-1" />
 
-    <md-filled-button class="w-full" @click="send">
-      Send
-    </md-filled-button>
+    <md-filled-button class="w-full" @click="send"> Send </md-filled-button>
   </div>
 </template>

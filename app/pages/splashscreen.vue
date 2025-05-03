@@ -8,6 +8,6 @@ definePageMeta({ layout: false });
 
 <style scoped>
 div {
-  @apply w-full h-full flex items-center justify-center m3-display-large;
+  @apply m3-display-large flex h-full w-full items-center justify-center;
 }
 </style>

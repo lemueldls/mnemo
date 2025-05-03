@@ -83,7 +83,7 @@ const name = await useStorageItem("name", "");
         <md-divider class="my-2 px-4" />
 
         <h3
-          class="flex items-center justify-between p-4 pb-2 pt-0 text-m3-on-surface-variant m3-title-small"
+          class="text-m3-on-surface-variant m3-title-small flex items-center justify-between p-4 pb-2 pt-0"
         >
           Spaces
 
@@ -130,7 +130,7 @@ const name = await useStorageItem("name", "");
 
         <div
           :class="[
-            'mb-3 flex flex-1 flex-col h-full overflow-auto',
+            'mb-3 flex h-full flex-1 flex-col overflow-auto',
             { 'ml-3': !extraLarge, 'mr-3': !medium },
           ]"
         >
@@ -174,7 +174,7 @@ const name = await useStorageItem("name", "");
 
 <style>
 #header {
-  @apply px-4 pt-2 pb-4;
+  @apply px-4 pb-4 pt-2;
 
   /* font-family: "Iosevka Quasi Custom", sans-serif; */
   font-family: "Iosevka Book Web", sans-serif;

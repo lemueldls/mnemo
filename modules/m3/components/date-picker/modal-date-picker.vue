@@ -113,7 +113,7 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
           <div
             v-for="weekday in weekdays"
             :key="weekday"
-            class="h-10 w-10 flex flex-1 justify-center"
+            class="flex h-10 w-10 flex-1 justify-center"
           >
             {{ weekday }}
           </div>
@@ -163,7 +163,7 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
 
 <style lang="scss">
 .m3-modal-date-picker {
-  @apply absolute bg-m3-surface-container-high rounded-xl flex flex-col;
+  @apply bg-m3-surface-container-high absolute flex flex-col rounded-xl;
 
   --md-elevation-level: 3;
 
@@ -182,7 +182,7 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
   // &__date {}
 
   &--hidden {
-    @apply opacity-0 pointer-events-none;
+    @apply pointer-events-none opacity-0;
   }
 
   // &__date {

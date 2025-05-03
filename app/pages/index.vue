@@ -114,7 +114,7 @@ const timeOfDay = computed(() => {
               :to="`/space?id=${id}`"
             >
               <m3-theme :color="space.color" :dark="dark" harmonize>
-                <m3-elevated-card class="gap-2 relative">
+                <m3-elevated-card class="relative gap-2">
                   <md-ripple />
 
                   <div class="flex items-center gap-2">
@@ -198,6 +198,6 @@ const timeOfDay = computed(() => {
 }
 
 #intro {
-  @apply flex-1 flex gap-4 flex-col;
+  @apply flex flex-1 flex-col gap-4;
 }
 </style>

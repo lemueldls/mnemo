@@ -18,6 +18,6 @@ const props = defineProps<IconButtonProperties>();
 
 <style lang="scss">
 .m3-icon-button {
-  @apply text-6 m-1 w-10 h-10 rounded-full items-center;
+  @apply text-6 m-1 h-10 w-10 items-center rounded-full;
 }
 </style>

@@ -27,7 +27,7 @@ onMounted(() => {
       }
     },
     1000 * 60,
-    { immediateCallback: true }
+    { immediateCallback: true },
   );
 });
 
@@ -42,7 +42,7 @@ function isToday(date: Date) {
 }
 
 const days = [1, 2, 3, 4, 5].map((day) =>
-  d(Date.UTC(0, 0, day + 1), { weekday: "short" })
+  d(Date.UTC(0, 0, day + 1), { weekday: "short" }),
 );
 
 const dark = useDark();
@@ -168,7 +168,7 @@ function timeToMinutes(time: string) {
         <span
           v-for="hour in 24"
           :key="hour"
-          class="m3-label-medium h-12 flex items-start justify-end pr-2"
+          class="m3-label-medium flex h-12 items-start justify-end pr-2"
         >
           {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
@@ -182,12 +182,12 @@ function timeToMinutes(time: string) {
         <div
           v-for="hour in 24"
           :key="hour"
-          class="m3-calendar__cell relative cursor-pointer flex items-center"
+          class="m3-calendar__cell relative flex cursor-pointer items-center"
           @click="openDialog(day, hour)"
         >
           <md-ripple />
 
-          <div class="w-full border-(b m3-outline-variant) b-b-dashed" />
+          <div class="border-(b m3-outline-variant) b-b-dashed w-full" />
         </div>
 
         <m3-theme
@@ -200,12 +200,12 @@ function timeToMinutes(time: string) {
             top: `${(from / 60) * (scrollHeight / 24)}px`,
             height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
           }"
-          class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-center text-m3-on-primary-container m3-body-small"
+          class="bg-m3-primary-container bg-op-90 text-m3-on-primary-container m3-body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
           @click="openEditDialog(day, i)"
         >
           <md-ripple />
 
-          <span class="w-full font-semibold truncate">
+          <span class="w-full truncate font-semibold">
             {{ spaces![spaceId]!.name }}
           </span>
 
@@ -227,7 +227,7 @@ function timeToMinutes(time: string) {
         </m3-theme>
       </div>
 
-      <span ref="caret" class="absolute w-full border-(b m3-outline)" />
+      <span ref="caret" class="border-(b m3-outline) absolute w-full" />
     </div>
   </div>
 
@@ -258,7 +258,7 @@ function timeToMinutes(time: string) {
             <m3-elevated-card>
               <md-ripple />
 
-              <div class="flex flex-row gap-2 items-center justify-between">
+              <div class="flex flex-row items-center justify-between gap-2">
                 <md-icon class="text-m3-primary">{{ space.icon }}</md-icon>
                 <md-radio
                   name="space"
@@ -319,7 +319,7 @@ function timeToMinutes(time: string) {
       </div>
     </form>
 
-    <div slot="actions" class="flex mt-4 gap-2">
+    <div slot="actions" class="mt-4 flex gap-2">
       <div class="flex-[2]" />
       <md-filled-button form="weekly-calendar-new-form" class="flex-[3]">
         Create
@@ -333,7 +333,7 @@ function timeToMinutes(time: string) {
     <form
       id="weekly-calendar-edit-form"
       slot="content"
-      class="flex flex-col gap-4 p-4 min-w-lg"
+      class="min-w-lg flex flex-col gap-4 p-4"
       method="dialog"
       @submit.prevent="editScheduleItem"
     >
@@ -359,7 +359,7 @@ function timeToMinutes(time: string) {
       </div>
     </form>
 
-    <div slot="actions" class="flex mt-4 gap-2">
+    <div slot="actions" class="mt-4 flex gap-2">
       <md-filled-tonal-button
         form="weekly-calendar-edit-form"
         class="flex-[2]"
@@ -376,18 +376,18 @@ function timeToMinutes(time: string) {
 
 <style lang="scss">
 .m3-calendar {
-  @apply flex flex-col h-full rounded-tr-xl border-r border-m3-outline-variant;
+  @apply border-m3-outline-variant flex h-full flex-col rounded-tr-xl border-r;
 
   &__head {
     @apply flex justify-between;
   }
 
   &__body {
-    @apply overflow-y-auto flex h-full relative;
+    @apply relative flex h-full overflow-y-auto;
   }
 
   &__cell {
-    @apply h-12 flex items-center justify-center flex-1 border-m3-outline-variant border-(b l);
+    @apply border-m3-outline-variant border-(b l) flex h-12 flex-1 items-center justify-center;
   }
 
   // &__body &__cell {
@@ -398,7 +398,7 @@ function timeToMinutes(time: string) {
     @apply border-t;
 
     &:first-of-type {
-      @apply border-l rounded-tl-xl;
+      @apply rounded-tl-xl border-l;
     }
 
     &:last-of-type {

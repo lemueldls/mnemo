@@ -6,7 +6,7 @@ export async function listStickyNotes(spaceId: string) {
 
   const item = await useStorageItem<StickyNote[]>(
     `spaces/${spaceId}/sticky`,
-    []
+    [],
   );
   item.value = notes;
 
@@ -20,7 +20,7 @@ export async function newStickyNote(spaceId: string) {
 export function renameStickyNote(
   spaceId: string,
   noteId: string,
-  name: string
+  name: string,
 ) {
   return invoke<void>("rename_sticky_note", { spaceId, noteId, name });
 }
@@ -31,7 +31,7 @@ export async function updateStickyNote(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
 ) {
   return await invoke<void>("update_sticky_note", {
     spaceId,

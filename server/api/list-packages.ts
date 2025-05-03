@@ -19,7 +19,7 @@ export default defineCachedEventHandler(
     const { namespace } = getQuery(event);
 
     const allPackages = await $fetch<Package[]>(
-      `https://packages.typst.org/${namespace}/index.json`
+      `https://packages.typst.org/${namespace}/index.json`,
     );
     allPackages.sort((a, b) => b.version.localeCompare(a.version));
 
@@ -31,5 +31,5 @@ export default defineCachedEventHandler(
 
     return packages;
   },
-  { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path }
+  { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path },
 );

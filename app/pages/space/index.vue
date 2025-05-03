@@ -62,7 +62,7 @@ async function screenshot() {
       ignoreElements: (el) => el.id === "sidebar",
       // scale: window.devicePixelRatio * 1,
       // imageTimeout:
-    }
+    },
   );
 
   canvas.toBlob((blob) => {
@@ -114,7 +114,7 @@ const { data: notes } = await useAsyncData(
       return { id, date };
     });
   },
-  { watch: [spaceNotes], default: () => [] }
+  { watch: [spaceNotes], default: () => [] },
 );
 
 const currentNoteIndex = ref(0);
@@ -122,14 +122,14 @@ const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
 const nextDayIndex = computed(() => {
   const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id
+    (note) => note.id === currentNote.value!.id,
   );
 
   return index === 0 ? -1 : index - 1;
 });
 const previousDayIndex = computed(() => {
   const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id
+    (note) => note.id === currentNote.value!.id,
   );
 
   return index === notes.value.length - 1 ? -1 : index + 1;
@@ -142,7 +142,7 @@ watch(spaceId, () => {
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
 const stickyNotes = await useRefStorageItem<{ [id: string]: StickyNote }>(
   computed(() => `spaces/${spaceId.value}/sticky/notes.json`),
-  {}
+  {},
 );
 // stickyNotes.value = {};
 watchEffect(() => {
@@ -202,8 +202,8 @@ async function createStickyNote() {
     />
 
     <m3-page>
-      <div class="h-full flex flex-1">
-        <div class="h-full flex flex-1 flex-col">
+      <div class="flex h-full flex-1">
+        <div class="flex h-full flex-1 flex-col">
           <m3-top-app-bar>
             <template #leading>
               <nuxt-link-locale to="/">
@@ -228,16 +228,16 @@ async function createStickyNote() {
 
           <div
             id="editor-container"
-            class="flex items-center justify-center gap-3 h-full w-full overflow-hidden self-center pl-6 pb-3"
+            class="flex h-full w-full items-center justify-center gap-3 self-center overflow-hidden pb-3 pl-6"
           >
             <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
               <pdf-viewer />
             </m3-outlined-card> -->
 
-            <div class="flex-1 relative h-full max-w-180 w-full">
+            <div class="max-w-180 relative h-full w-full flex-1">
               <div
                 id="sidebar"
-                class="flex flex-col gap-4 absolute left--6 my-16 overflow-auto"
+                class="absolute left--6 my-16 flex flex-col gap-4 overflow-auto"
               >
                 <div class="sidebar-button">
                   <div
@@ -289,13 +289,13 @@ async function createStickyNote() {
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
 
-                  <div class="h-1px flex-1 bg-m3-outline-variant" />
+                  <div class="h-1px bg-m3-outline-variant flex-1" />
 
                   <span class="m3-label-large">
                     {{ currentNote?.date }}
                   </span>
 
-                  <div class="h-1px w-2 bg-m3-outline-variant" />
+                  <div class="h-1px bg-m3-outline-variant w-2" />
                 </div>
 
                 <editor
@@ -409,7 +409,7 @@ async function createStickyNote() {
           <img
             v-if="screenshotUrl"
             :src="screenshotUrl"
-            class="w-full h-full max-w-full max-h-full"
+            class="h-full max-h-full w-full max-w-full"
           />
           <md-progress-circular v-else indeterminate />
         </div>
@@ -430,25 +430,25 @@ async function createStickyNote() {
 }
 
 #file-tree {
-  @apply w-64 border-(m3-outline r);
+  @apply border-(m3-outline r) w-64;
 }
 
 #editor {
-  @apply flex flex-col h-full;
+  @apply flex h-full flex-col;
 }
 
 #editor-title {
-  @apply flex justify-between text-m3-on-primary-container w-full m3-headline-large bg-transparent outline-none;
+  @apply text-m3-on-primary-container m3-headline-large flex w-full justify-between bg-transparent outline-none;
 
   /* font-family: "Iosevka Quasi Custom", sans-serif; */
   font-family: "Iosevka Book Web", sans-serif;
 }
 
 .sidebar-button {
-  @apply transition-all duration-200 pl-3.25 hover:pl-0;
+  @apply pl-3.25 transition-all duration-200 hover:pl-0;
 
   &__inner {
-    @apply relative h-12 w-6 flex items-center justify-center bg-m3-surface-container-high cursor-pointer text-m3-on-surface-variant;
+    @apply bg-m3-surface-container-high text-m3-on-surface-variant relative flex h-12 w-6 cursor-pointer items-center justify-center;
   }
 }
 </style>

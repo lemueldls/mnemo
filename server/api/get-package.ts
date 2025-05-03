@@ -5,7 +5,7 @@ export default defineCachedEventHandler(
     const { namespace, name, version } = await getQuery(event);
 
     const pkg = await $fetch<Blob>(
-      `https://packages.typst.org/${namespace}/${name}-${version}.tar.gz`
+      `https://packages.typst.org/${namespace}/${name}-${version}.tar.gz`,
     );
 
     const buffer = await pkg.arrayBuffer();
@@ -22,6 +22,6 @@ export default defineCachedEventHandler(
       });
 
     return { spec, files };
-  }
+  },
   // { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path }
 );

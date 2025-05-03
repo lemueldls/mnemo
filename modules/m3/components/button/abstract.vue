@@ -16,6 +16,6 @@ defineProps<ButtonProperties>();
 
 <style lang="scss">
 .m3-button {
-  @apply justify-center m-1 min-w-10 min-h-10 rounded-full items-center p-2;
+  @apply m-1 min-h-10 min-w-10 items-center justify-center rounded-full p-2;
 }
 </style>

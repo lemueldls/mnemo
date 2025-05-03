@@ -41,7 +41,7 @@ const modal = computed(() =>
 
 <style lang="scss">
 .m3-side-sheet {
-  @apply flex flex-col max-w-100 min-w-64 h-full p-3 translate-x-0;
+  @apply max-w-100 flex h-full min-w-64 translate-x-0 flex-col p-3;
 
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   transition-duration: 400ms;
@@ -60,7 +60,7 @@ const modal = computed(() =>
   }
 
   &--modal {
-    @apply bg-m3-surface-container-low absolute z-1;
+    @apply bg-m3-surface-container-low z-1 absolute;
   }
 
   &--modal#{&}--left {

@@ -272,12 +272,12 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   // }
 
   .cm-editor {
-    @apply outline-none m3-body-large h-full;
+    @apply m3-body-large h-full outline-none;
   }
 
   .cm-line {
     // @apply p-0 pl-1px text-[16px] tracking-0 word-spacing-[4px] [font-kerning:none];
-    @apply p-0 pl-1px text-[16px];
+    @apply pl-1px p-0 text-[16px];
     /* font-family: "Iosevka Quasi Custom"; */
     font-family: "Iosevka Book Web";
     /* font-style: normal;
@@ -322,7 +322,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   }
 
   .cm-lintRange {
-    @apply bg-none decoration-underline decoration-wavy;
+    @apply decoration-underline bg-none decoration-wavy;
   }
 
   .cm-lintRange-error {
@@ -334,7 +334,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   } */
 
   .cm-tooltip {
-    @apply bg-m3-surface-container-lowest rounded border-none shadow max-w-xl p-0 m-0;
+    @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded border-none p-0 shadow;
 
     /* font-family: "Iosevka Book Web"; */
 
@@ -351,7 +351,7 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
     @apply -translate-x-1;
 
     li {
-      @apply first:b-t-2 first:rounded-t last:rounded-b p-1!;
+      @apply first:b-t-2 p-1! first:rounded-t last:rounded-b;
     }
   }
 

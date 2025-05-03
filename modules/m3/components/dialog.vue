@@ -40,10 +40,10 @@ const basic = computed(() =>
 
 <style lang="scss">
 .m3-dialog {
-  @apply absolute flex items-center justify-center w-full h-full gap-1 pointer-events-none;
+  @apply pointer-events-none absolute flex h-full w-full items-center justify-center gap-1;
 
   &__inner {
-    @apply opacity-100 pointer-events-auto;
+    @apply pointer-events-auto opacity-100;
   }
 
   &__headline {
@@ -57,7 +57,7 @@ const basic = computed(() =>
   // &--fullscreen {}
 
   &--basic &__inner {
-    @apply rounded-xl opacity-100 p-6 flex flex-col min-w-70 max-w-140 bg-m3-surface-container-high;
+    @apply min-w-70 max-w-140 bg-m3-surface-container-high flex flex-col rounded-xl p-6 opacity-100;
 
     transform-origin: center -1rem;
     transform: scaleY(1) translateY(0);
@@ -68,7 +68,7 @@ const basic = computed(() =>
   }
 
   &--basic#{&}--hidden &__inner {
-    @apply opacity-0 pointer-events-none;
+    @apply pointer-events-none opacity-0;
 
     transform: scaleY(0) translateY(-1rem);
     transition-duration: 200ms;

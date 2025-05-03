@@ -27,7 +27,7 @@ onClickOutside(element, () => {
 
 <style lang="scss">
 .m3-menu {
-  @apply absolute flex flex-col rounded-1 p-3 py-2 gap-3 text-m3-on-surface bg-m3-surface;
+  @apply rounded-1 text-m3-on-surface bg-m3-surface absolute flex flex-col gap-3 p-3 py-2;
 
   top: calc(100% + 0.5rem);
 

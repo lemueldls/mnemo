@@ -20,18 +20,18 @@ const space = computed(() => spaces.value[spaceId.value]!);
 
 const dailyNotesRef = await useStorageItem<Note[]>(
   `spaces/${spaceId.value}/daily/notes.json`,
-  []
+  [],
 );
 
 const dailyNotes = await Promise.all(
   dailyNotesRef.value.toReversed().map(async (note) => {
     const item = await useStorageItem<string>(
       `spaces/${spaceId.value}/daily/${note.id}.typ`,
-      ""
+      "",
     );
 
     return item.value;
-  })
+  }),
 ).then((notes) => notes.filter((note) => note));
 
 const typstState = await useTypst();
@@ -55,13 +55,13 @@ typstState.setTheme(
     parseColor(palette.onPrimaryContainer),
     parseColor(palette.onSecondaryContainer),
     parseColor(palette.onTertiaryContainer),
-    parseColor(palette.onBackground)
-  )
+    parseColor(palette.onBackground),
+  ),
 );
 
 const packages = await useStorageItem<Package[]>(
   `spaces/${spaceId.value}/packages.json`,
-  []
+  [],
 );
 // watchImmediate(packages, async (packages) => {
 //   await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));

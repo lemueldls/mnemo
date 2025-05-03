@@ -55,11 +55,9 @@ onMounted(() => {
           endOnly: true,
         }),
         interact.modifiers.snap({
-          targets: [
-            interact.snappers.grid({ x: 8, y: 8 })
-          ],
+          targets: [interact.snappers.grid({ x: 8, y: 8 })],
           range: Infinity,
-          relativePoints: [ { x: 0, y: 0 } ]
+          relativePoints: [{ x: 0, y: 0 }],
         }),
       ],
       listeners: {
@@ -143,9 +141,9 @@ onMounted(() => {
     <md-elevation />
 
     <m3-filled-card
-      class="flex-1 flex flex-col gap-4 p-4 rounded-xl bg-m3-tertiary-container!"
+      class="bg-m3-tertiary-container! flex flex-1 flex-col gap-4 rounded-xl p-4"
     >
-      <div class="flex-1 h-full flex flex-col gap-4">
+      <div class="flex h-full flex-1 flex-col gap-4">
         <div ref="header" class="flex items-center gap-2">
           <input
             v-model="note.title"
@@ -163,7 +161,7 @@ onMounted(() => {
           v-model="note.id"
           kind="sticky"
           :space-id="spaceId"
-          class="flex-1 h-full"
+          class="h-full flex-1"
         />
       </div>
     </m3-filled-card>
@@ -172,7 +170,7 @@ onMounted(() => {
 
 <style lang="scss">
 .sticky-note {
-  @apply absolute flex rounded-3 z-1 transition-shadow;
+  @apply rounded-3 z-1 absolute flex transition-shadow;
 
   --md-elevation-level: 1;
 
@@ -186,7 +184,7 @@ onMounted(() => {
   }
 
   &__title {
-    @apply w-0 flex-1 m3-headline-large text-m3-on-primary-container bg-transparent outline-none z-1;
+    @apply m3-headline-large text-m3-on-primary-container z-1 w-0 flex-1 bg-transparent outline-none;
 
     touch-action: none;
     user-select: none;

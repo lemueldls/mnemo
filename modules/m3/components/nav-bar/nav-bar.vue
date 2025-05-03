@@ -17,11 +17,11 @@
   @apply h-22;
 
   &__inner {
-    @apply flex w-full bg-m3-surface-container fixed bottom-0 pb-4 pt-3 gap-2 px-3;
+    @apply bg-m3-surface-container fixed bottom-0 flex w-full gap-2 px-3 pb-4 pt-3;
   }
 
   &__trailing {
-    @apply flex gap-2 justify-end flex-1;
+    @apply flex flex-1 justify-end gap-2;
   }
 }
 </style>

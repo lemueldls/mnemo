@@ -105,7 +105,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
 
 <style lang="scss">
 .m3-container {
-  @apply flex relative;
+  @apply relative flex;
 
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   transition-duration: 50ms;
@@ -113,7 +113,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
 
   &::before,
   &::after {
-    @apply pointer-events-none content-empty absolute inset-0 w-full h-full rounded-inherit;
+    @apply content-empty rounded-inherit pointer-events-none absolute inset-0 h-full w-full;
   }
 
   &::before {
@@ -127,7 +127,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__state-layer {
-    @apply bg-opacity-0 absolute inset-0 bg-m3-on-surface rounded-inherit overflow-hidden;
+    @apply bg-m3-on-surface rounded-inherit absolute inset-0 overflow-hidden bg-opacity-0;
 
     transition-duration: 50ms;
     transition-property: background-color;
@@ -138,7 +138,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__ripple {
-    @apply opacity-12 absolute inset-0 bg-m3-on-surface;
+    @apply opacity-12 bg-m3-on-surface absolute inset-0;
 
     transition-property: opacity;
   }

@@ -18,10 +18,10 @@
 
 <style lang="scss">
 .m3-top-app-bar {
-  @apply flex items-center w-full h-16 gap-2 p-2 bg-m3-surface text-m3-on-surface m3-title-large;
+  @apply bg-m3-surface text-m3-on-surface m3-title-large flex h-16 w-full items-center gap-2 p-2;
 
   &__leading {
-    @apply flex text-m3-on-surface;
+    @apply text-m3-on-surface flex;
   }
 
   &__headline {

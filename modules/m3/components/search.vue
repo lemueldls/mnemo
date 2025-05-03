@@ -12,7 +12,7 @@
 
 <style scoped lang="scss">
 .m3-search-container {
-  @apply p-4 flex gap-4 m3-body-large rounded-full;
+  @apply m3-body-large flex gap-4 rounded-full p-4;
 
   width: 250px;
   min-width: 22.5rem;

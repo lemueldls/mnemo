@@ -6,6 +6,6 @@
 
 <style scoped>
 div {
-  @apply flex flex-row items-center gap-2 w-full;
+  @apply flex w-full flex-row items-center gap-2;
 }
 </style>

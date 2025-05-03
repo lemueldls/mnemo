@@ -22,7 +22,7 @@ const spaces = useSpaces();
     }"
   >
     <div
-      class="h-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-90 text-m3-on-primary-container m3-body-medium"
+      class="bg-m3-primary-container bg-op-90 text-m3-on-primary-container m3-body-medium flex h-full flex-col items-center justify-center rounded-xl"
     >
       {{ space }}
 

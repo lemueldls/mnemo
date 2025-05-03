@@ -12,10 +12,10 @@
 
 <style lang="scss">
 .m3-nav-rail {
-  @apply flex h-full bg-m3-surface w-20 gap-3 flex-col px-3 py-24;
+  @apply bg-m3-surface flex h-full w-20 flex-col gap-3 px-3 py-24;
 
   &__trailing {
-    @apply flex gap-2 justify-end flex-1;
+    @apply flex flex-1 justify-end gap-2;
   }
 }
 </style>

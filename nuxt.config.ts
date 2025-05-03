@@ -15,41 +15,36 @@ const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  modules: [
+    "@nuxthub/core",
+    "@nuxt/eslint",
+    "@nuxtjs/color-mode",
+    "@nuxtjs/i18n",
+    "@vueuse/nuxt",
+    "@unocss/nuxt",
+    "nuxt-ssr-lit",
+    "nuxt-auth-utils",
+    "reka-ui/nuxt",
+  ],
   ssr: false,
+  imports: {
+    dirs: [
+      "composables",
+      "composables/*/index.{ts,js,mjs,mts}",
+      // platform
+      //   ? "composables/*/tauri.{ts,js,mjs,mts}"
+      //   : "composables/*/server.{ts,js,mjs,mts}",
+      "composables/*/server.{ts,js,mjs,mts}",
+    ],
+  },
   devtools: { enabled: !platform },
-  // devServer: { https: true },
-  future: { compatibilityVersion: 4 },
-  compatibilityDate: "2025-05-30",
-  nitro: {
-    esbuild: { options: { target: "esnext" } },
-    // moduleSideEffects: ["@material/web"],
-    prerender: {
-      routes: ["/", "/calendar", "/space"],
-      crawlLinks: true,
-    },
-    experimental: { openAPI: true, websocket: true },
+  app: {
+    layoutTransition: { name: "conjure" },
+    head: { templateParams: { separator: "•" } },
   },
-  vite: {
-    // clearScreen: false,
-    // envPrefix: ["VITE_", "TAURI_"],
-    // build: { target: ["safari15"] },
-    // server: {
-    //   strictPort: true,
-    //   hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
-    // },
-    // plugins: [wasm()],
-  },
+  css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   // devServer: { https: true },
   vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
-  // routeRules: {
-  //   "/**": { ssr: false },
-  //   "/splashscreen": { ssr: !!platform, static: false },
-  // },
-  experimental: {
-    typedPages: true,
-    asyncContext: true,
-    viewTransition: true,
-  },
   runtimeConfig: {
     public: { platform, apiBaseUrl: "" },
     // session: {
@@ -66,32 +61,27 @@ export default defineNuxtConfig({
       },
     },
   },
-  imports: {
-    dirs: [
-      "composables",
-      "composables/*/index.{ts,js,mjs,mts}",
-      // platform
-      //   ? "composables/*/tauri.{ts,js,mjs,mts}"
-      //   : "composables/*/server.{ts,js,mjs,mts}",
-      "composables/*/server.{ts,js,mjs,mts}",
-    ],
+  // devServer: { https: true },
+  future: { compatibilityVersion: 4 },
+  // routeRules: {
+  //   "/**": { ssr: false },
+  //   "/splashscreen": { ssr: !!platform, static: false },
+  // },
+  experimental: {
+    typedPages: true,
+    asyncContext: true,
+    viewTransition: true,
   },
-  app: {
-    layoutTransition: { name: "conjure" },
-    head: { templateParams: { separator: "•" } },
+  compatibilityDate: "2025-05-30",
+  nitro: {
+    esbuild: { options: { target: "esnext" } },
+    // moduleSideEffects: ["@material/web"],
+    prerender: {
+      routes: ["/", "/calendar", "/space"],
+      crawlLinks: true,
+    },
+    experimental: { openAPI: true, websocket: true },
   },
-  css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
-  modules: [
-    "@nuxthub/core",
-    "@nuxt/eslint",
-    "@nuxtjs/color-mode",
-    "@nuxtjs/i18n",
-    "@vueuse/nuxt",
-    "@unocss/nuxt",
-    "nuxt-ssr-lit",
-    "nuxt-auth-utils",
-    "reka-ui/nuxt",
-  ],
   hub: {
     // analytics: true,
     // workers: true,
@@ -102,6 +92,16 @@ export default defineNuxtConfig({
     database: true,
     kv: true,
     vectorize: {},
+  },
+  vite: {
+    // clearScreen: false,
+    // envPrefix: ["VITE_", "TAURI_"],
+    // build: { target: ["safari15"] },
+    // server: {
+    //   strictPort: true,
+    //   hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
+    // },
+    // plugins: [wasm()],
   },
   i18n: {
     lazy: true,

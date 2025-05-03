@@ -28,7 +28,7 @@ defineProps<{
 
 <style lang="scss">
 .m3-button {
-  @apply m3-label-large items-center justify-center gap-2 m-1 min-w-10 h-10 rounded-5 p-2;
+  @apply m3-label-large rounded-5 m-1 h-10 min-w-10 items-center justify-center gap-2 p-2;
 
   &__icon {
     @apply text-6;
@@ -59,7 +59,7 @@ defineProps<{
   }
 
   &--outlined {
-    @apply border border-m3-outline text-m3-primary;
+    @apply border-m3-outline text-m3-primary border;
   }
 
   &--text {

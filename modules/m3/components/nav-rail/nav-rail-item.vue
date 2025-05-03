@@ -16,14 +16,14 @@ defineProps<{ active?: boolean }>();
 
 <style lang="scss">
 .m3-nav-rail-item {
-  @apply h-14 flex flex-col items-center justify-center m3-label-medium cursor-pointer gap-1;
+  @apply m3-label-medium flex h-14 cursor-pointer flex-col items-center justify-center gap-1;
 
   &__leading {
-    @apply relative rounded-2xl flex w-14 h-8 items-center justify-center text-m3-on-surface-variant;
+    @apply text-m3-on-surface-variant relative flex h-8 w-14 items-center justify-center rounded-2xl;
   }
 
   &__trailing {
-    @apply flex text-m3-on-surface-variant;
+    @apply text-m3-on-surface-variant flex;
   }
 
   &--active &__leading {

@@ -69,9 +69,9 @@ function previousDay() {
 </script>
 
 <template>
-  <div class="h-full flex flex-1 flex-col gap-4 overflow-hidden">
+  <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex gap-4">
-      <span class="flex items-center text-m3-primary m3-display-small">
+      <span class="text-m3-primary m3-display-small flex items-center">
         {{ title }}
 
         <md-icon-button @click="datePicker = true">
@@ -94,7 +94,7 @@ function previousDay() {
         <span
           v-for="hour in 24"
           :key="hour"
-          class="m3-label-medium h-12 flex items-start justify-end pr-2"
+          class="m3-label-medium flex h-12 items-start justify-end pr-2"
         >
           {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
@@ -115,11 +115,11 @@ function previousDay() {
               top: `${(from / 60) * (scrollHeight / 24)}px`,
               height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
             }"
-            class="absolute cursor-pointer p-2 w-full flex flex-col items-center justify-center rounded-xl bg-m3-primary-container bg-op-50 text-center text-m3-on-primary-container m3-body-small"
+            class="bg-m3-primary-container bg-op-50 text-m3-on-primary-container m3-body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
           >
             <md-ripple />
 
-            <span class="w-full font-semibold truncate">
+            <span class="w-full truncate font-semibold">
               {{ spaces![spaceId]!.name }}
             </span>
 
@@ -143,7 +143,7 @@ function previousDay() {
 
         <div
           ref="caret"
-          class="absolute w-[calc(100%+1rem)] translate-x-[-1rem] border-(b-2 m3-error)"
+          class="border-(b-2 m3-error) absolute w-[calc(100%+1rem)] translate-x-[-1rem]"
         />
       </div>
     </div>

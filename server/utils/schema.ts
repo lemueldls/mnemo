@@ -1,4 +1,4 @@
-import type { H3Event } from 'h3';
+import type { H3Event } from "h3";
 import {
   safeParseAsync,
   type GenericSchema,
@@ -12,7 +12,7 @@ export async function readBodyWithSchema<
     | GenericSchemaAsync<unknown, unknown, GenericIssue>,
 >(event: H3Event, schema: TSchema) {
   const { success, output, issues } = await readValidatedBody(event, (body) =>
-    safeParseAsync(schema, body)
+    safeParseAsync(schema, body),
   );
 
   if (success) return output;

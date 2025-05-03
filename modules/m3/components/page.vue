@@ -6,7 +6,7 @@
 
 <style lang="scss">
 .m3-page {
-  @apply absolute inset-0 w-full h-full overflow-x-hidden overflow-y-auto text-m3-on-background bg-m3-background flex;
+  @apply text-m3-on-background bg-m3-background absolute inset-0 flex h-full w-full overflow-y-auto overflow-x-hidden;
 
   // font-family: "Roboto Flex", sans-serif;
 }

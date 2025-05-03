@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
         skipCache: false,
         cacheTtl: 3360,
       },
-    }
+    },
   );
 
   return sendStream(event, stream);

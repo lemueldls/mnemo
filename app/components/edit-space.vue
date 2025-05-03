@@ -76,11 +76,11 @@ const groupedSymbols: string[][] = computed(() => {
     <label>
       <span class="m3-label-large">Color</span>
 
-      <div class="flex gap-2 px-20 flex-wrap items-center justify-center">
+      <div class="flex flex-wrap items-center justify-center gap-2 px-20">
         <div
           v-for="c in colors"
           :key="c.name"
-          class="w-12 h-12 relative cursor-pointer"
+          class="relative h-12 w-12 cursor-pointer"
           :style="{ backgroundColor: c.hex }"
           :title="c.name"
           @click="space.color = c.hex"
@@ -107,7 +107,7 @@ const groupedSymbols: string[][] = computed(() => {
         height="200px"
       >
         <template #default="{ data: symbols }">
-          <div class="flex gap-4 mb-4">
+          <div class="mb-4 flex gap-4">
             <md-icon-button
               v-for="symbol in symbols"
               :key="symbol"
@@ -124,7 +124,7 @@ const groupedSymbols: string[][] = computed(() => {
     <label>
       <span class="m3-label-large">Preview</span>
 
-      <div class="flex justify-between items-end">
+      <div class="flex items-end justify-between">
         <m3-nav-drawer-item class="w-84">
           <template #leading>
             <m3-icon rounded :name="space.icon" class="text-m3-primary" />

@@ -62,7 +62,7 @@ watchEffect(() => {
 @use "@material/web/tokens";
 
 .m3-nav-drawer {
-  @apply h-full z-1 translate-x-0;
+  @apply z-1 h-full translate-x-0;
 
   transition-timing-function: map.get(
     tokens.md-sys-motion-values(),
@@ -75,11 +75,11 @@ watchEffect(() => {
   transition-property: transform, translate;
 
   &__inner {
-    @apply flex flex-col h-full p-3 w-90;
+    @apply w-90 flex h-full flex-col p-3;
   }
 
   &__content {
-    @apply flex-1 flex flex-col overflow-auto;
+    @apply flex flex-1 flex-col overflow-auto;
   }
 
   &--left {

@@ -100,7 +100,7 @@ function rerender(page: number) {
 @import "@tato30/vue-pdf/style.css";
 
 #pdf-viewer {
-  @apply overflow-auto h-full w-full;
+  @apply h-full w-full overflow-auto;
 
   /* canvas {
     visibility: hidden;
