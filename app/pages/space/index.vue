@@ -235,41 +235,56 @@ async function createStickyNote() {
             </m3-outlined-card> -->
 
             <div class="max-w-180 relative h-full w-full flex-1">
-              <div
-                id="sidebar"
-                class="absolute left--6 my-16 flex flex-col gap-4 overflow-auto"
-              >
-                <div class="sidebar-button">
+              <div class="absolute left--6 h-full pb-8 pt-16">
+                <div class="flex h-full flex-col gap-4 overflow-auto">
+                  <div class="sidebar-button" title="Prelude">
+                    <div
+                      class="sidebar-button__inner"
+                      @click="preludeOpen = true"
+                    >
+                      <md-ripple />
+                      <md-icon>code</md-icon>
+                    </div>
+                  </div>
                   <div
-                    class="sidebar-button__inner"
-                    @click="preludeOpen = true"
+                    class="sidebar-button"
+                    title="Timer"
+                    @click="focusOpen = true"
                   >
-                    <md-ripple />
-                    <md-icon>code</md-icon>
+                    <div class="sidebar-button__inner">
+                      <md-ripple />
+                      <md-icon>av_timer</md-icon>
+                    </div>
                   </div>
-                </div>
-                <div class="sidebar-button" @click="focusOpen = true">
-                  <div class="sidebar-button__inner">
-                    <md-ripple />
-                    <md-icon>av_timer</md-icon>
+                  <div
+                    class="sidebar-button"
+                    title="Sticky Notes"
+                    @click="stickyNotesOpen = true"
+                  >
+                    <div class="sidebar-button__inner">
+                      <md-ripple />
+                      <md-icon>sticky_note</md-icon>
+                    </div>
                   </div>
-                </div>
-                <div class="sidebar-button" @click="stickyNotesOpen = true">
-                  <div class="sidebar-button__inner">
-                    <md-ripple />
-                    <md-icon>sticky_note</md-icon>
+                  <div
+                    class="sidebar-button"
+                    title="Packages"
+                    @click="packagesOpen = true"
+                  >
+                    <div class="sidebar-button__inner">
+                      <md-ripple />
+                      <md-icon>package_2</md-icon>
+                    </div>
                   </div>
-                </div>
-                <div class="sidebar-button" @click="packagesOpen = true">
-                  <div class="sidebar-button__inner">
-                    <md-ripple />
-                    <md-icon>package_2</md-icon>
-                  </div>
-                </div>
-                <div class="sidebar-button" @click="screenshot">
-                  <div class="sidebar-button__inner">
-                    <md-ripple />
-                    <md-icon>camera</md-icon>
+                  <div
+                    class="sidebar-button"
+                    title="Screenshot"
+                    @click="screenshot"
+                  >
+                    <div class="sidebar-button__inner">
+                      <md-ripple />
+                      <md-icon>camera</md-icon>
+                    </div>
                   </div>
                 </div>
               </div>
