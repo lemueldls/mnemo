@@ -1,5 +1,5 @@
 @font-face {
-  font-family: "Iosevka Book Web";
+  font-family: "Iosevka Book";
   font-display: swap;
   font-weight: 400;
   font-stretch: normal;
@@ -10,7 +10,7 @@
 }
 
 @font-face {
-  font-family: "Iosevka Book Web";
+  font-family: "Iosevka Book";
   font-display: swap;
   font-weight: 400;
   font-stretch: normal;
@@ -21,7 +21,7 @@
 }
 
 @font-face {
-  font-family: "Iosevka Book Web";
+  font-family: "Iosevka Book";
   font-display: swap;
   font-weight: 700;
   font-stretch: normal;
@@ -32,13 +32,12 @@
 }
 
 @font-face {
-  font-family: "Iosevka Book Web";
+  font-family: "Iosevka Book";
   font-display: swap;
   font-weight: 700;
   font-stretch: normal;
   font-style: italic;
   src:
-    url("/fonts/iosevka-book/woff2/IosevkaBook-BoldItalic.woff2")
-      format("woff2"),
+    url("/fonts/iosevka-book/woff2/IosevkaBook-BoldItalic.woff2") format("woff2"),
     url("/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf") format("truetype");
 }
