@@ -112,8 +112,6 @@ function decorate(
   const transaction = setDiagnostics(state, diagnostics);
   queueMicrotask(() => view.dispatch(transaction));
 
-  console.log({ syncResult, diagnostics });
-
   for (const { index, block, render } of syncResult) {
     if (render) {
       const { from: start, number: startLine } = state.doc.lineAt(

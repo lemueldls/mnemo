@@ -3,7 +3,6 @@ import { createId } from "@paralleldrive/cuid2";
 
 const open = defineModel<boolean>();
 
-const dark = useDark();
 // const router = useRouter();
 
 const spaces = await useSpaces();
@@ -24,7 +23,7 @@ function createSpace() {
 </script>
 
 <template>
-  <m3-theme :color="space.color" harmonize :dark="dark">
+  <m3-theme :color="space.color" harmonize>
     <md-dialog :open="open" @closed="open = false">
       <span slot="headline">New Space</span>
 

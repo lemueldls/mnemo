@@ -86,29 +86,6 @@ impl TypstDiagnostic {
     }
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct TypstError {
-    pub range: Range<usize>,
-    pub message: String,
-    pub hints: Box<[String]>,
-}
-
-impl TypstError {
-    pub fn drain_from_errors(errors: &mut Vec<SyntaxError>, world: &dyn WorldExt) -> Box<[Self]> {
-        errors
-            .drain(..)
-            .map(|error| {
-                TypstError {
-                    range: world.range(error.span).unwrap(),
-                    message: error.message.to_string(),
-                    hints: error.hints.into_iter().map(|s| s.to_string()).collect(),
-                }
-            })
-            .collect()
-    }
-}
-
 #[derive(Tsify, Serialize, Deserialize, Debug)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type")]
@@ -157,7 +134,6 @@ pub enum TypstCompletionKind {
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-
 pub struct TypstCompletion {
     #[serde(rename = "type")]
     kind: TypstCompletionKind,

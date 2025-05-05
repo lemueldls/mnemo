@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { redFromArgb } from "@material/material-color-utilities";
-
-import { Rgb, ThemeColors, FileId } from "mnemo-wasm";
+import { Rgb, ThemeColors } from "mnemo-wasm";
 
 import type { Rgba } from "@material/material-color-utilities";
-
-import type { EditorStateConfig } from "@codemirror/state";
 import type { Package } from "~~/server/api/list-packages";
+
 import type { Note } from "~/composables/spaces";
 
-const dark = useDark();
+const spaceId = useRouteQuery<string>("space");
 
-const { d } = useI18n();
-
-const spaceId = useRouteQuery("space");
-
-const spaces = await useSpaces();
-const space = computed(() => spaces.value[spaceId.value]!);
+// const spaces = await useSpaces();
+// const space = computed(() => spaces.value[spaceId.value]!);
 
 const dailyNotesRef = await useStorageItem<Note[]>(
   `spaces/${spaceId.value}/daily/notes.json`,

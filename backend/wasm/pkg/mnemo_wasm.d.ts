@@ -10,12 +10,6 @@ export interface TypstDiagnostic {
     hints: string[];
 }
 
-export interface TypstError {
-    range: { start: number; end: number };
-    message: string;
-    hints: string[];
-}
-
 export type TypstJump = { type: "File"; position: number };
 
 export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
@@ -25,6 +19,13 @@ export interface TypstCompletion {
     label: string;
     apply: string | undefined;
     detail: string | undefined;
+}
+
+export type TypstError = EcoString;
+
+export interface Autocomplete {
+    offset: number;
+    completions: TypstCompletion[];
 }
 
 export interface RangedRender {
@@ -74,7 +75,7 @@ export class TypstState {
   installPackage(spec: string, files: PackageFile[]): void;
   sync(id: FileId, text: string, prelude: string): RangedRender[];
   click(index: number, x: number, y: number): TypstJump | undefined;
-  autocomplete(cursor: number, explicit: boolean): any;
+  autocomplete(cursor: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
 }
 
@@ -98,10 +99,10 @@ export interface InitOutput {
   readonly typststate_theme: (a: number) => number;
   readonly typststate_setTheme: (a: number, b: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
   readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
-  readonly typststate_autocomplete: (a: number, b: number, c: number) => [number, number, number];
+  readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly start: () => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
@@ -123,8 +124,8 @@ export interface InitOutput {
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_3: WebAssembly.Table;
   readonly __externref_table_alloc: () => number;
-  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __externref_table_dealloc: (a: number) => void;
+  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
 }
 

@@ -3,7 +3,7 @@ import { VuePDF, usePDF } from "@tato30/vue-pdf";
 
 import { UseVirtualList } from "@vueuse/components";
 
-const url = defineModel<string>();
+// const url = defineModel<string>();
 
 //const { pdf, pages, info } = usePDF("pldi16.pdf");
 const { pdf, pages, info } = usePDF("article2.pdf");

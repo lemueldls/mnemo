@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const dark = useDark();
 const spaces = useSpaces();
 </script>
 
@@ -9,7 +8,7 @@ const spaces = useSpaces();
     :key="name"
     :to="`/space?id=${name}`"
   >
-    <m3-theme as-child :color="space.color" harmonize :dark="dark">
+    <m3-theme as-child :color="space.color" harmonize>
       <m3-nav-drawer-item>
         <template #leading>
           <m3-icon rounded :name="space.icon" class="text-m3-primary" />

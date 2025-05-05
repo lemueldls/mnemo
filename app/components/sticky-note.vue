@@ -131,6 +131,12 @@ onMounted(() => {
 // watchEffect(async () => {
 //   await renameStickyNote(spaceId.value, props.note.id, title.value);
 // });
+
+const theme = useMaterialTheme();
+const selectionBackground = computed(() => {
+  const { r, g, b } = theme!.value.palette.primaryContainer;
+  return `rgba(${r},${g},${b},0.5)`;
+});
 </script>
 
 <template>
@@ -189,7 +195,12 @@ onMounted(() => {
     touch-action: none;
     user-select: none;
 
-    font-family: "Iosevka Book Web", sans-serif;
+    font-family: "Iosevka Book", sans-serif;
+  }
+
+  ::selection {
+    @apply text-m3-on-primary-container;
+    background-color: v-bind(selectionBackground);
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import symbols from "~/assets/symbols.json";
-import type { MaterialSymbol } from "material-symbols";
+// import type { MaterialSymbol } from "material-symbols";
 
 import type { Space } from "~/composables/space";
 
@@ -33,11 +33,11 @@ const colors = [
 // const icon = ref<MaterialSymbol>("home");
 
 const iconSearch = ref<string>("");
-const iconContainerRef = useTemplateRef("icon-container");
+const iconContainerRef = useTemplateRef<HTMLElement>("icon-container");
 
 watch(iconSearch, () => {
   const iconContainer = iconContainerRef.value;
-  if (iconContainer) iconContainer.scrollTo(0);
+  if (iconContainer) iconContainer.scrollTo(0, 0);
 });
 
 const filteredSymbols = computed(() => {

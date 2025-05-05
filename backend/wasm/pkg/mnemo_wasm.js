@@ -112,6 +112,12 @@ function passArrayJsValueToWasm0(array, malloc) {
     return ptr;
 }
 
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_3.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+
 function getArrayJsValueFromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     const mem = getDataViewMemory0();
@@ -121,12 +127,6 @@ function getArrayJsValueFromWasm0(ptr, len) {
     }
     wasm.__externref_drop_slice(ptr, len);
     return result;
-}
-
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_3.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
 }
 
 function isLikeNone(x) {
@@ -394,7 +394,10 @@ export class TypstState {
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passArrayJsValueToWasm0(files, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
-        wasm.typststate_installPackage(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.typststate_installPackage(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
     }
     /**
      * @param {FileId} id
@@ -426,14 +429,11 @@ export class TypstState {
     /**
      * @param {number} cursor
      * @param {boolean} explicit
-     * @returns {any}
+     * @returns {Autocomplete}
      */
     autocomplete(cursor, explicit) {
         const ret = wasm.typststate_autocomplete(this.__wbg_ptr, cursor, explicit);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
+        return ret;
     }
     /**
      * @param {number | null} [width]

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Package } from "~~/server/api/list-packages";
 
+import { UseVirtualList } from "@vueuse/components";
+
 const props = defineProps<{ spaceId: string }>();
 
 const { $api } = useNuxtApp();
@@ -8,6 +10,12 @@ const { $api } = useNuxtApp();
 const open = defineModel<boolean>();
 
 const search = ref("");
+const containerRef = useTemplateRef<HTMLElement>("container");
+
+watch(search, () => {
+  const container = containerRef.value;
+  if (container) container.scrollTo(0, 0);
+});
 
 const namespace = "preview" as const;
 const packages = await $api("/api/list-packages", {
@@ -26,14 +34,25 @@ const filteredPackages = computed(() => {
   );
 });
 
+watchEffect(() => {
+  console.log({ filteredPackages: filteredPackages.value });
+});
+
+const packagesItem = await useStorageItem<Package[]>(
+  `spaces/${props.spaceId}/packages.json`,
+  [],
+);
+
 async function installPackage(pkg: Package) {
   installTypstPackage(pkg, namespace);
 
-  const packagesItem = await useStorageItem<Package[]>(
-    `spaces/${props.spaceId}/packages.json`,
-    [],
-  );
   packagesItem.value.push(pkg);
+}
+
+async function uninstallPackage(pkg: Package) {
+  packagesItem.value = packagesItem.value.filter(
+    (pkgItem) => !comparePackage(pkg, pkgItem),
+  );
 }
 </script>
 
@@ -54,25 +73,32 @@ async function installPackage(pkg: Package) {
       </md-icon-button> -->
     </div>
 
-    <form slot="content" method="dialog">
-      <template v-if="Object.keys(filteredPackages).length > 0">
-        <package-card
-          v-for="(pkgs, i) in filteredPackages"
-          :key="i"
-          :packages="pkgs"
-          class="flex flex-col gap-2"
-          @install="installPackage"
-        />
-      </template>
+    <form slot="content" method="dialog" class="overflow-hidden">
+      <UseVirtualList
+        v-if="Object.keys(filteredPackages).length > 0"
+        ref="container"
+        :list="Object.values(filteredPackages)"
+        :options="{ itemHeight: 220 }"
+        height="28rem"
+        class="virtual-list"
+      >
+        <template #default="{ data: versionedPackage }">
+          <package-card
+            :space-id
+            :versioned-package
+            class="flex flex-col gap-2"
+            @install="installPackage"
+            @uninstall="uninstallPackage"
+          />
+        </template>
+      </UseVirtualList>
       <span v-else>No packages found</span>
     </form>
   </md-dialog>
 </template>
 
 <style>
-form {
-  @apply grid gap-4;
-
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+.virtual-list > div {
+  @apply flex flex-col gap-4;
 }
 </style>

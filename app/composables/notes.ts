@@ -26,7 +26,6 @@ export function addDailyNote(notes: Ref<Note[]>) {
 export async function loadDailyNotes(notes: Ref<Note[]>) {
   const today = new Date();
 
-  // return computedWithControl(notes, () => {
   let addToday = true;
 
   for (const note of notes.value) {
@@ -47,5 +46,4 @@ export async function loadDailyNotes(notes: Ref<Note[]>) {
   }
 
   return notes.value;
-  // });
 }

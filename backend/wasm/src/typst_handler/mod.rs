@@ -36,7 +36,7 @@ use typst::{
 use typst_render::{render, render_merged};
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
-use wrappers::{TypstCompletion, TypstDiagnostic, TypstError, TypstJump};
+use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
 
 #[wasm_bindgen]
 pub struct PackageFile {
@@ -239,8 +239,12 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = installPackage)]
-    pub fn install_package(&mut self, spec: &str, files: Vec<PackageFile>) {
-        let package_spec = Some(PackageSpec::from_str(spec).unwrap());
+    pub fn install_package(
+        &mut self,
+        spec: &str,
+        files: Vec<PackageFile>,
+    ) -> Result<(), TypstError> {
+        let package_spec = Some(PackageSpec::from_str(spec).map_err(|err| TypstError(err))?);
 
         for file in files {
             let id = FileId::new(package_spec.clone(), VirtualPath::new(&file.path));
@@ -248,12 +252,14 @@ impl TypstState {
 
             self.world.files.insert(id, source);
         }
+
+        Ok(())
     }
 
     fn prelude(&self, config_page: bool) -> String {
         let page_config = if config_page {
             format!(
-                "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:1pt)",
+                "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)",
                 width = self.width,
                 height = self.height,
             )
@@ -264,7 +270,7 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:{size}pt,tracking:0pt,top-edge:"ascender",bottom-edge:"descender",overhang:false)
+                #set text(fill:theme.on-background,size:{size}pt,top-edge:"ascender",bottom-edge:"descender")
                 #set align(horizon)
                 #set par(leading:0em,linebreaks:"simple")
                 {page_config}
@@ -282,7 +288,7 @@ impl TypstState {
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,tracking:0.1pt,weight:500)
             "#,
             theme = self.theme,
-            size = self.size + 1.0,
+            size = self.size + 0.9,
         )
     }
 
@@ -305,21 +311,23 @@ impl TypstState {
         let children = self.world.main_source().root().children();
         let mut errors = Vec::new();
 
+        // let index_map = Vec::new();
+
+        // text.encode_utf16() //!
+
         for node in children {
             let mut range = self.world.range(node.span()).unwrap();
 
             let text_slice = &text[..range.end];
             let utf16_count = text_slice.encode_utf16().count();
 
+            // crate::log(&format!("[RANGE]: {range:?}"));
+            // crate::log(&format!("[TEXT_SLICE]: {text_slice:?}"));
+
             let byte_offset = text_slice.len() - utf16_count;
 
             range.start -= last_end_byte_offset;
             range.end -= byte_offset;
-
-            if let Some(last_block) = blocks.last() {
-                self.index_mapper
-                    .add_change(last_block.range.start, source.len());
-            }
 
             if let Some(ast::Expr::FuncCall(call)) = node.cast() {
                 if let ast::Expr::Ident(ident) = call.callee() {
@@ -350,22 +358,34 @@ impl TypstState {
                     source += &text[range];
                     source += "\n#pagebreak()\n";
                 }
-            } else if node.erroneous() {
-                in_block = false;
+            }
+            // else if node.erroneous() {
+            //     in_block = false;
 
-                let end_range = range.end;
+            //     // if let Some(last_block) = blocks.last() {
+            //     //     self.index_mapper
+            //     //         .add_change(last_block.range.start, source.len());
+            //     // }
 
-                blocks.push(Block::new(
-                    range,
-                    source.encode_utf16().count(),
-                    TypstDiagnostic::from_errors(node.errors(), &self.world),
-                ));
+            //     blocks.push(Block::new(
+            //         range,
+            //         source.encode_utf16().count(),
+            //         TypstDiagnostic::from_errors(node.errors(), &self.world),
+            //     ));
 
-                source += "\n#pagebreak()\n";
-            } else if in_block {
+            //     source += "\n#pagebreak()\n";
+            // }
+            else if in_block {
                 blocks.last_mut().unwrap().range.end = range.end;
             } else {
                 in_block = true;
+
+                // if blocks.is_empty() {
+                //     self.index_mapper
+                //         .add_change(range.start, source.len() + range.start);
+                // } else {
+                self.index_mapper.add_change(range.start, source.len());
+                // }
 
                 blocks.push(Block::new(
                     range,
@@ -382,7 +402,13 @@ impl TypstState {
             if in_block {
                 let mut range = last_range.range.clone();
 
-                range.start += last_start_byte_offset;
+                // crate::log(&format!("[RANGE]: {range:?}"));
+                // crate::log(&format!(
+                //     "[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"
+                // ));
+                // crate::log(&format!("[LAST_END_BYTE_OFFSET]: {last_end_byte_offset:?}"));
+
+                // range.start += last_start_byte_offset;
                 range.end += last_end_byte_offset;
 
                 self.index_mapper.add_change(range.start, source.len());
@@ -519,7 +545,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn autocomplete(&self, cursor: usize, explicit: bool) -> Result<JsValue, Error> {
+    pub fn autocomplete(&self, cursor: usize, explicit: bool) -> Autocomplete {
         // let compiled = compile(&self.world);
         // let document = match compiled.output {
         //     Ok(document) => document,
@@ -535,18 +561,23 @@ impl TypstState {
             explicit,
         );
 
-        serde_wasm_bindgen::to_value(&match results {
+        match results {
             Some((offset, completions)) => {
-                (
-                    self.index_mapper.map_offset(offset),
-                    completions
+                Autocomplete {
+                    offset: self.index_mapper.map_offset(offset),
+                    completions: completions
                         .into_iter()
                         .map(TypstCompletion::from)
-                        .collect::<Vec<TypstCompletion>>(),
-                )
+                        .collect::<Box<[_]>>(),
+                }
             }
-            None => (0_usize, Vec::<TypstCompletion>::new()),
-        })
+            None => {
+                Autocomplete {
+                    offset: 0,
+                    completions: Box::new([]),
+                }
+            }
+        }
     }
 
     #[wasm_bindgen]
@@ -559,6 +590,17 @@ impl TypstState {
             .map(|height| height.to_string() + "pt")
             .unwrap_or_else(|| String::from("auto"));
     }
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct TypstError(EcoString);
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct Autocomplete {
+    pub offset: usize,
+    pub completions: Box<[TypstCompletion]>,
 }
 
 #[derive(Debug, Tsify, Serialize, Deserialize)]

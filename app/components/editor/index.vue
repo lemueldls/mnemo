@@ -66,21 +66,30 @@ const props = defineProps<{
 // const path = useVModel(props, "modelValue", emit);
 const path = defineModel<string>({ required: true });
 
-const pixelPerPoint = ref(1);
-// const pixelPerPoint = ref(window.devicePixelRatio);
+// const pixelPerPoint = ref(1);
+const pixelPerPoint = ref(window.devicePixelRatio);
 // const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
-const { palette } = useMaterialTheme()!;
+const theme = useMaterialTheme();
+const palette = computed(() => theme.value.palette);
+
+watchEffect(() => {
+  console.log({ theme: theme.value });
+});
+
+watchEffect(() => {
+  console.log({ palette: palette.value });
+});
 
 function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
-watchEffect(async () => {
+watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
   const typstState = await useTypst();
 
-  typstState.setPt(pixelPerPoint.value);
-  typstState.setSize(16 / pixelPerPoint.value);
+  typstState.setPt(pixelPerPoint);
+  typstState.setSize(16);
   typstState.setTheme(
     new ThemeColors(
       parseColor(palette.primary),
@@ -171,13 +180,14 @@ onMounted(() => {
 
       const typstState = await useTypst();
 
-      const packages = await useStorageItem<Package[]>(
-        `spaces/${oldSpace || spaceId}/packages.json`,
-        [],
-      );
+      const packages = await useInstalledPackages(spaceId);
       // check if spamming
       watchImmediate(packages, async (packages) => {
-        await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
+        await Promise.all(
+          packages
+            .filter((pkg) => pkg.name !== "suiji")
+            .map((pkg) => installTypstPackage(pkg)),
+        );
       });
 
       const text = storageItem.value.value;
@@ -249,9 +259,12 @@ function createStateConfig(
   };
 }
 
-const { secondaryContainer } = palette;
+// const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
+const activeLineBackground = computed(() => {
+  const { secondaryContainer } = palette.value;
 
-const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
+  return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
+});
 </script>
 
 <template>
@@ -275,27 +288,15 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   }
 
   .cm-line {
-    // @apply p-0 pl-1px text-[16px] tracking-0 word-spacing-[4px] [font-kerning:none];
     @apply p-0 px-[1px] text-[16px];
-    /* font-family: "Iosevka Quasi Custom"; */
-    font-family: "Iosevka Book Web";
-    /* font-style: normal;
-    font-display: swap;
-    font-stretch: normal;
-    font-variant-ligatures: none;
-    font-kerning: none; */
-    /* font-kerning: normal !important; */
-    // letter-spacing: 0;
-    // word-spacing: 4px;
-    /* font-feature-settings: "liga" 0; */
-    /* line-height: 1.5; */
+
+    font-family: "Iosevka Book";
   }
 
   .cm-content {
     @apply caret-m3-primary p-0;
 
-    /* font-family: "Iosevka Quasi Custom"; */
-    font-family: "Iosevka Book Web";
+    font-family: "Iosevka Book";
   }
 
   .cm-selectionBackground {
@@ -333,9 +334,9 @@ const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.
   } */
 
   .cm-tooltip {
-    @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded border-none p-0 shadow;
+    @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded-lg border-none p-0 shadow;
 
-    /* font-family: "Iosevka Book Web"; */
+    font-family: "Iosevka Book";
 
     [aria-selected="true"] {
       @apply bg-m3-secondary-container! text-m3-on-secondary-container!;

@@ -9,6 +9,7 @@ import type {
   Completion,
 } from "@codemirror/autocomplete";
 import type { TypstState } from "~~/backend/wasm/pkg/mnemo_wasm";
+import { EditorSelection, SelectionRange } from "@codemirror/state";
 
 export const createLanguage = (typstState) =>
   LRLanguage.define({
@@ -41,15 +42,51 @@ async function autocomplete(
   context: CompletionContext,
 ): Promise<CompletionResult> {
   const { pos, explicit } = context;
-
-  console.log({ context });
-  const [offset, completions] = typstState.autocomplete(pos, explicit);
+  console.log({ pos, explicit });
+  const { offset, completions } = typstState.autocomplete(pos, explicit);
   console.log({ offset, completions });
 
-  return { from: offset, options: completions };
-}
+  return {
+    from: offset,
+    options: completions.map((completion) => {
+      const { apply } = completion;
 
-// const fold = foldable()
+      return {
+        type: completion.type,
+        label: completion.label,
+        apply(view, _completion, from, to) {
+          console.log({ completion });
+          if (!apply) return;
+
+          const matches = apply.matchAll(/\${(.*)}/gm);
+          const filtered = apply.replaceAll(/\${(.*)}/gm, "$1");
+
+          const ranges = [];
+          let offset = 0;
+          for (const match of matches) {
+            const from = match.index;
+            const to = from + match[1]!.length;
+
+            ranges.push(EditorSelection.range(from - offset, to - offset));
+
+            offset += 3; // ${}
+          }
+
+          if (matches)
+            view.dispatch({
+              changes: {
+                from: from,
+                to: to,
+                insert: filtered,
+              },
+              selection: EditorSelection.create(ranges, 1),
+            });
+        },
+        info: completion.detail,
+      };
+    }),
+  };
+}
 
 export function typstLanguage(typstState: TypstState) {
   return new LanguageSupport(createLanguage(typstState));

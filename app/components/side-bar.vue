@@ -8,33 +8,50 @@ import type { MaterialSymbol } from "material-symbols";
 
 defineProps<{ direction: "horizontal" | "vertical" }>();
 
-const sheet = useCookie<boolean | undefined>("side-bar-sheet");
-const activeItemIndex = useCookie("side-bar-active-item-index", {
-  default: () => 0,
-});
+const router = useRouter();
+
+const route = useRoute();
+const hash = computed(() => route.hash?.slice(1));
+
+const sheet = ref(false);
+// const sheet = useCookie<boolean | undefined>("side-bar-sheet");
+// const activeItemIndex = useCookie("side-bar-active-item-index", {
+//   default: () => 0,
+// });
 
 interface Item {
-  icon?: MaterialSymbol;
   name: string;
+  icon?: MaterialSymbol;
   component?: Component;
 }
 
-const items: Item[] = [
-  // { icon: "chat", name: "Chat", component: Chat },
-  { icon: "calendar_today", name: "Today", component: Today },
-  { icon: "pinboard", name: "Tasks", component: Tasks },
-  { icon: "school", name: "Study" },
-  // { icon: "quiz", name: "Quiz" },
-  { icon: "sync", name: "Sync", component: Sync },
-];
+const items: { [key: string]: Item } = {
+  // chat: { name: "Chat", icon: "chat", component: Chat },
+  today: { name: "Today", icon: "calendar_today", component: Today },
+  tasks: { name: "Tasks", icon: "pinboard", component: Tasks },
+  study: { name: "Study", icon: "school" },
+  // quiz: { name: "Quiz", icon: "quiz" },
+  sync: { name: "Sync", icon: "sync", component: Sync },
+};
 
-function handleClick(index: number) {
-  if (sheet.value && activeItemIndex.value === index) sheet.value = false;
+watchImmediate(hash, (hash) => {
+  if (!hash) sheet.value = false;
+
+  const item = items[hash];
+  if (item) sheet.value = true;
+});
+
+function handleClick(id: string | number) {
+  if (sheet.value && id === hash.value) sheet.value = false;
   else {
-    activeItemIndex.value = index;
+    router.push({ hash: "#" + id, query: route.query });
     sheet.value = true;
   }
 }
+
+whenever(logicNot(sheet), () =>
+  router.replace({ hash: "", query: route.query }),
+);
 
 function preloadItem(item: Item) {
   preloadComponents(item.name);
@@ -44,29 +61,30 @@ function preloadItem(item: Item) {
 <template>
   <m3-nav-rail v-if="direction == 'vertical'">
     <m3-nav-rail-item
-      v-for="(item, index) in items"
-      :key="index"
-      :active="sheet && index === activeItemIndex"
-      @click="handleClick(index)"
+      v-for="(item, id) in items"
+      :key="id"
+      :active="hash === id"
+      @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <m3-icon :name="item.icon" :fill="sheet && index === activeItemIndex" />
+        <m3-icon :name="item.icon" :fill="sheet && hash == id" />
       </template>
 
       {{ item.name }}
     </m3-nav-rail-item>
   </m3-nav-rail>
+
   <m3-nav-bar v-else>
     <m3-nav-bar-item
-      v-for="(item, index) in items"
-      :key="index"
-      :active="sheet && index === activeItemIndex"
+      v-for="(item, id) in items"
+      :key="id"
+      :active="hash === id"
       @hover="preloadItem(item)"
       @focus="preloadItem(item)"
-      @click="handleClick(index)"
+      @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <m3-icon :name="item.icon" :fill="sheet && index === activeItemIndex" />
+        <m3-icon :name="item.icon" :fill="sheet && hash == id" />
       </template>
 
       {{ item.name }}
@@ -80,6 +98,6 @@ function preloadItem(item: Item) {
       </md-icon-button>
     </div>
 
-    <component :is="items[activeItemIndex]!.component" />
+    <Primitive v-if="items[hash]" :id="hash" :as="items[hash]!.component" />
   </m3-side-sheet>
 </template>
