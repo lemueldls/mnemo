@@ -4,31 +4,32 @@ import { Primitive, type PrimitiveProps } from "reka-ui";
 
 interface Props extends PrimitiveProps {
   color: string;
-  dark: boolean;
   harmonize?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  as: "div",
-});
+const props = defineProps<Props>();
+const { color, harmonize } = toRefs(props);
 
-const { color, dark, harmonize } = toRefs(props);
+const dark = useDark();
 
 const parentTheme = computed(() =>
   harmonize.value ? useMaterialTheme()?.source : undefined,
 );
-const theme = createTheme(color, dark, parentTheme.value);
+const theme = computed(() =>
+  createTheme(color.value, dark.value, parentTheme.value),
+);
 
 provide(m3ThemeKey, theme);
 
-const { palette } = theme;
+// const { palette } = toRefs(theme);
+const palette = computed(() => theme.value.palette);
 
 function parse(color: Rgba) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
 
 const selectionBackground = computed(() => {
-  const { r, g, b } = palette.tertiaryContainer;
+  const { r, g, b } = palette.value.tertiaryContainer;
   return `rgba(${r},${g},${b},0.5)`;
 });
 </script>
@@ -120,7 +121,7 @@ const selectionBackground = computed(() => {
 
   ::-webkit-scrollbar {
     width: 0; // TODO: make float
-    background: v-bind(selectionBackground);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -130,7 +131,6 @@ const selectionBackground = computed(() => {
 
   ::selection {
     @apply text-m3-on-tertiary-container;
-    /* stylelint-disable-next-line color-function-notation */
     background-color: v-bind(selectionBackground);
   }
 }

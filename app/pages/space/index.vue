@@ -11,7 +11,7 @@ const { d } = useI18n();
 // const { query } = useRoute();
 // const spaceId = [query.id].flat()[0]!.toString();
 
-const spaceId = useRouteQuery("id");
+const spaceId = useRouteQuery<string>("id");
 // const noteId = useRouteQuery("note");
 
 watchImmediate(spaceId, (spaceId) => {
@@ -24,14 +24,13 @@ const space = computed(() => spaces.value[spaceId.value!]!);
 const { medium } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);
+const settingsOpen = ref(false);
 
 const preludeOpen = ref(false);
 const focusOpen = ref(false);
 const stickyNotesOpen = ref(false);
 const packagesOpen = ref(false);
 const screenshotOpen = ref(false);
-
-const dark = useDark();
 
 const router = useRouter();
 
@@ -120,6 +119,11 @@ const { data: notes } = await useAsyncData(
 const currentNoteIndex = ref(0);
 const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
+// const noteId = useRouteQuery("note");
+// watchImmediate(currentNote, (note) => {
+//   noteId.value = note.id.toLowerCase();
+// });
+
 const nextDayIndex = computed(() => {
   const index = notes.value.findIndex(
     (note) => note.id === currentNote.value!.id,
@@ -145,9 +149,9 @@ const stickyNotes = await useRefStorageItem<{ [id: string]: StickyNote }>(
   {},
 );
 // stickyNotes.value = {};
-watchEffect(() => {
-  console.log({ stickyNotes: stickyNotes.value });
-});
+// watchEffect(() => {
+//   console.log({ stickyNotes: stickyNotes.value });
+// });
 const activeStickyNotes = ref<StickyNote[]>([]);
 
 async function createStickyNote() {
@@ -176,7 +180,7 @@ async function createStickyNote() {
 </script>
 
 <template>
-  <m3-theme id="space-page" :color="space.color" :dark="dark">
+  <m3-theme id="space-page" :color="space.color">
     <sticky-note
       v-for="(note, i) in activeStickyNotes"
       :key="note.id"
@@ -223,17 +227,17 @@ async function createStickyNote() {
               <md-icon-button @click="infoOpen = true">
                 <md-icon>info</md-icon>
               </md-icon-button>
+
+              <md-icon-button @click="settingsOpen = true">
+                <md-icon>settings</md-icon>
+              </md-icon-button>
             </template>
           </m3-top-app-bar>
 
           <div
             id="editor-container"
-            class="flex h-full w-full items-center justify-center gap-3 self-center overflow-hidden pb-3 pl-6"
+            class="medium:pr-0 medium:pb-3 medium:pl-6 flex h-full w-full items-center justify-center gap-6 self-center overflow-hidden pb-6 pl-3 pr-3"
           >
-            <!-- <m3-outlined-card class="flex-1 h-full p-0! overflow-hidden">
-              <pdf-viewer />
-            </m3-outlined-card> -->
-
             <div class="max-w-180 relative h-full w-full flex-1">
               <div class="absolute left--6 h-full pb-8 pt-16">
                 <div class="flex h-full flex-col gap-4 overflow-auto">
@@ -323,8 +327,12 @@ async function createStickyNote() {
               </m3-elevated-card>
             </div>
 
-            <side-bar v-if="!medium" direction="horizontal" />
+            <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
+              <pdf-viewer />
+            </m3-outlined-card> -->
           </div>
+
+          <side-bar v-if="!medium" direction="horizontal" />
         </div>
       </div>
 
@@ -344,9 +352,9 @@ async function createStickyNote() {
         <form slot="content" method="dialog" class="flex flex-col gap-8">
           <edit-space v-model="space">
             <template #actions>
-              <md-text-button class="text-error" @click="deleteSpace"
-                >Delete</md-text-button
-              >
+              <md-text-button class="text-error" @click="deleteSpace">
+                Delete
+              </md-text-button>
               <md-text-button @click="updateSpace">Confirm</md-text-button>
             </template>
           </edit-space>
@@ -434,6 +442,8 @@ async function createStickyNote() {
         </div>
       </md-dialog>
 
+      <settings v-model="settingsOpen" />
+
       <side-bar v-if="medium" direction="vertical" />
     </m3-page>
   </m3-theme>
@@ -455,12 +465,12 @@ async function createStickyNote() {
 #editor-title {
   @apply text-m3-on-primary-container m3-headline-large flex w-full justify-between bg-transparent outline-none;
 
-  /* font-family: "Iosevka Quasi Custom", sans-serif; */
-  font-family: "Iosevka Book Web", sans-serif;
+  font-family: "Iosevka Book", sans-serif;
 }
 
 .sidebar-button {
   @apply pl-3.25 transition-all duration-200 hover:pl-0;
+  // @apply medium:z-0 z-1 medium:hover:pl-0 pl-3 transition-all duration-200;
 
   &__inner {
     @apply bg-m3-surface-container-high text-m3-on-surface-variant relative flex h-12 w-6 cursor-pointer items-center justify-center;

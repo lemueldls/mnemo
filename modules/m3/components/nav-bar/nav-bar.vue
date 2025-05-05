@@ -5,10 +5,6 @@
     <div class="m3-nav-bar__inner">
       <slot />
     </div>
-
-    <div v-if="$slots.trailing" class="m3-nav-bar__trailing">
-      <slot name="trailing" />
-    </div>
   </div>
 </template>
 
@@ -17,11 +13,9 @@
   @apply h-22;
 
   &__inner {
-    @apply bg-m3-surface-container fixed bottom-0 flex w-full gap-2 px-3 pb-4 pt-3;
-  }
+    @apply bg-m3-surface-container fixed bottom-0 flex w-full gap-2 px-3 pt-3;
 
-  &__trailing {
-    @apply flex flex-1 justify-end gap-2;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
   }
 }
 </style>

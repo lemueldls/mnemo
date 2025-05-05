@@ -14,22 +14,18 @@ const dynamicColors = Object.keys(MaterialDynamicColors).filter(
 ) as ThemeKeys[];
 
 export function createTheme<K extends ThemeKeys>(
-  color: MaybeRefOrGetter<string>,
-  dark: MaybeRefOrGetter<boolean>,
-  harmonize?: MaybeRefOrGetter<string>,
+  source: string,
+  dark: boolean,
+  harmonize?: string,
   keys: K[] = dynamicColors as K[],
 ): Theme<K> {
-  const palette = shallowReactive({}) as Theme<K>["palette"];
+  const palette = {} as Theme<K>["palette"];
 
   watchEffect(() => {
-    const argbColor = argbFromHex(toValue(color));
-    const argbHarmonize = harmonize && argbFromHex(toValue(harmonize));
+    const argbColor = argbFromHex(source);
+    const argbHarmonize = harmonize && argbFromHex(harmonize);
 
-    const scheme = new SchemeTonalSpot(
-      Hct.fromInt(argbColor),
-      toValue(dark),
-      0,
-    );
+    const scheme = new SchemeTonalSpot(Hct.fromInt(argbColor), dark, 0);
 
     for (const key of keys) {
       const color = MaterialDynamicColors[key];
@@ -43,5 +39,5 @@ export function createTheme<K extends ThemeKeys>(
     }
   });
 
-  return { source: toRef(color), palette };
+  return { source, palette };
 }

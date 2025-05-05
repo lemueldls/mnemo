@@ -9,6 +9,6 @@ export type ThemeKeys = Exclude<
 >;
 
 export interface Theme<K extends ThemeKeys = ThemeKeys> {
-  source: Ref<string>;
-  palette: UnwrapNestedRefs<{ [_ in K & string]: Rgba }>;
+  source: string;
+  palette: { [_ in K & string]: Rgba };
 }

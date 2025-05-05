@@ -45,8 +45,6 @@ const days = [1, 2, 3, 4, 5].map((day) =>
   d(Date.UTC(0, 0, day + 1), { weekday: "short" }),
 );
 
-const dark = useDark();
-
 const newSpaceOpen = useNewSpaceOpen();
 
 const newSpaceId = ref();
@@ -196,7 +194,6 @@ function timeToMinutes(time: string) {
           v-for="({ spaceId, from, to }, i) in schedule[day]"
           :key="i"
           :color="spaces![spaceId]!.color"
-          :dark="dark"
           harmonize
           :style="{
             top: `${(from / 60) * (scrollHeight / 24)}px`,
@@ -253,7 +250,6 @@ function timeToMinutes(time: string) {
           v-for="(space, id) in spaces"
           :key="id"
           :color="space.color"
-          :dark="dark"
           harmonize
         >
           <m3-elevated-card @click="newSpaceId = id">
@@ -284,7 +280,7 @@ function timeToMinutes(time: string) {
           <div class="flex flex-row items-center justify-between gap-2">
             <md-icon class="text-m3-primary">add</md-icon>
           </div>
-          <span class="m3-title-medium flex-1">New Space</span>
+          <span class="m3-title-medium flex-1">Create a New Space</span>
         </m3-elevated-card>
       </div>
 

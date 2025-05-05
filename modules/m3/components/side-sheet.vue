@@ -9,10 +9,7 @@ const props = withDefaults(
   { id: undefined, class: undefined, type: "auto" },
 );
 
-const emit = defineEmits<{
-  (event: "update:modelValue", value: boolean): void;
-}>();
-const visible = useVModel(props, "modelValue", emit);
+const visible = defineModel<boolean>();
 
 const { large } = useBreakpoints(breakpointsM3);
 

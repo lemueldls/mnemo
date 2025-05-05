@@ -35,13 +35,13 @@ const pages: Page[] = [
   { path: "/calendar", name: "Calendar", icon: "calendar_today" },
 ];
 
-const { clear, session, user } = useUserSession();
+// const { clear, session, user } = useUserSession();
 
 const name = await useStorageItem("name", "");
 </script>
 
 <template>
-  <m3-theme :color="color" :dark="dark" class="absolute inset-0 h-full">
+  <m3-theme :color="color" class="absolute inset-0 h-full">
     <m3-page>
       <m3-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
@@ -97,7 +97,7 @@ const name = await useStorageItem("name", "");
           :key="id"
           :to="`/space?id=${id}`"
         >
-          <m3-theme :color="space.color" harmonize :dark="dark">
+          <m3-theme :color="space.color" harmonize>
             <m3-nav-drawer-item>
               <template #leading>
                 <m3-icon rounded :name="space.icon" class="text-m3-primary" />
@@ -140,31 +140,7 @@ const name = await useStorageItem("name", "");
         <side-bar v-if="!medium" direction="horizontal" />
       </div>
 
-      <md-dialog :open="settingsOpen" @closed="settingsOpen = false">
-        <span slot="headline">Settings</span>
-
-        <form slot="content" method="dialog" class="flex flex-col gap-4">
-          <label class="flex items-center justify-between gap-4">
-            Dark Theme
-
-            <md-switch
-              aria-label="Dark Theme"
-              icons
-              :selected="dark"
-              @change="dark = $event.target.selected"
-            />
-          </label>
-
-          <label class="flex items-center justify-between gap-4">
-            <md-outlined-text-field
-              label="Name"
-              :value="name"
-              @input="name = $event.target.value"
-            />
-          </label>
-        </form>
-      </md-dialog>
-
+      <settings v-model="settingsOpen" />
       <new-space v-model="newSpaceOpen" />
 
       <side-bar v-if="medium" direction="vertical" />
@@ -176,7 +152,6 @@ const name = await useStorageItem("name", "");
 #header {
   @apply px-4 pb-4 pt-2;
 
-  /* font-family: "Iosevka Quasi Custom", sans-serif; */
-  font-family: "Iosevka Book Web", sans-serif;
+  font-family: "Iosevka Book", sans-serif;
 }
 </style>

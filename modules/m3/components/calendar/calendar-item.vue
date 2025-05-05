@@ -6,14 +6,12 @@ interface CalendarEvent extends Event {
 
 defineProps<{ event: CalendarEvent; space: Space }>();
 
-const dark = useDark();
 const spaces = useSpaces();
 </script>
 
 <template>
   <m3-theme
     :color="spaces[space].color"
-    :dark="dark"
     harmonize
     class="absolute w-full"
     :style="{

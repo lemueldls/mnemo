@@ -20,6 +20,8 @@
 .m3-top-app-bar {
   @apply bg-m3-surface text-m3-on-surface m3-title-large flex h-16 w-full items-center gap-2 p-2;
 
+  padding-top: calc(0.5rem + env(safe-area-inset-top));
+
   &__leading {
     @apply text-m3-on-surface flex;
   }

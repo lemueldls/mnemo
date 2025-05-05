@@ -1,8 +1,6 @@
 <script setup lang="ts">
 const name = await useStorageItem("name", "");
 
-const dark = useDark();
-
 const date = ref(new Date());
 // const { d, locale } = useI18n();
 
@@ -37,7 +35,7 @@ const timeOfDay = computed(() => {
     <div id="main-column">
       <m3-outlined-card id="intro">
         <div>
-          <h1 class="m3-display-medium">
+          <h1 class="m3-display-small medium:m3-display-medium">
             Good {{ timeOfDay }}{{ name ? ", " + name : "" }}.
           </h1>
 
@@ -53,7 +51,7 @@ const timeOfDay = computed(() => {
               :key="id"
               :to="`/space?id=${id}`"
             >
-              <m3-theme :color="space.color" :dark="dark" harmonize>
+              <m3-theme :color="space.color" harmonize>
                 <m3-elevated-card class="relative gap-2">
                   <md-ripple />
 
@@ -83,7 +81,7 @@ const timeOfDay = computed(() => {
                 <m3-icon rounded name="add" class="text-m3-primary" />
               </div>
 
-              <h3 class="m3-title-large">Create New Space</h3>
+              <h3 class="m3-title-large">Create a New Space</h3>
             </m3-elevated-card>
           </div>
         </div>

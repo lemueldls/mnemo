@@ -11,8 +11,6 @@ const scrollHeight = ref(0);
 
 const datePicker = ref(false);
 
-const dark = useDark();
-
 const { d, locale } = useI18n();
 
 const title = computed(() =>
@@ -70,8 +68,10 @@ function previousDay() {
 
 <template>
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
-    <div class="flex gap-4">
-      <span class="text-m3-primary m3-display-small flex items-center">
+    <div class="flex">
+      <span
+        class="text-m3-primary m3-display-small grow-3 flex flex-1 items-center gap-2"
+      >
         {{ title }}
 
         <md-icon-button @click="datePicker = true">
@@ -79,7 +79,7 @@ function previousDay() {
         </md-icon-button>
       </span>
 
-      <div class="flex">
+      <div class="grow-2 flex flex-1">
         <md-icon-button @click="previousDay">
           <md-icon>chevron_left</md-icon>
         </md-icon-button>
@@ -105,7 +105,6 @@ function previousDay() {
           v-for="({ spaceId, from, to }, i) in todaysSchedule"
           :key="i"
           :color="spaces![spaceId]!.color"
-          :dark="dark"
           harmonize
           as-child
         >
@@ -147,7 +146,7 @@ function previousDay() {
         />
       </div>
     </div>
-  </div>
 
-  <m3-modal-date-picker v-model="datePicker" />
+    <m3-modal-date-picker v-model="datePicker" />
+  </div>
 </template>
