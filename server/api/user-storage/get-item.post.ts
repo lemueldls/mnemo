@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   //     event,
   //   object({ key: string(), initialValue: string() })
   // );
-  const { key, initialValue } = await readBody(useEvent());
+  const { key, initialValue } = await readBody(event);
 
   const userStorage = await useUserStorage(event);
 

@@ -34,7 +34,8 @@ export default defineCachedEventHandler(
     );
     allPackages = allPackages.filter(
       (pkg) =>
-        pkg.categories && notPackage.isDisjointFrom(new Set(pkg.categories)),
+        !pkg.categories?.length ||
+        notPackage.isDisjointFrom(new Set(pkg.categories)),
     );
     allPackages.sort((a, b) => b.version.localeCompare(a.version));
 
