@@ -117,7 +117,7 @@ const selectionBackground = computed(() => {
 .m3-theme {
   @apply caret-m3-primary;
 
-  scrollbar-color: var(--md-sys-color-primary) v-bind(selectionBackground);
+  scrollbar-color: var(--md-sys-color-primary) transparent;
 
   ::-webkit-scrollbar {
     width: 0; // TODO: make float

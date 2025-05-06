@@ -47,5 +47,5 @@ export default defineCachedEventHandler(
 
     return packages;
   },
-  { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path },
+  { maxAge: 60 * 60 * 24, staleMaxAge: -1, getKey: (event) => event.path },
 );

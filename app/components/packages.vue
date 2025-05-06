@@ -77,7 +77,7 @@ async function uninstallPackage(pkg: Package) {
         ref="container"
         :list="Object.values(filteredPackages)"
         :options="{ itemHeight: medium ? 220 : 264 }"
-        height="28rem"
+        height="26rem"
         class="virtual-list"
       >
         <template #default="{ data: versionedPackage }">
