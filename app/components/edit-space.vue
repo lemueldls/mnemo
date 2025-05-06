@@ -76,7 +76,9 @@ const groupedSymbols: string[][] = computed(() => {
     <label>
       <span class="m3-label-large">Color</span>
 
-      <div class="flex flex-wrap items-center justify-center gap-2 px-20">
+      <div
+        class="medium:mx-20 flex flex-wrap items-center justify-center gap-2"
+      >
         <div
           v-for="c in colors"
           :key="c.name"

@@ -26,7 +26,7 @@ const installedPackage = computed(() =>
 
 <template>
   <m3-elevated-card :key="pkg.name" class="flex flex-col gap-4">
-    <div class="flex justify-between gap-2">
+    <div class="medium:flex-row flex flex-col justify-between gap-2">
       <div class="flex flex-col">
         <h1
           class="text-m3-on-surface-variant m3-title-large line-clamp-1 flex-1"

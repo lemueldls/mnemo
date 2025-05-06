@@ -8,7 +8,7 @@ definePageMeta({ layout: "space" });
 
 const { d } = useI18n();
 
-const spaceId = usePageRouteQuery<string>("id");
+const spaceId = usePageRouteQuery("id");
 watchImmediate(spaceId, async (spaceId) => {
   if (!spaceId) throw createError({ status: 404 });
 });
@@ -210,7 +210,9 @@ async function createStickyNote() {
             <div class="flex flex-1 items-center justify-center gap-2">
               <md-icon>{{ space.icon }}</md-icon>
 
-              {{ space.name }}
+              <span class="line-clamp-1">
+                {{ space.name }}
+              </span>
             </div>
 
             <template #trailing>
@@ -218,9 +220,9 @@ async function createStickyNote() {
                 <md-icon>info</md-icon>
               </md-icon-button>
 
-              <md-icon-button @click="settingsOpen = true">
+              <!-- <md-icon-button @click="settingsOpen = true">
                 <md-icon>settings</md-icon>
-              </md-icon-button>
+              </md-icon-button> -->
             </template>
           </m3-top-app-bar>
 

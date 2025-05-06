@@ -9,6 +9,8 @@ const { $api } = useNuxtApp();
 
 const open = defineModel<boolean>();
 
+const { medium } = useBreakpoints(breakpointsM3);
+
 const search = ref("");
 const containerRef = useTemplateRef<HTMLElement>("container");
 
@@ -53,7 +55,7 @@ async function uninstallPackage(pkg: Package) {
 </script>
 
 <template>
-  <md-dialog :open="open" class="min-w-xl min-h-xl" @closed="open = false">
+  <md-dialog :open="open" @closed="open = false">
     <div slot="headline" class="flex justify-between gap-4">
       <span>Packages</span>
 
@@ -74,7 +76,7 @@ async function uninstallPackage(pkg: Package) {
         v-if="Object.keys(filteredPackages).length > 0"
         ref="container"
         :list="Object.values(filteredPackages)"
-        :options="{ itemHeight: 220 }"
+        :options="{ itemHeight: medium ? 220 : 264 }"
         height="28rem"
         class="virtual-list"
       >
