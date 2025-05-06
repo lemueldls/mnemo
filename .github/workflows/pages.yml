@@ -24,6 +24,9 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+      - name: Use pages
+        run: echo "hub.workers=false" > .nuxtrc
+
       - name: Install dependencies
         run: pnpm install
 
