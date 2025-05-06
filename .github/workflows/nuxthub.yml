@@ -44,4 +44,4 @@ jobs:
         uses: nuxt-hub/action@v1
         id: deploy
         with:
-          project-key: mnemo-1kba
+          project-key: mnemo-dbva
