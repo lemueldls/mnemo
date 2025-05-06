@@ -53,6 +53,7 @@
     "@nuxthub/core": "^0.8.26",
     "@nuxtjs/color-mode": "3.5.2",
     "@nuxtjs/i18n": "^9.5.4",
+    "@nuxtjs/seo": "3.0.3",
     "@tauri-apps/cli": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-process": "^2.2.1",

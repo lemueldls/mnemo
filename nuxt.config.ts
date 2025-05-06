@@ -18,8 +18,9 @@ export default defineNuxtConfig({
   modules: [
     "@nuxthub/core",
     "@nuxt/eslint",
-    "@nuxtjs/color-mode",
+    "@nuxtjs/seo",
     "@nuxtjs/i18n",
+    "@nuxtjs/color-mode",
     "@vueuse/nuxt",
     "@unocss/nuxt",
     "nuxt-ssr-lit",
@@ -73,10 +74,6 @@ export default defineNuxtConfig({
   },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
-  // routeRules: {
-  //   "/**": { ssr: false },
-  //   "/splashscreen": { ssr: !!platform, static: false },
-  // },
   experimental: {
     typedPages: true,
     viewTransition: true,
