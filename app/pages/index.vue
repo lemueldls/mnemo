@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ title: "Home" });
+
 const name = await useStorageItem("name", "");
 
 const date = ref(new Date());

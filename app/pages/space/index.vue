@@ -16,6 +16,11 @@ watchImmediate(spaceId, async (spaceId) => {
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value!]!);
 
+const route = useRoute();
+watchImmediate(space, (space) => {
+  route.meta.title = space.name;
+});
+
 const { medium } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);

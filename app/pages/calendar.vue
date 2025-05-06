@@ -1,7 +1,5 @@
 <script setup lang="ts">
-// const spaces = useSpaces();
-
-// const events = []
+definePageMeta({ title: "Calendar" });
 </script>
 
 <template>
