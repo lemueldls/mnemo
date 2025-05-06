@@ -64,6 +64,8 @@ watchEffect(() => {
 .m3-nav-drawer {
   @apply z-1 h-full translate-x-0;
 
+  padding-top: env(safe-area-inset-top);
+
   transition-timing-function: map.get(
     tokens.md-sys-motion-values(),
     "easing-emphasized"

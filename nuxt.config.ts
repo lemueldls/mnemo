@@ -5,13 +5,13 @@ const locales = [
   { code: "en", language: "en-US", name: "English", file: "en-US.json" },
 ];
 
-const isDev = process.env.NODE_ENV === "development";
+// const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
 // const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
-const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
+// const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -39,8 +39,18 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: !platform },
   app: {
+    // pageTransition: { name: "conjure" },
     layoutTransition: { name: "conjure" },
-    head: { templateParams: { separator: "•" } },
+    head: {
+      templateParams: { separator: "•" },
+      meta: [
+        {
+          name: "viewport",
+          content:
+            "width=device-width, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover",
+        },
+      ],
+    },
   },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   // devServer: { https: true },
@@ -69,10 +79,9 @@ export default defineNuxtConfig({
   // },
   experimental: {
     typedPages: true,
-    asyncContext: true,
     viewTransition: true,
   },
-  compatibilityDate: "2025-05-30",
+  compatibilityDate: "2025-05-03",
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
@@ -86,22 +95,12 @@ export default defineNuxtConfig({
     // analytics: true,
     // workers: true,
     // remote: true,
-    ai: true,
+    // ai: true,
     // blob: true,
     cache: true,
     database: true,
     kv: true,
     vectorize: {},
-  },
-  vite: {
-    // clearScreen: false,
-    // envPrefix: ["VITE_", "TAURI_"],
-    // build: { target: ["safari15"] },
-    // server: {
-    //   strictPort: true,
-    //   hmr: { protocol: "ws", host: "0.0.0.0", port: 5183 },
-    // },
-    // plugins: [wasm()],
   },
   i18n: {
     lazy: true,

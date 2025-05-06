@@ -10,12 +10,12 @@
 
 <style lang="scss">
 .m3-nav-bar {
-  @apply h-22;
+  height: calc(5.5rem + env(safe-area-inset-bottom));
 
   &__inner {
     @apply bg-m3-surface-container fixed bottom-0 flex w-full gap-2 px-3 pt-3;
 
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 </style>

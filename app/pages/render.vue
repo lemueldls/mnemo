@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "space" });
 
-const spaceId = useRouteQuery("space");
+const spaceId = usePageRouteQuery("space");
 
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);

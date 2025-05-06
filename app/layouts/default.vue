@@ -12,7 +12,6 @@ import type { MaterialSymbol } from "material-symbols";
 //   });
 
 const color = "#16161d";
-const dark = useDark();
 
 const spaces = await useSpaces();
 
@@ -36,8 +35,6 @@ const pages: Page[] = [
 ];
 
 // const { clear, session, user } = useUserSession();
-
-const name = await useStorageItem("name", "");
 </script>
 
 <template>

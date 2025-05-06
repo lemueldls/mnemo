@@ -40,6 +40,8 @@ const modal = computed(() =>
 .m3-side-sheet {
   @apply max-w-100 flex h-full min-w-64 translate-x-0 flex-col p-3;
 
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   transition-duration: 400ms;
   transition-property: transform, translate, width, height;

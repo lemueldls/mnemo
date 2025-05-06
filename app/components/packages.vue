@@ -34,10 +34,6 @@ const filteredPackages = computed(() => {
   );
 });
 
-watchEffect(() => {
-  console.log({ filteredPackages: filteredPackages.value });
-});
-
 const packagesItem = await useStorageItem<Package[]>(
   `spaces/${props.spaceId}/packages.json`,
   [],

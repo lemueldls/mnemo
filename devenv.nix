@@ -1,10 +1,18 @@
-{ pkgs, lib, config, inputs, ... }: {
-  cachix.enable = false;
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
+{
+  # cachix.enable = false;
+  dotenv.enable = true;
 
-  # certificates = [
-  #   "localhost"
-  #   "localhost:3000"
-  # ];
+  # # certificates = [
+  # #   "localhost"
+  # #   "localhost:3000"
+  # # ];
 
   packages = with pkgs; [
     # Native
@@ -48,26 +56,25 @@
     xdg-utils
   ];
 
-  # scripts = {
-  #   setup.exec = ''
-  #     yarn install --frozen-lockfile
-  #     yarn wasm-pack build backend/wasm -t web --release
-  #   '';
+  # # scripts = {
+  # #   setup.exec = ''
+  # #     wasm-pack build backend/wasm -t web --release
+  # #   '';
+  # # };
+
+  # env = {
+  #   # OpenSSL
+  #   OPENSSL_DIR = "${pkgs.openssl.dev}";
+  #   OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+  #   OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include/";
+
+  #   # GIO
+  #   GIO_MODULE_DIR = "${pkgs.glib-networking.out}/lib/gio/modules/";
+  #   GIO_EXTRA_MODULES = "${pkgs.glib-networking.out}/lib/gio/modules/";
+
+  #   WEBKIT_DISABLE_COMPOSITING_MODE = "1";
+  #   WEBKIT_DISABLE_DMABUF_RENDERER = "1";
   # };
-
-  env = {
-    # OpenSSL
-    OPENSSL_DIR = "${pkgs.openssl.dev}";
-    OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
-    OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include/";
-
-    # GIO
-    GIO_MODULE_DIR = "${pkgs.glib-networking.out}/lib/gio/modules/";
-    GIO_EXTRA_MODULES = "${pkgs.glib-networking.out}/lib/gio/modules/";
-
-    WEBKIT_DISABLE_COMPOSITING_MODE = "1";
-    WEBKIT_DISABLE_DMABUF_RENDERER = "1";
-  };
 
   enterShell = ''
     export NDK_HOME=$ANDROID_HOME/ndk-bundle
@@ -80,7 +87,7 @@
     # abis = [ "arm64-v8a" "x86_64" ];
     # cmdLineTools.version = "8.0";
     # tools.version = "26.1.1";
-    # platformTools.version = "34.0.4";
+    # platformTools.version = "35.0.4";
     buildTools.version = [ "34.0.0" ];
     emulator.enable = false;
     sources.enable = false;
@@ -102,34 +109,31 @@
     ];
   };
 
-  languages = {
-    javascript = {
-      enable = true;
-      corepack.enable = true;
-      # yarn = {
-      #   enable = true;
-      #   package = pkgs.yarn-berry;
-      # };
-    };
-    typescript = {
-      enable = true;
-    };
+  # languages = {
+  #   javascript = {
+  #     enable = true;
+  #     corepack.enable = true;
+  #     # pnpm.enable = true;
+  #   };
+  #   typescript = {
+  #     enable = true;
+  #   };
 
-    rust = {
-      enable = true;
-      channel = "stable";
-      targets = [
-        # Wasm
-        "wasm32-unknown-unknown"
+  #   rust = {
+  #     enable = true;
+  #     channel = "stable";
+  #     targets = [
+  #       # Wasm
+  #       "wasm32-unknown-unknown"
 
-        # Android
-        "aarch64-linux-android"
-        "armv7-linux-androideabi"
-        "i686-linux-android"
-        "x86_64-linux-android"
-      ];
-    };
-  };
+  #       # Android
+  #       "aarch64-linux-android"
+  #       "armv7-linux-androideabi"
+  #       "i686-linux-android"
+  #       "x86_64-linux-android"
+  #     ];
+  #   };
+  # };
 
   pre-commit.hooks = {
     actionlint.enable = true;

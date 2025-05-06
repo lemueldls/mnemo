@@ -3,21 +3,10 @@ import { VuePDF, usePDF } from "@tato30/vue-pdf";
 
 import { UseVirtualList } from "@vueuse/components";
 
-// const url = defineModel<string>();
-
-//const { pdf, pages, info } = usePDF("pldi16.pdf");
 const { pdf, pages, info } = usePDF("article2.pdf");
-// const list = computed(() =>
-//   pages.value ? Array.from({ length: pages.value }, (_, i) => i + 1) : [1],
-// );
 const list = computed(() =>
   pages.value ? Array.from({ length: pages.value }, (_, i) => i + 1) : [1],
 );
-// const list = [0];
-
-// watchEffect(() => {
-//   console.log({ pages: pages.value, info: info.value });
-// });
 
 const containerRef = useTemplateRef("container");
 

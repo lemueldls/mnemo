@@ -27,8 +27,6 @@
 
   void loadUrlMainThread(...);
   void loadHTMLMainThread(...);
-  void setAutoPlay(...);
-  void setUserAgent(...);
   void evalScript(...);
 }
 

@@ -5,7 +5,7 @@
   "identifier": "dev.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "pnpm build",
-    "beforeDevCommand": "pnpm dev",
+    "beforeDevCommand": "pnpm dev --host",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../dist"
   },
@@ -40,8 +40,10 @@
     },
     "updater": {
       "createUpdaterArtifacts": true,
-      "endpoints": [],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0REVCRDBBNzBDODcyOUIKUldTYmNzaHdDcjNlRkdSOEF1NFRxeWM3bXdXWVBrV3BRd1RIZWtpRmpFZlE4VTg5ZlFlbGdTcHEK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0REVCRDBBNzBDODcyOUIKUldTYmNzaHdDcjNlRkdSOEF1NFRxeWM3bXdXWVBrV3BRd1RIZWtpRmpFZlE4VTg5ZlFlbGdTcHEK",
+      "endpoints": [
+        "https://github.com/lemueldls/mnemo/releases/latest/download/latest.json"
+      ]
     }
   }
 }

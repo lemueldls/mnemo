@@ -8,13 +8,8 @@ definePageMeta({ layout: "space" });
 
 const { d } = useI18n();
 
-// const { query } = useRoute();
-// const spaceId = [query.id].flat()[0]!.toString();
-
-const spaceId = useRouteQuery<string>("id");
-// const noteId = useRouteQuery("note");
-
-watchImmediate(spaceId, (spaceId) => {
+const spaceId = usePageRouteQuery<string>("id");
+watchImmediate(spaceId, async (spaceId) => {
   if (!spaceId) throw createError({ status: 404 });
 });
 
@@ -118,11 +113,6 @@ const { data: notes } = await useAsyncData(
 
 const currentNoteIndex = ref(0);
 const currentNote = computed(() => notes.value[currentNoteIndex.value]);
-
-// const noteId = useRouteQuery("note");
-// watchImmediate(currentNote, (note) => {
-//   noteId.value = note.id.toLowerCase();
-// });
 
 const nextDayIndex = computed(() => {
   const index = notes.value.findIndex(
@@ -280,7 +270,7 @@ async function createStickyNote() {
                       <md-icon>package_2</md-icon>
                     </div>
                   </div>
-                  <div
+                  <!-- <div
                     class="sidebar-button"
                     title="Screenshot"
                     @click="screenshot"
@@ -289,12 +279,20 @@ async function createStickyNote() {
                       <md-ripple />
                       <md-icon>camera</md-icon>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
 
               <m3-elevated-card id="editor">
                 <div id="editor-title" class="items-center gap-2">
+                  <div class="h-1px bg-m3-outline-variant w-2" />
+
+                  <span class="m3-label-large">
+                    {{ currentNote?.date }}
+                  </span>
+
+                  <div class="h-1px bg-m3-outline-variant flex-1" />
+
                   <md-icon-button
                     :disabled="previousDayIndex === -1"
                     @click="currentNoteIndex = previousDayIndex"
@@ -307,14 +305,6 @@ async function createStickyNote() {
                   >
                     <md-icon>keyboard_arrow_down</md-icon>
                   </md-icon-button>
-
-                  <div class="h-1px bg-m3-outline-variant flex-1" />
-
-                  <span class="m3-label-large">
-                    {{ currentNote?.date }}
-                  </span>
-
-                  <div class="h-1px bg-m3-outline-variant w-2" />
                 </div>
 
                 <editor

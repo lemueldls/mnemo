@@ -37,13 +37,8 @@ import {
   autocompletion,
   closeBracketsKeymap,
   completionKeymap,
-  type Completion,
-  type CompletionContext,
-  type CompletionResult,
 } from "@codemirror/autocomplete";
 import { lintKeymap } from "@codemirror/lint";
-
-// import { redFromArgb } from "@material/material-color-utifies";
 
 import { Rgb } from "mnemo-wasm";
 
@@ -56,30 +51,20 @@ import type { Rgba } from "@material/material-color-utilities";
 
 import type { EditorStateConfig } from "@codemirror/state";
 import { ThemeColors, type TypstState, type FileId } from "mnemo-wasm";
-import type { Package } from "~~/server/api/list-packages";
 
 const props = defineProps<{
   kind: NoteKind;
   spaceId: string;
   readonly?: boolean;
 }>();
-// const path = useVModel(props, "modelValue", emit);
+
 const path = defineModel<string>({ required: true });
 
-// const pixelPerPoint = ref(1);
 const pixelPerPoint = ref(window.devicePixelRatio);
 // const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const theme = useMaterialTheme();
 const palette = computed(() => theme.value.palette);
-
-watchEffect(() => {
-  console.log({ theme: theme.value });
-});
-
-watchEffect(() => {
-  console.log({ palette: palette.value });
-});
 
 function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
@@ -106,26 +91,10 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
 
 const containerRef = useTemplateRef("container");
 
-// const updateListenerExtension = EditorView.updateListener.of(async (update) => {
-//   // if (update.docChanged) await sync();
-// });
-
 const stateCache: { [key: string]: unknown } = {};
-
-// const syncing = ref(false);
-
-// const fullPath = computed(
-//   () => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`,
-// );
-// const storageItem = await useRefStorageItem(fullPath, "");
 
 const storageItem = ref() as Ref<Ref<string>>;
 storageItem.value = ref("");
-
-// watch(fullPath, (fullPath) => console.log({ fullPath }));
-// watch(storageItem, (storageItem) => console.log({ storageItem }));
-
-// const storageItem = ref("");
 
 const preludeItem = await useRefStorageItem(
   computed(() => `spaces/${props.spaceId}/prelude/main.typ`),
@@ -134,14 +103,6 @@ const preludeItem = await useRefStorageItem(
 const prelude = computed(() =>
   props.kind === "prelude" ? "" : preludeItem.value,
 );
-
-// watchEffect(() => {
-//   console.log({
-//     preludeItem: preludeItem.value,
-//     prelude: prelude.value,
-//     kind: props.kind,
-//   });
-// });
 
 onMounted(() => {
   const container = containerRef.value;

@@ -6,7 +6,7 @@ import type { Package } from "~~/server/api/list-packages";
 
 import type { Note } from "~/composables/spaces";
 
-const spaceId = useRouteQuery<string>("space");
+const spaceId = usePageRouteQuery<string>("space");
 
 // const spaces = await useSpaces();
 // const space = computed(() => spaces.value[spaceId.value]!);

@@ -7,46 +7,45 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 open class BuildTask : DefaultTask() {
-    @Input
-    var rootDirRel: String? = null
-    @Input
-    var target: String? = null
-    @Input
-    var release: Boolean? = null
+  @Input var rootDirRel: String? = null
+  @Input var target: String? = null
+  @Input var release: Boolean? = null
 
-    @TaskAction
-    fun assemble() {
-        val executable = """yarn""";
-        try {
-            runTauriCli(executable)
-        } catch (e: Exception) {
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                runTauriCli("$executable.cmd")
-            } else {
-                throw e;
-            }
-        }
+  @TaskAction
+  fun assemble() {
+    val executable = """pnpm"""
+    try {
+      runTauriCli(executable)
+    } catch (e: Exception) {
+      if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        runTauriCli("$executable.cmd")
+      } else {
+        throw e
+      }
     }
+  }
 
-    fun runTauriCli(executable: String) {
-        val rootDirRel = rootDirRel ?: throw GradleException("rootDirRel cannot be null")
-        val target = target ?: throw GradleException("target cannot be null")
-        val release = release ?: throw GradleException("release cannot be null")
-        val args = listOf("tauri", "android", "android-studio-script");
+  fun runTauriCli(executable: String) {
+    val rootDirRel = rootDirRel ?: throw GradleException("rootDirRel cannot be null")
+    val target = target ?: throw GradleException("target cannot be null")
+    val release = release ?: throw GradleException("release cannot be null")
+    val args = listOf("tauri", "android", "android-studio-script")
 
-        project.exec {
-            workingDir(File(project.projectDir, rootDirRel))
-            executable(executable)
-            args(args)
-            if (project.logger.isEnabled(LogLevel.DEBUG)) {
+    project
+            .exec {
+              workingDir(File(project.projectDir, rootDirRel))
+              executable(executable)
+              args(args)
+              if (project.logger.isEnabled(LogLevel.DEBUG)) {
                 args("-vv")
-            } else if (project.logger.isEnabled(LogLevel.INFO)) {
+              } else if (project.logger.isEnabled(LogLevel.INFO)) {
                 args("-v")
-            }
-            if (release) {
+              }
+              if (release) {
                 args("--release")
+              }
+              args(listOf("--target", target))
             }
-            args(listOf("--target", target))
-        }.assertNormalExitValue()
-    }
+            .assertNormalExitValue()
+  }
 }

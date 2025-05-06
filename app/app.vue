@@ -20,27 +20,6 @@ if (platform)
     });
   });
 
-// onMounted(async () => {
-//   const entries = Object.entries(localStorage)
-//     .filter(([key]) => key.startsWith("app:user"))
-//     .map(([key, value]) => [key.split(":")[2], value]);
-
-//   // console.log({ entries });
-//   for await (const [key, value] of entries) {
-//     if (!key.includes("undefined")) {
-//       const item = await useStorageItem(key, "");
-//       try {
-//         item.value = JSON.parse(value);
-//         // console.log(JSON.parse(value))
-//       } catch {
-//         item.value = value;
-//         // console.log({ key, value });
-//       }
-//     }
-//     // console.log({ key, value });
-//   }
-// });
-
 const { t } = useI18n();
 
 const route = useRoute();
@@ -49,12 +28,6 @@ const head = useLocaleHead({
   identifierAttribute: "id",
   addSeoAttributes: true,
 });
-
-// const router = useRouter();
-// const { ready, loggedIn } = useUserSession();
-// whenever(logicAnd(ready, logicNot(loggedIn)), () => router.push("/login"), {
-//   immediate: true,
-// });
 
 watchEffect(() => {
   const routeTitle = route.meta.title as string | undefined;

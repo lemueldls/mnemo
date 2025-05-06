@@ -156,7 +156,7 @@ function timeToMinutes(time: string) {
 <template>
   <div class="m3-calendar">
     <div class="m3-calendar__head">
-      <span class="w-16" />
+      <span class="w-12" />
 
       <div v-for="day in days" :key="day" class="m3-calendar__cell">
         {{ day }}
@@ -164,7 +164,7 @@ function timeToMinutes(time: string) {
     </div>
 
     <div ref="container" class="m3-calendar__body">
-      <div class="w-16">
+      <div class="w-12">
         <span
           v-for="hour in 24"
           :key="hour"

@@ -1,5 +1,4 @@
 mod dir;
-mod handlers;
 
 use tauri::Manager;
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -10,13 +9,14 @@ pub fn run() {
 
     #[cfg(desktop)]
     {
-        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app
-                .get_webview_window("main")
-                .expect("no main window")
-                .set_focus();
-        }))
-        // .plugin(tauri_plugin_updater::Builder::new().build())
+        builder = builder
+            .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+                let _ = app
+                    .get_webview_window("main")
+                    .expect("no main window")
+                    .set_focus();
+            }))
+            .plugin(tauri_plugin_updater::Builder::new().build())
     }
 
     // #[cfg(any(debug_assertions, feature = "devtools"))]
@@ -27,7 +27,7 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
-            // #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;

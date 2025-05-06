@@ -14,31 +14,8 @@ const headerRef = useTemplateRef("header");
 
 const isDragging = ref(false);
 
-// const notes = await useStorageItem<{ [id: string]: StickyNote }>(
-//   `spaces/${spaceId.value}/sticky/notes.json`,
-//   {},
-// );
-
-// watchEffect(() => {
-//   console.log({
-//     props,
-//     spaceId: spaceId.value,
-//     noteId: noteId.value,
-//     notes: notes.value,
-//   });
-// });
-
-// const note = reactive(notes.value[noteId.value]);
-// // console.log({ note });
-// watch(note, (note) => {
-//   notes.value[noteId.value] = note;
-// });
-
 onMounted(() => {
   const root = rootRef.value!;
-
-  // x = 0;
-  // y = 0;
 
   root.style.transform = `translate(${note.x}px, ${note.y}px)`;
   root.style.width = note.width + "px";

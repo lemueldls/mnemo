@@ -90,7 +90,7 @@ function previousDay() {
     </div>
 
     <div ref="container" class="flex flex-1 gap-4 overflow-auto">
-      <div class="w-16">
+      <div class="w-12">
         <span
           v-for="hour in 24"
           :key="hour"

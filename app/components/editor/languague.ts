@@ -42,9 +42,7 @@ async function autocomplete(
   context: CompletionContext,
 ): Promise<CompletionResult> {
   const { pos, explicit } = context;
-  console.log({ pos, explicit });
   const { offset, completions } = typstState.autocomplete(pos, explicit);
-  console.log({ offset, completions });
 
   return {
     from: offset,
@@ -55,7 +53,6 @@ async function autocomplete(
         type: completion.type,
         label: completion.label,
         apply(view, _completion, from, to) {
-          console.log({ completion });
           if (!apply) return;
 
           const matches = apply.matchAll(/\${(.*)}/gm);

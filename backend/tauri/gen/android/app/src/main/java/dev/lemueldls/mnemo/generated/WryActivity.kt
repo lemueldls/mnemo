@@ -40,7 +40,7 @@ abstract class WryActivity : AppCompatActivity() {
             try {
                 @Suppress("DEPRECATION")
                 val info = packageManager.getPackageInfo(webViewPackage, 0)
-                return info.versionName
+                return info.versionName.toString()
             } catch (ex: Exception) {
                 Logger.warn("Unable to get package info for '$webViewPackage'$ex")
             }
@@ -48,7 +48,7 @@ abstract class WryActivity : AppCompatActivity() {
             try {
                 @Suppress("DEPRECATION")
                 val info = packageManager.getPackageInfo("com.android.webview", 0)
-                return info.versionName
+                return info.versionName.toString()
             } catch (ex: Exception) {
                 Logger.warn("Unable to get package info for 'com.android.webview'$ex")
             }
@@ -95,6 +95,7 @@ abstract class WryActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         destroy()
+        onActivityDestroy()
     }
 
     override fun onLowMemory() {
@@ -127,6 +128,7 @@ abstract class WryActivity : AppCompatActivity() {
     private external fun stop()
     private external fun save()
     private external fun destroy()
+    private external fun onActivityDestroy()
     private external fun memory()
     private external fun focus(focus: Boolean)
 
