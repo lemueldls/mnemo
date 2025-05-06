@@ -89,7 +89,7 @@ export default defineNuxtConfig({
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
-    // experimental: { openAPI: true, websocket: true },
+    experimental: { openAPI: true, websocket: true },
   },
   hub: {
     // analytics: true,
