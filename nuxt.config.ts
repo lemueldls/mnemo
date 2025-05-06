@@ -93,7 +93,7 @@ export default defineNuxtConfig({
   },
   hub: {
     // analytics: true,
-    workers: false,
+    // workers: false,
     // remote: true,
     // ai: true,
     // blob: true,

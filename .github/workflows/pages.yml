@@ -1,9 +1,9 @@
-name: Deploy to NuxtHub
+name: Deploy to NuxtHub (Pages)
 on: push
 
 jobs:
   deploy:
-    name: "Deploy to NuxtHub"
+    name: "Deploy to NuxtHub (Pages)"
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
