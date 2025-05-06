@@ -93,14 +93,12 @@ export default defineNuxtConfig({
   },
   hub: {
     // analytics: true,
-    // workers: false,
     // remote: true,
     // ai: true,
     // blob: true,
     cache: true,
     database: true,
     kv: true,
-    vectorize: {},
   },
   i18n: {
     lazy: true,
