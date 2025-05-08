@@ -1,0 +1,6 @@
+{
+  "site": {
+    "name": "mnemo",
+    "description": "Local-first note-taking web/mobile/desktop app using the Typst ecosystem."
+  }
+}
