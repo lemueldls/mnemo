@@ -90,13 +90,13 @@ const installedPackage = computed(() =>
       >
         Uninstall
       </md-outlined-button>
-      <md-outlined-button
+      <md-filled-tonal-button
         v-else
         class="flex-[3]"
         @click.prevent="emit('install', pkg)"
       >
         Install
-      </md-outlined-button>
+      </md-filled-tonal-button>
     </div>
   </m3-elevated-card>
 </template>

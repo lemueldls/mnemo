@@ -8,17 +8,6 @@ import type { MaterialSymbol } from "material-symbols";
 
 defineProps<{ direction: "horizontal" | "vertical" }>();
 
-const router = useRouter();
-
-const route = useRoute();
-const hash = computed(() => route.hash?.slice(1));
-
-const sheet = ref(false);
-// const sheet = useCookie<boolean | undefined>("side-bar-sheet");
-// const activeItemIndex = useCookie("side-bar-active-item-index", {
-//   default: () => 0,
-// });
-
 interface Item {
   name: string;
   icon?: MaterialSymbol;
@@ -34,6 +23,12 @@ const items: { [key: string]: Item } = {
   sync: { name: "Sync", icon: "sync", component: Sync },
 };
 
+const router = useRouter();
+const route = useRoute();
+
+const hash = computed(() => route.hash?.slice(1));
+const sheet = ref(!!items[hash.value]);
+
 watchImmediate(hash, (hash) => {
   if (!hash) sheet.value = false;
 
@@ -44,14 +39,12 @@ watchImmediate(hash, (hash) => {
 function handleClick(id: string | number) {
   if (sheet.value && id === hash.value) sheet.value = false;
   else {
-    router.push({ hash: "#" + id, query: route.query });
+    router.push({ ...route, hash: "#" + id });
     sheet.value = true;
   }
 }
 
-whenever(logicNot(sheet), () =>
-  router.replace({ hash: "", query: route.query }),
-);
+whenever(logicNot(sheet), () => router.replace({ ...route, hash: "" }));
 
 function preloadItem(item: Item) {
   preloadComponents(item.name);

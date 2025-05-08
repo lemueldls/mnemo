@@ -53,9 +53,9 @@ const pages: Page[] = [
             <h2 class="text-m3-primary m3-title-medium">mnemo</h2>
           </div> -->
 
-          <md-icon-button>
+          <!-- <md-icon-button>
             <md-icon>sync</md-icon>
-          </md-icon-button>
+          </md-icon-button> -->
         </div>
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">

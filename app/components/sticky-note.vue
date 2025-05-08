@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import interact from "interactjs";
+import type { StickyNote } from "~/composables/sticky";
 
 const model = defineModel<StickyNote>();
-const note = toReactive(model);
+const note = toReactive(model) as StickyNote;
 
 defineProps<{ spaceId: string }>();
 // const { spaceId, noteId } = toRefs(props);
@@ -31,11 +32,11 @@ onMounted(() => {
           restriction: "parent",
           endOnly: true,
         }),
-        interact.modifiers.snap({
-          targets: [interact.snappers.grid({ x: 8, y: 8 })],
-          range: Infinity,
-          relativePoints: [{ x: 0, y: 0 }],
-        }),
+        // interact.modifiers.snap({
+        //   targets: [interact.snappers.grid({ x: 8, y: 8 })],
+        //   range: Infinity,
+        //   relativePoints: [{ x: 0, y: 0 }],
+        // }),
       ],
       listeners: {
         move(event) {
@@ -62,6 +63,7 @@ onMounted(() => {
     })
     .resizable({
       inertia: true,
+      // margin: 32,
       edges: { left: true, right: true, bottom: true, top: true },
       modifiers: [
         interact.modifiers.restrictEdges({
@@ -142,8 +144,8 @@ const selectionBackground = computed(() => {
 
         <editor
           v-model="note.id"
-          kind="sticky"
           :space-id="spaceId"
+          kind="sticky"
           class="h-full flex-1"
         />
       </div>

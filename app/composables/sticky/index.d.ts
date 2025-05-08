@@ -1,6 +1,6 @@
 export interface StickyNote {
   id: string;
-  name: string;
+  title: string;
   x: number;
   y: number;
   width: number;
