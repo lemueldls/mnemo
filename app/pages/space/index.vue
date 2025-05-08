@@ -163,7 +163,7 @@ async function createStickyNote() {
     title: datetime,
     x: 128,
     y: 128,
-    width: 512,
+    width: 384,
     height: 256,
   };
 
@@ -237,7 +237,10 @@ async function createStickyNote() {
           >
             <div class="max-w-180 relative h-full w-full flex-1">
               <div class="absolute left--6 h-full pb-8 pt-16">
-                <div class="flex h-full flex-col gap-4 overflow-auto">
+                <div
+                  id="sidebar"
+                  class="flex h-full flex-col gap-4 overflow-auto"
+                >
                   <div class="sidebar-button" title="Prelude">
                     <div
                       class="sidebar-button__inner"
@@ -277,7 +280,7 @@ async function createStickyNote() {
                       <md-icon>package_2</md-icon>
                     </div>
                   </div>
-                  <!-- <div
+                  <div
                     class="sidebar-button"
                     title="Screenshot"
                     @click="screenshot"
@@ -286,7 +289,7 @@ async function createStickyNote() {
                       <md-ripple />
                       <md-icon>camera</md-icon>
                     </div>
-                  </div> -->
+                  </div>
                 </div>
               </div>
 
