@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import "@material/web/all";
 import "material-symbols";
+
+import "@material/web/all";
+// import "@material/web/labs/card/outlined-card";
+import "@material/web/labs/card/elevated-card";
 
 const runtimeConfig = useRuntimeConfig();
 const { platform } = runtimeConfig.public;
@@ -20,27 +23,59 @@ if (platform)
     });
   });
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const route = useRoute();
 const head = useLocaleHead({
-  addDirAttribute: true,
-  identifierAttribute: "id",
-  addSeoAttributes: true,
+  dir: true,
+  lang: true,
+  key: "id",
+  seo: true,
 });
 
+declare module "vue-router" {
+  interface RouteMeta {
+    title?: string;
+    description?: string;
+    label?: string;
+    icon?: string;
+  }
+}
+
 watchEffect(() => {
-  const routeTitle = route.meta.title as string | undefined;
-  const title = routeTitle ? t(routeTitle) : "";
+  const name = t("site.name");
+
+  const routeTitle = route.meta.title;
+  const title = routeTitle && te(routeTitle) ? t(routeTitle) : "";
+
+  const routeDescription = route.meta.description;
+  const description =
+    routeDescription && te(routeDescription)
+      ? t(routeDescription)
+      : t("site.description");
 
   const localeHead = head.value;
 
   useHead({
     title,
     htmlAttrs: localeHead.htmlAttrs,
+    // base: { href: siteUrl },
     link: localeHead.link,
     meta: localeHead.meta,
   });
+
+  useSeoMeta({
+    title,
+    ogTitle: title,
+    description,
+    ogDescription: description,
+  });
+
+  useSchemaOrg([
+    defineWebSite({ name, description }),
+    defineWebPage({ name, description }),
+    defineSoftwareApp({ name, description }),
+  ]);
 });
 
 const x = ref(0);
