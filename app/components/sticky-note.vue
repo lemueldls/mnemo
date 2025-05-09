@@ -6,8 +6,6 @@ const model = defineModel<StickyNote>();
 const note = toReactive(model) as StickyNote;
 
 defineProps<{ spaceId: string }>();
-// const { spaceId, noteId } = toRefs(props);
-
 defineEmits<{ (event: "close"): void }>();
 
 const rootRef = useTemplateRef("root");
@@ -63,7 +61,7 @@ onMounted(() => {
     })
     .resizable({
       inertia: true,
-      // margin: 32,
+      // margin: 16,
       edges: { left: true, right: true, bottom: true, top: true },
       modifiers: [
         interact.modifiers.restrictEdges({
@@ -95,21 +93,6 @@ onMounted(() => {
       },
     });
 });
-
-// watchEffect(async () => {
-//   await updateStickyNote(
-//     spaceId.value,
-//     props.note.id,
-//     x,
-//     y,
-//     width,
-//     height,
-//   );
-// });
-
-// watchEffect(async () => {
-//   await renameStickyNote(spaceId.value, props.note.id, title.value);
-// });
 
 const theme = useMaterialTheme();
 const selectionBackground = computed(() => {

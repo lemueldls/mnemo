@@ -2,6 +2,7 @@
 // import Chat from "./chat.vue";
 import Today from "./today.vue";
 import Tasks from "./tasks.vue";
+import Study from "./study.vue";
 import Sync from "./sync.vue";
 
 import type { MaterialSymbol } from "material-symbols";
@@ -18,7 +19,7 @@ const items: { [key: string]: Item } = {
   // chat: { name: "Chat", icon: "chat", component: Chat },
   today: { name: "Today", icon: "calendar_today", component: Today },
   tasks: { name: "Tasks", icon: "pinboard", component: Tasks },
-  study: { name: "Study", icon: "school" },
+  study: { name: "Study", icon: "school", component: Study },
   // quiz: { name: "Quiz", icon: "quiz" },
   sync: { name: "Sync", icon: "sync", component: Sync },
 };
@@ -91,6 +92,6 @@ function preloadItem(item: Item) {
       </md-icon-button>
     </div>
 
-    <Primitive v-if="items[hash]" :id="hash" :as="items[hash]!.component" />
+    <Primitive v-if="items[hash]" :as="items[hash]!.component" />
   </m3-side-sheet>
 </template>
