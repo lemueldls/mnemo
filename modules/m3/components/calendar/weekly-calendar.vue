@@ -226,7 +226,7 @@ function timeToMinutes(time: string) {
         </m3-theme>
       </div>
 
-      <span ref="caret" class="border-(b m3-outline) absolute w-full" />
+      <span ref="caret" class="border-(b m3-error) absolute w-full" />
     </div>
   </div>
 
@@ -385,33 +385,27 @@ function timeToMinutes(time: string) {
 
 <style lang="scss">
 .m3-calendar {
-  @apply border-m3-outline-variant flex h-full flex-col rounded-tr-xl border-r;
+  @apply border-m3-outline-variant flex h-full flex-col rounded-xl border;
 
   &__head {
-    @apply flex justify-between;
+    @apply border-m3-outline-variant flex justify-between overflow-y-hidden border-b;
+
+    scrollbar-gutter: stable;
   }
 
   &__body {
-    @apply relative flex h-full overflow-y-auto;
+    @apply relative flex h-full overflow-y-scroll;
+
+    scrollbar-gutter: stable;
   }
 
   &__cell {
     @apply border-m3-outline-variant border-(b l) flex h-12 flex-1 items-center justify-center;
   }
 
-  // &__body &__cell {
-  //   @apply b-b-dashed;
-  // }
-
-  &__head &__cell {
-    @apply border-t;
-
-    &:first-of-type {
-      @apply rounded-tl-xl border-l;
-    }
-
+  &__body &__cell {
     &:last-of-type {
-      @apply rounded-tr-xl;
+      @apply border-b-none;
     }
   }
 
