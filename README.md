@@ -30,3 +30,7 @@
   - Fix prelude and sticky-notes editor caret display and scrolling lag.
   - Rendering of numbered lists. (should be fixed after the renderer rewrite)
   - Handle diagnostic spans of files outside of main.
+
+## License
+
+[AGPL-3.0](https://choosealicense.com/licenses/agpl-3.0/)
