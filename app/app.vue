@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import "material-symbols";
-
 import "@material/web/all";
 // import "@material/web/labs/card/outlined-card";
 import "@material/web/labs/card/elevated-card";

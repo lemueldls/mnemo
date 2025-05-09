@@ -17,9 +17,11 @@ function login() {
 </script>
 
 <template>
-  <m3-outlined-card>
-    <!-- <h1 class="m3-title-large">Login</h1> -->
+  <h3 class="m3-display-small">Sync</h3>
 
-    <!-- <md-filled-button @click="login"> Continue with GitHub </md-filled-button> -->
-  </m3-outlined-card>
+  <div class="text-m3-error p-4">TODO</div>
+
+  <md-filled-button disabled @click="login">
+    Continue with GitHub
+  </md-filled-button>
 </template>

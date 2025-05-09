@@ -12,7 +12,7 @@ defineProps<{ active?: boolean }>();
 
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   transition-duration: 400ms;
-  transition-property: background-color;
+  transition-property: opacity;
 
   &--active {
     @apply pointer-events-unset opacity-50;

@@ -11,7 +11,7 @@ import type { MaterialSymbol } from "material-symbols";
 //     await checkForAppUpdates();
 //   });
 
-const color = "#16161d";
+const route = useRoute();
 
 const spaces = await useSpaces();
 
@@ -38,16 +38,11 @@ const pages: Page[] = [
 </script>
 
 <template>
-  <m3-theme :color="color" class="absolute inset-0 h-full">
+  <m3-theme color="#16161d" class="absolute inset-0 h-full">
     <m3-page>
       <m3-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
-          <div class="flex flex-col">
-            <!-- <span class="m3-title-large">{{ user.email }}</span>
-            <span class="m3-label-large">@{{ user.id }}</span> -->
-            <!-- <span class="m3-title-medium">lemueldls@pm.me</span>
-            <span class="m3-label-medium">@c0pw798239gft7cktutyt</span> -->
-          </div>
+          <div class="flex flex-col"></div>
 
           <!-- <div>
             <h2 class="text-m3-primary m3-title-medium">mnemo</h2>
@@ -60,10 +55,10 @@ const pages: Page[] = [
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">
           <m3-nav-drawer-item
-            :active="$route.path === page.path"
+            :active="route.path === page.path"
             :style="{
               fontVariationSettings: `'FILL' ${
-                page.path === $route.path ? 1 : 0
+                page.path === route.path ? 1 : 0
               }`,
             }"
           >
@@ -97,7 +92,7 @@ const pages: Page[] = [
           <m3-theme :color="space.color" harmonize>
             <m3-nav-drawer-item>
               <template #leading>
-                <m3-icon rounded :name="space.icon" class="text-m3-primary" />
+                <m3-icon :name="space.icon" class="text-m3-primary" />
               </template>
 
               {{ space.name }}

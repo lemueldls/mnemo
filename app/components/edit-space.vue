@@ -129,7 +129,7 @@ const groupedSymbols: string[][] = computed(() => {
       <div class="flex items-end justify-between">
         <m3-nav-drawer-item class="w-84">
           <template #leading>
-            <m3-icon rounded :name="space.icon" class="text-m3-primary" />
+            <m3-icon :name="space.icon" class="text-m3-primary" />
           </template>
 
           {{ space.name }}

@@ -3,10 +3,8 @@ definePageMeta({ title: "Home" });
 
 const name = await useStorageItem("name", "");
 
+const { d } = useI18n();
 const date = ref(new Date());
-// const { d, locale } = useI18n();
-
-// const { $api } = useNuxtApp();
 
 const newSpaceOpen = useNewSpaceOpen();
 
@@ -42,7 +40,7 @@ const timeOfDay = computed(() => {
           </h1>
 
           <span class="text-m3-on-surface-variant m3-title-large">
-            Today is {{ $d(date, { dateStyle: "full" }) }}
+            Today is {{ d(date, { dateStyle: "full" }) }}
           </span>
         </div>
 
@@ -58,11 +56,7 @@ const timeOfDay = computed(() => {
                   <md-ripple />
 
                   <div class="flex items-center gap-2">
-                    <m3-icon
-                      rounded
-                      :name="space.icon"
-                      class="text-m3-primary"
-                    />
+                    <m3-icon :name="space.icon" class="text-m3-primary" />
                   </div>
 
                   <h3 class="m3-title-large">
@@ -80,7 +74,7 @@ const timeOfDay = computed(() => {
               <md-ripple />
 
               <div class="flex items-center gap-2">
-                <m3-icon rounded name="add" class="text-m3-primary" />
+                <m3-icon name="add" class="text-m3-primary" />
               </div>
 
               <h3 class="m3-title-large">Create a New Space</h3>

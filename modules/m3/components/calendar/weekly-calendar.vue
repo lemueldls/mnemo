@@ -226,7 +226,10 @@ function timeToMinutes(time: string) {
         </m3-theme>
       </div>
 
-      <span ref="caret" class="border-(b m3-error) absolute w-full" />
+      <span
+        ref="caret"
+        class="border-(b m3-error) absolute w-full select-none"
+      />
     </div>
   </div>
 

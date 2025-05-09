@@ -54,15 +54,12 @@ async function screenshot() {
 
   screenshotOpen.value = true;
 
-  const canvas = await html2canvas(
-    document.querySelector("#editor-container")!,
-    {
-      backgroundColor: null,
-      ignoreElements: (el) => el.id === "sidebar",
-      // scale: window.devicePixelRatio * 1,
-      // imageTimeout:
-    },
-  );
+  const canvas = await html2canvas(document.querySelector("#editor")!, {
+    backgroundColor: null,
+    ignoreElements: (el) => el.id === "sidebar",
+    // scale: window.devicePixelRatio * 1,
+    // imageTimeout:
+  });
 
   canvas.toBlob((blob) => {
     screenshotBlob.value = blob!;
@@ -201,8 +198,8 @@ async function createStickyNote() {
     />
 
     <m3-page>
-      <div class="flex h-full flex-1">
-        <div class="flex h-full flex-1 flex-col">
+      <div class="flex flex-1">
+        <div class="flex flex-1 flex-col">
           <m3-top-app-bar>
             <template #leading>
               <nuxt-link-locale to="/">
@@ -232,8 +229,7 @@ async function createStickyNote() {
           </m3-top-app-bar>
 
           <div
-            id="editor-container"
-            class="medium:pr-0 medium:pb-3 medium:pl-6 flex h-full w-full items-center justify-center gap-6 self-center overflow-hidden pb-6 pl-3 pr-3"
+            class="medium:pr-0 medium:pl-6 medium:pb-3 flex h-full w-full items-center justify-center gap-6 self-center overflow-hidden pb-6 pl-3 pr-3"
           >
             <div class="max-w-180 relative h-full w-full flex-1">
               <div class="absolute left--6 h-full pb-8 pt-16">
@@ -250,7 +246,7 @@ async function createStickyNote() {
                       <md-icon>code</md-icon>
                     </div>
                   </div>
-                  <div
+                  <!-- <div
                     class="sidebar-button"
                     title="Timer"
                     @click="focusOpen = true"
@@ -259,7 +255,7 @@ async function createStickyNote() {
                       <md-ripple />
                       <md-icon>av_timer</md-icon>
                     </div>
-                  </div>
+                  </div> -->
                   <div
                     class="sidebar-button"
                     title="Sticky Notes"
@@ -366,12 +362,12 @@ async function createStickyNote() {
           Prelude
         </span>
 
-        <div slot="content">
+        <div slot="content" class="h-64 w-full max-w-2xl">
           <editor
             v-model="preludePath"
-            kind="prelude"
             :space-id="spaceId"
-            class="h-64 w-96 flex-1"
+            kind="prelude"
+            class="h-full flex-1"
           />
         </div>
       </md-dialog>

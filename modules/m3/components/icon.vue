@@ -3,34 +3,43 @@ import type { MaterialSymbol } from "material-symbols";
 
 export interface IconProperties {
   name: MaterialSymbol;
-  outlined?: boolean;
-  rounded?: boolean;
-  sharp?: boolean;
+  // outlined?: boolean;
+  // rounded?: boolean;
+  // sharp?: boolean;
+  // variant?: "outlined" | "rounded" | "sharp";
   fill?: boolean;
   weight?: number;
   grade?: number;
   opticalSize?: number;
 }
 
-const props = defineProps<IconProperties>();
+const props = withDefaults(defineProps<IconProperties>(), {
+  variant: "rounded",
+  weight: 400,
+  grade: 0,
+  opticalSize: 48,
+});
 
-const style = computed(() =>
-  props.rounded ? "rounded" : props.sharp ? "sharp" : "outlined",
-);
+// const variant = computed(
+//   () =>
+//     props.variant ||
+//     (props.rounded ? "rounded" : props.sharp ? "sharp" : "outlined"),
+// );
+const variant = "rounded";
+
 const fill = computed(() => (props.fill ? 1 : 0));
-const weight = computed(() => props.weight ?? 400);
-const grade = computed(() => props.grade ?? 0);
-const opticalSize = computed(() => props.opticalSize ?? 48);
 </script>
 
 <template>
-  <span :class="['icon', `material-symbols-${style}`]">{{
-    name.replaceAll("-", "_")
-  }}</span>
+  <span :class="['m3-icon', `material-symbols-${variant}`]">
+    {{ name.replaceAll("-", "_") }}
+  </span>
 </template>
 
-<style scoped>
-.icon {
+<style>
+@import "material-symbols/rounded.css";
+
+.m3-icon {
   width: 1em;
   height: 1em;
   font-variation-settings:
