@@ -1,17 +1,15 @@
-import { LanguageSupport, LRLanguage, foldable } from "@codemirror/language";
-import { invoke } from "@tauri-apps/api/core";
+import { LanguageSupport, LRLanguage } from "@codemirror/language";
 
 import { parser } from "./parser";
 
 import type {
   CompletionContext,
   CompletionResult,
-  Completion,
 } from "@codemirror/autocomplete";
 import type { TypstState } from "~~/backend/wasm/pkg/mnemo_wasm";
-import { EditorSelection, SelectionRange } from "@codemirror/state";
+import { EditorSelection } from "@codemirror/state";
 
-export const createLanguage = (typstState) =>
+export const createLanguage = (typstState: TypstState) =>
   LRLanguage.define({
     name: "typst",
     parser,
