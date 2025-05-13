@@ -4,10 +4,12 @@ export default defineNuxtPlugin({
     const runtimeConfig = useRuntimeConfig();
     const { apiBaseUrl } = runtimeConfig.public;
 
-    if (!apiBaseUrl)
-      throw createError({ message: "NUXT_PUBLIC_API_BASE_URL is not set" });
+    // if (!apiBaseUrl)
+    //   throw createError({ message: "NUXT_PUBLIC_API_BASE_URL is not set" });
 
-    const fetch = import.meta.client ? useRequestFetch() : $fetch;
+    const fetch = import.meta.client
+      ? (useRequestFetch() as typeof $fetch)
+      : $fetch;
     const api = fetch.create({
       baseURL: apiBaseUrl,
       headers: useRequestHeaders(["cookie"]),
