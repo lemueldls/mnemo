@@ -58,7 +58,7 @@
 
   # # scripts = {
   # #   setup.exec = ''
-  # #     wasm-pack build backend/wasm -t web --release
+  # #     wasm-pack build platform/wasm -t web --release
   # #   '';
   # # };
 

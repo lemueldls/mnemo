@@ -2,7 +2,7 @@
 .devenv/
 .nuxt/
 .output/
-backend/
+platform/
 dist/
 node_modules/
 

@@ -6,7 +6,7 @@ import type {
   CompletionContext,
   CompletionResult,
 } from "@codemirror/autocomplete";
-import type { TypstState } from "~~/backend/wasm/pkg/mnemo_wasm";
+import type { TypstState } from "mnemo-wasm";
 import { EditorSelection } from "@codemirror/state";
 
 export const createLanguage = (typstState: TypstState) =>
