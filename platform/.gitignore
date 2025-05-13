@@ -1,0 +1,5 @@
+**/target/
+**/*.rs.bk
+wasm/bin/
+# wasm/pkg/
+wasm/wasm-pack.log

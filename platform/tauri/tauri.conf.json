@@ -1,0 +1,49 @@
+{
+  "$schema": "../../node_modules/@tauri-apps/cli/config.schema.json",
+  "version": "0.1.0",
+  "productName": "mnemo",
+  "identifier": "dev.lemueldls.mnemo",
+  "build": {
+    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "pnpm dev --host",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../../dist"
+  },
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "targets": "all",
+    "createUpdaterArtifacts": true
+  },
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [{ "title": "mnemo" }]
+  },
+  "plugins": {
+    "deep-link": {
+      "mobile": [
+        { "host": "mnemo.nuxt.dev" },
+        { "host": "mnemo.pages.dev" },
+        { "host": "notes.lemueldls.dev" }
+      ],
+      "desktop": {
+        "schemes": ["mnemo"]
+      }
+    },
+    "updater": {
+      "createUpdaterArtifacts": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0REVCRDBBNzBDODcyOUIKUldTYmNzaHdDcjNlRkdSOEF1NFRxeWM3bXdXWVBrV3BRd1RIZWtpRmpFZlE4VTg5ZlFlbGdTcHEK",
+      "endpoints": [
+        "https://github.com/lemueldls/mnemo/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

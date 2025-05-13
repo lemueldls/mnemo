@@ -1,0 +1,9 @@
+.data/
+.devenv/
+.nuxt/
+.output/
+platform/
+dist/
+node_modules/
+
+pnpm-lock.yaml
