@@ -33,9 +33,12 @@ const timeOfDay = computed(() => {
 <template>
   <div id="home-page">
     <div id="main-column">
-      <m3-outlined-card id="intro">
+      <m3-outlined-card
+        id="intro"
+        class="medium:border-1! medium:p-4! p-0! border-0!"
+      >
         <div>
-          <h1 class="m3-display-small medium:m3-display-medium">
+          <h1 class="m3-display-medium">
             Good {{ timeOfDay }}{{ name ? ", " + name : "" }}.
           </h1>
 
