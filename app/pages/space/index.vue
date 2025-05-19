@@ -16,9 +16,9 @@ watchImmediate(spaceId, async (spaceId) => {
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value!]!);
 
-const route = useRoute();
-watchImmediate(space, (space) => {
-  route.meta.title = space.name;
+useSeoMeta({
+  title: () => space.value.name,
+  ogTitle: () => space.value.name,
 });
 
 const { medium } = useBreakpoints(breakpointsM3);
@@ -198,8 +198,8 @@ async function createStickyNote() {
     />
 
     <m3-page>
-      <div class="flex flex-1">
-        <div class="flex flex-1 flex-col">
+      <div class="flex h-full flex-1">
+        <div class="flex size-full flex-1 flex-col">
           <m3-top-app-bar>
             <template #leading>
               <nuxt-link-locale to="/">
@@ -221,22 +221,15 @@ async function createStickyNote() {
               <md-icon-button @click="infoOpen = true">
                 <md-icon>info</md-icon>
               </md-icon-button>
-
-              <!-- <md-icon-button @click="settingsOpen = true">
-                <md-icon>settings</md-icon>
-              </md-icon-button> -->
             </template>
           </m3-top-app-bar>
 
           <div
-            class="medium:pr-0 medium:pl-6 medium:pb-3 flex h-full w-full items-center justify-center gap-6 self-center overflow-hidden pb-6 pl-3 pr-3"
+            class="medium:pr-0 medium:pl-6 medium:pb-3 flex min-h-0 flex-1 justify-center pb-6 pl-3 pr-3"
           >
-            <div class="max-w-180 relative h-full w-full flex-1">
-              <div class="absolute left--6 h-full pb-8 pt-16">
-                <div
-                  id="sidebar"
-                  class="flex h-full flex-col gap-4 overflow-auto"
-                >
+            <div class="max-w-180 relative size-full">
+              <div class="absolute left--6 pb-8 pt-16">
+                <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
                     <div
                       class="sidebar-button__inner"
@@ -289,7 +282,7 @@ async function createStickyNote() {
                 </div>
               </div>
 
-              <m3-elevated-card id="editor">
+              <md-elevated-card id="editor">
                 <div id="editor-title" class="items-center gap-2">
                   <div class="h-1px bg-m3-outline-variant w-2" />
 
@@ -318,9 +311,9 @@ async function createStickyNote() {
                   v-model="currentNote.id"
                   kind="daily"
                   :space-id="spaceId"
-                  class="h-full flex-1"
+                  class="m-2 mt-0"
                 />
-              </m3-elevated-card>
+              </md-elevated-card>
             </div>
 
             <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
@@ -357,18 +350,17 @@ async function createStickyNote() {
         </form>
       </md-dialog>
 
-      <md-dialog :open="preludeOpen" @closed="preludeOpen = false">
+      <md-dialog
+        :open="preludeOpen"
+        class="w-full max-w-2xl"
+        @closed="preludeOpen = false"
+      >
         <span slot="headline" class="flex items-center justify-between">
           Prelude
         </span>
 
-        <div slot="content" class="h-64 w-full max-w-2xl">
-          <editor
-            v-model="preludePath"
-            :space-id="spaceId"
-            kind="prelude"
-            class="h-full flex-1"
-          />
+        <div slot="content" class="h-md">
+          <editor v-model="preludePath" :space-id="spaceId" kind="prelude" />
         </div>
       </md-dialog>
 
@@ -455,7 +447,7 @@ async function createStickyNote() {
 }
 
 #editor {
-  @apply flex h-full flex-col;
+  @apply h-full p-2;
 }
 
 #editor-title {
