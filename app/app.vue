@@ -41,10 +41,10 @@ declare module "vue-router" {
 }
 
 watchEffect(() => {
-  const name = t("site.name");
+  // const name = t("site.name");
 
   const routeTitle = route.meta.title;
-  const title = routeTitle && te(routeTitle) ? t(routeTitle) : "";
+  const title = routeTitle && te(routeTitle) ? t(routeTitle) : routeTitle;
 
   const routeDescription = route.meta.description;
   const description =
@@ -69,11 +69,11 @@ watchEffect(() => {
     ogDescription: description,
   });
 
-  useSchemaOrg([
-    defineWebSite({ name, description }),
-    defineWebPage({ name, description }),
-    defineSoftwareApp({ name, description }),
-  ]);
+  // useSchemaOrg([
+  //   defineWebSite({ name, description }),
+  //   defineWebPage({ name, description }),
+  //   defineSoftwareApp({ name, description }),
+  // ]);
 });
 
 const x = ref(0);
