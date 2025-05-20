@@ -229,15 +229,13 @@ const activeLineBackground = computed(() => {
 </script>
 
 <template>
-  <div class="size-full">
+  <div class="size-full overflow-x-auto overflow-y-scroll">
     <div ref="container" class="editor" />
   </div>
 </template>
 
 <style lang="scss">
 .editor {
-  @apply size-full overflow-x-auto overflow-y-scroll;
-
   .cm-editor {
     @apply m3-body-large h-full outline-none;
   }
