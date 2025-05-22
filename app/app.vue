@@ -3,23 +3,23 @@ import "@material/web/all";
 // import "@material/web/labs/card/outlined-card";
 import "@material/web/labs/card/elevated-card";
 
-const runtimeConfig = useRuntimeConfig();
-const { platform } = runtimeConfig.public;
+// const runtimeConfig = useRuntimeConfig();
+// const { platform } = runtimeConfig.public;
 
-if (platform)
-  onMounted(async () => {
-    if (!window.__TAURI_INTERNALS__) return;
+// if (platform)
+//   onMounted(async () => {
+//     if (!window.__TAURI_INTERNALS__) return;
 
-    const { onOpenUrl } = await import("@tauri-apps/plugin-deep-link");
+//     const { onOpenUrl } = await import("@tauri-apps/plugin-deep-link");
 
-    const unlisten = await onOpenUrl((urls) => {
-      console.log("deep link:", urls);
-    });
+//     const unlisten = await onOpenUrl((urls) => {
+//       console.log("deep link:", urls);
+//     });
 
-    tryOnUnmounted(() => {
-      unlisten();
-    });
-  });
+//     tryOnUnmounted(() => {
+//       unlisten();
+//     });
+//   });
 
 const { t, te } = useI18n();
 

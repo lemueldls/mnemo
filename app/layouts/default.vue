@@ -34,7 +34,7 @@ const pages: Page[] = [
   { path: "/calendar", name: "Calendar", icon: "calendar_today" },
 ];
 
-// const { clear, session, user } = useUserSession();
+const { user } = useAuth();
 </script>
 
 <template>
@@ -42,7 +42,9 @@ const pages: Page[] = [
     <m3-page>
       <m3-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
-          <div class="flex flex-col"></div>
+          <div class="flex flex-col">
+            User: {{ user?.name }} Email: {{ user?.email }}
+          </div>
 
           <!-- <div>
             <h2 class="text-m3-primary m3-title-medium">mnemo</h2>

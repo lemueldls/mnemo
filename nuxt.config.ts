@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@unocss/nuxt",
     "nuxt-ssr-lit",
-    "nuxt-auth-utils",
+    // "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
   ssr: false,
@@ -57,7 +57,14 @@ export default defineNuxtConfig({
   // devServer: { https: true },
   vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   runtimeConfig: {
-    public: { platform, apiBaseUrl: "" },
+    public: {
+      platform,
+      apiBaseUrl: "",
+      auth: {
+        redirectUserTo: "/user",
+        redirectGuestTo: "/",
+      },
+    },
     // session: {
     //   maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
     //   cookie: isDev
