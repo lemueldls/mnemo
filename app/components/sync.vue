@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { signInSocial } from "@daveyplate/better-auth-tauri";
 
-const runtimeConfig = useRuntimeConfig();
-const { platform, apiBaseUrl } = runtimeConfig.public;
+const auth = useAuth();
 
-const { openInPopup } = useUserSession();
+async function login() {
+  const { data, error } = await signInSocial({
+    authClient: auth.client,
+    provider: "github",
+  });
 
-function login() {
-  const authPath = "/auth/github";
-  if (platform) {
-    openUrl(new URL(authPath, apiBaseUrl).toString());
-  } else {
-    openInPopup(authPath);
-  }
+  console.log({ data, error });
 }
 </script>
 
@@ -21,7 +18,5 @@ function login() {
 
   <div class="text-m3-error p-4">TODO</div>
 
-  <md-filled-button disabled @click="login">
-    Continue with GitHub
-  </md-filled-button>
+  <md-filled-button @click="login"> Continue with GitHub </md-filled-button>
 </template>
