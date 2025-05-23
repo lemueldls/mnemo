@@ -12,10 +12,12 @@ import type { RouteLocationRaw } from "vue-router";
 export const useAuth = createSharedComposable(() => {
   const { apiBaseUrl } = useRuntimeConfig().public;
   const url = apiBaseUrl ? new URL(apiBaseUrl) : useRequestURL();
+  const baseURL = url.origin;
+
   const headers = import.meta.server ? useRequestHeaders() : undefined;
 
   const client = createAuthClient({
-    baseURL: url.origin,
+    baseURL,
     fetchOptions: { headers },
   });
 
