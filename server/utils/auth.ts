@@ -1,7 +1,4 @@
-import { createSharedComposable } from "@vueuse/core";
-
 import { betterAuth } from "better-auth";
-// import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { D1Dialect } from "@atinux/kysely-d1";
 import type { D1Database } from "@cloudflare/workers-types";
@@ -9,15 +6,15 @@ import type { D1Database } from "@cloudflare/workers-types";
 // import {} from "better-auth/plugins";
 import { tauri } from "@daveyplate/better-auth-tauri/plugin";
 
-const { oauth } = useRuntimeConfig();
+let _auth: ReturnType<typeof betterAuth>;
+export function serverAuth() {
+  const { github } = useRuntimeConfig().oauth;
 
-export const serverAuth = createSharedComposable(() =>
-  betterAuth({
+  _auth ||= betterAuth({
     database: {
       dialect: new D1Dialect({ database: hubDatabase() as D1Database }),
       type: "sqlite",
     },
-    // database: drizzleAdapter(useDrizzle(), { provider: "sqlite" }),
     secondaryStorage: {
       get: (key) => hubKV().getItemRaw(`_auth:${key}`),
       set: (key, value, ttl) => {
@@ -26,40 +23,30 @@ export const serverAuth = createSharedComposable(() =>
       delete: (key) => hubKV().del(`_auth:${key}`),
     },
     baseURL: getBaseURL(),
-    // emailAndPassword: {
-    //   enabled: true,
-    // },
     socialProviders: {
       github: {
-        clientId: oauth.github.clientId,
-        clientSecret: oauth.github.clientSecret,
-      },
-    },
-    account: {
-      accountLinking: {
-        enabled: true,
+        clientId: github.clientId,
+        clientSecret: github.clientSecret,
       },
     },
     plugins: [
       tauri({
-        scheme: "mnemo", // Your app's deep link scheme
-        callbackURL: "/", // Optional: Where to redirect after auth (default: "/")
-        successText: "Authentication successful! You can close this window.", // Optional
-        successURL: "/", // Optional: Custom success page URL that will receive a ?tauriRedirect search parameter
-        debugLogs: true, // Optional: Enable debug logs
+        scheme: "mnemo",
+        callbackURL: "/",
+        successText: "Authentication successful! You can close this window.",
+        successURL: "/",
+        debugLogs: true,
       }),
     ],
-  }),
-);
+  });
+
+  return _auth;
+}
 
 function getBaseURL() {
-  let baseURL = process.env.BETTER_AUTH_URL;
-  if (!baseURL) {
-    try {
-      baseURL = getRequestURL(useEvent()).origin;
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  const { apiBaseUrl } = useRuntimeConfig().public;
+  const url = apiBaseUrl ? new URL(apiBaseUrl) : getRequestURL(useEvent());
+  const baseURL = url.origin;
+
   return baseURL;
 }
