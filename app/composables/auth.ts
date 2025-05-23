@@ -83,13 +83,11 @@ export const useAuth = createSharedComposable(() => {
     signIn: client.signIn,
     signUp: client.signUp,
     async signOut({ redirectTo }: { redirectTo?: RouteLocationRaw } = {}) {
-      const res = await client.signOut();
-      session.value = null;
-      user.value = null;
-      if (redirectTo) {
-        await navigateTo(redirectTo);
-      }
-      return res;
+      const result = await client.signOut();
+
+      if (redirectTo) await navigateTo(redirectTo);
+
+      return result;
     },
     fetchSession,
     client,
