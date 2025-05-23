@@ -29,15 +29,7 @@ export function serverAuth() {
         clientSecret: github.clientSecret,
       },
     },
-    plugins: [
-      tauri({
-        scheme: "mnemo",
-        callbackURL: "/",
-        successText: "Authentication successful! You can close this window.",
-        successURL: "/",
-        debugLogs: true,
-      }),
-    ],
+    plugins: [tauri({ scheme: "mnemo" })],
   });
 
   return _auth;
