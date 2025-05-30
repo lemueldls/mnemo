@@ -281,6 +281,16 @@ async function createStickyNote() {
                       <md-icon>camera</md-icon>
                     </div>
                   </div>
+                  <!-- <NuxtLinkLocale
+                    class="sidebar-button"
+                    title="Export"
+                    :to="`/render?space=${spaceId}`"
+                  >
+                    <div class="sidebar-button__inner">
+                      <md-ripple />
+                      <md-icon>open_in_new</md-icon>
+                    </div>
+                  </NuxtLinkLocale> -->
                 </div>
               </div>
 
