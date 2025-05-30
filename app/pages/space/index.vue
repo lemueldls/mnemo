@@ -2,7 +2,7 @@
 import { createId } from "@paralleldrive/cuid2";
 
 import html2canvas from "@html2canvas/html2canvas";
-import { StickyNote } from "#components";
+import type { StickyNote } from "~/composables/sticky";
 
 definePageMeta({ layout: "space" });
 
@@ -160,6 +160,8 @@ async function createStickyNote() {
     title: datetime,
     x: 128,
     y: 128,
+    rx: 0.5,
+    ry: 0.5,
     width: 384,
     height: 256,
   };
@@ -311,7 +313,7 @@ async function createStickyNote() {
                   v-model="currentNote.id"
                   kind="daily"
                   :space-id="spaceId"
-                  class="m-2 mt-0"
+                  class="p-2 pt-0"
                 />
               </md-elevated-card>
             </div>
