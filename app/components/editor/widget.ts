@@ -7,7 +7,7 @@ import {
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState, FileId, Block, EncodedFrame } from "mnemo-wasm";
+import type { TypstState, FileId, RenderedFrame } from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
@@ -20,29 +20,28 @@ class TypstWidget extends WidgetType {
   public constructor(
     private readonly typstState: TypstState,
     private readonly view: EditorView,
-    private readonly index: number,
-    private readonly frame: EncodedFrame,
-    private readonly block: Block,
+    private readonly range: { start: number; end: number },
+    private readonly frame: RenderedFrame,
   ) {
     super();
 
     this.#image.draggable = false;
     this.#image.classList.add("typst-render");
-    this.#image.addEventListener("click", this.handleJump.bind(this));
+    // this.#image.addEventListener("click", this.handleJump.bind(this));
     // this.#image.addEventListener("mousedown", this.handleJump.bind(this));
   }
 
   private async handleJump(event: MouseEvent) {
     event.preventDefault();
 
-    const { typstState, index, block, view } = this;
+    const { typstState, range, view } = this;
     const { top, left } = this.#image.getBoundingClientRect();
 
     const x = event.clientX - left;
     const y = event.clientY - top;
 
-    const jump = typstState.click(index, x, y); // can crash
-    const position = jump ? jump.position : block.range.end;
+    const jump = typstState.click(0, x, y); // can crash
+    const position = jump ? jump.position : range.end;
 
     view.dispatch({ selection: { anchor: position } });
   }
@@ -86,38 +85,35 @@ function decorate(
 
   const widgets: Range<Decoration>[] = [];
 
-  const diagnostics = syncResult.flatMap(({ block }) =>
-    block.errors.flatMap((diagnostic) => {
-      const diagnostics: Diagnostic[] = [
-        {
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: diagnostic.severity,
-          message: diagnostic.message,
-        },
-      ];
+  const diagnostics = syncResult.diagnostics.flatMap((diagnostic) => {
+    const diagnostics: Diagnostic[] = [
+      {
+        from: diagnostic.range.start,
+        to: diagnostic.range.end,
+        severity: diagnostic.severity,
+        message: diagnostic.message,
+      },
+    ];
 
-      for (const hint of diagnostic.hints) {
-        diagnostics.push({
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: "hint",
-          message: hint,
-        });
-      }
+    for (const hint of diagnostic.hints) {
+      diagnostics.push({
+        from: diagnostic.range.start,
+        to: diagnostic.range.end,
+        severity: "hint",
+        message: hint,
+      });
+    }
 
-      return diagnostics;
-    }),
-  );
+    return diagnostics;
+  });
+
   const transaction = setDiagnostics(state, diagnostics);
   queueMicrotask(() => view.dispatch(transaction));
 
-  for (const { index, block, render } of syncResult) {
+  for (const { range, render } of syncResult.renders) {
     if (render) {
-      const { from: start, number: startLine } = state.doc.lineAt(
-        block.range.start,
-      );
-      const { to: end, number: endLine } = state.doc.lineAt(block.range.end);
+      const { from: start, number: startLine } = state.doc.lineAt(range.start);
+      const { to: end, number: endLine } = state.doc.lineAt(range.end);
 
       const inactive =
         !view.hasFocus ||
@@ -132,7 +128,7 @@ function decorate(
       if (inactive)
         widgets.push(
           Decoration.replace({
-            widget: new TypstWidget(typstState, view, index, render, block),
+            widget: new TypstWidget(typstState, view, range, render),
             // inclusive: true,
           }).range(start, end),
         );
@@ -261,7 +257,7 @@ function syncTypstState(
 
     // result = syncTypstState(typstState, fileId, text);
 
-    window.location.reload();
+    // window.location.reload();
 
     throw error;
   }

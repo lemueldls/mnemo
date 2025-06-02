@@ -1,0 +1,29 @@
+[package]
+name = "mnemo-render"
+
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+bytemuck = { version = "1" }
+comemo = { version = "0.4" }
+image = { version = "0.25.5", default-features = false, features = [
+  "gif",
+  "jpeg",
+  "png",
+] }
+pixglyph = { version = "0.5.1" }
+resvg = { version = "0.43.0", default-features = false, features = [
+  "raster-images",
+] }
+tiny-skia = { version = "0.11" }
+ttf-parser = { version = "0.24.1" }
+typst-ide = { version = "0.13.1" }
+typst-library = { version = "0.13.1" }
+typst-macros = { version = "0.13.1" }
+typst-timing = { version = "0.13.1" }

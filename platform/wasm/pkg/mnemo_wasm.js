@@ -118,17 +118,6 @@ function takeFromExternrefTable0(idx) {
     return value;
 }
 
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_3.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
-}
-
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
@@ -403,7 +392,7 @@ export class TypstState {
      * @param {FileId} id
      * @param {string} text
      * @param {string} prelude
-     * @returns {RangedRender[]}
+     * @returns {SyncResult}
      */
     sync(id, text, prelude) {
         _assertClass(id, FileId);
@@ -412,9 +401,7 @@ export class TypstState {
         const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.typststate_sync(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
-        var v3 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-        return v3;
+        return ret;
     }
     /**
      * @param {number} index
@@ -495,6 +482,9 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
         }
+    };
+    imports.wbg.__wbg_error_7e97ac6aa2a9e682 = function(arg0, arg1) {
+        console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_log_07a760233e14c0fc = function(arg0, arg1) {
         console.log(getStringFromWasm0(arg0, arg1));

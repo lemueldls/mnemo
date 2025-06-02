@@ -21,6 +21,11 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
+export interface SyncResult {
+    renders: RangedRender[];
+    diagnostics: TypstDiagnostic[];
+}
+
 export type TypstError = EcoString;
 
 export interface Autocomplete {
@@ -29,18 +34,11 @@ export interface Autocomplete {
 }
 
 export interface RangedRender {
-    index: number;
-    block: Block;
-    render: EncodedFrame | undefined;
-}
-
-export interface Block {
     range: { start: number; end: number };
-    offset: number;
-    errors: TypstDiagnostic[];
+    render: RenderedFrame;
 }
 
-export interface EncodedFrame {
+export interface RenderedFrame {
     render: string;
     height: number;
 }
@@ -73,7 +71,7 @@ export class TypstState {
   setTheme(theme: ThemeColors): void;
   insertFile(path: string, text: string): FileId;
   installPackage(spec: string, files: PackageFile[]): void;
-  sync(id: FileId, text: string, prelude: string): RangedRender[];
+  sync(id: FileId, text: string, prelude: string): SyncResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
   autocomplete(cursor: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
@@ -100,7 +98,7 @@ export interface InitOutput {
   readonly typststate_setTheme: (a: number, b: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
+  readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
   readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
@@ -125,7 +123,6 @@ export interface InitOutput {
   readonly __wbindgen_export_3: WebAssembly.Table;
   readonly __externref_table_alloc: () => number;
   readonly __externref_table_dealloc: (a: number) => void;
-  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
 }
 
