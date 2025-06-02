@@ -4,19 +4,23 @@ import { Primitive, type PrimitiveProps } from "reka-ui";
 
 interface Props extends PrimitiveProps {
   color: string;
+  dark?: boolean;
   harmonize?: boolean;
 }
 
-const props = defineProps<Props>();
-const { color, harmonize } = toRefs(props);
+const props = withDefaults(defineProps<Props>(), { dark: undefined });
+const { color, dark, harmonize } = toRefs(props);
 
-const dark = useDark();
+const globalDark = useDark();
+const isDark = computed(() =>
+  dark.value === undefined ? globalDark.value : dark.value,
+);
 
 const parentTheme = computed(() =>
-  harmonize.value ? useMaterialTheme()?.source : undefined,
+  harmonize.value ? useMaterialTheme()?.value.source : undefined,
 );
 const theme = computed(() =>
-  createTheme(color.value, dark.value, parentTheme.value),
+  createTheme(color.value, isDark.value, parentTheme.value),
 );
 
 provide(m3ThemeKey, theme);

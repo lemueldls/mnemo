@@ -100,6 +100,8 @@ onMounted(() => {
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+
+    <Splashscreen />
   </div>
 </template>
 

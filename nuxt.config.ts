@@ -27,7 +27,6 @@ export default defineNuxtConfig({
     // "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
-  ssr: false,
   imports: {
     dirs: [
       "composables",
@@ -78,6 +77,12 @@ export default defineNuxtConfig({
         redirectURL: "",
       },
     },
+  },
+  routeRules: {
+    "/": { ssr: false },
+    "/**": { ssr: false },
+    "/space": { ssr: false },
+    "/space/**": { ssr: false },
   },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
