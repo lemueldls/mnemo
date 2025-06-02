@@ -12,7 +12,7 @@ onNuxtReady(async () => {
   progress.value++;
 });
 
-const ready = computed(() => progress.value === totalProgress);
+const ready = computed(() => progress.value >= totalProgress);
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const ready = computed(() => progress.value === totalProgress);
 
 <style>
 #splashscreen {
-  @apply text-m3-on-background bg-m3-background absolute inset-0 z-10 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden opacity-100 transition-opacity;
+  @apply text-m3-on-background bg-m3-background z-12 absolute inset-0 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden opacity-100 transition-opacity;
 
   background-color: #3f4178;
   color: #c0c1ff;
