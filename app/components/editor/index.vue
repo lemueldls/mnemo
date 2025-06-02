@@ -42,6 +42,8 @@ import { lintKeymap } from "@codemirror/lint";
 
 import { Rgb } from "mnemo-wasm";
 
+import type { NoteKind } from "~/composables/spaces";
+
 import { typst } from "./widget";
 import { underlineKeymap } from "./underline";
 
@@ -63,7 +65,7 @@ const path = defineModel<string>({ required: true });
 const pixelPerPoint = ref(window.devicePixelRatio);
 // const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
-const theme = useMaterialTheme();
+const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
 
 function parseColor(color: Rgba): Rgb {
@@ -105,9 +107,10 @@ const prelude = computed(() =>
 );
 
 onMounted(() => {
-  const container = containerRef.value;
+  const container = containerRef.value!;
   const view = new EditorView({
     parent: container,
+    root: document,
     state: EditorState.create({
       extensions: [EditorState.readOnly.of(true), placeholder("Loading...")],
     }),
@@ -117,27 +120,11 @@ onMounted(() => {
     [() => path.value, () => props.spaceId],
     async ([path, spaceId], [oldPath, oldSpace]) => {
       // console.log({ path, spaceId, oldPath, oldSpace });
+
       storageItem.value = await useStorageItem(
         `spaces/${oldSpace || spaceId}/${props.kind}/${path}.typ`,
         "",
       );
-
-      // const note = await useStorageItem(
-      //   `spaces/${props.spaceId}/${props.kind}/${path}.typ`,
-      //   "",
-      // );
-
-      // watchOnce(note, (note) => {
-      //   storageItem.value = note;
-      // });
-
-      // watchEffect(() => {
-      //   console.log({ path, note: note.value });
-      // });
-
-      // watchImmediate(note, (note) => {
-      //   storageItem.value = note;
-      // });
 
       const typstState = await useTypst();
 
@@ -191,7 +178,7 @@ function createStateConfig(
 
       EditorState.readOnly.of(props.readonly),
 
-      placeholder("Go on."),
+      placeholder("write."),
       highlightSpecialChars(),
       history(),
       // foldGutter(),
@@ -404,10 +391,6 @@ const activeLineBackground = computed(() => {
     /* &:hover {
       background-color: v-bind(activeLineBackground);
     } */
-  }
-
-  code {
-    font-family: "Iosevka Custom", monospace;
   }
 }
 </style>
