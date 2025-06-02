@@ -11,4 +11,4 @@ interface Note {
   datetime: [number, number, number, number, number];
 }
 
-export type NoteKind = "daily" | "sticky";
+export type NoteKind = "daily" | "sticky" | "prelude";
