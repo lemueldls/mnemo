@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { VuePDF, usePDF } from "@tato30/vue-pdf";
+
 import { Rgb, ThemeColors } from "mnemo-wasm";
 
 import type { Rgba } from "@material/material-color-utilities";
-import type { Package } from "~~/server/api/list-packages";
+import { decodeTime } from "ulid";
 
 import type { Note } from "~/composables/spaces";
 
-const spaceId = usePageRouteQuery<string>("space");
+const spaceId = usePageRouteQuery("space");
+
+const { d } = useI18n();
 
 // const spaces = await useSpaces();
 // const space = computed(() => spaces.value[spaceId.value]!);
@@ -23,64 +27,97 @@ const dailyNotes = await Promise.all(
       "",
     );
 
-    return item.value;
+    const time = decodeTime(note.id);
+    const date = d(time, { weekday: "long", month: "long", day: "numeric" });
+
+    return (
+      `
+        #set page(fill:rgb(0,0,0,0),width:730pt,height:auto,margin:16pt,header:none,footer:none)
+
+        #align(right)[===== ${date}]
+      ` + item.value
+    );
   }),
 ).then((notes) => notes.filter((note) => note));
+
+// dailyNotes.unshift(`
+//   #set page(fill:rgb(0,0,0,0),width:730pt,margin:16pt)
+// `);
+
+const prelude = await useRefStorageItem(
+  computed(() => `spaces/${spaceId.value}/prelude/main.typ`),
+  "",
+);
+
+dailyNotes.unshift(prelude.value);
 
 const typstState = await useTypst();
 
 const pixelPerPoint = ref(window.devicePixelRatio);
 
-const { palette } = useMaterialTheme()!;
+const theme = useMaterialTheme()!;
+const palette = computed(() => theme.value.palette);
 
 function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
-typstState.setPt(pixelPerPoint.value);
-typstState.setSize(16 / pixelPerPoint.value);
-typstState.setTheme(
-  new ThemeColors(
-    parseColor(palette.primary),
-    parseColor(palette.secondary),
-    parseColor(palette.tertiary),
-    parseColor(palette.outline),
-    parseColor(palette.onPrimaryContainer),
-    parseColor(palette.onSecondaryContainer),
-    parseColor(palette.onTertiaryContainer),
-    parseColor(palette.onBackground),
-  ),
-);
+watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
+  const typstState = await useTypst();
 
-const packages = await useStorageItem<Package[]>(
-  `spaces/${spaceId.value}/packages.json`,
-  [],
+  typstState.setPt(pixelPerPoint);
+  typstState.setSize(16);
+  typstState.setTheme(
+    new ThemeColors(
+      parseColor(palette.primary),
+      parseColor(palette.secondary),
+      parseColor(palette.tertiary),
+      parseColor(palette.outline),
+      parseColor(palette.onPrimaryContainer),
+      parseColor(palette.onSecondaryContainer),
+      parseColor(palette.onTertiaryContainer),
+      parseColor(palette.onBackground),
+    ),
+  );
+});
+
+const packages = await useInstalledPackages(spaceId.value);
+// TODO: check if spamming
+await Promise.all(
+  packages.value
+    .filter((pkg) => pkg.name !== "suiji")
+    .map((pkg) => installTypstPackage(pkg)),
 );
-// watchImmediate(packages, async (packages) => {
-//   await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
-// });
-await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
 
 // typstState.resize(200);
 
-// const path = `spaces/${spaceId.value}/render.typ`;
-// const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
+const path = `spaces/${spaceId.value}/render.typ`;
+const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
 // const html = typstState.renderHtml(fileId);
+
+const bytes = typstState.renderPdf(fileId);
+const { pdf, pages, info } = usePDF(bytes);
 </script>
 
 <template>
-  <div>
-    [[render]]
+  <div class="flex size-full items-center justify-center">
+    <!-- [[render]]
     <pre>
       <code>
         {{ dailyNotes }}
       </code>
-    </pre>
-    <!-- <div class="w-full h-full" v-html="html" /> -->
+    </pre> -->
+    <!-- <div class="h-full w-full" v-html="html" /> -->
+
+    <md-outlined-card class="m-4 h-full overflow-scroll">
+      <VuePDF v-for="page in pages" :key="page" :pdf :page text-layer />
+    </md-outlined-card>
   </div>
 </template>
 
 <style lang="scss">
+@import "@tato30/vue-pdf/style.css";
+
 /* #space-page {
   @apply absolute inset-0;
 } */

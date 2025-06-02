@@ -84,6 +84,7 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     viewTransition: true,
+    asyncContext: true,
   },
   compatibilityDate: "2025-05-03",
   nitro: {

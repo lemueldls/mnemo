@@ -2,14 +2,19 @@
 import { signInSocial } from "@daveyplate/better-auth-tauri";
 
 const auth = useAuth();
+const { user } = auth;
 
 async function login() {
-  const { data, error } = await signInSocial({
+  const { error } = await signInSocial({
     authClient: auth.client,
     provider: "github",
   });
+  if (error) throw createError(error);
+}
 
-  console.log({ data, error });
+async function logout() {
+  const { error } = await auth.signOut();
+  if (error) throw createError(error);
 }
 </script>
 
@@ -18,5 +23,10 @@ async function login() {
 
   <div class="text-m3-error p-4">TODO</div>
 
-  <md-filled-button @click="login"> Continue with GitHub </md-filled-button>
+  <md-filled-tonal-button v-if="user" @click="logout">
+    Logout
+  </md-filled-tonal-button>
+  <md-filled-button v-else @click="login">
+    Continue with GitHub
+  </md-filled-button>
 </template>

@@ -142,7 +142,7 @@ onMounted(() => {
       const typstState = await useTypst();
 
       const packages = await useInstalledPackages(spaceId);
-      // check if spamming
+      // TODO: check if spamming
       watchImmediate(packages, async (packages) => {
         await Promise.all(
           packages

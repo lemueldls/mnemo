@@ -23,7 +23,7 @@ const modal = computed(() =>
 
   <div
     :id="id"
-    :aria-hidden="true"
+    :aria-hidden="!visible"
     :class="[
       props.class,
       'm3-side-sheet',
