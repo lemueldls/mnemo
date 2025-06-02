@@ -13,10 +13,41 @@ const headerRef = useTemplateRef("header");
 
 const isDragging = ref(false);
 
+const parent = useParentElement();
+const { width: parentWidth, height: parentHeight } = useElementSize(parent);
+
 onMounted(() => {
   const root = rootRef.value!;
 
-  root.style.transform = `translate(${note.x}px, ${note.y}px)`;
+  console.log({ ...note });
+
+  watchImmediate([parentWidth, parentHeight], ([parentWidth, parentHeight]) => {
+    console.log({ parentWidth, parentHeight });
+
+    if (parentWidth) {
+      if (note.rx) note.x = Math.max(note.rx * parentWidth - note.width / 2, 0);
+      note.x = Math.min(note.x, parentWidth - note.width);
+    }
+
+    if (parentHeight) {
+      if (note.ry)
+        note.y = Math.max(note.ry * parentHeight - note.height / 2, 0);
+      note.y = Math.min(note.y, parentHeight - note.height);
+    }
+
+    console.log({ x: note.x, y: note.y });
+
+    root.style.transform = `translate(${note.x}px,${note.y}px)`;
+  });
+
+  watchImmediate([() => note.x, () => note.y], ([x, y]) => {
+    const rWidth = parentWidth.value;
+    if (rWidth) note.rx = (x + note.width / 2) / rWidth;
+
+    const rHeight = parentHeight.value;
+    if (rHeight) note.ry = (y + note.height / 2) / rHeight;
+  });
+
   root.style.width = note.width + "px";
   root.style.height = note.height + "px";
 
