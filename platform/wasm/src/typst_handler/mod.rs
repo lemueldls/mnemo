@@ -399,7 +399,7 @@ impl TypstState {
 
         // self.world.main_source_mut().replace(&source);
 
-        // TODO: handle possible prelude height
+        // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
 
         let renders = block_ranges
@@ -435,8 +435,7 @@ impl TypstState {
                             return None;
                         }
 
-                        let canvas =
-                            mnemo_render::render(&document, offset_height, self.pt, &self.world);
+                        let canvas = mnemo_render::render(&document, offset_height, self.pt);
                         let render = BASE64
                             .encode(&canvas.encode_png().unwrap())
                             .into_boxed_str();

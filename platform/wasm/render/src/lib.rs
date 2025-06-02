@@ -26,12 +26,7 @@ use typst_library::{
 /// This renders the page at the given number of pixels per point and returns
 /// the resulting `tiny-skia` pixel buffer.
 #[typst_macros::time(name = "render")]
-pub fn render_world_frame(
-    frame: &Frame,
-    offset_height: f64,
-    pixel_per_pt: f32,
-    world: &dyn IdeWorld,
-) -> sk::Pixmap {
+pub fn render_world_frame(frame: &Frame, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
     let mut size = frame.size();
     size.y -= Abs::pt(offset_height);
 
@@ -39,116 +34,22 @@ pub fn render_world_frame(
     let pxh = (pixel_per_pt * size.y.to_f32()).round().max(1.0) as u32;
 
     let ts = sk::Transform::from_scale(pixel_per_pt, pixel_per_pt)
-        .post_translate(0.0, -offset_height as f32);
+        .post_translate(0.0, -pixel_per_pt * offset_height as f32);
     let state = State::new(size, ts, pixel_per_pt);
 
     let mut canvas = sk::Pixmap::new(pxw, pxh).unwrap();
 
-    for (pos, item) in frame.items() {
-        // let point = Point::zero();
-        let point = *pos;
-
-        match item {
-            FrameItem::Group(group) => {
-                render_group(&mut canvas, state, point, group); // TODO: use this
-
-                // let spanned_renders = render(&group.frame, only_after, true_height, pixel_per_pt, introspector, world);
-                // let first_item = &spanned_renders.first();
-                // let last_item = &spanned_renders.last();
-
-                // match (first_item, last_item) {
-                //     (Some(first_render), Some(last_render)) => {
-                //         let range = first_render.range.start..last_render.range.end;
-
-                //         if in_tag {
-                //             ranged_renders.last_mut().unwrap().range.end = range.end;
-                //         } else {
-                //             ranged_renders.push(RangedCanvas { range, canvas });
-                //         }
-                //     }
-                //     _ => {}
-                // }
-            }
-            FrameItem::Text(text) => {
-                text::render_text(
-                    &mut canvas,
-                    // state.pre_translate(point), // .with_size(Axes::new(x, text.size))
-                    state.pre_translate(point),
-                    // .with_size(Axes::new(x, text.size)),
-                    // .with_size(Axes::zero()),
-                    text,
-                );
-
-                let (start_span, _) = text.glyphs.first().unwrap().span;
-                let (end_span, _) = text.glyphs.last().unwrap().span;
-
-                let start_range = world.range(start_span);
-                let end_range = world.range(end_span);
-
-                match (start_range, end_range) {
-                    (Some(start_range), Some(end_range)) => {
-                        let range = start_range.start..end_range.end;
-                    }
-                    _ => {}
-                }
-            }
-            FrameItem::Shape(shape, span) => {
-                shape::render_shape(&mut canvas, state.pre_translate(point), shape);
-
-                let range = world.range(*span);
-            }
-            FrameItem::Image(image, size, span) => {
-                image::render_image(&mut canvas, state.pre_translate(point), image, *size);
-
-                let range = world.range(*span);
-            }
-            FrameItem::Link(..) => {}
-            FrameItem::Tag(tag) => {
-                // match tag {
-                //     Tag::Start(content) => {
-                //         in_tag = true;
-
-                //         let range = world.range(content.span()).unwrap();
-                //         ranged_renders.push(RangedCanvas {
-                //             range,
-                //             canvas: sk::Pixmap::new(pxw, pxh).unwrap(),
-                //         });
-                //     }
-                //     Tag::End(location, _) => {
-                //         in_tag = false;
-
-                //         let range = world
-                //             .range(
-                //                 introspector
-                //                     .query_first(&Selector::Location(*location))
-                //                     .unwrap()
-                //                     .span(),
-                //             )
-                //             .unwrap();
-                //         ranged_renders.last_mut().unwrap().range.end = range.end
-                //     }
-                // }
-            }
-        };
-
-        // current_block.push
-        // span.map(|span| (canvas, span))
-    }
+    render_frame(&mut canvas, state, frame);
 
     canvas
 }
 
 /// Export a document with potentially multiple pages into a single raster image.
-pub fn render(
-    document: &PagedDocument,
-    offset_height: f64,
-    pixel_per_pt: f32,
-    world: &dyn IdeWorld,
-) -> sk::Pixmap {
+pub fn render(document: &PagedDocument, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
     let pixmaps: Vec<_> = document
         .pages
         .iter()
-        .map(|page| render_world_frame(&page.frame, offset_height, pixel_per_pt, world))
+        .map(|page| render_world_frame(&page.frame, offset_height, pixel_per_pt))
         .collect();
 
     // let gap = (pixel_per_pt * gap.to_f32()).round() as u32;

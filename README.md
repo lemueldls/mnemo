@@ -11,7 +11,6 @@
 ## TODO
 
 - Features
-  - Rewrite renderer to use frame items instead of the AST.
   - Use file system storage on desktop and mobile versions.
   - Sync notes with Durable Objects.
   - Unload packages on space leave.
@@ -27,8 +26,6 @@
   - Better PDF explorer.
   - Handwritten notes and drawings.
 - Bugs
-  - Fix prelude and sticky-notes editor caret display and scrolling lag.
-  - Rendering of numbered lists. (should be fixed after the renderer rewrite)
   - Handle diagnostic spans of files outside of main.
 
 ## License
