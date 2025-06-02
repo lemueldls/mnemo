@@ -26,7 +26,7 @@ async function logout() {
   <md-filled-tonal-button v-if="user" @click="logout">
     Logout
   </md-filled-tonal-button>
-  <md-filled-button v-else @click="login">
+  <md-filled-button v-else disabled @click="login">
     Continue with GitHub
   </md-filled-button>
 </template>
