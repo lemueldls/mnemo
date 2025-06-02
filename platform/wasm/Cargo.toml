@@ -31,11 +31,12 @@ tsify = { version = "0.5.5", features = ["js"] }
 # serde_json = "1.0"
 # palette = "0.7.3"
 lol_alloc = { version = "0.4.1", optional = true }
+mnemo-render = { path = "./render" }
 typst = { version = "0.13.1" }
 typst-ide = { version = "0.13.1" }
 typst-render = { version = "0.13.1" }
 # typst-svg = { version = "0.13.1" }
-# typst-pdf = { version = "0.13.1" }
+typst-pdf = { version = "0.13.1" }
 # typst-html = { version = "0.13.1" }
 # walkdir = "2.3.3"
 wasm-bindgen = "0.2.100"

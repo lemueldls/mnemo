@@ -174,13 +174,12 @@ impl Default for TypstState {
     }
 }
 
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-// #[serde(tag = "kind", rename_all = "camelCase", content = "data")]
-// pub enum SyncResult {
-//     Ok(Box<[RangedRender]>),
-//     Error(Box<[String]>),
-// }
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct SyncResult {
+    renders: Vec<RangedRender>,
+    diagnostics: Vec<TypstDiagnostic>,
+}
 
 #[derive(Debug, Clone)]
 #[wasm_bindgen(js_name = "FileId")]
@@ -275,17 +274,21 @@ impl TypstState {
                 #set par(leading:0em,linebreaks:"simple")
                 {page_config}
                 #context {{show math.equation:set text(size:text.size*1.75)}}
+                #show math.equation.where(block:true):set block(above:0em,below:0em)
                 #show math.equation.where(block:true):set text(size:{size}pt*1.125)
                 #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
 
                 #set table(stroke:theme.outline,inset:10pt)
 
+                #show heading:set block(above:0em,below:0em)
                 #show heading.where(level:1):set text(fill:theme.on-primary-container,size:32pt,tracking:0pt,weight:400)
                 #show heading.where(level:2):set text(fill:theme.on-secondary-container,size:28pt,tracking:0pt,weight:400)
                 #show heading.where(level:3):set text(fill:theme.on-primary-container,size:24pt,tracking:0pt,weight:400)
                 #show heading.where(level:4):set text(fill:theme.primary,size:22pt,tracking:0pt,weight:400)
                 #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,tracking:0.15pt,weight:500)
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,tracking:0.1pt,weight:500)
+
+                #show list:set block(above:0em,below:0em)
             "#,
             theme = self.theme,
             size = self.size + 0.9,
@@ -293,13 +296,13 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> Box<[RangedRender]> {
+    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> SyncResult {
         let mut source = self.prelude(true) + prelude;
 
         self.index_mapper = IndexMapper::default();
         self.index_mapper.add_change(0, source.len());
 
-        let mut blocks = Vec::<Block>::new();
+        let mut block_ranges = Vec::<Range<usize>>::new();
         let mut in_block = false;
 
         let mut last_start_byte_offset = 0;
@@ -309,11 +312,9 @@ impl TypstState {
         self.world.main_source_mut().replace(text);
 
         let children = self.world.main_source().root().children();
-        let mut errors = Vec::new();
+        let mut diagnostics = Vec::new();
 
-        // let index_map = Vec::new();
-
-        // text.encode_utf16() //!
+        let mut last_node = None;
 
         for node in children {
             let mut range = self.world.range(node.span()).unwrap();
@@ -321,180 +322,156 @@ impl TypstState {
             let text_slice = &text[..range.end];
             let utf16_count = text_slice.encode_utf16().count();
 
-            // crate::log(&format!("[RANGE]: {range:?}"));
-            // crate::log(&format!("[TEXT_SLICE]: {text_slice:?}"));
-
             let byte_offset = text_slice.len() - utf16_count;
 
             range.start -= last_end_byte_offset;
             range.end -= byte_offset;
 
-            if let Some(ast::Expr::FuncCall(call)) = node.cast() {
-                if let ast::Expr::Ident(ident) = call.callee() {
-                    if ident.eq_ignore_ascii_case("pagebreak") {
-                        in_block = false;
-                        source += "[]";
-
-                        if let Some(block) = blocks.last_mut() {
-                            block.range.end = range.end;
-                        }
-
-                        continue;
-                    }
-                }
-            }
-
             if let Some(until_newline) = node.text().encode_utf16().position(|ch| ch == '\n' as u16)
             {
                 in_block = false;
 
-                if let Some(last_range) = blocks.last_mut() {
-                    last_range.range.end += until_newline;
+                if let Some(last_range) = block_ranges.last_mut() {
+                    last_range.end += until_newline;
 
-                    let mut range = last_range.range.clone();
+                    let mut range = last_range.clone();
+                    let range_end = range.end;
                     range.start += last_start_byte_offset;
                     range.end += last_end_byte_offset;
 
                     source += &text[range];
-                    source += "\n#pagebreak()\n";
+
+                    self.index_mapper.add_change(range_end, source.len());
+
+                    match last_node {
+                        Some(
+                            SyntaxKind::Text
+                            | SyntaxKind::Emph
+                            | SyntaxKind::Strong
+                            | SyntaxKind::Equation,
+                        ) => source += "\\",
+                        _ => {}
+                    }
+
+                    // crate::log(&format!("[LAST_NODE]: {last_node:?}"));
+
+                    source += "\n";
                 }
-            }
-            // else if node.erroneous() {
-            //     in_block = false;
-
-            //     // if let Some(last_block) = blocks.last() {
-            //     //     self.index_mapper
-            //     //         .add_change(last_block.range.start, source.len());
-            //     // }
-
-            //     blocks.push(Block::new(
-            //         range,
-            //         source.encode_utf16().count(),
-            //         TypstDiagnostic::from_errors(node.errors(), &self.world),
-            //     ));
-
-            //     source += "\n#pagebreak()\n";
-            // }
-            else if in_block {
-                blocks.last_mut().unwrap().range.end = range.end;
             } else {
-                in_block = true;
+                last_node = Some(node.kind());
 
-                // if blocks.is_empty() {
-                //     self.index_mapper
-                //         .add_change(range.start, source.len() + range.start);
-                // } else {
-                self.index_mapper.add_change(range.start, source.len());
-                // }
+                if in_block {
+                    block_ranges.last_mut().unwrap().end = range.end;
+                } else {
+                    in_block = true;
 
-                blocks.push(Block::new(
-                    range,
-                    source.encode_utf16().count(),
-                    Box::new([]),
-                ));
+                    // self.index_mapper
+                    //     .add_change(range.end, source.len() + text_slice.len());
+
+                    block_ranges.push(range);
+                }
             }
 
             last_start_byte_offset = last_end_byte_offset;
             last_end_byte_offset = byte_offset;
         }
 
-        if let Some(last_range) = blocks.last_mut() {
+        if let Some(last_range) = block_ranges.last_mut() {
             if in_block {
-                let mut range = last_range.range.clone();
-
-                // crate::log(&format!("[RANGE]: {range:?}"));
-                // crate::log(&format!(
-                //     "[LAST_START_BYTE_OFFSET]: {last_start_byte_offset:?}"
-                // ));
-                // crate::log(&format!("[LAST_END_BYTE_OFFSET]: {last_end_byte_offset:?}"));
+                let mut range = last_range.clone();
+                let range_end = range.end;
 
                 // range.start += last_start_byte_offset;
                 range.end += last_end_byte_offset;
 
-                self.index_mapper.add_change(range.start, source.len());
-
                 source += &text[range];
+
+                self.index_mapper.add_change(range_end, source.len());
             }
         }
-        // else {
-        //     // return serde_wasm_bindgen::to_value::<[(); 0]>(&[]);
-        //     // return SyncResult::Ok(Box::new([]));
-        //     return SyncResult::Ok(Box::new([
-        //         RangedRender {
-        //             index: 0,
-        //             block: Block::new(0..utf16_count, 0, diagnostics.drain(..).collect::<Box<[_]>>(),),
-        //             render: None,
-        //         }
-        //     ]));
-        // }
 
-        crate::log(&format!(
-            "[SOURCE]: {}",
-            &source[(self.prelude(true) + prelude).len()..]
-        ));
+        // crate::log(&format!("[RANGES]: {block_ranges:?}"));
 
-        self.world.main_source_mut().replace(&source);
+        // crate::log(&format!(
+        //     "[SOURCE]: {}",
+        //     &source[(self.prelude(true) + prelude).len()..]
+        // ));
 
-        let compiled = compile::<PagedDocument>(&self.world);
-        errors.extend(TypstDiagnostic::from_diagnostics(
-            compiled.warnings,
-            &self.index_mapper,
-            &self.world,
-        ));
-        match compiled.output {
-            Ok(document) => {
-                if blocks.is_empty() {
-                    self.document = Some(document);
+        // self.world.main_source_mut().replace(&source);
 
-                    Box::new([RangedRender {
-                        index: 0,
-                        block: Block::new(
-                            0..text.encode_utf16().count(),
-                            0,
-                            errors.into_boxed_slice(),
-                        ),
-                        render: None,
-                    }])
-                } else {
-                    let pages = &document.pages;
+        // TODO: handle possible prelude height
+        let mut offset_height = 0_f64;
 
-                    let blocks = iter::zip(blocks, pages.iter().cloned())
-                        .enumerate()
-                        .map(|(index, (block, page))| {
-                            let not_empty = page
-                                .frame
-                                .items()
-                                .filter(|(_point, item)| !matches!(item, FrameItem::Tag(..)))
-                                .count()
-                                > 0;
+        let renders = block_ranges
+            .into_iter()
+            .filter_map(|range| {
+                let end_range = self.index_mapper.map_index(range.end);
+                self.world
+                    .main_source_mut()
+                    .replace(&source.get(..end_range)?);
 
-                            // not_empty.then(|| RangedRender::new(index, block, encode_frame(page, pt)))
-                            RangedRender::new(
-                                index,
-                                block,
-                                not_empty.then(|| encode_frame(page, self.pt)),
-                            )
-                        })
-                        .collect::<Box<[_]>>();
-
-                    self.document = Some(document);
-
-                    blocks
-                }
-            }
-            Err(diagnostics) => {
-                errors.extend(TypstDiagnostic::from_diagnostics(
-                    diagnostics,
+                let compiled = compile::<PagedDocument>(&self.world);
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    compiled.warnings,
                     &self.index_mapper,
                     &self.world,
                 ));
 
-                Box::new([RangedRender {
-                    index: 0,
-                    block: Block::new(0..text.encode_utf16().count(), 0, errors.into_boxed_slice()),
-                    render: None,
-                }])
-            }
+                match compiled.output {
+                    Ok(document) => {
+                        let page_height = document
+                            .pages
+                            .iter()
+                            .map(|page| page.frame.height())
+                            .sum::<Abs>()
+                            .to_pt();
+                        let height = page_height - offset_height;
+
+                        // crate::log(&format!("[PAGE_HEIGHT]: {page_height}"));
+                        // crate::log(&format!("[OFFSET_HEIGHT]: {offset_height}"));
+                        // crate::log(&format!("[HEIGHT]: {height}"));
+
+                        if height <= 0_f64 {
+                            return None;
+                        }
+
+                        let canvas =
+                            mnemo_render::render(&document, offset_height, self.pt, &self.world);
+                        let render = BASE64
+                            .encode(&canvas.encode_png().unwrap())
+                            .into_boxed_str();
+
+                        offset_height = page_height;
+
+                        self.document = Some(document);
+
+                        Some(RangedRender::new(range, RenderedFrame { render, height }))
+                    }
+                    Err(errors) => {
+                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                            errors,
+                            &self.index_mapper,
+                            &self.world,
+                        ));
+
+                        crate::error(&format!("[ERRORS]: {diagnostics:?}"));
+
+                        let start_range = self.index_mapper.map_index(range.start);
+
+                        source.replace_range(
+                            start_range..end_range,
+                            &(" ".repeat(end_range - start_range - 1) + "\\"),
+                        );
+
+                        None
+                    }
+                }
+            })
+            .collect();
+
+        SyncResult {
+            renders,
+            diagnostics,
         }
     }
 
@@ -529,6 +506,25 @@ impl TypstState {
     //     //     Err(..) => String::from("error"),
     //     // }
     //     html(&compiled.output.unwrap()).unwrap()
+    // }
+
+    // #[wasm_bindgen(js_name = renderPdf)]
+    // pub fn render_pdf(&mut self, id: &FileIdWrapper) -> Vec<u8> {
+    //     self.world.main = Some(id.inner());
+
+    //     let mut source = self.prelude(false);
+    //     source += self.world.main_source().text();
+
+    //     self.world.main_source_mut().replace(&source);
+
+    //     let compiled = compile(&self.world);
+
+    //     // match compiled.output {
+    //     //     Ok(document) => html(&document).unwrap(),
+    //     //     Err(..) => String::from("error"),
+    //     // }
+
+    //     pdf(&compiled.output.unwrap(), &PdfOptions::default()).unwrap()
     // }
 
     #[wasm_bindgen]
@@ -606,69 +602,19 @@ pub struct Autocomplete {
 #[derive(Debug, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RangedRender {
-    pub index: usize,
-    pub block: Block,
-    pub render: Option<EncodedFrame>,
+    pub range: Range<usize>,
+    pub render: RenderedFrame,
 }
 
 impl RangedRender {
-    pub fn new(index: usize, block: Block, render: Option<EncodedFrame>) -> Self {
-        Self {
-            index,
-            block,
-            render,
-        }
-    }
-}
-
-// #[wasm_bindgen]
-// pub struct RangeUsize {
-//     pub start: usize,
-//     pub end: usize,
-// }
-
-// impl From<Range<usize>> for RangeUsize {
-//     fn from(range: Range<usize>) -> Self {
-//         Self {
-//             start: range.start,
-//             end: range.end,
-//         }
-//     }
-// }
-
-#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct Block {
-    pub range: Range<usize>,
-    pub offset: usize,
-    pub errors: Box<[TypstDiagnostic]>,
-}
-
-impl Block {
-    pub fn new(range: Range<usize>, offset: usize, errors: Box<[TypstDiagnostic]>) -> Self {
-        Self {
-            range,
-            offset,
-            errors,
-        }
+    pub fn new(range: Range<usize>, render: RenderedFrame) -> Self {
+        Self { range, render }
     }
 }
 
 #[derive(Debug, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct EncodedFrame {
+pub struct RenderedFrame {
     render: Box<str>,
-    height: u32,
-}
-
-fn encode_frame(frame: Page, pt: f32) -> EncodedFrame {
-    let canvas = &render(&frame, pt);
-    let render = BASE64
-        .encode(&canvas.encode_png().unwrap())
-        .into_boxed_str();
-
-    EncodedFrame {
-        render,
-        height: canvas.height(),
-    }
+    height: f64,
 }

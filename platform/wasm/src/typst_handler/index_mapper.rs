@@ -12,30 +12,27 @@ impl IndexMapper {
         let inflection = self
             .inflections
             .iter()
-            .rfind(|(_, change)| offset >= *change);
+            .find(|(_, change)| offset <= *change);
 
-        crate::log(&format!("[OFFSET]: {offset:?}"));
-        crate::log(&format!("[INFLECTION]: {inflection:?}"));
-        crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
+        // crate::log(&format!("[OFFSET]: {offset:?}"));
+        // crate::log(&format!("[INFLECTION]: {inflection:?}"));
+        // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
 
         match inflection {
-            Some((index, change)) => index + (offset - change),
+            Some((index, change)) => index - (change - offset),
             None => 0,
         }
     }
 
     pub fn map_index(&self, index: usize) -> usize {
-        let inflection = self
-            .inflections
-            .iter()
-            .rfind(|(change, _)| index >= *change);
+        let inflection = self.inflections.iter().find(|(change, _)| index <= *change);
 
-        crate::log(&format!("[INDEX]: {index:?}"));
-        crate::log(&format!("[INFLECTION]: {inflection:?}"));
-        crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
+        // crate::log(&format!("[INDEX]: {index:?}"));
+        // crate::log(&format!("[INFLECTION]: {inflection:?}"));
+        // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
 
         match inflection {
-            Some((change, offset)) => offset + (index - change),
+            Some((change, offset)) => offset - (change - index),
             None => 0,
         }
     }
