@@ -7,22 +7,17 @@ import {
   crosshairCursor,
   keymap,
   placeholder,
-  Decoration,
   EditorView,
-  ViewPlugin,
-  WidgetType,
 } from "@codemirror/view";
 
 import { EditorState } from "@codemirror/state";
 import {
   // foldGutter,
   indentOnInput,
-  syntaxTree,
   syntaxHighlighting,
   defaultHighlightStyle,
   bracketMatching,
   foldKeymap,
-  LRLanguage,
 } from "@codemirror/language";
 import {
   history,
@@ -207,7 +202,6 @@ function createStateConfig(
   };
 }
 
-// const activeLineBackground = `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
 const activeLineBackground = computed(() => {
   const { secondaryContainer } = palette.value;
 

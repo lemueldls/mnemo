@@ -14,6 +14,7 @@
   - Use file system storage on desktop and mobile versions.
   - Sync notes with Durable Objects.
   - Unload packages on space leave.
+  - Automatically install packages.
   - Focus timer.
   - Better screenshot tool.
   - Better daily calendar.
@@ -25,8 +26,6 @@
   - Custom font loader.
   - Better PDF explorer.
   - Handwritten notes and drawings.
-- Bugs
-  - Handle diagnostic spans of files outside of main.
 
 ## License
 
