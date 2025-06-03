@@ -345,7 +345,9 @@ impl TypstState {
                     self.index_mapper.add_change(range_end, source.len());
 
                     match last_node {
-                        Some(SyntaxKind::ShowRule | SyntaxKind::SetRule) => {}
+                        Some(
+                            SyntaxKind::LetBinding | SyntaxKind::SetRule | SyntaxKind::ShowRule,
+                        ) => {}
                         _ => source += " #[\\ ]",
                     }
 
