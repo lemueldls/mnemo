@@ -91,7 +91,7 @@ export default defineNuxtConfig({
     viewTransition: true,
     asyncContext: true,
   },
-  compatibilityDate: "2025-05-03",
+  compatibilityDate: "2025-06-03",
   nitro: {
     esbuild: { options: { target: "esnext" } },
     // moduleSideEffects: ["@material/web"],
