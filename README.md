@@ -10,22 +10,21 @@
 
 ## TODO
 
-- Features
-  - Use file system storage on desktop and mobile versions.
-  - Sync notes with Durable Objects.
-  - Unload packages on space leave.
-  - Automatically install packages.
-  - Focus timer.
-  - Better screenshot tool.
-  - Better daily calendar.
-  - Better new space creation.
-  - Better local search
-  - Global search system.
-  - Flash cards and quiz generator.
-  - Reference study sheet generator.
-  - Custom font loader.
-  - Better PDF explorer.
-  - Handwritten notes and drawings.
+- Use file system storage on desktop and mobile versions.
+- Sync notes with Durable Objects.
+- Unload packages on space leave.
+- Automatically install packages.
+- Focus timer.
+- Better screenshot tool.
+- Better daily calendar.
+- Better new space creation.
+- Better local search
+- Global search system.
+- Flash cards and quiz generator.
+- Reference study sheet generator.
+- Custom font loader.
+- Better PDF explorer.
+- Handwritten notes and drawings.
 
 ## License
 
