@@ -31,9 +31,6 @@ export default defineNuxtConfig({
     dirs: [
       "composables",
       "composables/*/index.{ts,js,mjs,mts}",
-      // platform
-      //   ? "composables/*/tauri.{ts,js,mjs,mts}"
-      //   : "composables/*/server.{ts,js,mjs,mts}",
       "composables/*/server.{ts,js,mjs,mts}",
     ],
   },
@@ -88,7 +85,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-06-03",
   nitro: {
     esbuild: { options: { target: "esnext" } },
-    // moduleSideEffects: ["@material/web"],
+    moduleSideEffects: ["@material/web"],
     prerender: {
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
