@@ -344,13 +344,8 @@ impl TypstState {
                     self.index_mapper.add_change(range_end, source.len());
 
                     match last_node {
-                        Some(
-                            SyntaxKind::Text
-                            | SyntaxKind::Emph
-                            | SyntaxKind::Strong
-                            | SyntaxKind::Equation,
-                        ) => source += "\\",
-                        _ => {}
+                        Some(SyntaxKind::ShowRule | SyntaxKind::SetRule) => {}
+                        _ => source += " #[\\ ]",
                     }
 
                     // crate::log(&format!("[LAST_NODE]: {last_node:?}"));
