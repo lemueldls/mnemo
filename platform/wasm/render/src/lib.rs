@@ -26,7 +26,7 @@ use typst_library::{
 /// This renders the page at the given number of pixels per point and returns
 /// the resulting `tiny-skia` pixel buffer.
 #[typst_macros::time(name = "render")]
-pub fn render_world_frame(frame: &Frame, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
+pub fn render_offset_frame(frame: &Frame, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
     let mut size = frame.size();
     size.y -= Abs::pt(offset_height);
 
@@ -49,7 +49,7 @@ pub fn render(document: &PagedDocument, offset_height: f64, pixel_per_pt: f32) -
     let pixmaps: Vec<_> = document
         .pages
         .iter()
-        .map(|page| render_world_frame(&page.frame, offset_height, pixel_per_pt))
+        .map(|page| render_offset_frame(&page.frame, offset_height, pixel_per_pt))
         .collect();
 
     // let gap = (pixel_per_pt * gap.to_f32()).round() as u32;
