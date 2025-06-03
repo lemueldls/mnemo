@@ -1,8 +1,9 @@
 import init, { TypstState, PackageFile } from "mnemo-wasm";
 import type { Package } from "~~/server/api/list-packages";
 
-const state = init().then(() => new TypstState());
-export const useTypst = () => state;
+export const useTypst = createSharedComposable(
+  async () => await init().then(() => new TypstState()),
+);
 
 export const useInstalledPackages = async (spaceId: string) =>
   await useStorageItem<Package[]>(`spaces/${spaceId}/packages.json`, []);
