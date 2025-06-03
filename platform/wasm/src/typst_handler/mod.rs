@@ -289,6 +289,7 @@ impl TypstState {
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,tracking:0.1pt,weight:500)
 
                 #show list:set block(above:0em,below:0em)
+                #show enum:set block(above:0em,below:0em)
             "#,
             theme = self.theme,
             size = self.size + 0.9,
