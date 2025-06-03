@@ -25,14 +25,14 @@ whenever(ready, () => emit("ready", true));
 
 <template>
   <m3-theme id="splashscreen" color="#16161d" dark :class="{ ready }">
-    <div class="w-sm flex flex-col gap-4">
+    <div class="w-sm flex flex-col gap-2">
       <div class="m3-label-large flex justify-between">
         <span class="font-bold">Loading...</span>
 
         <span>{{ progress }} / {{ totalProgress }}</span>
       </div>
 
-      <md-linear-progress class="h-2" :value="progress / totalProgress" />
+      <md-linear-progress :value="progress / totalProgress" />
     </div>
   </m3-theme>
 </template>

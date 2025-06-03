@@ -8,7 +8,7 @@ const space = computed(() => spaces.value[spaceId.value]!);
 </script>
 
 <template>
-  <m3-theme :color="space.color">
+  <m3-theme :color="space.color" :dark="false">
     <m3-page>
       <div class="flex h-full flex-1">
         <div class="flex size-full flex-1 flex-col">
