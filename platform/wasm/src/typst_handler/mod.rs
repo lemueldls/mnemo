@@ -315,7 +315,7 @@ impl TypstState {
         let children = self.world.main_source().root().children();
         let mut diagnostics = Vec::new();
 
-        let mut last_node = None;
+        let mut last_kind: Option<SyntaxKind> = None;
 
         for node in children {
             let mut range = self.world.range(node.span()).unwrap();
@@ -344,10 +344,8 @@ impl TypstState {
 
                     self.index_mapper.add_change(range_end, source.len());
 
-                    match last_node {
-                        Some(
-                            SyntaxKind::LetBinding | SyntaxKind::SetRule | SyntaxKind::ShowRule,
-                        ) => {}
+                    match last_kind {
+                        Some(kind) if kind.is_stmt() => {}
                         _ => source += " #[\\ ]",
                     }
 
@@ -356,7 +354,7 @@ impl TypstState {
                     source += "\n";
                 }
             } else {
-                last_node = Some(node.kind());
+                last_kind = Some(node.kind());
 
                 if in_block {
                     block_ranges.last_mut().unwrap().end = range.end;
