@@ -95,40 +95,9 @@ impl MnemoWorld {
         self.files.get(&id)
     }
 
-    pub fn set_source(&mut self, id: &FileId, text: &str) {
-        self.files.get_mut(id).unwrap().replace(text);
-    }
-
-    pub fn compile(&self) {
-        let compiled = compile::<PagedDocument>(self);
-        for warning in compiled.warnings {
-            crate::warn(&warning.message);
-        }
-        // let document = compiled.output.unwrap();
-
-        // for page in document.pages {
-        //     for (point, item) in page.items() {
-        //         match item {
-        //             FrameItem::Group(_) => todo!(),
-        //             FrameItem::Text(_) => todo!(),
-        //             FrameItem::Shape(..) => todo!(),
-        //             FrameItem::Image(..) => todo!(),
-        //             FrameItem::Meta(meta, size) => match meta {
-        //                 Meta::Link(_) => todo!(),
-        //                 Meta::Elem(content) => {
-        //                     // for field in content.fields() {
-        //                     //     dbg!(field);
-        //                     // }
-        //                 }
-        //                 Meta::PageNumbering(page_numbering) => {
-        //                     dbg!(page_numbering);
-        //                 }
-        //                 Meta::Hide => todo!(),
-        //             },
-        //         }
-        //     }
-        // }
-    }
+    // pub fn set_source(&mut self, id: &FileId, text: &str) {
+    //     self.files.get_mut(id).unwrap().replace(text);
+    // }
 }
 
 impl World for MnemoWorld {
