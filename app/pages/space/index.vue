@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { createId } from "@paralleldrive/cuid2";
 
-import html2canvas from "@html2canvas/html2canvas";
 import type { StickyNote } from "~/composables/sticky";
 
 definePageMeta({ layout: "space" });
@@ -49,6 +48,8 @@ const screenshotBlob = ref<Blob>();
 const screenshotUrl = ref<string>();
 
 async function screenshot() {
+  const { default: html2canvas } = await import("@html2canvas/html2canvas");
+
   screenshotUrl.value = "";
   screenshotBlob.value = undefined;
 
