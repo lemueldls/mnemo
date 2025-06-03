@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
   // devServer: { https: true },
-  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
+  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   runtimeConfig: {
     public: {
       platform,
@@ -77,12 +77,6 @@ export default defineNuxtConfig({
         redirectURL: "",
       },
     },
-  },
-  routeRules: {
-    "/": { ssr: false },
-    "/**": { ssr: false },
-    "/space": { ssr: false },
-    "/space/**": { ssr: false },
   },
   // devServer: { https: true },
   future: { compatibilityVersion: 4 },
@@ -117,5 +111,5 @@ export default defineNuxtConfig({
     langDir: "locales",
     baseUrl: siteUrl,
   },
-  // ssrLit: { litElementPrefix: ["md-"] },
+  ssrLit: { litElementPrefix: ["md-"] },
 });

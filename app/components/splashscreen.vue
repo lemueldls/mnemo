@@ -1,18 +1,26 @@
 <script setup lang="ts">
-const progress = ref(0);
-const totalProgress = 3;
+const emit = defineEmits<{ (e: "ready", isReady: boolean): void }>();
 
-const typstState = useTypst();
-typstState.then(() => progress.value++);
+const progress = ref(0);
+const totalProgress = 4;
 
 onMounted(() => {
   progress.value++;
+
+  const typstState = useTypst();
+  typstState.then(() => progress.value++);
+
+  useTimeoutFn(() => {
+    progress.value++;
+  }, 750);
 });
+
 onNuxtReady(async () => {
   progress.value++;
 });
 
 const ready = computed(() => progress.value >= totalProgress);
+whenever(ready, () => emit("ready", true));
 </script>
 
 <template>
