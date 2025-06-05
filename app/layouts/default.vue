@@ -21,8 +21,6 @@ const drawerOpen = ref<boolean>(false);
 const settingsOpen = ref<boolean>(false);
 const newSpaceOpen = useNewSpaceOpen();
 
-// const { ready, loggedIn } = useUserSession();
-
 interface Page {
   path: string;
   name: string;
@@ -33,8 +31,6 @@ const pages: Page[] = [
   { path: "/", name: "Home", icon: "home" },
   { path: "/calendar", name: "Calendar", icon: "calendar_today" },
 ];
-
-const { user } = useAuth();
 </script>
 
 <template>
@@ -42,10 +38,6 @@ const { user } = useAuth();
     <m3-page>
       <m3-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
-          <div class="flex flex-col">
-            User: {{ user?.name }} Email: {{ user?.email }}
-          </div>
-
           <!-- <div>
             <h2 class="text-m3-primary m3-title-medium">mnemo</h2>
           </div> -->
@@ -146,6 +138,6 @@ const { user } = useAuth();
 #header {
   @apply px-4 pb-4 pt-2;
 
-  font-family: "Iosevka Book", sans-serif;
+  font-family: "Maple Mono", "Maple Mono CN", sans-serif;
 }
 </style>

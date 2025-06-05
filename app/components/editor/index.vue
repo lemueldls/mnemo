@@ -57,8 +57,8 @@ const props = defineProps<{
 
 const path = defineModel<string>({ required: true });
 
-const pixelPerPoint = ref(window.devicePixelRatio);
-// const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
+const pixelPerPoint = ref(2 /* window.devicePixelRatio */);
+// const pxToPt = (px: number) => px * 2 /* window.devicePixelRatio */ * (72 / 96);
 
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
@@ -223,16 +223,20 @@ const activeLineBackground = computed(() => {
     @apply m3-body-large h-full outline-none;
   }
 
+  .cm-scroller {
+    @apply overflow-y-scroll;
+  }
+
   .cm-line {
     @apply p-0 px-[1px] text-[16px];
 
-    font-family: "Iosevka Book";
+    font-family: "Maple Mono", "Maple Mono CN";
   }
 
   .cm-content {
     @apply caret-m3-primary p-0;
 
-    font-family: "Iosevka Book";
+    font-family: "Maple Mono", "Maple Mono CN";
   }
 
   .cm-selectionBackground {
@@ -272,7 +276,7 @@ const activeLineBackground = computed(() => {
   .cm-tooltip {
     @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded-lg border-none p-0 shadow;
 
-    font-family: "Iosevka Book";
+    font-family: "Maple Mono", "Maple Mono CN";
 
     [aria-selected="true"] {
       @apply bg-m3-secondary-container! text-m3-on-secondary-container!;
@@ -375,7 +379,6 @@ const activeLineBackground = computed(() => {
 
   .typst-render {
     display: inline;
-    // vertical-align: bottom;
     cursor: text;
     -wekkit-user-drag: none;
     -moz-user-drag: none;

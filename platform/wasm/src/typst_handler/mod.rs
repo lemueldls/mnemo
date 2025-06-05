@@ -5,6 +5,7 @@ mod wrappers;
 
 use core::fmt;
 use std::{
+    borrow::Cow,
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
     iter,
@@ -269,7 +270,7 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:{size}pt,top-edge:"bounds",bottom-edge:"descender")
+                #set text(fill:theme.on-background,size:{size}pt,top-edge:"ascender",bottom-edge:"descender")
                 #set align(horizon)
                 #set par(leading:0em,linebreaks:"simple")
                 {page_config}
@@ -370,6 +371,8 @@ impl TypstState {
 
         self.world.main = Some(id.inner());
 
+        let mut temp_ir = ir.clone();
+
         // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
         let mut diagnostics = Vec::new();
@@ -385,7 +388,6 @@ impl TypstState {
                 let end_byte_diff =
                     aux_range.end - aux_source.byte_to_utf16(aux_range.start).unwrap();
 
-                let start_byte = self.index_mapper.aux_to_main(aux_range.start);
                 let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
                 if block.is_expr {
                     // TODO: proper offsetting
@@ -393,9 +395,9 @@ impl TypstState {
                 }
 
                 let source = self.world.main_source_mut();
-                source.replace(&ir.get(..end_byte)?);
+                source.replace(&temp_ir.get(..end_byte)?);
 
-                // crate::log(&format!("[SOURCE]: {:?}", ir.get(start_byte..end_byte)));
+                // crate::log(&format!("[SOURCE]: {:?}", partial_ir.get(start_byte..end_byte)));
 
                 let start_utf16 = aux_range.start - start_byte_diff;
                 let end_utf16 = aux_range.end - end_byte_diff;
@@ -456,7 +458,7 @@ impl TypstState {
 
                         let start_range = self.index_mapper.aux_to_main(aux_range.start);
 
-                        ir.replace_range(
+                        temp_ir.replace_range(
                             start_range..end_byte,
                             &(" ".repeat(end_byte - start_range - 1) + "\\"),
                         );
@@ -466,6 +468,8 @@ impl TypstState {
                 }
             })
             .collect();
+
+        self.world.main_source_mut().replace(&ir);
 
         SyncResult {
             renders,
