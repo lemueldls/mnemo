@@ -28,6 +28,7 @@ use super::{
 #[derive(Default)]
 pub struct MnemoWorld {
     pub main: Option<FileId>,
+    pub aux: Option<FileId>,
     pub files: HashMap<FileId, Source>,
     library: LazyHash<Library>,
     book: LazyHash<FontBook>,
@@ -52,6 +53,7 @@ impl MnemoWorld {
 
         Self {
             main: None,
+            aux: None,
             files: HashMap::new(),
             library: LazyHash::new(library),
             book: LazyHash::new(searcher.book),
@@ -78,6 +80,14 @@ impl MnemoWorld {
 
     pub fn main_source_mut(&mut self) -> &mut Source {
         self.files.get_mut(self.main.as_ref().unwrap()).unwrap()
+    }
+
+    pub fn aux_source(&self) -> &Source {
+        self.files.get(self.aux.as_ref().unwrap()).unwrap()
+    }
+
+    pub fn aux_source_mut(&mut self) -> &mut Source {
+        self.files.get_mut(self.aux.as_ref().unwrap()).unwrap()
     }
 
     pub fn insert_file(&mut self, id: FileId, text: String) {

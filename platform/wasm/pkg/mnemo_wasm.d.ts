@@ -72,6 +72,7 @@ export class TypstState {
   insertFile(path: string, text: string): FileId;
   installPackage(spec: string, files: PackageFile[]): void;
   sync(id: FileId, text: string, prelude: string): SyncResult;
+  renderPdf(id: FileId): Uint8Array;
   click(index: number, x: number, y: number): TypstJump | undefined;
   autocomplete(cursor: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
@@ -99,6 +100,7 @@ export interface InitOutput {
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
+  readonly typststate_renderPdf: (a: number, b: number) => [number, number];
   readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;

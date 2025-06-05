@@ -16,6 +16,7 @@ use typst::{
 use wasm_bindgen::prelude::*;
 
 use super::index_mapper::IndexMapper;
+use crate::typst_handler::world::MnemoWorld;
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -64,15 +65,27 @@ impl TypstDiagnostic {
     pub fn from_diagnostics(
         diagnostics: EcoVec<SourceDiagnostic>,
         index_mapper: &IndexMapper,
-        world: &dyn WorldExt,
+        world: &MnemoWorld,
     ) -> Box<[Self]> {
         diagnostics
             .into_iter()
             .map(|diagnostic| {
                 let range = world.range(diagnostic.span).unwrap();
 
+                let aux_source = world.aux_source();
+
+                let aux_start = index_mapper.main_to_aux(range.start);
+                let aux_end = index_mapper.main_to_aux(range.end);
+
+                let start_byte_diff = aux_start - aux_source.byte_to_utf16(aux_start).unwrap();
+                let end_byte_diff = aux_end - aux_source.byte_to_utf16(aux_start).unwrap();
+
+                let start_utf16 = aux_start - start_byte_diff;
+                let end_utf16 = aux_end - end_byte_diff;
+                let range_utf16 = start_utf16..end_utf16;
+
                 TypstDiagnostic {
-                    range: index_mapper.map_offset(range.start)..index_mapper.map_offset(range.end),
+                    range: range_utf16,
                     severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
                     message: diagnostic.message.to_string(),
                     hints: diagnostic
@@ -107,7 +120,7 @@ impl TypstJump {
 
                 Self::File {
                     // id: state.finish(),
-                    position: index_mapper.map_offset(position),
+                    position: index_mapper.main_to_aux(position),
                 }
             }
             typst_ide::Jump::Url(..) => todo!(),
