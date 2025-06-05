@@ -59,17 +59,31 @@ impl FontSearcher {
         };
 
         // Embed default fonts.
+
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Regular.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Bold.ttf"
+        // ));
+        // search(include_bytes!(
+        //     "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf"
+        // ));
+
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Regular.ttf"
+            "../../../../public/fonts/maple/ttf/MapleMono-Regular.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Italic.ttf"
+            "../../../../public/fonts/maple/ttf/MapleMono-Italic.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-Bold.ttf"
+            "../../../../public/fonts/maple/ttf/MapleMono-Bold.ttf"
         ));
         search(include_bytes!(
-            "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf"
+            "../../../../public/fonts/maple/ttf/MapleMono-BoldItalic.ttf"
         ));
 
         // search(include_bytes!(

@@ -60,7 +60,9 @@ class TypstWidget extends WidgetType {
   }
 
   public override get estimatedHeight() {
-    return this.#image.height || this.frame.height / window.devicePixelRatio;
+    return (
+      this.#image.height || this.frame.height / 2 /* window.devicePixelRatio */
+    );
   }
 
   public override ignoreEvent(event: Event) {
@@ -156,7 +158,7 @@ function decorate(
             style +=
               "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
-            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${(render.height - lineHeight) / window.devicePixelRatio}px`;
+            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${render.height - lineHeight}px`;
           else lineHeight += view.lineBlockAt(line.from).height;
 
           widgets.push(
@@ -191,7 +193,8 @@ export const viewPlugin = (
           update.selectionSet
         ) {
           typstState.resize(
-            update.view.dom.clientWidth - 2 * window.devicePixelRatio,
+            update.view.contentDOM.clientWidth -
+              2 * 2 /* window.devicePixelRatio */,
           );
 
           const text = update.state.doc.toString();

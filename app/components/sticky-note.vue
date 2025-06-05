@@ -188,7 +188,7 @@ const selectionBackground = computed(() => {
     touch-action: none;
     user-select: none;
 
-    font-family: "Iosevka Book", sans-serif;
+    font-family: "Maple Mono", "Maple Mono CN", sans-serif;
   }
 
   ::selection {
