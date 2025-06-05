@@ -118,6 +118,11 @@ function takeFromExternrefTable0(idx) {
     return value;
 }
 
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
@@ -402,6 +407,17 @@ export class TypstState {
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.typststate_sync(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
         return ret;
+    }
+    /**
+     * @param {FileId} id
+     * @returns {Uint8Array}
+     */
+    renderPdf(id) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
     }
     /**
      * @param {number} index

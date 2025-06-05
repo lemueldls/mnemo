@@ -4,35 +4,38 @@ pub struct IndexMapper {
 }
 
 impl IndexMapper {
-    pub fn add_change(&mut self, index: usize, offset: usize) {
-        self.inflections.push((index, offset));
+    pub fn map_index(&mut self, main: usize, aux: usize) {
+        self.inflections.push((main, aux));
     }
 
-    pub fn map_offset(&self, offset: usize) -> usize {
+    pub fn main_to_aux(&self, aux_idx: usize) -> usize {
         let inflection = self
             .inflections
             .iter()
-            .find(|(_, change)| offset <= *change);
+            .rfind(|(_, change)| aux_idx >= *change);
 
-        // crate::log(&format!("[OFFSET]: {offset:?}"));
+        // crate::log(&format!("[OFFSET]: {aux_idx:?}"));
         // crate::log(&format!("[INFLECTION]: {inflection:?}"));
         // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
 
         match inflection {
-            Some((index, change)) => index - (change - offset),
+            Some((main_idx, change)) => main_idx + (aux_idx - change),
             None => 0,
         }
     }
 
-    pub fn map_index(&self, index: usize) -> usize {
-        let inflection = self.inflections.iter().find(|(change, _)| index <= *change);
+    pub fn aux_to_main(&self, main_idx: usize) -> usize {
+        let inflection = self
+            .inflections
+            .iter()
+            .rfind(|(change, _)| main_idx >= *change);
 
-        // crate::log(&format!("[INDEX]: {index:?}"));
+        // crate::log(&format!("[INDEX]: {main_idx:?}"));
         // crate::log(&format!("[INFLECTION]: {inflection:?}"));
         // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
 
         match inflection {
-            Some((change, offset)) => offset - (change - index),
+            Some((change, aux_idx)) => aux_idx + (main_idx - change),
             None => 0,
         }
     }

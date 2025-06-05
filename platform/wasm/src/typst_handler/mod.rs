@@ -31,7 +31,7 @@ use typst::{
     visualize::Color,
 };
 // use typst_svg::{svg, svg_merged};
-// use typst_pdf::{PdfOptions, PdfStandard, pdf};
+use typst_pdf::{PdfOptions, PdfStandard, pdf};
 // use typst_html::html;
 use typst_render::{render, render_merged};
 use wasm_bindgen::prelude::*;
@@ -269,7 +269,7 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:{size}pt,top-edge:"ascender",bottom-edge:"descender")
+                #set text(fill:theme.on-background,size:{size}pt,top-edge:"bounds",bottom-edge:"descender")
                 #set align(horizon)
                 #set par(leading:0em,linebreaks:"simple")
                 {page_config}
@@ -281,130 +281,128 @@ impl TypstState {
                 #set table(stroke:theme.outline,inset:10pt)
 
                 #show heading:set block(above:0em,below:0em)
-                #show heading.where(level:1):set text(fill:theme.on-primary-container,size:32pt,tracking:0pt,weight:400)
-                #show heading.where(level:2):set text(fill:theme.on-secondary-container,size:28pt,tracking:0pt,weight:400)
-                #show heading.where(level:3):set text(fill:theme.on-primary-container,size:24pt,tracking:0pt,weight:400)
-                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,tracking:0pt,weight:400)
-                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,tracking:0.15pt,weight:500)
-                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,tracking:0.1pt,weight:500)
+                #show heading.where(level:1):set text(fill:theme.on-primary-container,size:32pt,weight:400)
+                #show heading.where(level:2):set text(fill:theme.on-secondary-container,size:28pt,weight:400)
+                #show heading.where(level:3):set text(fill:theme.on-primary-container,size:24pt,weight:400)
+                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
+                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
+                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
 
                 #show list:set block(above:0em,below:0em)
                 #show enum:set block(above:0em,below:0em)
             "#,
             theme = self.theme,
-            size = self.size + 0.9,
+            size = self.size,
         )
     }
 
     #[wasm_bindgen]
     pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> SyncResult {
-        let mut source = self.prelude(true) + prelude;
+        let mut ir = self.prelude(true) + prelude;
 
         self.index_mapper = IndexMapper::default();
-        self.index_mapper.add_change(0, source.len());
+        self.index_mapper.map_index(0, ir.len());
 
-        let mut block_ranges = Vec::<Range<usize>>::new();
+        let mut block_ranges = Vec::<RangedBlock>::new();
         let mut in_block = false;
 
-        let mut last_start_byte_offset = 0;
-        let mut last_end_byte_offset = 0;
+        let aux_id = id.inner().join("$");
+        self.world.insert_file(aux_id, text.to_string());
+        self.world.aux = Some(aux_id);
 
-        self.world.main = Some(id.inner());
-        self.world.main_source_mut().replace(text);
-
-        let children = self.world.main_source().root().children();
-        let mut diagnostics = Vec::new();
+        let children = self.world.aux_source().root().children();
 
         let mut last_kind: Option<SyntaxKind> = None;
 
         for node in children {
-            let mut range = self.world.range(node.span()).unwrap();
+            let range = self.world.range(node.span()).unwrap();
 
-            let text_slice = &text[..range.end];
-            let utf16_count = text_slice.encode_utf16().count();
-
-            let byte_offset = text_slice.len() - utf16_count;
-
-            range.start -= last_end_byte_offset;
-            range.end -= byte_offset;
-
-            if let Some(until_newline) = node.text().encode_utf16().position(|ch| ch == '\n' as u16)
-            {
+            if let Some(until_newline) = node.text().chars().position(|ch| ch == '\n') {
                 in_block = false;
 
-                if let Some(last_range) = block_ranges.last_mut() {
-                    last_range.end += until_newline;
+                if let Some(last_block) = block_ranges.last_mut() {
+                    last_block.range.end += until_newline;
 
-                    let mut range = last_range.clone();
-                    let range_end = range.end;
-                    range.start += last_start_byte_offset;
-                    range.end += last_end_byte_offset;
-
-                    source += &text[range];
-
-                    self.index_mapper.add_change(range_end, source.len());
+                    ir += &text[last_block.range.clone()];
 
                     match last_kind {
                         Some(kind) if kind.is_stmt() => {}
-                        _ => source += " #[\\ ]",
+                        _ => {
+                            ir += " #[\\ ]";
+                            last_block.is_expr = true
+                        }
                     }
 
-                    // crate::log(&format!("[LAST_NODE]: {last_node:?}"));
+                    // crate::log(&format!("[LAST_KIND]: {last_kind:?}"));
 
-                    source += "\n";
+                    ir += "\n";
                 }
             } else {
                 last_kind = Some(node.kind());
 
                 if in_block {
-                    block_ranges.last_mut().unwrap().end = range.end;
+                    block_ranges.last_mut().unwrap().range.end = range.end;
                 } else {
                     in_block = true;
 
-                    // self.index_mapper
-                    //     .add_change(range.end, source.len() + text_slice.len());
+                    self.index_mapper.map_index(range.start, ir.len());
 
-                    block_ranges.push(range);
+                    block_ranges.push(RangedBlock {
+                        range,
+                        is_expr: false,
+                    });
                 }
             }
-
-            last_start_byte_offset = last_end_byte_offset;
-            last_end_byte_offset = byte_offset;
         }
 
-        if let Some(last_range) = block_ranges.last_mut() {
+        if let Some(last_block) = block_ranges.last_mut() {
             if in_block {
-                let mut range = last_range.clone();
-                let range_end = range.end;
-
-                // range.start += last_start_byte_offset;
-                range.end += last_end_byte_offset;
-
-                source += &text[range];
-
-                self.index_mapper.add_change(range_end, source.len());
+                ir += &text[last_block.range.clone()];
             }
         }
 
         // crate::log(&format!("[RANGES]: {block_ranges:?}"));
 
         // crate::log(&format!(
-        //     "[SOURCE]: {}",
-        //     &source[(self.prelude(true) + prelude).len()..]
+        //     "[SOURCE]: {:?}",
+        //     &ir[(self.prelude(true) + prelude).len()..]
         // ));
 
-        // self.world.main_source_mut().replace(&source);
+        self.world.main = Some(id.inner());
 
         // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
+        let mut diagnostics = Vec::new();
 
         let renders = block_ranges
             .into_iter()
-            .filter_map(|range| {
-                let end_range = self.index_mapper.map_index(range.end);
-                self.world
-                    .main_source_mut()
-                    .replace(&source.get(..end_range)?);
+            .filter_map(|block| {
+                let aux_range = block.range;
+
+                let aux_source = self.world.aux_source();
+                let start_byte_diff =
+                    aux_range.start - aux_source.byte_to_utf16(aux_range.start).unwrap();
+                let end_byte_diff =
+                    aux_range.end - aux_source.byte_to_utf16(aux_range.start).unwrap();
+
+                let start_byte = self.index_mapper.aux_to_main(aux_range.start);
+                let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
+                if block.is_expr {
+                    // TODO: proper offsetting
+                    end_byte += 6;
+                }
+
+                let source = self.world.main_source_mut();
+                source.replace(&ir.get(..end_byte)?);
+
+                // crate::log(&format!("[SOURCE]: {:?}", ir.get(start_byte..end_byte)));
+
+                let start_utf16 = aux_range.start - start_byte_diff;
+                let end_utf16 = aux_range.end - end_byte_diff;
+                let range_utf16 = start_utf16..end_utf16;
+
+                // crate::log(&format!("[RANGE_UTF8]: {:?}", aux_range));
+                // crate::log(&format!("[RANGE_UTF16]: {range_utf16:?}"));
 
                 let compiled = compile::<PagedDocument>(&self.world);
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -415,6 +413,8 @@ impl TypstState {
 
                 match compiled.output {
                     Ok(document) => {
+                        // TODO: handle changes in page margins
+
                         let page_height = document
                             .pages
                             .iter()
@@ -440,7 +440,10 @@ impl TypstState {
 
                         self.document = Some(document);
 
-                        Some(RangedRender::new(range, RenderedFrame { render, height }))
+                        Some(RangedRender::new(range_utf16, RenderedFrame {
+                            render,
+                            height,
+                        }))
                     }
                     Err(errors) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -451,11 +454,11 @@ impl TypstState {
 
                         crate::error(&format!("[ERRORS]: {diagnostics:?}"));
 
-                        let start_range = self.index_mapper.map_index(range.start);
+                        let start_range = self.index_mapper.aux_to_main(aux_range.start);
 
-                        source.replace_range(
-                            start_range..end_range,
-                            &(" ".repeat(end_range - start_range - 1) + "\\"),
+                        ir.replace_range(
+                            start_range..end_byte,
+                            &(" ".repeat(end_byte - start_range - 1) + "\\"),
                         );
 
                         None
@@ -475,9 +478,9 @@ impl TypstState {
     //     self.world.main = Some(id.inner());
 
     //     let mut source = self.prelude();
-    //     source += self.world.main_source().text();
+    //     source += self.world.aux_source().text();
 
-    //     self.world.main_source_mut().replace(&source);
+    //     self.world.aux_source_mut().replace(&source);
 
     //     let compiled = compile(&self.world);
     //     match compiled.output {
@@ -491,9 +494,9 @@ impl TypstState {
     //     self.world.main = Some(id.inner());
 
     //     let mut source = self.prelude(false);
-    //     source += self.world.main_source().text();
+    //     source += self.world.aux_source().text();
 
-    //     self.world.main_source_mut().replace(&source);
+    //     self.world.aux_source_mut().replace(&source);
 
     //     let compiled = compile(&self.world);
     //     // match compiled.output {
@@ -503,24 +506,24 @@ impl TypstState {
     //     html(&compiled.output.unwrap()).unwrap()
     // }
 
-    // #[wasm_bindgen(js_name = renderPdf)]
-    // pub fn render_pdf(&mut self, id: &FileIdWrapper) -> Vec<u8> {
-    //     self.world.main = Some(id.inner());
+    #[wasm_bindgen(js_name = renderPdf)]
+    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> Vec<u8> {
+        self.world.main = Some(id.inner());
 
-    //     let mut source = self.prelude(false);
-    //     source += self.world.main_source().text();
+        let mut source = self.prelude(false);
+        source += self.world.aux_source().text();
 
-    //     self.world.main_source_mut().replace(&source);
+        self.world.aux_source_mut().replace(&source);
 
-    //     let compiled = compile(&self.world);
+        let compiled = compile(&self.world);
 
-    //     // match compiled.output {
-    //     //     Ok(document) => html(&document).unwrap(),
-    //     //     Err(..) => String::from("error"),
-    //     // }
+        // match compiled.output {
+        //     Ok(document) => html(&document).unwrap(),
+        //     Err(..) => String::from("error"),
+        // }
 
-    //     pdf(&compiled.output.unwrap(), &PdfOptions::default()).unwrap()
-    // }
+        pdf(&compiled.output.unwrap(), &PdfOptions::default()).unwrap()
+    }
 
     #[wasm_bindgen]
     pub fn click(&mut self, index: usize, x: f64, y: f64) -> Option<TypstJump> {
@@ -537,25 +540,24 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn autocomplete(&self, cursor: usize, explicit: bool) -> Autocomplete {
-        // let compiled = compile(&self.world);
-        // let document = match compiled.output {
-        //     Ok(document) => document,
-        //     Err(..) => return serde_wasm_bindgen::to_value(&(0, Vec::<TypstCompletion>::new())),
-        // };
-        let source = self.world.main_source();
+        let main_source = self.world.main_source();
+        let aux_source = self.world.aux_source();
+
+        let byte_diff = aux_source.utf16_to_byte(cursor).unwrap() - cursor;
+        let cursor = self.index_mapper.aux_to_main(cursor + byte_diff);
 
         let results = typst_ide::autocomplete(
             &self.world,
             self.document.as_ref(),
-            source,
-            self.index_mapper.map_index(cursor),
+            main_source,
+            cursor,
             explicit,
         );
 
         match results {
             Some((offset, completions)) => {
                 Autocomplete {
-                    offset: self.index_mapper.map_offset(offset),
+                    offset: self.index_mapper.main_to_aux(offset) - byte_diff,
                     completions: completions
                         .into_iter()
                         .map(TypstCompletion::from)
@@ -581,6 +583,12 @@ impl TypstState {
             .map(|height| height.to_string() + "pt")
             .unwrap_or_else(|| String::from("auto"));
     }
+}
+
+#[derive(Debug)]
+struct RangedBlock {
+    range: Range<usize>,
+    is_expr: bool,
 }
 
 #[derive(Tsify, Serialize, Deserialize)]
