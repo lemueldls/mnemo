@@ -336,6 +336,7 @@ impl TypstState {
 
                     match last_kind {
                         Some(kind) if kind.is_stmt() => {}
+                        Some(SyntaxKind::EnumItem) => {}
                         _ => {
                             ir += "\n#box() \\";
                             last_block.is_expr = true
