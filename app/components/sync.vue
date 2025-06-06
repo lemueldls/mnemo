@@ -59,7 +59,7 @@ function formatBytes(bytes: number) {
     <md-filled-tonal-button v-if="user" @click="clear">
       Logout
     </md-filled-tonal-button>
-    <md-filled-button v-else @click="login">
+    <md-filled-button v-else disabled @click="login">
       Continue with GitHub
     </md-filled-button>
   </div>

@@ -204,7 +204,10 @@ function timeToMinutes(time: string) {
         >
           <md-ripple />
 
-          <span class="w-full truncate font-semibold">
+          <span
+            class="w-full truncate font-semibold"
+            :title="spaces![spaceId]!.name"
+          >
             {{ spaces![spaceId]!.name }}
           </span>
 
@@ -255,7 +258,10 @@ function timeToMinutes(time: string) {
           :color="space.color"
           harmonize
         >
-          <m3-elevated-card @click="newSpaceId = id">
+          <m3-elevated-card
+            class="flex flex-col gap-2"
+            @click="newSpaceId = id"
+          >
             <md-ripple />
 
             <div class="flex flex-row items-center justify-between gap-2">
@@ -267,7 +273,10 @@ function timeToMinutes(time: string) {
                 required
               />
             </div>
-            <span class="m3-title-medium flex-1">
+            <span
+              class="m3-title-medium line-clamp-1 flex-1"
+              :title="space.name"
+            >
               {{ space.name }}
             </span>
           </m3-elevated-card>
