@@ -263,6 +263,11 @@ impl TypstState {
         Ok(())
     }
 
+    #[wasm_bindgen(js_name = installFont)]
+    pub fn install_font(&mut self, bytes: Vec<u8>) {
+        self.world.install_font(bytes);
+    }
+
     fn prelude(&self, config_page: bool) -> String {
         let page_config = if config_page {
             format!(

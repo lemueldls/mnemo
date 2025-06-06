@@ -49,7 +49,7 @@ async function installPackage(pkg: Package) {
 
 async function uninstallPackage(pkg: Package) {
   packagesItem.value = packagesItem.value.filter(
-    (pkgItem) => !comparePackage(pkg, pkgItem),
+    (pkgItem) => !isSamePackage(pkg, pkgItem),
   );
 }
 </script>

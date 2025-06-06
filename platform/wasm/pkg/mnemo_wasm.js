@@ -389,6 +389,14 @@ export class TypstState {
         }
     }
     /**
+     * @param {Uint8Array} bytes
+     */
+    installFont(bytes) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_installFont(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * @param {FileId} id
      * @param {string} text
      * @param {string} prelude
@@ -491,6 +499,9 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
         }
+    };
+    imports.wbg.__wbg_error_7e97ac6aa2a9e682 = function(arg0, arg1) {
+        console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_log_07a760233e14c0fc = function(arg0, arg1) {
         console.log(getStringFromWasm0(arg0, arg1));
