@@ -12,7 +12,6 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "@atinux/kysely-d1": "^0.3.1",
     "@codemirror/autocomplete": "^6.18.6",
     "@codemirror/commands": "^6.8.1",
     "@codemirror/language": "^6.11.1",
@@ -44,7 +43,6 @@
     "material-symbols": "^0.31.4",
     "mnemo-wasm": "workspace:*",
     "nanotar": "^0.2.0",
-    "octokit": "^5.0.3",
     "ulid": "^3.0.0",
     "unstorage": "^1.16.0",
     "valibot": "^1.1.0"
