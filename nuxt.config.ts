@@ -5,7 +5,7 @@ const locales = [
   { code: "en", language: "en-US", name: "English", file: "en-US.json" },
 ];
 
-// const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
 // const internalHost = process.env.TAURI_DEV_HOST || "localhost";
@@ -18,13 +18,14 @@ export default defineNuxtConfig({
   modules: [
     "@nuxthub/core",
     "@nuxt/eslint",
+    "@nuxt/fonts",
     "@nuxtjs/seo",
     "@nuxtjs/i18n",
     "@nuxtjs/color-mode",
     "@vueuse/nuxt",
     "@unocss/nuxt",
     "nuxt-ssr-lit",
-    // "nuxt-auth-utils",
+    "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
   imports: {
@@ -50,32 +51,19 @@ export default defineNuxtConfig({
     },
   },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
-  // devServer: { https: true },
-  // vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   runtimeConfig: {
     public: {
       platform,
       apiBaseUrl: "",
-      auth: {
-        redirectUserTo: "/user",
-        redirectGuestTo: "/",
-      },
     },
-    // session: {
-    //   maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
-    //   cookie: isDev
-    //     ? { sameSite: "none", secure: true }
-    //     : { sameSite: "lax", secure: false },
-    // },
-    oauth: {
-      github: {
-        clientId: "",
-        clientSecret: "",
-        redirectURL: "",
-      },
+    session: {
+      password: "",
+      maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
+      cookie: isDev
+        ? { sameSite: "none", secure: true }
+        : { sameSite: "lax", secure: false },
     },
   },
-  // devServer: { https: true },
   future: { compatibilityVersion: 4 },
   experimental: {
     typedPages: true,

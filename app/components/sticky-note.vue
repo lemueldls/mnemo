@@ -188,7 +188,7 @@ const selectionBackground = computed(() => {
     touch-action: none;
     user-select: none;
 
-    font-family: "Maple Mono", "Maple Mono CN", sans-serif;
+    font-family: var(--font-mono);
   }
 
   ::selection {
