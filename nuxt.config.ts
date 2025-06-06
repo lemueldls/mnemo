@@ -19,7 +19,6 @@ export default defineNuxtConfig({
     "@nuxthub/core",
     "@nuxt/eslint",
     "@nuxt/fonts",
-    "@nuxtjs/seo",
     "@nuxtjs/i18n",
     "@nuxtjs/color-mode",
     "@vueuse/nuxt",
