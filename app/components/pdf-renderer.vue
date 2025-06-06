@@ -93,25 +93,34 @@ await Promise.all(
 
 const path = `spaces/${spaceId.value}/render.typ`;
 const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
-// const html = typstState.renderHtml(fileId);
 
-const bytes = typstState.renderPdf(fileId);
-const { pdf, pages, info } = usePDF(bytes);
+const { bytes, diagnostics } = typstState.renderPdf(fileId);
+
+const doc = bytes ? usePDF(bytes) : undefined;
+const pdf = doc?.pdf;
+const pages = doc?.pages;
 </script>
 
 <template>
   <div class="flex size-full items-center justify-center">
-    <!-- [[render]]
-    <pre>
-      <code>
-        {{ dailyNotes }}
-      </code>
-    </pre> -->
-    <!-- <div class="h-full w-full" v-html="html" /> -->
-
-    <md-outlined-card class="m-4 h-full overflow-scroll">
+    <md-outlined-card v-if="doc" class="m-4 h-full overflow-scroll">
       <VuePDF v-for="page in pages" :key="page" :pdf :page text-layer />
     </md-outlined-card>
+
+    <div
+      v-if="diagnostics.length > 0"
+      class="bg-m3-error-container text-m3-on-error-container rounded p-4"
+    >
+      <pre>
+        <code>
+            <span v-for="(diagnostic, i) in diagnostics" :key="i">
+              <strong>{{ diagnostic.severity }}</strong>
+
+              {{ diagnostic.message }}
+            </span>
+        </code>
+      </pre>
+    </div>
   </div>
 </template>
 
