@@ -3,7 +3,7 @@ import { createId } from "@paralleldrive/cuid2";
 
 import type { StickyNote } from "~/composables/sticky";
 
-definePageMeta({ layout: "space" });
+definePageMeta({ layout: "empty" });
 
 const { d } = useI18n();
 
@@ -58,7 +58,7 @@ async function screenshot() {
   const canvas = await html2canvas(document.querySelector("#editor")!, {
     backgroundColor: null,
     ignoreElements: (el) => el.id === "sidebar",
-    // scale: window.devicePixelRatio * 1,
+    // scale: 2 /* window.devicePixelRatio */ * 1,
     // imageTimeout:
   });
 
@@ -215,7 +215,7 @@ async function createStickyNote() {
             <div class="flex flex-1 items-center justify-center gap-2">
               <md-icon>{{ space.icon }}</md-icon>
 
-              <span class="line-clamp-1">
+              <span class="line-clamp-1" :title="space.name">
                 {{ space.name }}
               </span>
             </div>
@@ -466,7 +466,7 @@ async function createStickyNote() {
 #editor-title {
   @apply text-m3-on-primary-container m3-headline-large flex w-full justify-between bg-transparent outline-none;
 
-  font-family: "Iosevka Book", sans-serif;
+  font-family: var(--font-mono);
 }
 
 .sidebar-button {
