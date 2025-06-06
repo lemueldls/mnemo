@@ -70,21 +70,18 @@ impl TypstDiagnostic {
 }
 
 fn map_span(span: Span, index_mapper: &IndexMapper, world: &MnemoWorld) -> Range<usize> {
-    let range = world.range(span).unwrap();
-
     let aux_source = world.aux_source();
 
-    let aux_start = index_mapper.main_to_aux(range.start);
-    let aux_end = index_mapper.main_to_aux(range.end);
+    let main_range = world.range(span).unwrap();
 
-    let start_byte_diff = aux_start - aux_source.byte_to_utf16(aux_start).unwrap();
-    let end_byte_diff = aux_end - aux_source.byte_to_utf16(aux_start).unwrap();
+    let aux_start = index_mapper.main_to_aux(main_range.start);
+    let aux_end = index_mapper.main_to_aux(main_range.end);
 
-    let start_utf16 = aux_start - start_byte_diff;
-    let end_utf16 = aux_end - end_byte_diff;
-    let range_utf16 = start_utf16..end_utf16;
+    let aux_start_utf16 = aux_source.byte_to_utf16(aux_start).unwrap();
+    let aux_end_utf16 = aux_source.byte_to_utf16(aux_end).unwrap();
+    let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-    range_utf16
+    aux_range_utf16
 }
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
