@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { signInSocial } from "@daveyplate/better-auth-tauri";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
-const auth = useAuth();
-const { user } = auth;
+const { user, clear, openInPopup } = useUserSession();
+
+watchEffect(() => {
+  console.log({ user: user.value });
+});
+
+const runtimeConfig = useRuntimeConfig();
+const { platform, apiBaseUrl } = runtimeConfig.public;
 
 async function login() {
-  const { error } = await signInSocial({
-    authClient: auth.client,
-    provider: "github",
-  });
-  if (error) throw createError(error);
-}
-
-async function logout() {
-  const { error } = await auth.signOut();
-  if (error) throw createError(error);
+  if (platform) {
+    const baseUrl = apiBaseUrl ? new URL(apiBaseUrl) : useRequestURL();
+    await openUrl(new URL("/auth/github", baseUrl));
+  } else openInPopup("/auth/github");
 }
 
 const quota = ref<number>();
@@ -56,10 +56,10 @@ function formatBytes(bytes: number) {
 
     <span class="text-m3-error">TODO</span>
 
-    <md-filled-tonal-button v-if="user" @click="logout">
+    <md-filled-tonal-button v-if="user" @click="clear">
       Logout
     </md-filled-tonal-button>
-    <md-filled-button v-else disabled @click="login">
+    <md-filled-button v-else @click="login">
       Continue with GitHub
     </md-filled-button>
   </div>

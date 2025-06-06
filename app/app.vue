@@ -23,41 +23,44 @@ declare module "vue-router" {
   }
 }
 
-watchEffect(() => {
-  // const name = t("site.name");
+// const name = t("site.name");
 
-  const routeTitle = route.meta.title;
-  const title = routeTitle && te(routeTitle) ? t(routeTitle) : routeTitle;
+const routeTitle = computed(() => route.meta.title);
+const title = computed(() => {
+  const title = routeTitle.value;
 
-  const routeDescription = route.meta.description;
-  const description =
-    routeDescription && te(routeDescription)
-      ? t(routeDescription)
-      : t("site.description");
-
-  const localeHead = head.value;
-
-  useHead({
-    title,
-    htmlAttrs: localeHead.htmlAttrs,
-    // base: { href: siteUrl },
-    link: localeHead.link,
-    meta: localeHead.meta,
-  });
-
-  useSeoMeta({
-    title,
-    ogTitle: title,
-    description,
-    ogDescription: description,
-  });
-
-  // useSchemaOrg([
-  //   defineWebSite({ name, description }),
-  //   defineWebPage({ name, description }),
-  //   defineSoftwareApp({ name, description }),
-  // ]);
+  return title && te(title) ? t(title) : title;
 });
+
+const routeDescription = computed(() => route.meta.description);
+const description = computed(() => {
+  const description = routeDescription.value;
+
+  return description && te(description)
+    ? t(description)
+    : t("site.description");
+});
+
+useHead({
+  title,
+  // base: { href: siteUrl },
+  htmlAttrs: computed(() => head.value.htmlAttrs),
+  link: computed(() => head.value.link),
+  meta: computed(() => head.value.meta),
+});
+
+useSeoMeta({
+  title,
+  ogTitle: title,
+  description,
+  ogDescription: description,
+});
+
+// useSchemaOrg([
+//   defineWebSite({ name, description }),
+//   defineWebPage({ name, description }),
+//   defineSoftwareApp({ name, description }),
+// ]);
 
 const x = ref(0);
 const y = ref(0);
@@ -78,6 +81,12 @@ onMounted(() => {
 });
 
 const ready = ref(false);
+
+// const session = useCookie("nuxt-session");
+
+// watchEffect(() => {
+//   console.log({ session: session.value });
+// });
 </script>
 
 <template>

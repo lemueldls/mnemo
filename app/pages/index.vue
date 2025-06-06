@@ -62,7 +62,7 @@ const timeOfDay = computed(() => {
                     <m3-icon :name="space.icon" class="text-m3-primary" />
                   </div>
 
-                  <h3 class="m3-title-large">
+                  <h3 class="m3-title-large line-clamp-1" :title="space.name">
                     {{ space.name }}
                   </h3>
                 </m3-elevated-card>
