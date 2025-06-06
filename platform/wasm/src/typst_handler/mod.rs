@@ -177,9 +177,16 @@ impl Default for TypstState {
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct SyncResult {
+pub struct CompileResult {
     renders: Vec<RangedRender>,
     diagnostics: Vec<TypstDiagnostic>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct RenderPdfResult {
+    pub bytes: Option<Vec<u8>>,
+    pub diagnostics: Vec<TypstDiagnostic>,
 }
 
 #[derive(Debug, Clone)]
@@ -298,7 +305,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn sync(&mut self, id: &FileIdWrapper, text: &str, prelude: &str) -> SyncResult {
+    pub fn compile(&mut self, id: &FileIdWrapper, text: String, prelude: &str) -> CompileResult {
         let mut ir = self.prelude(true) + prelude;
 
         self.index_mapper = IndexMapper::default();
@@ -308,10 +315,11 @@ impl TypstState {
         let mut in_block = false;
 
         let aux_id = id.inner().join("$");
-        self.world.insert_file(aux_id, text.to_string());
+        self.world.insert_file(aux_id, text);
         self.world.aux = Some(aux_id);
 
         let children = self.world.aux_source().root().children();
+        let text = self.world.aux_source().text();
 
         let mut last_kind: Option<SyntaxKind> = None;
 
@@ -329,7 +337,7 @@ impl TypstState {
                     match last_kind {
                         Some(kind) if kind.is_stmt() => {}
                         _ => {
-                            ir += " #[\\ ]";
+                            ir += "\n#box() \\";
                             last_block.is_expr = true
                         }
                     }
@@ -371,7 +379,7 @@ impl TypstState {
 
         self.world.main = Some(id.inner());
 
-        let mut temp_ir = ir.clone();
+        let mut temp_ir = Cow::from(&ir);
 
         // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
@@ -391,7 +399,7 @@ impl TypstState {
                 let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
                 if block.is_expr {
                     // TODO: proper offsetting
-                    end_byte += 6;
+                    end_byte += 9;
                 }
 
                 let source = self.world.main_source_mut();
@@ -447,18 +455,18 @@ impl TypstState {
                             height,
                         }))
                     }
-                    Err(errors) => {
+                    Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                            errors,
+                            source_diagnostics,
                             &self.index_mapper,
                             &self.world,
                         ));
 
-                        crate::error(&format!("[ERRORS]: {diagnostics:?}"));
+                        // crate::error(&format!("[ERRORS]: {diagnostics:?}"));
 
                         let start_range = self.index_mapper.aux_to_main(aux_range.start);
 
-                        temp_ir.replace_range(
+                        temp_ir.to_mut().replace_range(
                             start_range..end_byte,
                             &(" ".repeat(end_byte - start_range - 1) + "\\"),
                         );
@@ -471,62 +479,53 @@ impl TypstState {
 
         self.world.main_source_mut().replace(&ir);
 
-        SyncResult {
+        CompileResult {
             renders,
             diagnostics,
         }
     }
 
-    // #[wasm_bindgen(js_name = renderSvg)]
-    // pub fn render_svg(&mut self, id: &FileIdWrapper) -> String {
-    //     self.world.main = Some(id.inner());
-
-    //     let mut source = self.prelude();
-    //     source += self.world.aux_source().text();
-
-    //     self.world.aux_source_mut().replace(&source);
-
-    //     let compiled = compile(&self.world);
-    //     match compiled.output {
-    //         Ok(document) => svg_merged(&document, Abs::zero()),
-    //         Err(..) => String::new(),
-    //     }
-    // }
-
-    // #[wasm_bindgen(js_name = renderHtml)]
-    // pub fn render_html(&mut self, id: &FileIdWrapper) -> String {
-    //     self.world.main = Some(id.inner());
-
-    //     let mut source = self.prelude(false);
-    //     source += self.world.aux_source().text();
-
-    //     self.world.aux_source_mut().replace(&source);
-
-    //     let compiled = compile(&self.world);
-    //     // match compiled.output {
-    //     //     Ok(document) => html(&document).unwrap(),
-    //     //     Err(..) => String::from("error"),
-    //     // }
-    //     html(&compiled.output.unwrap()).unwrap()
-    // }
-
     #[wasm_bindgen(js_name = renderPdf)]
-    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> Vec<u8> {
+    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> RenderPdfResult {
         self.world.main = Some(id.inner());
 
-        let mut source = self.prelude(false);
-        source += self.world.aux_source().text();
-
-        self.world.aux_source_mut().replace(&source);
+        let mut ir = self.prelude(false);
+        let main_source = self.world.main_source_mut();
+        ir += main_source.text();
+        main_source.replace(&ir);
 
         let compiled = compile(&self.world);
+        let mut diagnostics =
+            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.index_mapper, &self.world)
+                .into_vec();
 
-        // match compiled.output {
-        //     Ok(document) => html(&document).unwrap(),
-        //     Err(..) => String::from("error"),
-        // }
+        let bytes = match compiled.output {
+            Ok(document) => {
+                match pdf(&document, &PdfOptions::default()) {
+                    Ok(pdf) => Some(pdf),
+                    Err(source_diagnostics) => {
+                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                            source_diagnostics,
+                            &self.index_mapper,
+                            &self.world,
+                        ));
 
-        pdf(&compiled.output.unwrap(), &PdfOptions::default()).unwrap()
+                        None
+                    }
+                }
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &self.index_mapper,
+                    &self.world,
+                ));
+
+                None
+            }
+        };
+
+        RenderPdfResult { bytes, diagnostics }
     }
 
     #[wasm_bindgen]

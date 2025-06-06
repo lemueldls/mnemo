@@ -261,14 +261,12 @@ function syncTypstState(
   let result;
 
   try {
-    result = typstState.sync(fileId, text, prelude);
+    result = typstState.compile(fileId, text, prelude);
   } catch (error) {
-    console.error("LMFAO");
     console.error(error);
+
     // console.log("retrying...");
-
     // result = syncTypstState(typstState, fileId, text);
-
     // window.location.reload();
 
     throw error;
