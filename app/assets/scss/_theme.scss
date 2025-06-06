@@ -5,14 +5,15 @@
 @use "@material/web/typography/typescale";
 
 :root {
-  @include typeface.theme(
-    (
-      "brand":
-        '"Maple Mono", "Maple Mono CN", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-      "plain":
-        '"Roboto Flex", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-    )
-  );
+  --font-sans:
+    "Source Sans", "Source Han Sans", ui-sans-serif, system-ui, sans-serif,
+    "Noto Color Emoji";
+  --font-serif:
+    "Source Serif", "Source Han Serif", ui-serif, serif, "Noto Color Emoji";
+  --font-mono: "Maple Mono", "Maple Mono CN", ui-monospace, monospace;
+
+  --md-ref-typeface-brand: var(--font-mono);
+  --md-ref-typeface-plain: var(--font-sans);
 
   $shapes: tokens.md-sys-shape-values();
   $corner-small: map.get($shapes, "corner-small");

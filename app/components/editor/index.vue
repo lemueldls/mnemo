@@ -230,13 +230,13 @@ const activeLineBackground = computed(() => {
   .cm-line {
     @apply p-0 px-[1px] text-[16px];
 
-    font-family: "Maple Mono", "Maple Mono CN", monospace;
+    font-family: var(--font-mono);
   }
 
   .cm-content {
     @apply caret-m3-primary p-0;
 
-    font-family: "Maple Mono", "Maple Mono CN", monospace;
+    font-family: var(--font-mono);
   }
 
   .cm-selectionBackground {
@@ -276,7 +276,7 @@ const activeLineBackground = computed(() => {
   .cm-tooltip {
     @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded-lg border-none p-0 shadow;
 
-    font-family: "Maple Mono", "Maple Mono CN", monospace;
+    font-family: var(--font-mono);
 
     [aria-selected="true"] {
       @apply bg-m3-secondary-container! text-m3-on-secondary-container!;
@@ -285,7 +285,7 @@ const activeLineBackground = computed(() => {
     li {
       @apply p-1!;
 
-      font-family: "Maple Mono", "Maple Mono CN", monospace;
+      font-family: var(--font-mono);
     }
   }
 

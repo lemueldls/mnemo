@@ -138,6 +138,6 @@ const pages: Page[] = [
 #header {
   @apply px-4 pb-4 pt-2;
 
-  font-family: "Maple Mono", "Maple Mono CN", sans-serif;
+  font-family: var(--font-mono);
 }
 </style>
