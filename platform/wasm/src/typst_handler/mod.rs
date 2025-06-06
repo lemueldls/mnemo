@@ -388,30 +388,23 @@ impl TypstState {
         let renders = block_ranges
             .into_iter()
             .filter_map(|block| {
-                let aux_range = block.range;
-
                 let aux_source = self.world.aux_source();
-                let start_byte_diff =
-                    aux_range.start - aux_source.byte_to_utf16(aux_range.start).unwrap();
-                let end_byte_diff =
-                    aux_range.end - aux_source.byte_to_utf16(aux_range.start).unwrap();
+
+                let aux_range = block.range;
+                let aux_start_utf16 = aux_source.byte_to_utf16(aux_range.start).unwrap();
+                let aux_end_utf16 = aux_source.byte_to_utf16(aux_range.end).unwrap();
+                let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
                 let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
                 if block.is_expr {
                     // TODO: proper offsetting
-                    end_byte += 9;
+                    end_byte += 10;
                 }
 
                 let source = self.world.main_source_mut();
                 source.replace(&temp_ir.get(..end_byte)?);
 
-                // crate::log(&format!("[SOURCE]: {:?}", partial_ir.get(start_byte..end_byte)));
-
-                let start_utf16 = aux_range.start - start_byte_diff;
-                let end_utf16 = aux_range.end - end_byte_diff;
-                let range_utf16 = start_utf16..end_utf16;
-
-                // crate::log(&format!("[RANGE_UTF8]: {:?}", aux_range));
+                // crate::log(&format!("[RANGE_UTF8]: {aux_range:?}"));
                 // crate::log(&format!("[RANGE_UTF16]: {range_utf16:?}"));
 
                 let compiled = compile::<PagedDocument>(&self.world);
@@ -450,7 +443,7 @@ impl TypstState {
 
                         self.document = Some(document);
 
-                        Some(RangedRender::new(range_utf16, RenderedFrame {
+                        Some(RangedRender::new(aux_range_utf16, RenderedFrame {
                             render,
                             height,
                         }))
