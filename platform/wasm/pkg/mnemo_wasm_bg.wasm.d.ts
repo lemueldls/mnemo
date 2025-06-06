@@ -18,6 +18,7 @@ export const typststate_theme: (a: number) => number;
 export const typststate_setTheme: (a: number, b: number) => void;
 export const typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
 export const typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+export const typststate_installFont: (a: number, b: number, c: number) => void;
 export const typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
 export const typststate_renderPdf: (a: number, b: number) => any;
 export const typststate_click: (a: number, b: number, c: number, d: number) => any;

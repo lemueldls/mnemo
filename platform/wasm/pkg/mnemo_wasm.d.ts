@@ -76,6 +76,7 @@ export class TypstState {
   setTheme(theme: ThemeColors): void;
   insertFile(path: string, text: string): FileId;
   installPackage(spec: string, files: PackageFile[]): void;
+  installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
   renderPdf(id: FileId): RenderPdfResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
@@ -104,6 +105,7 @@ export interface InitOutput {
   readonly typststate_setTheme: (a: number, b: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
   readonly typststate_renderPdf: (a: number, b: number) => any;
   readonly typststate_click: (a: number, b: number, c: number, d: number) => any;

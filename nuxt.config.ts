@@ -88,6 +88,12 @@ export default defineNuxtConfig({
     database: true,
     kv: true,
   },
+  fonts: {
+    families: [
+      { name: "Maple Mono", provider: "local", global: true },
+      { name: "Maple Mono CN", provider: "local", global: true },
+    ],
+  },
   i18n: {
     lazy: true,
     defaultLocale,
