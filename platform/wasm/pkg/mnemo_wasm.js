@@ -118,11 +118,6 @@ function takeFromExternrefTable0(idx) {
     return value;
 }
 
-function getArrayU8FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
-}
-
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
@@ -397,27 +392,25 @@ export class TypstState {
      * @param {FileId} id
      * @param {string} text
      * @param {string} prelude
-     * @returns {SyncResult}
+     * @returns {CompileResult}
      */
-    sync(id, text, prelude) {
+    compile(id, text, prelude) {
         _assertClass(id, FileId);
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_sync(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.typststate_compile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
         return ret;
     }
     /**
      * @param {FileId} id
-     * @returns {Uint8Array}
+     * @returns {RenderPdfResult}
      */
     renderPdf(id) {
         _assertClass(id, FileId);
         const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
-        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
-        return v1;
+        return ret;
     }
     /**
      * @param {number} index
@@ -498,9 +491,6 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
         }
-    };
-    imports.wbg.__wbg_error_7e97ac6aa2a9e682 = function(arg0, arg1) {
-        console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_log_07a760233e14c0fc = function(arg0, arg1) {
         console.log(getStringFromWasm0(arg0, arg1));

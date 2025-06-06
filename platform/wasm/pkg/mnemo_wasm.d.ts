@@ -1,14 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
-
 export interface TypstDiagnostic {
     range: { start: number; end: number };
     severity: TypstDiagnosticSeverity;
     message: string;
     hints: string[];
 }
+
+export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
 
 export type TypstJump = { type: "File"; position: number };
 
@@ -21,8 +21,13 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
-export interface SyncResult {
+export interface CompileResult {
     renders: RangedRender[];
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface RenderPdfResult {
+    bytes: number[] | undefined;
     diagnostics: TypstDiagnostic[];
 }
 
@@ -71,8 +76,8 @@ export class TypstState {
   setTheme(theme: ThemeColors): void;
   insertFile(path: string, text: string): FileId;
   installPackage(spec: string, files: PackageFile[]): void;
-  sync(id: FileId, text: string, prelude: string): SyncResult;
-  renderPdf(id: FileId): Uint8Array;
+  compile(id: FileId, text: string, prelude: string): CompileResult;
+  renderPdf(id: FileId): RenderPdfResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
   autocomplete(cursor: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
@@ -99,8 +104,8 @@ export interface InitOutput {
   readonly typststate_setTheme: (a: number, b: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly typststate_sync: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
-  readonly typststate_renderPdf: (a: number, b: number) => [number, number];
+  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
+  readonly typststate_renderPdf: (a: number, b: number) => any;
   readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
