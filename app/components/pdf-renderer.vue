@@ -44,8 +44,8 @@ const dailyNotes = await Promise.all(
 //   #set page(fill:rgb(0,0,0,0),width:730pt,margin:16pt)
 // `);
 
-const prelude = await useRefStorageItem(
-  computed(() => `spaces/${spaceId.value}/prelude/main.typ`),
+const prelude = await useStorageItem(
+  () => `spaces/${spaceId.value}/prelude/main.typ`,
   "",
 );
 

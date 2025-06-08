@@ -4,18 +4,11 @@ definePageMeta({ title: "Home" });
 const name = await useStorageItem("name", "");
 
 const { d } = useI18n();
-const date = ref(new Date());
+const date = useNow({ interval: 1000 * 60 * 15 });
 
 const newSpaceOpen = useNewSpaceOpen();
 
 const spaces = await useSpaces();
-
-useIntervalFn(
-  () => {
-    date.value = new Date();
-  },
-  1000 * 60 * 15,
-);
 
 const timeOfDay = computed(() => {
   const hour = date.value.getHours();
