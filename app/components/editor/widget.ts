@@ -180,7 +180,7 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
 export const viewPlugin = (
   typstState: TypstState,
-  item: Ref<Ref<string>>,
+  textItem: Ref<string>,
   prelude: Ref<string>,
   fileId: FileId,
 ) =>
@@ -198,7 +198,7 @@ export const viewPlugin = (
           );
 
           const text = update.state.doc.toString();
-          item.value.value = text;
+          if (update.docChanged) textItem.value = text;
 
           const decorations = decorate(
             typstState,
@@ -217,7 +217,7 @@ export const viewPlugin = (
 
 export const typst = (
   typstState: TypstState,
-  item: Ref<Ref<string>>,
+  textItem: Ref<string>,
   prelude: Ref<string>,
   fileId: FileId,
 ) =>
@@ -248,7 +248,7 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, item, prelude, fileId),
+      viewPlugin(typstState, textItem, prelude, fileId),
     ],
   });
 

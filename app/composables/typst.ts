@@ -29,8 +29,11 @@ export const useTypst = createSharedComposable(
     }),
 );
 
-export const useInstalledPackages = async (spaceId: string) =>
-  await useStorageItem<Package[]>(`spaces/${spaceId}/packages.json`, []);
+export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
+  await useStorageItem<Package[]>(
+    () => `spaces/${toValue(spaceId)}/packages.json`,
+    [],
+  );
 
 export function isSamePackage(a: Package, b: Package) {
   return a.name === b.name && a.version === b.version;

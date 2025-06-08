@@ -137,8 +137,8 @@ watch(spaceId, () => {
 });
 
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
-const stickyNotes = await useRefStorageItem<{ [id: string]: StickyNote }>(
-  computed(() => `spaces/${spaceId.value}/sticky/notes.json`),
+const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
+  () => `spaces/${spaceId.value}/sticky/notes.json`,
   {},
 );
 // stickyNotes.value = {};

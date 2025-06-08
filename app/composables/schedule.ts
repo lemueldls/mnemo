@@ -14,7 +14,6 @@ export async function useSchedule() {
     [],
     [],
   ]);
-  // schedule.value = [[], [], [], [], [], [], []];
 
   return schedule;
 }

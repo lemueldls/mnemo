@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { MaterialSymbol } from "material-symbols";
-
 const open = defineModel<boolean>();
 
 const dark = useDark();

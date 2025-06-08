@@ -50,8 +50,8 @@ import type { EditorStateConfig } from "@codemirror/state";
 import { ThemeColors, type TypstState, type FileId } from "mnemo-wasm";
 
 const props = defineProps<{
-  kind: NoteKind;
   spaceId: string;
+  kind: NoteKind;
   readonly?: boolean;
 }>();
 
@@ -90,16 +90,24 @@ const containerRef = useTemplateRef("container");
 
 const stateCache: { [key: string]: unknown } = {};
 
-const storageItem = ref() as Ref<Ref<string>>;
-storageItem.value = ref("");
-
-const preludeItem = await useRefStorageItem(
-  computed(() => `spaces/${props.spaceId}/prelude/main.typ`),
+const preludeItem = await useStorageItem(
+  () => `spaces/${props.spaceId}/prelude/main.typ`,
   "",
 );
 const prelude = computed(() =>
   props.kind === "prelude" ? "" : preludeItem.value,
 );
+
+const packages = await useInstalledPackages(() => props.spaceId);
+watchImmediate(packages, async (packages) => {
+  await Promise.all(
+    packages
+      .filter((pkg) => pkg.name !== "suiji")
+      .map((pkg) => installTypstPackage(pkg)),
+  );
+});
+
+const typstState = await useTypst();
 
 onMounted(() => {
   const container = containerRef.value!;
@@ -112,58 +120,46 @@ onMounted(() => {
   });
 
   watchImmediate(
-    [() => path.value, () => props.spaceId],
-    async ([path, spaceId], [oldPath, oldSpace]) => {
-      // console.log({ path, spaceId, oldPath, oldSpace });
-
-      storageItem.value = await useStorageItem(
-        `spaces/${oldSpace || spaceId}/${props.kind}/${path}.typ`,
+    [path, () => props.spaceId, () => props.kind],
+    async ([path, spaceId, kind], [oldPath]) => {
+      const text = await useStorageItem(
+        `spaces/${spaceId}/${kind}/${path}.typ`,
         "",
       );
 
-      const typstState = await useTypst();
-
-      const packages = await useInstalledPackages(spaceId);
-      // TODO: check if spamming
-      watchImmediate(packages, async (packages) => {
-        await Promise.all(
-          packages
-            .filter((pkg) => pkg.name !== "suiji")
-            .map((pkg) => installTypstPackage(pkg)),
-        );
-      });
-
-      const text = storageItem.value.value;
-      // if (!text) console.log("[DELETING]");
-      // console.log({ path, text });
-      const fileId = typstState.insertFile(path, text);
+      const fileId = typstState.insertFile(path, text.value);
 
       if (oldPath)
         stateCache[oldPath] = view.state.toJSON({ history: historyField });
 
       const cache = stateCache[path];
-      const stateConfig = createStateConfig(typstState, path, fileId);
+      const stateConfig = await createStateConfig(typstState, path, fileId);
 
       if (cache)
         view.setState(
           EditorState.fromJSON(cache, stateConfig, { history: historyField }),
         );
       else {
-        stateConfig.doc = text;
+        stateConfig.doc = text.value;
         view.setState(EditorState.create(stateConfig));
       }
     },
   );
 });
 
-function createStateConfig(
+async function createStateConfig(
   typstState: TypstState,
   path: string,
   fileId: FileId,
-): EditorStateConfig {
+): Promise<EditorStateConfig> {
+  const text = await useStorageItem(
+    () => `spaces/${props.spaceId}/${props.kind}/${path}.typ`,
+    "",
+  );
+
   return {
     extensions: [
-      typst(typstState, storageItem, prelude, fileId),
+      typst(typstState, text, prelude, fileId),
       typstLanguage(typstState),
 
       underlineKeymap,

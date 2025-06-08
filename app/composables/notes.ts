@@ -2,8 +2,8 @@ import type { Note } from "~/composables/spaces";
 import { ulid, decodeTime } from "ulid";
 
 export async function useSpaceNotes(spaceId: MaybeRefOrGetter<string>) {
-  return await useRefStorageItem<Note[]>(
-    computed(() => `spaces/${toValue(spaceId)}/daily/notes.json`),
+  return await useStorageItem<Note[]>(
+    () => `spaces/${toValue(spaceId)}/daily/notes.json`,
     [],
   );
 }
