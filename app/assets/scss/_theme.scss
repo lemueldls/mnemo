@@ -4,11 +4,13 @@
 
 :root {
   --font-sans:
-    "Source Sans", "Source Han Sans", ui-sans-serif, system-ui, sans-serif,
-    "Noto Color Emoji";
+    "Source Sans", "Source Han Sans CN", ui-sans-serif, system-ui, sans-serif,
+    var(--font-emoji);
   --font-serif:
-    "Source Serif", "Source Han Serif", ui-serif, serif, "Noto Color Emoji";
+    "Source Serif", "Source Han Serif CN", ui-serif, serif, var(--font-emoji);
   --font-mono: "Maple Mono", "Maple Mono CN", ui-monospace, monospace;
+  --font-emoji: "Noto Color Emoji", emoji;
+  // --font-math: "New CM Math", math;
 
   --md-ref-typeface-brand: var(--font-mono);
   --md-ref-typeface-plain: var(--font-sans);
