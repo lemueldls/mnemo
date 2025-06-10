@@ -40,18 +40,18 @@ impl FontLoader {
         //     "../../../../public/fonts/iosevka-book/ttf/IosevkaBook-BoldItalic.ttf"
         // ));
 
-        self.install(include_bytes!(
-            "../../../../public/fonts/maple/ttf/MapleMono-Regular.ttf"
-        ));
-        self.install(include_bytes!(
-            "../../../../public/fonts/maple/ttf/MapleMono-Italic.ttf"
-        ));
-        self.install(include_bytes!(
-            "../../../../public/fonts/maple/ttf/MapleMono-Bold.ttf"
-        ));
-        self.install(include_bytes!(
-            "../../../../public/fonts/maple/ttf/MapleMono-BoldItalic.ttf"
-        ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/maple/ttf/MapleMono-Regular.ttf"
+        // ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/maple/ttf/MapleMono-Italic.ttf"
+        // ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/maple/ttf/MapleMono-Bold.ttf"
+        // ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/maple/ttf/MapleMono-BoldItalic.ttf"
+        // ));
 
         // self.install(include_bytes!(
         //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-regular.ttf"
@@ -72,11 +72,11 @@ impl FontLoader {
         //     "../../../../public/fonts/iosevka-custom/ttf/iosevka-custom-bolditalic.ttf"
         // ));
 
-        self.install(include_bytes!(
-            "../../../../public/fonts/NewCMMath-Book.otf"
-        ));
-        self.install(include_bytes!(
-            "../../../../public/fonts/NewCMMath-Regular.otf"
-        ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/NewCMMath-Book.otf"
+        // ));
+        // self.install(include_bytes!(
+        //     "../../../../public/fonts/NewCMMath-Regular.otf"
+        // ));
     }
 }

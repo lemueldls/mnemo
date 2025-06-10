@@ -1,17 +1,12 @@
 use std::ops::Range;
 
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::Error;
 use tsify::Tsify;
 use typst::{
-    World, WorldExt, compile,
+    WorldExt,
     diag::{Severity, SourceDiagnostic},
-    ecow::{EcoString, EcoVec},
-    layout::{Abs, Frame, FrameItem, Page, PagedDocument, Point, Position},
-    syntax::{
-        FileId, Source, Span, SyntaxError, SyntaxKind, VirtualPath, ast, package::PackageSpec,
-    },
-    visualize::Color,
+    ecow::EcoVec,
+    syntax::{Span, SyntaxError},
 };
 use wasm_bindgen::prelude::*;
 

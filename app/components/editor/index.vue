@@ -57,8 +57,8 @@ const props = defineProps<{
 
 const path = defineModel<string>({ required: true });
 
-const pixelPerPoint = ref(2 /* window.devicePixelRatio */);
-// const pxToPt = (px: number) => px * 2 /* window.devicePixelRatio */ * (72 / 96);
+const pixelPerPoint = ref(window.devicePixelRatio);
+// const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
 
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
@@ -378,6 +378,7 @@ const activeLineBackground = computed(() => {
   .typst-render {
     display: inline;
     cursor: text;
+    vertical-align: top;
     -wekkit-user-drag: none;
     -moz-user-drag: none;
     // user-select: none;

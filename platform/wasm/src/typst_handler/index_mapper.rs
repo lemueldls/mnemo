@@ -14,9 +14,9 @@ impl IndexMapper {
             .iter()
             .rfind(|(_, change)| main_idx >= *change);
 
-        // crate::log(&format!("[MAIN_INDEX]: {main_idx:?}"));
-        // crate::log(&format!("[INFLECTION]: {inflection:?}"));
-        // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
+        // crate::log!("[MAIN_INDEX]: {main_idx:?}");
+        // crate::log!("[INFLECTION]: {inflection:?}");
+        // crate::log!("[INFLECTIONS]: {:?}", self.inflections);
 
         match inflection {
             Some((aux_idx, change)) => aux_idx + (main_idx - change),
@@ -30,9 +30,9 @@ impl IndexMapper {
             .iter()
             .rfind(|(change, _)| aux_idx >= *change);
 
-        // crate::log(&format!("[AUX_INDEX]: {aux_idx:?}"));
-        // crate::log(&format!("[INFLECTION]: {inflection:?}"));
-        // crate::log(&format!("[INFLECTIONS]: {:?}", self.inflections));
+        // crate::log!("[AUX_INDEX]: {aux_idx:?}");
+        // crate::log!("[INFLECTION]: {inflection:?}");
+        // crate::log!("[INFLECTIONS]: {:?}", self.inflections);
 
         match inflection {
             Some((change, main_idx)) => main_idx + (aux_idx - change),

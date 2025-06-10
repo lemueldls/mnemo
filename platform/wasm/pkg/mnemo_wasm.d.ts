@@ -80,7 +80,7 @@ export class TypstState {
   compile(id: FileId, text: string, prelude: string): CompileResult;
   renderPdf(id: FileId): RenderPdfResult;
   click(index: number, x: number, y: number): TypstJump | undefined;
-  autocomplete(cursor: number, explicit: boolean): Autocomplete;
+  autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
 }
 
