@@ -60,9 +60,7 @@ class TypstWidget extends WidgetType {
   }
 
   public override get estimatedHeight() {
-    return (
-      this.#image.height || this.frame.height / 2 /* window.devicePixelRatio */
-    );
+    return this.#image.height || this.frame.height / window.devicePixelRatio;
   }
 
   public override ignoreEvent(event: Event) {
@@ -81,9 +79,9 @@ function decorate(
   text: string,
   prelude: string,
 ) {
-  const { view, state } = update;
+  const compileResult = compileTypstState(typstState, fileId, text, prelude);
 
-  const syncResult = syncTypstState(typstState, fileId, text, prelude);
+  const { view, state } = update;
 
   const widgets: Range<Decoration>[] = [];
 
@@ -94,34 +92,36 @@ function decorate(
     return diagnostic;
   }
 
-  const diagnostics = syncResult.diagnostics.flatMap((diagnostic) => {
-    const diagnostics: Diagnostic[] = [
-      normalizeDiagnostic({
-        from: diagnostic.range.start,
-        to: diagnostic.range.end,
-        severity: diagnostic.severity,
-        message: diagnostic.message,
-      }),
-    ];
-
-    for (const hint of diagnostic.hints) {
-      diagnostics.push(
+  if (compileResult.diagnostics.length > 0) {
+    const diagnostics = compileResult.diagnostics.flatMap((diagnostic) => {
+      const diagnostics: Diagnostic[] = [
         normalizeDiagnostic({
           from: diagnostic.range.start,
           to: diagnostic.range.end,
-          severity: "hint",
-          message: hint,
+          severity: diagnostic.severity,
+          message: diagnostic.message,
         }),
-      );
-    }
+      ];
 
-    return diagnostics;
-  });
+      for (const hint of diagnostic.hints) {
+        diagnostics.push(
+          normalizeDiagnostic({
+            from: diagnostic.range.start,
+            to: diagnostic.range.end,
+            severity: "hint",
+            message: hint,
+          }),
+        );
+      }
 
-  const transaction = setDiagnostics(state, diagnostics);
-  queueMicrotask(() => view.dispatch(transaction));
+      return diagnostics;
+    });
 
-  for (const { range, render } of syncResult.renders) {
+    const transaction = setDiagnostics(state, diagnostics);
+    queueMicrotask(() => view.dispatch(transaction));
+  }
+
+  for (const { range, render } of compileResult.renders) {
     if (render) {
       const { from: start, number: startLine } = state.doc.lineAt(range.start);
       const { to: end, number: endLine } = state.doc.lineAt(range.end);
@@ -165,7 +165,6 @@ function decorate(
             Decoration.line({
               class: "cm-activeLine",
               attributes: { style },
-              // inclusive: true,
             }).range(line.from),
           );
         }
@@ -193,8 +192,7 @@ export const viewPlugin = (
           update.selectionSet
         ) {
           typstState.resize(
-            update.view.contentDOM.clientWidth -
-              2 * 2 /* window.devicePixelRatio */,
+            update.view.contentDOM.clientWidth - 2 * window.devicePixelRatio,
           );
 
           const text = update.state.doc.toString();
@@ -207,8 +205,8 @@ export const viewPlugin = (
             text,
             prelude.value,
           );
-          const effects = stateEffect.of({ decorations });
 
+          const effects = stateEffect.of({ decorations });
           queueMicrotask(() => update.view.dispatch({ effects }));
         }
       },
@@ -252,7 +250,7 @@ export const typst = (
     ],
   });
 
-function syncTypstState(
+function compileTypstState(
   typstState: TypstState,
   fileId: FileId,
   text: string,

@@ -58,7 +58,7 @@ async function screenshot() {
   const canvas = await html2canvas(document.querySelector("#editor")!, {
     backgroundColor: null,
     ignoreElements: (el) => el.id === "sidebar",
-    // scale: 2 /* window.devicePixelRatio */ * 1,
+    // scale: window.devicePixelRatio,
     // imageTimeout:
   });
 

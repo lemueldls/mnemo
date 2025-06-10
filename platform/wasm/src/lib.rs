@@ -26,10 +26,21 @@ extern "C" {
     fn warn(s: &str);
     #[wasm_bindgen(js_namespace = console)]
     fn debug(s: &str);
+    #[wasm_bindgen(js_namespace = console)]
+    fn time(s: &str);
+    #[wasm_bindgen(js_namespace = console, js_name = timeEnd)]
+    fn time_end(s: &str);
 }
 
 // #[cfg(debug_assertions)]
 #[wasm_bindgen(start)]
 fn start() {
     utils::set_panic_hook();
+}
+
+#[macro_export]
+macro_rules! log {
+    ($($e:tt)*) => {
+        $crate::log(&format!($($e)*))
+    };
 }

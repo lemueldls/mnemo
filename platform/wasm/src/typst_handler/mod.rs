@@ -17,6 +17,7 @@ use std::{
 
 use data_encoding::BASE64;
 use index_mapper::IndexMapper;
+use mnemo_render::sk;
 // use js_sys::Uint8Array;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
@@ -286,7 +287,7 @@ impl TypstState {
                 #set align(horizon)
                 #set par(leading:0em,linebreaks:"simple")
                 {page_config}
-                #context {{show math.equation:set text(size:text.size*1.75)}}
+                #context {{show math.equation:set text(size:text.size*2)}}
                 #show math.equation.where(block:true):set block(above:0em,below:0em)
                 #show math.equation.where(block:true):set text(size:{size}pt*1.125)
                 #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
@@ -316,15 +317,23 @@ impl TypstState {
         self.index_mapper = IndexMapper::default();
         self.index_mapper.map_index(0, ir.len());
 
-        let mut block_ranges = Vec::<RangedBlock>::new();
-        let mut in_block = false;
-
         let aux_id = id.inner().join("$");
-        self.world.insert_file(aux_id, text);
+        self.world
+            .files
+            .entry(aux_id)
+            .and_modify(|file| {
+                file.replace(&text);
+            })
+            .or_insert_with(|| Source::new(aux_id, text));
         self.world.aux = Some(aux_id);
 
-        let children = self.world.aux_source().root().children();
-        let text = self.world.aux_source().text();
+        let aux_source = self.world.aux_source();
+
+        let children = aux_source.root().children();
+        let text = aux_source.text();
+
+        let mut block_ranges = Vec::<RangedBlock>::new();
+        let mut in_block = false;
 
         let mut last_kind: Option<SyntaxKind> = None;
 
@@ -340,15 +349,23 @@ impl TypstState {
                     ir += &text[last_block.range.clone()];
 
                     match last_kind {
-                        Some(kind) if kind.is_stmt() => {}
-                        Some(SyntaxKind::EnumItem) => {}
+                        Some(
+                            SyntaxKind::LetBinding
+                            | SyntaxKind::SetRule
+                            | SyntaxKind::ShowRule
+                            | SyntaxKind::ModuleImport
+                            | SyntaxKind::ModuleInclude
+                            | SyntaxKind::Contextual
+                            | SyntaxKind::ListItem
+                            | SyntaxKind::EnumItem,
+                        ) => {}
                         _ => {
                             ir += "\n#box() \\";
                             last_block.is_expr = true
                         }
                     }
 
-                    // crate::log(&format!("[LAST_KIND]: {last_kind:?}"));
+                    // crate::log!("[LAST_KIND]: {last_kind:?}");
 
                     ir += "\n";
                 }
@@ -376,22 +393,22 @@ impl TypstState {
             }
         }
 
-        // crate::log(&format!("[RANGES]: {block_ranges:?}"));
+        // crate::log!("[RANGES]: {block_ranges:?}");
 
-        // crate::log(&format!(
+        // crate::log!(
         //     "[SOURCE]: {:?}",
         //     &ir[(self.prelude(true) + prelude).len()..]
-        // ));
+        // );
 
         self.world.main = Some(id.inner());
 
-        let mut temp_ir = Cow::from(&ir);
+        let mut partial_ir = Cow::from(&ir);
 
         // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
         let mut diagnostics = Vec::new();
 
-        let renders = block_ranges
+        let ranged_heights = block_ranges
             .into_iter()
             .filter_map(|block| {
                 let aux_source = self.world.aux_source();
@@ -408,10 +425,10 @@ impl TypstState {
                 }
 
                 let source = self.world.main_source_mut();
-                source.replace(&temp_ir.get(..end_byte)?);
+                source.replace(&partial_ir.get(..end_byte)?);
 
-                // crate::log(&format!("[RANGE_UTF8]: {aux_range:?}"));
-                // crate::log(&format!("[RANGE_UTF16]: {range_utf16:?}"));
+                // crate::log!("[RANGE_UTF8]: {aux_range:?}");
+                // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
 
                 let compiled = compile::<PagedDocument>(&self.world);
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -432,27 +449,14 @@ impl TypstState {
                             .to_pt();
                         let height = page_height - offset_height;
 
-                        // crate::log(&format!("[PAGE_HEIGHT]: {page_height}"));
-                        // crate::log(&format!("[OFFSET_HEIGHT]: {offset_height}"));
-                        // crate::log(&format!("[HEIGHT]: {height}"));
-
                         if height <= 0_f64 {
                             return None;
                         }
 
-                        let canvas = mnemo_render::render(&document, offset_height, self.pt);
-                        let render = BASE64
-                            .encode(&canvas.encode_png().unwrap())
-                            .into_boxed_str();
-
+                        let offset_height_i32 = offset_height as i32;
                         offset_height = page_height;
 
-                        self.document = Some(document);
-
-                        Some(RangedRender::new(aux_range_utf16, RenderedFrame {
-                            render,
-                            height,
-                        }))
+                        Some((height as u32, offset_height_i32, aux_range_utf16))
                     }
                     Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -465,13 +469,40 @@ impl TypstState {
 
                         let start_range = self.index_mapper.aux_to_main(aux_range.start);
 
-                        temp_ir.to_mut().replace_range(
+                        partial_ir.to_mut().replace_range(
                             start_range..end_byte,
                             &(" ".repeat(end_byte - start_range - 1) + "\\"),
                         );
 
                         None
                     }
+                }
+            })
+            .collect::<Vec<_>>();
+
+        self.world.main_source_mut().replace(&partial_ir);
+        let document = compile::<PagedDocument>(&self.world).output.unwrap();
+
+        let canvas = mnemo_render::render(&document, 0_f64, self.pt);
+        let width = canvas.width();
+
+        self.document = Some(document);
+
+        let pt_i32 = self.pt as i32;
+        let pt_u32 = self.pt as u32;
+
+        let renders = ranged_heights
+            .into_iter()
+            .map(|(height, offset_height, range)| {
+                let rect =
+                    sk::IntRect::from_xywh(0, offset_height * pt_i32, width, height * pt_u32)
+                        .unwrap();
+                let crop = canvas.clone_rect(rect).unwrap();
+                let render = BASE64.encode(&crop.encode_png().unwrap());
+
+                RangedRender {
+                    range,
+                    render: RenderedFrame { render, height },
                 }
             })
             .collect();
@@ -541,25 +572,28 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn autocomplete(&self, cursor: usize, explicit: bool) -> Autocomplete {
+    pub fn autocomplete(&self, aux_cursor_utf16: usize, explicit: bool) -> Autocomplete {
         let main_source = self.world.main_source();
         let aux_source = self.world.aux_source();
 
-        let byte_diff = aux_source.utf16_to_byte(cursor).unwrap() - cursor;
-        let cursor = self.index_mapper.aux_to_main(cursor + byte_diff);
+        let aux_cursor = aux_source.utf16_to_byte(aux_cursor_utf16).unwrap();
+        let main_cursor = self.index_mapper.aux_to_main(aux_cursor);
 
         let results = typst_ide::autocomplete(
             &self.world,
             self.document.as_ref(),
             main_source,
-            cursor,
+            main_cursor,
             explicit,
         );
 
         match results {
-            Some((offset, completions)) => {
+            Some((main_offset, completions)) => {
+                let aux_offset = self.index_mapper.main_to_aux(main_offset);
+                let aux_offset_utf16 = aux_source.byte_to_utf16(aux_offset).unwrap();
+
                 Autocomplete {
-                    offset: self.index_mapper.main_to_aux(offset) - byte_diff,
+                    offset: aux_offset_utf16,
                     completions: completions
                         .into_iter()
                         .map(TypstCompletion::from)
@@ -620,6 +654,6 @@ impl RangedRender {
 #[derive(Debug, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RenderedFrame {
-    render: Box<str>,
-    height: f64,
+    render: String,
+    height: u32,
 }

@@ -53,7 +53,7 @@ dailyNotes.unshift(prelude.value);
 
 const typstState = await useTypst();
 
-const pixelPerPoint = ref(2 /* window.devicePixelRatio */);
+const pixelPerPoint = ref(window.devicePixelRatio);
 
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);

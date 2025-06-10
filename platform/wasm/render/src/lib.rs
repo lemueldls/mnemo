@@ -5,20 +5,9 @@ mod paint;
 mod shape;
 mod text;
 
-use std::{num::NonZeroUsize, ops::Range};
-
-use tiny_skia as sk;
-use ttf_parser::GlyphId;
-use typst_ide::IdeWorld;
-use typst_library::{
-    WorldExt,
-    foundations::Selector,
-    introspection::{Introspector, Tag},
-    layout::{
-        Abs, Axes, Frame, FrameItem, FrameKind, GroupItem, Page, PagedDocument, Point, Position,
-        Size, Transform,
-    },
-    visualize::{Color, Geometry, Paint},
+pub use tiny_skia as sk;
+use typst_library::layout::{
+    Abs, Axes, Frame, FrameItem, FrameKind, GroupItem, PagedDocument, Point, Size, Transform,
 };
 
 /// Export a page into a raster image.

@@ -6,24 +6,38 @@ export const useTypst = createSharedComposable(
     await init().then(async () => {
       const typstState = new TypstState();
 
-      const fontImports = [
-        import("~~/public/fonts/maple/cn/MapleMono-CN-Regular.ttf?url"),
-        import("~~/public/fonts/maple/cn/MapleMono-CN-Italic.ttf?url"),
-        import("~~/public/fonts/maple/cn/MapleMono-CN-Bold.ttf?url"),
-        import("~~/public/fonts/maple/cn/MapleMono-CN-BoldItalic.ttf?url"),
+      const fontSets = [
+        [
+          import("~~/public/fonts/maple/ttf/MapleMono-Regular.ttf?url"),
+          import("~~/public/fonts/maple/ttf/MapleMono-Italic.ttf?url"),
+          import("~~/public/fonts/maple/ttf/MapleMono-Bold.ttf?url"),
+          import("~~/public/fonts/maple/ttf/MapleMono-BoldItalic.ttf?url"),
+        ],
+        [
+          import("~~/public/fonts/maple/cn/MapleMono-CN-Regular.ttf?url"),
+          import("~~/public/fonts/maple/cn/MapleMono-CN-Italic.ttf?url"),
+          import("~~/public/fonts/maple/cn/MapleMono-CN-Bold.ttf?url"),
+          import("~~/public/fonts/maple/cn/MapleMono-CN-BoldItalic.ttf?url"),
+        ],
+        [
+          import("~~/public/fonts/NewCMMath-Book.otf?url"),
+          import("~~/public/fonts/NewCMMath-Regular.otf?url"),
+        ],
       ];
 
-      await Promise.all(
-        fontImports.map(async (fontImport) => {
-          const { default: fileUrl } = await fontImport;
+      for (const fontImports of fontSets) {
+        await Promise.all(
+          fontImports.map(async (fontImport) => {
+            const { default: fileUrl } = await fontImport;
 
-          const response = await fetch(fileUrl);
-          const buffer = await response.arrayBuffer();
-          const bytes = new Uint8Array(buffer);
+            const response = await fetch(fileUrl);
+            const buffer = await response.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
 
-          typstState.installFont(bytes);
-        }),
-      );
+            typstState.installFont(bytes);
+          }),
+        );
+      }
 
       return typstState;
     }),

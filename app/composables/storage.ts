@@ -23,8 +23,6 @@ function asyncComputedRef<T>(
     let stopSync = watchImmediate(
       item,
       (item) => {
-        console.log({ key: keyValue, item });
-
         data.value = item;
       },
       { deep: true },
@@ -89,8 +87,6 @@ export function useStorageItem<T extends StorageValue>(
     watchDebounced(
       item,
       async (value) => {
-        console.log({ key, value });
-
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt: Date.now() });
 
