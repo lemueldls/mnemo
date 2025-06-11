@@ -25,12 +25,14 @@ function createSpace() {
 <template>
   <m3-theme :color="space.color" harmonize>
     <md-dialog :open="open" @closed="open = false">
-      <span slot="headline">New Space</span>
+      <span slot="headline">{{ $t("components.new-space.title") }}</span>
 
       <form slot="content" method="dialog" class="flex flex-col gap-8">
         <edit-space v-model="space">
           <template #actions>
-            <md-text-button @click="createSpace">Create</md-text-button>
+            <md-text-button @click="createSpace">
+              {{ $t("components.new-space.form.create") }}
+            </md-text-button>
           </template>
         </edit-space>
       </form>

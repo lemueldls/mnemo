@@ -42,11 +42,11 @@ function formatBytes(bytes: number) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <h3 class="m3-display-small">Sync</h3>
+    <h3 class="m3-display-small">{{ $t("components.sync.title") }}</h3>
 
     <md-outlined-card v-if="usage && quota" class="flex flex-col gap-2 p-4">
       <div class="m3-label-large flex justify-between">
-        <strong>Local Quota</strong>
+        <strong>{{ $t("components.sync.local-quota") }}</strong>
 
         <span>{{ formatBytes(usage) }} / {{ formatBytes(quota) }}</span>
       </div>
@@ -57,10 +57,10 @@ function formatBytes(bytes: number) {
     <span class="text-m3-error">TODO</span>
 
     <md-filled-tonal-button v-if="user" @click="clear">
-      Logout
+      {{ $t("components.sync.logout") }}
     </md-filled-tonal-button>
     <md-filled-button v-else disabled @click="login">
-      Continue with GitHub
+      {{ $t("components.sync.continue-with-github") }}
     </md-filled-button>
   </div>
 </template>

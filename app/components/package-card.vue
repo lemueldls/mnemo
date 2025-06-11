@@ -46,6 +46,7 @@ const installedPackage = computed(() =>
       </div>
 
       <md-outlined-select
+        :label="$t('components.package-card.version')"
         :value="selectedIndex"
         @input="selectedIndex = $event.target.value"
       >
@@ -65,7 +66,7 @@ const installedPackage = computed(() =>
                 )
               "
             >
-              (Installed)
+              {{ $t("components.package-card.installed") }}
             </template>
           </span>
         </md-select-option>
@@ -88,14 +89,14 @@ const installedPackage = computed(() =>
         class="flex-[3]"
         @click.prevent="emit('uninstall', pkg)"
       >
-        Uninstall
+        {{ $t("components.package-card.uninstall") }}
       </md-outlined-button>
       <md-filled-tonal-button
         v-else
         class="flex-[3]"
         @click.prevent="emit('install', pkg)"
       >
-        Install
+        {{ $t("components.package-card.install") }}
       </md-filled-tonal-button>
     </div>
   </m3-elevated-card>

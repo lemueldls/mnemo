@@ -57,11 +57,11 @@ async function uninstallPackage(pkg: Package) {
 <template>
   <md-dialog :open="open" @closed="open = false">
     <div slot="headline" class="flex justify-between gap-4">
-      <span>Packages</span>
+      <span>{{ $t("components.packages.title") }}</span>
 
       <md-outlined-text-field
         :value="search"
-        placeholder="Search packages"
+        :placeholder="$t('components.packages.form.search')"
         class="flex-1"
         @input="search = $event.target.value"
       />
@@ -71,7 +71,7 @@ async function uninstallPackage(pkg: Package) {
       </md-icon-button> -->
     </div>
 
-    <form slot="content" method="dialog" class="overflow-hidden">
+    <form slot="content" method="dialog" class="w-xl overflow-hidden">
       <UseVirtualList
         v-if="Object.keys(filteredPackages).length > 0"
         ref="container"
@@ -90,7 +90,7 @@ async function uninstallPackage(pkg: Package) {
           />
         </template>
       </UseVirtualList>
-      <span v-else>No packages found</span>
+      <span v-else>{{ $t("components.packages.form.no-results") }}</span>
     </form>
   </md-dialog>
 </template>

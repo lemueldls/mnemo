@@ -1,6 +1,0 @@
-{
-  "site": {
-    "name": "mnemo",
-    "description": "A local-first, cross-platform note-taking app leveraging the Typst ecosystem, designed to minimize distractions and enhance the retention of information."
-  }
-}

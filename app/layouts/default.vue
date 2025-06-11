@@ -27,9 +27,15 @@ interface Page {
   icon: MaterialSymbol;
 }
 
+const { t } = useI18n();
+
 const pages: Page[] = [
-  { path: "/", name: "Home", icon: "home" },
-  { path: "/calendar", name: "Calendar", icon: "calendar_today" },
+  { path: "/", name: t("layouts.default.nav.home"), icon: "home" },
+  {
+    path: "/calendar",
+    name: t("layouts.default.nav.calendar"),
+    icon: "date_range",
+  },
 ];
 </script>
 
@@ -71,7 +77,7 @@ const pages: Page[] = [
         <h3
           class="text-m3-on-surface-variant m3-title-small flex items-center justify-between p-4 pb-2 pt-0"
         >
-          Spaces
+          {{ t("layouts.default.spaces") }}
 
           <md-icon-button @click="newSpaceOpen = true">
             <md-icon>add</md-icon>

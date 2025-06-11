@@ -110,11 +110,11 @@ watchEffect(() => {
   }
 
   &--hidden#{&}--left {
-    @apply translate-x--100%;
+    @apply translate-x-[-100%];
   }
 
   &--hidden#{&}--right {
-    @apply translate-x-100%;
+    @apply translate-x-[100%];
   }
 }
 </style>
