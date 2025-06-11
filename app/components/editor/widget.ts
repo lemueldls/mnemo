@@ -85,33 +85,24 @@ function decorate(
 
   const widgets: Range<Decoration>[] = [];
 
-  function normalizeDiagnostic(diagnostic: Diagnostic) {
-    if (diagnostic.from > text.length) diagnostic.from = 0;
-    if (diagnostic.to > text.length) diagnostic.to = text.length;
-
-    return diagnostic;
-  }
-
   if (compileResult.diagnostics.length > 0) {
     const diagnostics = compileResult.diagnostics.flatMap((diagnostic) => {
       const diagnostics: Diagnostic[] = [
-        normalizeDiagnostic({
+        {
           from: diagnostic.range.start,
           to: diagnostic.range.end,
           severity: diagnostic.severity,
           message: diagnostic.message,
-        }),
+        },
       ];
 
       for (const hint of diagnostic.hints) {
-        diagnostics.push(
-          normalizeDiagnostic({
-            from: diagnostic.range.start,
-            to: diagnostic.range.end,
-            severity: "hint",
-            message: hint,
-          }),
-        );
+        diagnostics.push({
+          from: diagnostic.range.start,
+          to: diagnostic.range.end,
+          severity: "hint",
+          message: hint,
+        });
       }
 
       return diagnostics;
@@ -119,7 +110,7 @@ function decorate(
 
     const transaction = setDiagnostics(state, diagnostics);
     queueMicrotask(() => view.dispatch(transaction));
-  }
+  } else queueMicrotask(() => view.dispatch(setDiagnostics(state, [])));
 
   for (const { range, render } of compileResult.renders) {
     if (render) {

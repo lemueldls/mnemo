@@ -63,8 +63,8 @@ impl MnemoWorld {
 
     pub fn get_source(&self, id: FileId) -> Option<&Source> {
         if !self.files.contains_key(&id) {
-            crate::error(&format!("{id:#?} NOT FOUND"));
-            crate::log(&format!("{:#?}", self.files));
+            crate::error!("{id:#?} NOT FOUND");
+            // crate::log!("{:#?}", self.files);
         }
 
         self.files.get(&id)

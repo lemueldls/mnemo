@@ -1,7 +1,7 @@
 {
     "version": "v7.4-dev",
     "family_name": "Maple Mono",
-    "use_hinted": true,
+    "use_hinted": false,
     "ligature": true,
     "feature_freeze": {
         "cv01": "enable",
@@ -59,7 +59,7 @@
         "fix_meta_table": true,
         "clean_cache": false,
         "narrow": false,
-        "use_hinted": true,
+        "use_hinted": false,
         "use_static_base_font": true,
         "scale_factor": [
             1.0,

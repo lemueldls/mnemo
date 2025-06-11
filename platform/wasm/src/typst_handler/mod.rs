@@ -361,7 +361,7 @@ impl TypstState {
                         ) => {}
                         _ => {
                             ir += "\n#box() \\";
-                            last_block.is_expr = true
+                            last_block.is_inline = true
                         }
                     }
 
@@ -381,7 +381,7 @@ impl TypstState {
 
                     block_ranges.push(RangedBlock {
                         range,
-                        is_expr: false,
+                        is_inline: false,
                     });
                 }
             }
@@ -402,6 +402,7 @@ impl TypstState {
 
         self.world.main = Some(id.inner());
 
+        let mut last_document = None;
         let mut partial_ir = Cow::from(&ir);
 
         // TODO: exclude possible prelude height?
@@ -419,7 +420,7 @@ impl TypstState {
                 let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
                 let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
-                if block.is_expr {
+                if block.is_inline {
                     // TODO: proper offsetting
                     end_byte += 10;
                 }
@@ -453,10 +454,12 @@ impl TypstState {
                             return None;
                         }
 
-                        let offset_height_i32 = offset_height as i32;
-                        offset_height = page_height;
+                        let ranged_height = Some((height, offset_height, aux_range_utf16));
 
-                        Some((height as u32, offset_height_i32, aux_range_utf16))
+                        offset_height = page_height;
+                        last_document = Some(document);
+
+                        ranged_height
                     }
                     Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -465,7 +468,7 @@ impl TypstState {
                             &self.world,
                         ));
 
-                        // crate::error(&format!("[ERRORS]: {diagnostics:?}"));
+                        // crate::error!("[ERRORS]: {diagnostics:?}");
 
                         let start_range = self.index_mapper.aux_to_main(aux_range.start);
 
@@ -480,33 +483,26 @@ impl TypstState {
             })
             .collect::<Vec<_>>();
 
-        self.world.main_source_mut().replace(&partial_ir);
-        let document = compile::<PagedDocument>(&self.world).output.unwrap();
+        let renders = if let Some(document) = &last_document {
+            ranged_heights
+                .into_iter()
+                .map(|(height, offset_height, range)| {
+                    let canvas = mnemo_render::render(document, height, offset_height, self.pt);
 
-        let canvas = mnemo_render::render(&document, 0_f64, self.pt);
-        let width = canvas.width();
+                    let render = BASE64.encode(&canvas.encode_png().unwrap());
+                    let height = height.ceil() as u32;
 
-        self.document = Some(document);
+                    RangedRender {
+                        range,
+                        render: RenderedFrame { render, height },
+                    }
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
 
-        let pt_i32 = self.pt as i32;
-        let pt_u32 = self.pt as u32;
-
-        let renders = ranged_heights
-            .into_iter()
-            .map(|(height, offset_height, range)| {
-                let rect =
-                    sk::IntRect::from_xywh(0, offset_height * pt_i32, width, height * pt_u32)
-                        .unwrap();
-                let crop = canvas.clone_rect(rect).unwrap();
-                let render = BASE64.encode(&crop.encode_png().unwrap());
-
-                RangedRender {
-                    range,
-                    render: RenderedFrame { render, height },
-                }
-            })
-            .collect();
-
+        self.document = last_document;
         self.world.main_source_mut().replace(&ir);
 
         CompileResult {
@@ -624,7 +620,7 @@ impl TypstState {
 #[derive(Debug)]
 struct RangedBlock {
     range: Range<usize>,
-    is_expr: bool,
+    is_inline: bool,
 }
 
 #[derive(Tsify, Serialize, Deserialize)]

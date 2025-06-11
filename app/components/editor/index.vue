@@ -270,7 +270,7 @@ const activeLineBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-m3-surface-container-lowest m-0 max-w-xl rounded-lg border-none p-0 shadow;
+    @apply bg-m3-surface-container-lowest rounded-bl-0 m-0 max-w-xl rounded-lg border-none p-0 shadow;
 
     font-family: var(--font-mono);
 

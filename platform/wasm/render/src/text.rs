@@ -36,7 +36,7 @@ pub fn render_text(canvas: &mut sk::Pixmap, state: State, text: &TextItem) {
                 .pre_scale(Axes::new(text_scale, text_scale));
 
             let (glyph_frame, _) = glyph_frame(&text.font, glyph.id);
-            crate::render_frame(canvas, state, &glyph_frame);
+            crate::render_frame(canvas, state, glyph_frame.items());
         }
 
         x += glyph.x_advance.at(text.size);
