@@ -44,3 +44,10 @@ macro_rules! log {
         $crate::log(&format!($($e)*))
     };
 }
+
+#[macro_export]
+macro_rules! error {
+    ($($e:tt)*) => {
+        $crate::error(&format!($($e)*))
+    };
+}

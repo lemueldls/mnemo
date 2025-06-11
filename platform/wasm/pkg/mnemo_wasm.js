@@ -503,9 +503,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_error_7e97ac6aa2a9e682 = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbg_log_07a760233e14c0fc = function(arg0, arg1) {
-        console.log(getStringFromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg_new_405e22f390576ce2 = function() {
         const ret = new Object();
         return ret;

@@ -278,6 +278,6 @@ pub fn render_tiling_frame(state: &State, tilings: &Tiling) -> sk::Pixmap {
     // Render the tilings into a new canvas.
     let ts = sk::Transform::from_scale(state.pixel_per_pt, state.pixel_per_pt);
     let temp_state = State::new(tilings.size(), ts, state.pixel_per_pt);
-    crate::render_frame(&mut canvas, temp_state, tilings.frame());
+    crate::render_frame(&mut canvas, temp_state, tilings.frame().items());
     canvas
 }

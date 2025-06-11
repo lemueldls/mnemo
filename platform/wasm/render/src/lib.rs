@@ -15,9 +15,15 @@ use typst_library::layout::{
 /// This renders the page at the given number of pixels per point and returns
 /// the resulting `tiny-skia` pixel buffer.
 #[typst_macros::time(name = "render")]
-pub fn render_offset_frame(frame: &Frame, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
+pub fn render_offset_frame(
+    frame: &Frame,
+    height: f64,
+    offset_height: f64,
+    pixel_per_pt: f32,
+) -> sk::Pixmap {
     let mut size = frame.size();
-    size.y -= Abs::pt(offset_height);
+    // size.y -= Abs::pt(offset_height);
+    size.y = Abs::pt(height);
 
     let pxw = (pixel_per_pt * size.x.to_f32()).round().max(1.0) as u32;
     let pxh = (pixel_per_pt * size.y.to_f32()).round().max(1.0) as u32;
@@ -28,17 +34,28 @@ pub fn render_offset_frame(frame: &Frame, offset_height: f64, pixel_per_pt: f32)
 
     let mut canvas = sk::Pixmap::new(pxw, pxh).unwrap();
 
-    render_frame(&mut canvas, state, frame);
+    // let top = Abs::pt(offset_height);
+    let bottom = Abs::pt(offset_height + height);
+    let frame_items = frame.items().filter(|(point, _item)|
+            // point.y >= top &&
+            point.y <= bottom);
+
+    render_frame(&mut canvas, state, frame_items);
 
     canvas
 }
 
 /// Export a document with potentially multiple pages into a single raster image.
-pub fn render(document: &PagedDocument, offset_height: f64, pixel_per_pt: f32) -> sk::Pixmap {
+pub fn render(
+    document: &PagedDocument,
+    height: f64,
+    offset_height: f64,
+    pixel_per_pt: f32,
+) -> sk::Pixmap {
     let pixmaps: Vec<_> = document
         .pages
         .iter()
-        .map(|page| render_offset_frame(&page.frame, offset_height, pixel_per_pt))
+        .map(|page| render_offset_frame(&page.frame, height, offset_height, pixel_per_pt))
         .collect();
 
     // let gap = (pixel_per_pt * gap.to_f32()).round() as u32;
@@ -147,8 +164,12 @@ impl State<'_> {
 }
 
 /// Render a frame into the canvas.
-fn render_frame(canvas: &mut sk::Pixmap, state: State, frame: &Frame) {
-    for (pos, item) in frame.items() {
+fn render_frame<'a>(
+    canvas: &mut sk::Pixmap,
+    state: State,
+    frame_items: impl Iterator<Item = &'a (Point, FrameItem)>,
+) {
+    for (pos, item) in frame_items {
         match item {
             FrameItem::Group(group) => {
                 render_group(canvas, state, *pos, group);
@@ -225,7 +246,7 @@ fn render_group(canvas: &mut sk::Pixmap, state: State, pos: Point, group: &Group
         }
     }
 
-    render_frame(canvas, state.with_mask(mask), &group.frame);
+    render_frame(canvas, state.with_mask(mask), group.frame.items());
 }
 
 fn to_sk_transform(transform: &Transform) -> sk::Transform {

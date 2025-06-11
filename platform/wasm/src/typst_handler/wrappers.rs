@@ -30,13 +30,15 @@ impl TypstDiagnostic {
     ) -> Box<[Self]> {
         errors
             .into_iter()
-            .map(|error| {
-                TypstDiagnostic {
-                    range: map_span(error.span, index_mapper, world),
-                    severity: TypstDiagnosticSeverity::Error,
-                    message: error.message.to_string(),
-                    hints: error.hints.into_iter().map(|s| s.to_string()).collect(),
-                }
+            .flat_map(|error| {
+                map_span(error.span, index_mapper, world).map(|range| {
+                    TypstDiagnostic {
+                        range,
+                        severity: TypstDiagnosticSeverity::Error,
+                        message: error.message.to_string(),
+                        hints: error.hints.into_iter().map(|s| s.to_string()).collect(),
+                    }
+                })
             })
             .collect()
     }
@@ -48,35 +50,43 @@ impl TypstDiagnostic {
     ) -> Box<[Self]> {
         diagnostics
             .into_iter()
-            .map(|diagnostic| {
-                TypstDiagnostic {
-                    range: map_span(diagnostic.span, index_mapper, world),
-                    severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
-                    message: diagnostic.message.to_string(),
-                    hints: diagnostic
-                        .hints
-                        .into_iter()
-                        .map(|s| s.to_string())
-                        .collect(),
-                }
+            .flat_map(|diagnostic| {
+                map_span(diagnostic.span, index_mapper, world).map(|range| {
+                    TypstDiagnostic {
+                        range,
+                        severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
+                        message: diagnostic.message.to_string(),
+                        hints: diagnostic
+                            .hints
+                            .into_iter()
+                            .map(|s| s.to_string())
+                            .collect(),
+                    }
+                })
             })
             .collect()
     }
 }
 
-fn map_span(span: Span, index_mapper: &IndexMapper, world: &MnemoWorld) -> Range<usize> {
+fn map_span(span: Span, index_mapper: &IndexMapper, world: &MnemoWorld) -> Option<Range<usize>> {
     let aux_source = world.aux_source();
 
-    let main_range = world.range(span).unwrap();
+    let main_range = world.range(span)?;
 
-    let aux_start = index_mapper.main_to_aux(main_range.start);
-    let aux_end = index_mapper.main_to_aux(main_range.end);
+    let aux_range = if world.main == span.id() {
+        let aux_start = index_mapper.main_to_aux(main_range.start);
+        let aux_end = index_mapper.main_to_aux(main_range.end);
 
-    let aux_start_utf16 = aux_source.byte_to_utf16(aux_start).unwrap();
-    let aux_end_utf16 = aux_source.byte_to_utf16(aux_end).unwrap();
+        aux_start..aux_end
+    } else {
+        0..aux_source.text().len()
+    };
+
+    let aux_start_utf16 = aux_source.byte_to_utf16(aux_range.start)?;
+    let aux_end_utf16 = aux_source.byte_to_utf16(aux_range.end)?;
     let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-    aux_range_utf16
+    Some(aux_range_utf16)
 }
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
