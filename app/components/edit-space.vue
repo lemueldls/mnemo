@@ -2,7 +2,7 @@
 import symbols from "~/assets/symbols.json";
 // import type { MaterialSymbol } from "material-symbols";
 
-import type { Space } from "~/composables/space";
+import type { Space } from "~/composables/spaces";
 
 import { UseVirtualList } from "@vueuse/components";
 
@@ -67,14 +67,16 @@ const groupedSymbols: string[][] = computed(() => {
     <label class="flex gap-4">
       <md-outlined-text-field
         class="flex-1"
-        label="Name"
+        :label="$t('components.edit-space.form.name')"
         :value="space.name"
         @input="space.name = $event.target.value"
       />
     </label>
 
     <label>
-      <span class="m3-label-large">Color</span>
+      <span class="m3-label-large">
+        {{ $t("components.edit-space.form.color") }}
+      </span>
 
       <div
         class="medium:mx-20 flex flex-wrap items-center justify-center gap-2"
@@ -95,7 +97,7 @@ const groupedSymbols: string[][] = computed(() => {
     <m3-outlined-card class="flex flex-col gap-4 px-4">
       <md-outlined-text-field
         class="w-full"
-        label="Icon"
+        :label="$t('components.edit-space.form.icon')"
         type="search"
         @input="iconSearch = $event.target.value"
       >
@@ -124,7 +126,9 @@ const groupedSymbols: string[][] = computed(() => {
     </m3-outlined-card>
 
     <label>
-      <span class="m3-label-large">Preview</span>
+      <span class="m3-label-large">
+        {{ $t("components.edit-space.form.preview") }}
+      </span>
 
       <div class="flex items-end justify-between">
         <m3-nav-drawer-item class="w-84">

@@ -9,6 +9,8 @@ import type { MaterialSymbol } from "material-symbols";
 
 defineProps<{ direction: "horizontal" | "vertical" }>();
 
+const { t } = useI18n();
+
 interface Item {
   name: string;
   icon?: MaterialSymbol;
@@ -16,12 +18,23 @@ interface Item {
 }
 
 const items: { [key: string]: Item } = {
-  // chat: { name: "Chat", icon: "chat", component: Chat },
-  today: { name: "Today", icon: "calendar_today", component: Today },
-  tasks: { name: "Tasks", icon: "pinboard", component: Tasks },
-  study: { name: "Study", icon: "school", component: Study },
-  // quiz: { name: "Quiz", icon: "quiz" },
-  sync: { name: "Sync", icon: "sync", component: Sync },
+  // chat: { name: t("components.side-bar.chat"), icon: "chat", component: Chat },
+  today: {
+    name: t("components.side-bar.today"),
+    icon: "calendar_today",
+    component: Today,
+  },
+  tasks: {
+    name: t("components.side-bar.tasks"),
+    icon: "pinboard",
+    component: Tasks,
+  },
+  study: {
+    name: t("components.side-bar.study"),
+    icon: "school",
+    component: Study,
+  },
+  sync: { name: t("components.side-bar.sync"), icon: "sync", component: Sync },
 };
 
 const router = useRouter();

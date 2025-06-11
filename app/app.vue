@@ -36,18 +36,15 @@ const routeDescription = computed(() => route.meta.description);
 const description = computed(() => {
   const description = routeDescription.value;
 
-  return description && te(description)
-    ? t(description)
-    : t("site.description");
+  return description && te(description) ? t(description) : t("app.description");
 });
 
-useHead({
+useHead(() => ({
   title,
-  // base: { href: siteUrl },
-  htmlAttrs: computed(() => head.value.htmlAttrs),
-  link: computed(() => head.value.link),
-  meta: computed(() => head.value.meta),
-});
+  htmlAttrs: head.value.htmlAttrs,
+  link: [...(head.value.link || [])],
+  meta: [...(head.value.meta || [])],
+}));
 
 useSeoMeta({
   title,

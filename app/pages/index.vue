@@ -3,23 +3,23 @@ definePageMeta({ title: "Home" });
 
 const name = await useStorageItem("name", "");
 
-const { d } = useI18n();
+const { t, d } = useI18n();
 const date = useNow({ interval: 1000 * 60 * 15 });
 
 const newSpaceOpen = useNewSpaceOpen();
 
 const spaces = await useSpaces();
 
-const timeOfDay = computed(() => {
+const greeting = computed(() => {
   const hour = date.value.getHours();
 
   return hour >= 4 && hour <= 11
-    ? "morning"
+    ? t("pages.index.greeting.morning", { name: name.value })
     : hour >= 12 && hour <= 16
-      ? "afternoon"
+      ? t("pages.index.greeting.afternoon", { name: name.value })
       : hour >= 17 && hour <= 20
-        ? "evening"
-        : "night";
+        ? t("pages.index.greeting.evening", { name: name.value })
+        : t("pages.index.greeting.night", { name: name.value });
 });
 </script>
 
@@ -32,11 +32,13 @@ const timeOfDay = computed(() => {
       >
         <div>
           <h1 class="m3-display-medium">
-            Good {{ timeOfDay }}{{ name ? ", " + name : "" }}.
+            {{ greeting }}
           </h1>
 
           <span class="text-m3-on-surface-variant m3-title-large">
-            Today is {{ d(date, { dateStyle: "full" }) }}
+            {{
+              t("pages.index.date", { date: d(date, { dateStyle: "full" }) })
+            }}
           </span>
         </div>
 

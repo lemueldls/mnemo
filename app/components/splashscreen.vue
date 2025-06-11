@@ -23,7 +23,9 @@ whenever(ready, () => emit("ready", true));
   <m3-theme id="splashscreen" color="#16161d" dark :class="{ ready }">
     <div class="m-16 flex w-full max-w-sm flex-col gap-2">
       <div class="m3-label-large flex justify-between">
-        <span class="font-bold">Loading...</span>
+        <span class="font-bold">{{
+          $t("components.splashscreen.loading")
+        }}</span>
 
         <span>{{ progress }} / {{ totalProgress }}</span>
       </div>

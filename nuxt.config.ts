@@ -2,7 +2,9 @@
 
 const defaultLocale = "en";
 const locales = [
-  { code: "en", language: "en-US", name: "English", file: "en-US.json" },
+  { code: "en", language: "en-US", name: "English", file: "en.json" },
+  { code: "zh", language: "zh-CN", name: "Chinese", file: "zh.json" },
+  { code: "ja", language: "ja-JP", name: "Japanese", file: "ja.json" },
 ];
 
 const isDev = process.env.NODE_ENV === "development";
@@ -92,17 +94,20 @@ export default defineNuxtConfig({
     families: [
       { name: "Source Sans", provider: "local", global: true },
       { name: "Source Han Sans CN", provider: "local", global: true },
+      // { name: "Source Han Sans JP", provider: "local", global: true },
       // { name: "Source Serif", provider: "local", global: true },
       // { name: "Source Han Serif CN", provider: "local", global: true },
+      // { name: "Source Han Serif JP", provider: "local", global: true },
       { name: "Maple Mono", provider: "local", global: true },
       { name: "Maple Mono CN", provider: "local", global: true },
     ],
   },
   i18n: {
-    lazy: true,
-    defaultLocale,
     locales,
+    defaultLocale,
     langDir: "locales",
+    lazy: true,
+    strategy: "no_prefix",
     baseUrl: siteUrl,
   },
   ssrLit: { litElementPrefix: ["md-"] },

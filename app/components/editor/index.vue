@@ -107,6 +107,8 @@ watchImmediate(packages, async (packages) => {
   );
 });
 
+const { t } = useI18n();
+
 const typstState = await useTypst();
 
 onMounted(() => {
@@ -115,7 +117,10 @@ onMounted(() => {
     parent: container,
     root: document,
     state: EditorState.create({
-      extensions: [EditorState.readOnly.of(true), placeholder("Loading...")],
+      extensions: [
+        EditorState.readOnly.of(true),
+        placeholder(t("components.editor.loading")),
+      ],
     }),
   });
 
