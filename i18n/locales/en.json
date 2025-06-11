@@ -4,6 +4,9 @@
     "description": "A local-first, cross-platform note-taking app leveraging the Typst ecosystem, designed to minimize distractions and enhance the retention of information.",
     "locales": {
       "en": "English",
+      "es": "Spanish",
+      "de": "German",
+      "he": "Hebrew",
       "zh": "Chinese",
       "ja": "Japanese"
     }

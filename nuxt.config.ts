@@ -2,9 +2,12 @@
 
 const defaultLocale = "en";
 const locales = [
-  { code: "en", language: "en-US", name: "English", file: "en.json" },
-  { code: "zh", language: "zh-CN", name: "Chinese", file: "zh.json" },
-  { code: "ja", language: "ja-JP", name: "Japanese", file: "ja.json" },
+  { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
+  { code: "es", dir: "ltr", language: "es-ES", file: "es.json" },
+  { code: "de", dir: "ltr", language: "de-DE", file: "de.json" },
+  { code: "he", dir: "rtl", language: "he-IL", file: "he.json" },
+  { code: "zh", dir: "ltr", language: "zh-CN", file: "zh.json" },
+  { code: "ja", dir: "ltr", language: "ja-JP", file: "ja.json" },
 ];
 
 const isDev = process.env.NODE_ENV === "development";
