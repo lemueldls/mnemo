@@ -17,30 +17,18 @@ import {
   syntaxHighlighting,
   defaultHighlightStyle,
   bracketMatching,
-  foldKeymap,
 } from "@codemirror/language";
-import {
-  history,
-  defaultKeymap,
-  historyKeymap,
-  indentWithTab,
-  historyField,
-} from "@codemirror/commands";
-import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
-import {
-  closeBrackets,
-  autocompletion,
-  closeBracketsKeymap,
-  completionKeymap,
-} from "@codemirror/autocomplete";
-import { lintKeymap } from "@codemirror/lint";
+import { history, historyField } from "@codemirror/commands";
+import { highlightSelectionMatches } from "@codemirror/search";
+import { closeBrackets, autocompletion } from "@codemirror/autocomplete";
+
+import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
 
 import { Rgb } from "mnemo-wasm";
 
 import type { NoteKind } from "~/composables/spaces";
 
 import { typst } from "./widget";
-import { underlineKeymap } from "./underline";
 
 import { typstLanguage } from "./languague";
 
@@ -167,8 +155,6 @@ async function createStateConfig(
       typst(typstState, text, prelude, fileId),
       typstLanguage(typstState),
 
-      underlineKeymap,
-
       EditorView.lineWrapping,
       // updateListenerExtension,
 
@@ -189,16 +175,7 @@ async function createStateConfig(
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
-      keymap.of([
-        indentWithTab,
-        ...closeBracketsKeymap,
-        ...defaultKeymap,
-        ...searchKeymap,
-        ...historyKeymap,
-        ...foldKeymap,
-        ...completionKeymap,
-        ...lintKeymap,
-      ]),
+      keymap.of(vscodeKeymap),
     ],
   };
 }

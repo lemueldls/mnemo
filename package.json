@@ -29,6 +29,7 @@
     "@material/material-color-utilities": "^0.3.0",
     "@material/web": "^2.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
+    "@replit/codemirror-vscode-keymap": "^6.0.2",
     "@tato30/vue-pdf": "^1.11.3",
     "@tauri-apps/plugin-deep-link": "~2.3.0",
     "@tauri-apps/plugin-http": "~2.4.4",
