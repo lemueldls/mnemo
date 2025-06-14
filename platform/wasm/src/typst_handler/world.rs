@@ -11,13 +11,14 @@ use typst::{
 };
 use typst_ide::IdeWorld;
 
-use super::fonts::FontLoader;
+use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
 
 #[derive(Default)]
 pub struct MnemoWorld {
     pub main: Option<FileId>,
     pub aux: Option<FileId>,
     pub files: HashMap<FileId, Source>,
+    pub index_mapper: IndexMapper,
     library: LazyHash<Library>,
     font_loader: FontLoader,
 }
@@ -33,6 +34,7 @@ impl MnemoWorld {
         Self {
             main: None,
             aux: None,
+            index_mapper: IndexMapper::default(),
             files: HashMap::new(),
             library: LazyHash::new(library),
             font_loader,
@@ -53,6 +55,14 @@ impl MnemoWorld {
 
     pub fn aux_source_mut(&mut self) -> &mut Source {
         self.files.get_mut(self.aux.as_ref().unwrap()).unwrap()
+    }
+
+    pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
+        self.index_mapper.main_to_aux(main_idx)
+    }
+
+    pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
+        self.index_mapper.aux_to_main(aux_idx)
     }
 
     pub fn insert_file(&mut self, id: FileId, text: String) {

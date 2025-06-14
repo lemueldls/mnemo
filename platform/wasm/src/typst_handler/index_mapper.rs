@@ -4,7 +4,7 @@ pub struct IndexMapper {
 }
 
 impl IndexMapper {
-    pub fn map_index(&mut self, main: usize, aux: usize) {
+    pub fn add_main_to_aux(&mut self, main: usize, aux: usize) {
         self.inflections.push((main, aux));
     }
 

@@ -7,7 +7,7 @@ import {
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState, FileId, RenderedFrame } from "mnemo-wasm";
+import type { TypstState, FileId, RangedFrame } from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
@@ -20,47 +20,48 @@ class TypstWidget extends WidgetType {
   public constructor(
     private readonly typstState: TypstState,
     private readonly view: EditorView,
-    private readonly range: { start: number; end: number },
-    private readonly frame: RenderedFrame,
+    private readonly frame: RangedFrame,
   ) {
     super();
 
     this.#image.draggable = false;
     this.#image.classList.add("typst-render");
-    // this.#image.addEventListener("click", this.handleJump.bind(this));
+    this.#image.addEventListener("click", this.handleJump.bind(this));
     // this.#image.addEventListener("mousedown", this.handleJump.bind(this));
   }
 
   private async handleJump(event: MouseEvent) {
     event.preventDefault();
 
-    const { typstState, range, view } = this;
+    const { typstState, frame, view } = this;
     const { top, left } = this.#image.getBoundingClientRect();
 
     const x = event.clientX - left;
     const y = event.clientY - top;
 
-    const jump = typstState.click(0, x, y); // can crash
-    const position = jump ? jump.position : range.end;
+    const jump = typstState.click(x, y + frame.render.offsetHeight);
+    const position = jump ? jump.position : frame.range.end;
 
     view.dispatch({ selection: { anchor: position } });
   }
 
   public override eq(other: TypstWidget) {
     return (
-      other.frame.height === this.frame.height &&
-      other.frame.render === this.frame.render
+      other.frame.render.height === this.frame.render.height &&
+      other.frame.render.encoding === this.frame.render.encoding
     );
   }
 
   public toDOM() {
-    this.#image.src = `data:image/png;base64,${this.frame.render}`;
+    this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
 
     return this.#image;
   }
 
   public override get estimatedHeight() {
-    return this.#image.height || this.frame.height / window.devicePixelRatio;
+    return (
+      this.#image.height || this.frame.render.height / window.devicePixelRatio
+    );
   }
 
   public override ignoreEvent(event: Event) {
@@ -112,10 +113,12 @@ function decorate(
     queueMicrotask(() => view.dispatch(transaction));
   } else queueMicrotask(() => view.dispatch(setDiagnostics(state, [])));
 
-  for (const { range, render } of compileResult.renders) {
-    if (render) {
-      const { from: start, number: startLine } = state.doc.lineAt(range.start);
-      const { to: end, number: endLine } = state.doc.lineAt(range.end);
+  for (const frame of compileResult.frames) {
+    if (frame.render) {
+      const { from: start, number: startLine } = state.doc.lineAt(
+        frame.range.start,
+      );
+      const { to: end, number: endLine } = state.doc.lineAt(frame.range.end);
 
       const inactive =
         !view.hasFocus ||
@@ -130,7 +133,7 @@ function decorate(
       if (inactive)
         widgets.push(
           Decoration.replace({
-            widget: new TypstWidget(typstState, view, range, render),
+            widget: new TypstWidget(typstState, view, frame),
             // inclusive: true,
           }).range(start, end),
         );
@@ -149,7 +152,7 @@ function decorate(
             style +=
               "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
-            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${render.height - lineHeight}px`;
+            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
           else lineHeight += view.lineBlockAt(line.from).height;
 
           widgets.push(

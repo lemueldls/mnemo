@@ -421,13 +421,12 @@ export class TypstState {
         return ret;
     }
     /**
-     * @param {number} index
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
      */
-    click(index, x, y) {
-        const ret = wasm.typststate_click(this.__wbg_ptr, index, x, y);
+    click(x, y) {
+        const ret = wasm.typststate_click(this.__wbg_ptr, x, y);
         return ret;
     }
     /**

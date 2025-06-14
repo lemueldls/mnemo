@@ -21,7 +21,7 @@ export const typststate_installPackage: (a: number, b: number, c: number, d: num
 export const typststate_installFont: (a: number, b: number, c: number) => void;
 export const typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
 export const typststate_renderPdf: (a: number, b: number) => any;
-export const typststate_click: (a: number, b: number, c: number, d: number) => any;
+export const typststate_click: (a: number, b: number, c: number) => any;
 export const typststate_autocomplete: (a: number, b: number, c: number) => any;
 export const typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
 export const start: () => void;

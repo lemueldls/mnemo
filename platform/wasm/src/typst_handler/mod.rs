@@ -18,7 +18,6 @@ use std::{
 use data_encoding::BASE64;
 use index_mapper::IndexMapper;
 use mnemo_render::sk;
-// use js_sys::Uint8Array;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
 use tsify::Tsify;
@@ -138,15 +137,11 @@ impl fmt::Display for Rgb {
 }
 
 #[wasm_bindgen]
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct TypstState {
     world: MnemoWorld,
     document: Option<PagedDocument>,
-    index_mapper: IndexMapper,
     width: String,
     height: String,
-    // last_working_edit: String,
     pt: f32,
     size: f32,
     theme: ThemeColors,
@@ -157,7 +152,6 @@ impl Default for TypstState {
         Self {
             world: MnemoWorld::new(),
             document: None,
-            index_mapper: IndexMapper::default(),
             width: String::from("auto"),
             height: String::from("auto"),
             pt: 0_f32,
@@ -179,7 +173,7 @@ impl Default for TypstState {
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CompileResult {
-    renders: Vec<RangedRender>,
+    frames: Vec<RangedFrame>,
     diagnostics: Vec<TypstDiagnostic>,
 }
 
@@ -314,8 +308,8 @@ impl TypstState {
     pub fn compile(&mut self, id: &FileIdWrapper, text: String, prelude: &str) -> CompileResult {
         let mut ir = self.prelude(true) + prelude;
 
-        self.index_mapper = IndexMapper::default();
-        self.index_mapper.map_index(0, ir.len());
+        let mut index_mapper = IndexMapper::default();
+        index_mapper.add_main_to_aux(0, ir.len());
 
         let aux_id = id.inner().join("$");
         self.world
@@ -377,8 +371,7 @@ impl TypstState {
                 } else {
                     in_block = true;
 
-                    self.index_mapper.map_index(range.start, ir.len());
-
+                    index_mapper.add_main_to_aux(range.start, ir.len());
                     block_ranges.push(RangedBlock {
                         range,
                         is_inline: false,
@@ -400,12 +393,12 @@ impl TypstState {
         //     &ir[(self.prelude(true) + prelude).len()..]
         // );
 
+        self.world.index_mapper = index_mapper;
         self.world.main = Some(id.inner());
 
         let mut last_document = None;
         let mut partial_ir = Cow::from(&ir);
 
-        // TODO: exclude possible prelude height?
         let mut offset_height = 0_f64;
         let mut diagnostics = Vec::new();
 
@@ -419,7 +412,7 @@ impl TypstState {
                 let aux_end_utf16 = aux_source.byte_to_utf16(aux_range.end).unwrap();
                 let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                let mut end_byte = self.index_mapper.aux_to_main(aux_range.end);
+                let mut end_byte = self.world.map_aux_to_main(aux_range.end);
                 if block.is_inline {
                     // TODO: proper offsetting
                     end_byte += 10;
@@ -434,7 +427,6 @@ impl TypstState {
                 let compiled = compile::<PagedDocument>(&self.world);
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     compiled.warnings,
-                    &self.index_mapper,
                     &self.world,
                 ));
 
@@ -442,21 +434,21 @@ impl TypstState {
                     Ok(document) => {
                         // TODO: handle changes in page margins
 
-                        let page_height = document
+                        let document_height = document
                             .pages
                             .iter()
                             .map(|page| page.frame.height())
                             .sum::<Abs>()
                             .to_pt();
-                        let height = page_height - offset_height;
+                        let height = document_height - offset_height;
 
                         if height <= 0_f64 {
                             return None;
                         }
 
-                        let ranged_height = Some((height, offset_height, aux_range_utf16));
+                        let ranged_height = Some((aux_range_utf16, height, offset_height));
 
-                        offset_height = page_height;
+                        offset_height = document_height;
                         last_document = Some(document);
 
                         ranged_height
@@ -464,13 +456,12 @@ impl TypstState {
                     Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
                             source_diagnostics,
-                            &self.index_mapper,
                             &self.world,
                         ));
 
                         // crate::error!("[ERRORS]: {diagnostics:?}");
 
-                        let start_range = self.index_mapper.aux_to_main(aux_range.start);
+                        let start_range = self.world.map_aux_to_main(aux_range.start);
 
                         partial_ir.to_mut().replace_range(
                             start_range..end_byte,
@@ -483,19 +474,21 @@ impl TypstState {
             })
             .collect::<Vec<_>>();
 
-        let renders = if let Some(document) = &last_document {
+        let frames = if let Some(document) = &last_document {
             ranged_heights
                 .into_iter()
-                .map(|(height, offset_height, range)| {
+                .map(|(range, height, offset_height)| {
                     let canvas = mnemo_render::render(document, height, offset_height, self.pt);
 
-                    let render = BASE64.encode(&canvas.encode_png().unwrap());
-                    let height = height.ceil() as u32;
+                    let encoding = BASE64.encode(&canvas.encode_png().unwrap());
+                    let height = height.round() as u32;
+                    let render = FrameRender {
+                        encoding,
+                        height,
+                        offset_height,
+                    };
 
-                    RangedRender {
-                        range,
-                        render: RenderedFrame { render, height },
-                    }
+                    RangedFrame { range, render }
                 })
                 .collect()
         } else {
@@ -506,7 +499,7 @@ impl TypstState {
         self.world.main_source_mut().replace(&ir);
 
         CompileResult {
-            renders,
+            frames,
             diagnostics,
         }
     }
@@ -517,13 +510,17 @@ impl TypstState {
 
         let mut ir = self.prelude(false);
         let main_source = self.world.main_source_mut();
-        ir += main_source.text();
+        let text = main_source.text().to_string();
+        ir += &text;
         main_source.replace(&ir);
+
+        let aux_id = id.inner().join("$");
+        self.world.insert_file(aux_id, text);
+        self.world.aux = Some(aux_id);
 
         let compiled = compile(&self.world);
         let mut diagnostics =
-            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.index_mapper, &self.world)
-                .into_vec();
+            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.world).into_vec();
 
         let bytes = match compiled.output {
             Ok(document) => {
@@ -532,7 +529,6 @@ impl TypstState {
                     Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
                             source_diagnostics,
-                            &self.index_mapper,
                             &self.world,
                         ));
 
@@ -543,7 +539,6 @@ impl TypstState {
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
-                    &self.index_mapper,
                     &self.world,
                 ));
 
@@ -555,16 +550,31 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn click(&mut self, index: usize, x: f64, y: f64) -> Option<TypstJump> {
-        let document = self.document.as_ref().unwrap();
+    pub fn click(&mut self, x: f64, mut y: f64) -> Option<TypstJump> {
+        let document = self.document.as_ref()?;
+
+        let index = document
+            .pages
+            .iter()
+            .rposition(|page| y >= page.frame.height().to_pt())
+            .unwrap_or_default();
+        let page = &document.pages[index];
+
+        let page_offset = document
+            .pages
+            .iter()
+            .map(|page| page.frame.height().to_pt())
+            .rfind(|height| y >= *height)
+            .unwrap_or_default();
+        y -= page_offset;
 
         typst_ide::jump_from_click(
             &self.world,
             document,
-            &document.pages[index].frame,
-            Point::new(Abs::raw(x), Abs::raw(y)),
+            &page.frame,
+            Point::new(Abs::pt(x), Abs::pt(y)),
         )
-        .map(|jump| TypstJump::from_mapped(jump, &self.index_mapper))
+        .map(|jump| TypstJump::from_mapped(jump, &self.world))
     }
 
     #[wasm_bindgen]
@@ -573,7 +583,7 @@ impl TypstState {
         let aux_source = self.world.aux_source();
 
         let aux_cursor = aux_source.utf16_to_byte(aux_cursor_utf16).unwrap();
-        let main_cursor = self.index_mapper.aux_to_main(aux_cursor);
+        let main_cursor = self.world.map_aux_to_main(aux_cursor);
 
         let results = typst_ide::autocomplete(
             &self.world,
@@ -585,7 +595,7 @@ impl TypstState {
 
         match results {
             Some((main_offset, completions)) => {
-                let aux_offset = self.index_mapper.main_to_aux(main_offset);
+                let aux_offset = self.world.map_main_to_aux(main_offset);
                 let aux_offset_utf16 = aux_source.byte_to_utf16(aux_offset).unwrap();
 
                 Autocomplete {
@@ -636,20 +646,22 @@ pub struct Autocomplete {
 
 #[derive(Debug, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RangedRender {
+pub struct RangedFrame {
     pub range: Range<usize>,
-    pub render: RenderedFrame,
+    pub render: FrameRender,
 }
 
-impl RangedRender {
-    pub fn new(range: Range<usize>, render: RenderedFrame) -> Self {
+impl RangedFrame {
+    pub fn new(range: Range<usize>, render: FrameRender) -> Self {
         Self { range, render }
     }
 }
 
 #[derive(Debug, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderedFrame {
-    render: String,
+pub struct FrameRender {
+    encoding: String,
     height: u32,
+    #[serde(rename = "offsetHeight")]
+    offset_height: f64,
 }
