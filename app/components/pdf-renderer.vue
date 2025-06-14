@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { VuePDF, usePDF } from "@tato30/vue-pdf";
-
 import { Rgb, ThemeColors } from "mnemo-wasm";
 
 import type { Rgba } from "@material/material-color-utilities";
@@ -27,22 +25,21 @@ const dailyNotes = await Promise.all(
       "",
     );
 
-    const time = decodeTime(note.id);
-    const date = d(time, { weekday: "long", month: "long", day: "numeric" });
-
-    return (
-      `
-        #set page(fill:rgb(0,0,0,0),width:730pt,height:auto,margin:16pt,header:none,footer:none)
-
-        #align(right)[===== ${date}]
-      ` + item.value
-    );
+    return { note, item: item.value };
   }),
-).then((notes) => notes.filter((note) => note));
+).then((notes) =>
+  notes
+    .filter(({ item }) => item)
+    .map(({ note, item }) => {
+      const time = decodeTime(note.id);
+      const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-// dailyNotes.unshift(`
-//   #set page(fill:rgb(0,0,0,0),width:730pt,margin:16pt)
-// `);
+      return (
+        `#set page(fill:rgb(0,0,0,0),width:730pt,height:auto,margin:16pt,header:none,footer:none)\n#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
+        item
+      );
+    }),
+);
 
 const prelude = await useStorageItem(
   () => `spaces/${spaceId.value}/prelude/main.typ`,
@@ -91,43 +88,35 @@ await Promise.all(
 
 // typstState.resize(200);
 
-const path = `spaces/${spaceId.value}/render.typ`;
+const path = `spaces/${spaceId.value}/export.typ`;
 const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
 
 const { bytes, diagnostics } = typstState.renderPdf(fileId);
-
-const doc = bytes ? usePDF(bytes) : undefined;
-const pdf = doc?.pdf;
-const pages = doc?.pages;
+const pdf = bytes ? new Uint8Array(bytes) : null;
 </script>
 
 <template>
-  <div class="flex size-full items-center justify-center">
-    <md-outlined-card v-if="doc" class="m-4 h-full overflow-scroll">
-      <VuePDF v-for="page in pages" :key="page" :pdf :page text-layer />
-    </md-outlined-card>
-
-    <div
-      v-if="diagnostics.length > 0"
-      class="bg-m3-error-container text-m3-on-error-container rounded p-4"
-    >
-      <pre>
-        <code>
-            <span v-for="(diagnostic, i) in diagnostics" :key="i">
-              <strong>{{ diagnostic.severity }}</strong>
-
-              {{ diagnostic.message }}
-            </span>
-        </code>
-      </pre>
+  <div
+    class="flex size-full items-center justify-center overflow-hidden px-4 pb-4"
+  >
+    <div v-if="diagnostics.length > 0" class="rounded-lg p-4">
+      <pre
+        v-for="(diagnostic, i) in diagnostics"
+        :key="i"
+        :class="{
+          'bg-m3-error-container text-m3-on-error-container':
+            diagnostic.severity === 'error',
+          // 'bg-m3-warning-container text-m3-on-warning-container': diagnostic.severity === 'warning',
+          // 'bg-m3-info-container text-m3-on-info-container': diagnostic.severity === 'info',
+        }"
+      ><strong>{{ diagnostic.severity }}</strong> {{ diagnostic.message }}</pre>
     </div>
+
+    <md-outlined-card
+      v-if="pdf"
+      class="max-w-180 m-4 h-full w-full overflow-hidden"
+    >
+      <LazyEmbededPdf v-model="pdf" />
+    </md-outlined-card>
   </div>
 </template>
-
-<style lang="scss">
-@import "@tato30/vue-pdf/style.css";
-
-/* #space-page {
-  @apply absolute inset-0;
-} */
-</style>

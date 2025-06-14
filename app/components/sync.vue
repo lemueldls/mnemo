@@ -3,10 +3,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 
 const { user, clear, openInPopup } = useUserSession();
 
-watchEffect(() => {
-  console.log({ user: user.value });
-});
-
 const runtimeConfig = useRuntimeConfig();
 const { platform, apiBaseUrl } = runtimeConfig.public;
 
