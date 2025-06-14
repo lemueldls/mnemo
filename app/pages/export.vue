@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: "space" });
+definePageMeta({ layout: "empty" });
 
 const spaceId = usePageRouteQuery("space");
 
@@ -22,9 +22,7 @@ const space = computed(() => spaces.value[spaceId.value]!);
             </template>
           </m3-top-app-bar>
 
-          <!-- <div class="bg-m3-surface p-8 m-8 overflow-auto h-full"> -->
-          <pdf-renderer />
-          <!-- </div> -->
+          <pdf-renderer class="bg-white" />
         </div>
       </div>
     </m3-page>

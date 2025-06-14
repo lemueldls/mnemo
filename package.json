@@ -30,7 +30,6 @@
     "@material/web": "^2.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@replit/codemirror-vscode-keymap": "^6.0.2",
-    "@tato30/vue-pdf": "^1.11.3",
     "@tauri-apps/plugin-deep-link": "~2.3.0",
     "@tauri-apps/plugin-http": "~2.4.4",
     "@tauri-apps/plugin-opener": "~2.2.7",
@@ -44,9 +43,11 @@
     "material-symbols": "^0.31.4",
     "mnemo-wasm": "workspace:*",
     "nanotar": "^0.2.0",
+    "pdfjs-dist": "^5.3.31",
     "ulid": "^3.0.0",
     "unstorage": "^1.16.0",
-    "valibot": "^1.1.0"
+    "valibot": "^1.1.0",
+    "vue-pdf-embed": "^2.1.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250601.0",

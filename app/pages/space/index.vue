@@ -228,9 +228,13 @@ async function createStickyNote() {
           </m3-top-app-bar>
 
           <div
-            class="medium:pr-0 medium:pl-6 medium:pb-3 flex min-h-0 flex-1 justify-center pb-6 pl-3 pr-3"
+            class="medium:pr-0 medium:pb-3 flex min-h-0 flex-1 justify-center gap-4 pb-6 pl-3 pr-3"
           >
-            <div class="max-w-180 relative size-full">
+            <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
+              <LazyEmbededPdf model-value="article2.pdf" monochrome />
+            </m3-outlined-card> -->
+
+            <div class="max-w-180 medium:ml-3 relative size-full">
               <div class="absolute left--6 pb-8 pt-16">
                 <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
@@ -259,7 +263,7 @@ async function createStickyNote() {
                   >
                     <div class="sidebar-button__inner">
                       <md-ripple />
-                      <md-icon>sticky_note</md-icon>
+                      <md-icon>sticky_note_2</md-icon>
                     </div>
                   </div>
                   <div
@@ -282,16 +286,16 @@ async function createStickyNote() {
                       <md-icon>camera</md-icon>
                     </div>
                   </div>
-                  <!-- <NuxtLinkLocale
+                  <NuxtLinkLocale
                     class="sidebar-button"
                     title="Export"
-                    :to="`/render?space=${spaceId}`"
+                    :to="`/export?space=${spaceId}`"
                   >
                     <div class="sidebar-button__inner">
                       <md-ripple />
-                      <md-icon>open_in_new</md-icon>
+                      <md-icon>export_notes</md-icon>
                     </div>
-                  </NuxtLinkLocale> -->
+                  </NuxtLinkLocale>
                 </div>
               </div>
 
@@ -309,13 +313,13 @@ async function createStickyNote() {
                     :disabled="previousDayIndex === -1"
                     @click="currentNoteIndex = previousDayIndex"
                   >
-                    <md-icon>keyboard_arrow_up</md-icon>
+                    <md-icon>keyboard_arrow_left</md-icon>
                   </md-icon-button>
                   <md-icon-button
                     :disabled="nextDayIndex === -1"
                     @click="currentNoteIndex = nextDayIndex"
                   >
-                    <md-icon>keyboard_arrow_down</md-icon>
+                    <md-icon>keyboard_arrow_right</md-icon>
                   </md-icon-button>
                 </div>
 
@@ -328,10 +332,6 @@ async function createStickyNote() {
                 />
               </md-elevated-card>
             </div>
-
-            <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
-              <pdf-viewer />
-            </m3-outlined-card> -->
           </div>
 
           <side-bar v-if="!medium" direction="horizontal" />
