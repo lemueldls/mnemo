@@ -22,7 +22,7 @@ export interface TypstCompletion {
 }
 
 export interface CompileResult {
-    renders: RangedRender[];
+    frames: RangedFrame[];
     diagnostics: TypstDiagnostic[];
 }
 
@@ -38,14 +38,15 @@ export interface Autocomplete {
     completions: TypstCompletion[];
 }
 
-export interface RangedRender {
+export interface RangedFrame {
     range: { start: number; end: number };
-    render: RenderedFrame;
+    render: FrameRender;
 }
 
-export interface RenderedFrame {
-    render: string;
+export interface FrameRender {
+    encoding: string;
     height: number;
+    offsetHeight: number;
 }
 
 export class FileId {
@@ -79,7 +80,7 @@ export class TypstState {
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
   renderPdf(id: FileId): RenderPdfResult;
-  click(index: number, x: number, y: number): TypstJump | undefined;
+  click(x: number, y: number): TypstJump | undefined;
   autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
 }
@@ -108,7 +109,7 @@ export interface InitOutput {
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
   readonly typststate_renderPdf: (a: number, b: number) => any;
-  readonly typststate_click: (a: number, b: number, c: number, d: number) => any;
+  readonly typststate_click: (a: number, b: number, c: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly start: () => void;

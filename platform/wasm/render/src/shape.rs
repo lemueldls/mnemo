@@ -1,11 +1,12 @@
 use tiny_skia as sk;
-use typst_library::layout::{Abs, Axes, Point, Ratio, Size};
-use typst_library::visualize::{
-    Curve, CurveItem, DashPattern, FillRule, FixedStroke, Geometry, LineCap, LineJoin,
-    Shape,
+use typst_library::{
+    layout::{Abs, Axes, Point, Ratio, Size},
+    visualize::{
+        Curve, CurveItem, DashPattern, FillRule, FixedStroke, Geometry, LineCap, LineJoin, Shape,
+    },
 };
 
-use crate::{paint, AbsExt, State};
+use crate::{AbsExt, State, paint};
 
 /// Render a geometrical shape into the canvas.
 pub fn render_shape(canvas: &mut sk::Pixmap, state: State, shape: &Shape) -> Option<()> {
@@ -59,8 +60,14 @@ pub fn render_shape(canvas: &mut sk::Pixmap, state: State, shape: &Shape) -> Opt
         canvas.fill_path(&path, &paint, rule, ts, state.mask);
     }
 
-    if let Some(FixedStroke { paint, thickness, cap, join, dash, miter_limit }) =
-        &shape.stroke
+    if let Some(FixedStroke {
+        paint,
+        thickness,
+        cap,
+        join,
+        dash,
+        miter_limit,
+    }) = &shape.stroke
     {
         let width = thickness.to_f32();
 
@@ -75,27 +82,21 @@ pub fn render_shape(canvas: &mut sk::Pixmap, state: State, shape: &Shape) -> Opt
                 bbox
             };
 
-            let fill_transform =
-                (!matches!(shape.geometry, Geometry::Line(..))).then(|| {
-                    sk::Transform::from_translate(
-                        -thickness.to_f32(),
-                        -thickness.to_f32(),
-                    )
-                });
+            let fill_transform = (!matches!(shape.geometry, Geometry::Line(..)))
+                .then(|| sk::Transform::from_translate(-thickness.to_f32(), -thickness.to_f32()));
 
-            let gradient_map =
-                (!matches!(shape.geometry, Geometry::Line(..))).then(|| {
-                    (
-                        Point::new(
-                            -*thickness * state.pixel_per_pt as f64,
-                            -*thickness * state.pixel_per_pt as f64,
-                        ),
-                        Axes::new(
-                            Ratio::new(offset_bbox.x / bbox.x),
-                            Ratio::new(offset_bbox.y / bbox.y),
-                        ),
-                    )
-                });
+            let gradient_map = (!matches!(shape.geometry, Geometry::Line(..))).then(|| {
+                (
+                    Point::new(
+                        -*thickness * state.pixel_per_pt as f64,
+                        -*thickness * state.pixel_per_pt as f64,
+                    ),
+                    Axes::new(
+                        Ratio::new(offset_bbox.x / bbox.x),
+                        Ratio::new(offset_bbox.y / bbox.y),
+                    ),
+                )
+            });
 
             let mut pixmap = None;
             let paint = paint::to_sk_paint(
@@ -174,7 +175,17 @@ pub fn to_sk_dash_pattern(dash: &DashPattern<Abs, Abs>) -> Option<sk::StrokeDash
     // tiny-skia only allows dash patterns with an even number of elements,
     // while pdf allows any number.
     let pattern_len = dash.array.len();
-    let len = if pattern_len % 2 == 1 { 2 * pattern_len } else { pattern_len };
-    let dash_array = dash.array.iter().map(|l| l.to_f32()).cycle().take(len).collect();
+    let len = if pattern_len % 2 == 1 {
+        2 * pattern_len
+    } else {
+        pattern_len
+    };
+    let dash_array = dash
+        .array
+        .iter()
+        .map(|l| l.to_f32())
+        .cycle()
+        .take(len)
+        .collect();
     sk::StrokeDash::new(dash_array, dash.phase.to_f32())
 }

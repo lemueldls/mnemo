@@ -10,7 +10,6 @@ use typst::{
 };
 use wasm_bindgen::prelude::*;
 
-use super::index_mapper::IndexMapper;
 use crate::typst_handler::world::MnemoWorld;
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
@@ -23,15 +22,11 @@ pub struct TypstDiagnostic {
 }
 
 impl TypstDiagnostic {
-    pub fn from_errors(
-        errors: EcoVec<SyntaxError>,
-        index_mapper: &IndexMapper,
-        world: &MnemoWorld,
-    ) -> Box<[Self]> {
+    pub fn from_errors(errors: EcoVec<SyntaxError>, world: &MnemoWorld) -> Box<[Self]> {
         errors
             .into_iter()
             .flat_map(|error| {
-                map_span(error.span, index_mapper, world).map(|range| {
+                map_span(error.span, world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::Error,
@@ -45,13 +40,12 @@ impl TypstDiagnostic {
 
     pub fn from_diagnostics(
         diagnostics: EcoVec<SourceDiagnostic>,
-        index_mapper: &IndexMapper,
         world: &MnemoWorld,
     ) -> Box<[Self]> {
         diagnostics
             .into_iter()
             .flat_map(|diagnostic| {
-                map_span(diagnostic.span, index_mapper, world).map(|range| {
+                map_span(diagnostic.span, world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
@@ -68,14 +62,14 @@ impl TypstDiagnostic {
     }
 }
 
-fn map_span(span: Span, index_mapper: &IndexMapper, world: &MnemoWorld) -> Option<Range<usize>> {
+fn map_span(span: Span, world: &MnemoWorld) -> Option<Range<usize>> {
     let aux_source = world.aux_source();
 
     let main_range = world.range(span)?;
 
     let aux_range = if world.main == span.id() {
-        let aux_start = index_mapper.main_to_aux(main_range.start);
-        let aux_end = index_mapper.main_to_aux(main_range.end);
+        let aux_start = world.map_main_to_aux(main_range.start);
+        let aux_end = world.map_main_to_aux(main_range.end);
 
         aux_start..aux_end
     } else {
@@ -121,15 +115,16 @@ pub enum TypstJump {
 }
 
 impl TypstJump {
-    pub fn from_mapped(jump: typst_ide::Jump, index_mapper: &IndexMapper) -> Self {
+    pub fn from_mapped(jump: typst_ide::Jump, world: &MnemoWorld) -> Self {
         match jump {
-            typst_ide::Jump::File(id, position) => {
-                // let mut state = DefaultHasher::new();
-                // id.hash(&mut state);
+            typst_ide::Jump::File(_id, main_position) => {
+                let aux_source = world.aux_source();
+                let aux_position = world.map_main_to_aux(main_position);
+                let aux_position_utf16 = aux_source.byte_to_utf16(aux_position).unwrap();
 
                 Self::File {
                     // id: state.finish(),
-                    position: index_mapper.main_to_aux(position),
+                    position: aux_position_utf16,
                 }
             }
             typst_ide::Jump::Url(..) => todo!(),
