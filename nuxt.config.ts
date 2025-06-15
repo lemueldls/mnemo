@@ -13,6 +13,9 @@ const locales = [
 const isDev = process.env.NODE_ENV === "development";
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 
+const remoteProjectType = import.meta.env.REMOTE_PROJECT_TYPE;
+const isWorkers = remoteProjectType !== "pages";
+
 // const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 
 const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
@@ -82,9 +85,10 @@ export default defineNuxtConfig({
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
-    experimental: { openAPI: true, websocket: true },
+    experimental: { openAPI: true, websocket: isWorkers },
   },
   hub: {
+    workers: isWorkers,
     cache: true,
     database: true,
     kv: true,
