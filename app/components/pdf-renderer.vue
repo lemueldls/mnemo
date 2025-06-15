@@ -79,12 +79,7 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
 });
 
 const packages = await useInstalledPackages(spaceId.value);
-// TODO: check if spamming
-await Promise.all(
-  packages.value
-    .filter((pkg) => pkg.name !== "suiji")
-    .map((pkg) => installTypstPackage(pkg)),
-);
+await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
 
 typstState.resize(800);
 

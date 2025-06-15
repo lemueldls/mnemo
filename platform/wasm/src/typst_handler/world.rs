@@ -17,7 +17,7 @@ use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
 pub struct MnemoWorld {
     pub main: Option<FileId>,
     pub aux: Option<FileId>,
-    pub files: HashMap<FileId, Source>,
+    pub files: HashMap<FileId, FileSlot>,
     pub index_mapper: IndexMapper,
     library: LazyHash<Library>,
     font_loader: FontLoader,
@@ -29,7 +29,7 @@ impl MnemoWorld {
         font_loader.load();
 
         let features = [Feature::Html].into_iter().collect();
-        let library = typst::Library::builder().with_features(features).build();
+        let library = Library::builder().with_features(features).build();
 
         Self {
             main: None,
@@ -42,19 +42,35 @@ impl MnemoWorld {
     }
 
     pub fn main_source(&self) -> &Source {
-        self.files.get(self.main.as_ref().unwrap()).unwrap()
+        self.files
+            .get(self.main.as_ref().unwrap())
+            .unwrap()
+            .source()
+            .unwrap()
     }
 
     pub fn main_source_mut(&mut self) -> &mut Source {
-        self.files.get_mut(self.main.as_ref().unwrap()).unwrap()
+        self.files
+            .get_mut(self.main.as_ref().unwrap())
+            .unwrap()
+            .source_mut()
+            .unwrap()
     }
 
     pub fn aux_source(&self) -> &Source {
-        self.files.get(self.aux.as_ref().unwrap()).unwrap()
+        self.files
+            .get(self.aux.as_ref().unwrap())
+            .unwrap()
+            .source()
+            .unwrap()
     }
 
     pub fn aux_source_mut(&mut self) -> &mut Source {
-        self.files.get_mut(self.aux.as_ref().unwrap()).unwrap()
+        self.files
+            .get_mut(self.aux.as_ref().unwrap())
+            .unwrap()
+            .source_mut()
+            .unwrap()
     }
 
     pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
@@ -65,13 +81,21 @@ impl MnemoWorld {
         self.index_mapper.aux_to_main(aux_idx)
     }
 
-    pub fn insert_file(&mut self, id: FileId, text: String) {
+    pub fn insert_source(&mut self, id: FileId, text: String) {
         let source = Source::new(id, text);
 
-        self.files.insert(id, source);
+        self.files.insert(id, FileSlot::Source(source));
+    }
+
+    pub fn insert_file(&mut self, id: FileId, bytes: Bytes) {
+        self.files.insert(id, FileSlot::Bytes(bytes));
     }
 
     pub fn get_source(&self, id: FileId) -> Option<&Source> {
+        self.get_file(id).and_then(|file| file.source())
+    }
+
+    pub fn get_file(&self, id: FileId) -> Option<&FileSlot> {
         if !self.files.contains_key(&id) {
             crate::error!("{id:#?} NOT FOUND");
             // crate::log!("{:#?}", self.files);
@@ -107,8 +131,8 @@ impl World for MnemoWorld {
     }
 
     fn file(&self, id: FileId) -> FileResult<Bytes> {
-        self.get_source(id)
-            .map(|source| Bytes::from_string(source.text().to_string()))
+        self.get_file(id)
+            .map(|file| file.bytes())
             .ok_or(FileError::Other(None))
     }
 
@@ -130,5 +154,33 @@ impl World for MnemoWorld {
 impl IdeWorld for MnemoWorld {
     fn upcast(&self) -> &dyn World {
         self
+    }
+}
+
+pub enum FileSlot {
+    Source(Source),
+    Bytes(Bytes),
+}
+
+impl FileSlot {
+    pub fn source(&self) -> Option<&Source> {
+        match self {
+            FileSlot::Source(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn source_mut(&mut self) -> Option<&mut Source> {
+        match self {
+            FileSlot::Source(source) => Some(source),
+            _ => None,
+        }
+    }
+
+    pub fn bytes(&self) -> Bytes {
+        match self {
+            FileSlot::Source(source) => Bytes::from_string(source.text().to_string()),
+            FileSlot::Bytes(file) => file.clone(),
+        }
     }
 }
