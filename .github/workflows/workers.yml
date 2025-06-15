@@ -21,9 +21,6 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
-      - name: Use workers
-        run: echo "nitro.experimental.websocket=true" > .nuxtrc
-
       - name: Install dependencies
         run: pnpm install
 
