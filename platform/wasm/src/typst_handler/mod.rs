@@ -31,110 +31,13 @@ use typst::{
     },
     visualize::Color,
 };
-// use typst_svg::{svg, svg_merged};
-use typst_pdf::{PdfOptions, PdfStandard, pdf};
 // use typst_html::html;
+use typst_pdf::{PdfOptions, PdfStandard, pdf};
 use typst_render::{render, render_merged};
+// use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
 use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
-
-#[wasm_bindgen]
-pub struct PackageFile {
-    path: String,
-    content: Vec<u8>,
-}
-
-#[wasm_bindgen]
-impl PackageFile {
-    #[wasm_bindgen(constructor)]
-    pub fn new(path: String, content: Vec<u8>) -> Self {
-        Self { path, content }
-    }
-}
-
-#[wasm_bindgen]
-#[derive(Serialize, Deserialize, Clone, Copy)]
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct ThemeColors {
-    primary: Rgb,
-    secondary: Rgb,
-    tertiary: Rgb,
-    outline: Rgb,
-    on_primary_container: Rgb,
-    on_secondary_container: Rgb,
-    on_tertiary_container: Rgb,
-    on_background: Rgb,
-}
-
-#[wasm_bindgen]
-impl ThemeColors {
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        primary: Rgb,
-        secondary: Rgb,
-        tertiary: Rgb,
-        outline: Rgb,
-        on_primary_container: Rgb,
-        on_secondary_container: Rgb,
-        on_tertiary_container: Rgb,
-        on_background: Rgb,
-    ) -> Self {
-        Self {
-            primary,
-            secondary,
-            tertiary,
-            outline,
-            on_primary_container,
-            on_secondary_container,
-            on_tertiary_container,
-            on_background,
-        }
-    }
-}
-
-impl fmt::Display for ThemeColors {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "(primary:{},secondary:{},tertiary:{},outline:{},on-primary-container:{},on-secondary-container:{},on-tertiary-container:{},on-background:{})",
-            self.primary,
-            self.secondary,
-            self.tertiary,
-            self.outline,
-            self.on_primary_container,
-            self.on_secondary_container,
-            self.on_tertiary_container,
-            self.on_background
-        )
-    }
-}
-
-#[wasm_bindgen]
-#[derive(Serialize, Deserialize, Clone, Copy)]
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct Rgb(u8, u8, u8);
-
-#[wasm_bindgen]
-impl Rgb {
-    #[wasm_bindgen(constructor)]
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Self(r, g, b)
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("rgb({},{},{})", self.0, self.1, self.2)
-    }
-}
-
-impl fmt::Display for Rgb {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "rgb({},{},{})", self.0, self.1, self.2)
-    }
-}
 
 #[wasm_bindgen]
 pub struct TypstState {
@@ -167,34 +70,6 @@ impl Default for TypstState {
                 Rgb(0, 0, 0),
             ),
         }
-    }
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileResult {
-    frames: Vec<RangedFrame>,
-    diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderPdfResult {
-    pub bytes: Option<Vec<u8>>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Debug, Clone)]
-#[wasm_bindgen(js_name = "FileId")]
-pub struct FileIdWrapper(FileId);
-
-impl FileIdWrapper {
-    fn new(id: FileId) -> Self {
-        Self(id)
-    }
-
-    pub fn inner(&self) -> FileId {
-        self.0
     }
 }
 
@@ -263,15 +138,22 @@ impl TypstState {
         self.world.install_font(bytes);
     }
 
-    fn prelude(&self, config_page: bool) -> String {
-        let page_config = if config_page {
-            format!(
-                "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)",
-                width = self.width,
-                height = self.height,
-            )
-        } else {
-            format!("")
+    fn prelude(&self, rendering_mode: RenderingMode) -> String {
+        let page_config = match rendering_mode {
+            RenderingMode::Png => {
+                format!(
+                    "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)",
+                    width = self.width,
+                    height = self.height,
+                )
+            }
+            RenderingMode::Pdf => {
+                format!(
+                    "#set page(width:{width},height:{height},margin:16pt)",
+                    width = self.width,
+                    height = self.height,
+                )
+            } // RenderingMode::Html => format!(""),
         };
 
         format!(
@@ -306,7 +188,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &FileIdWrapper, text: String, prelude: &str) -> CompileResult {
-        let mut ir = self.prelude(true) + prelude;
+        let mut ir = self.prelude(RenderingMode::Png) + prelude;
 
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
@@ -390,7 +272,7 @@ impl TypstState {
 
         // crate::log!(
         //     "[SOURCE]: {:?}",
-        //     &ir[(self.prelude(true) + prelude).len()..]
+        //     &ir[(self.prelude(RenderingMode::Png) + prelude).len()..]
         // );
 
         self.world.index_mapper = index_mapper;
@@ -504,51 +386,6 @@ impl TypstState {
         }
     }
 
-    #[wasm_bindgen(js_name = renderPdf)]
-    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> RenderPdfResult {
-        self.world.main = Some(id.inner());
-
-        let mut ir = self.prelude(false);
-        let main_source = self.world.main_source_mut();
-        let text = main_source.text().to_string();
-        ir += &text;
-        main_source.replace(&ir);
-
-        let aux_id = id.inner().join("$");
-        self.world.insert_file(aux_id, text);
-        self.world.aux = Some(aux_id);
-
-        let compiled = compile(&self.world);
-        let mut diagnostics =
-            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.world).into_vec();
-
-        let bytes = match compiled.output {
-            Ok(document) => {
-                match pdf(&document, &PdfOptions::default()) {
-                    Ok(pdf) => Some(pdf),
-                    Err(source_diagnostics) => {
-                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                            source_diagnostics,
-                            &self.world,
-                        ));
-
-                        None
-                    }
-                }
-            }
-            Err(source_diagnostics) => {
-                diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                    source_diagnostics,
-                    &self.world,
-                ));
-
-                None
-            }
-        };
-
-        RenderPdfResult { bytes, diagnostics }
-    }
-
     #[wasm_bindgen]
     pub fn click(&mut self, x: f64, mut y: f64) -> Option<TypstJump> {
         let document = self.document.as_ref()?;
@@ -625,6 +462,179 @@ impl TypstState {
             .map(|height| height.to_string() + "pt")
             .unwrap_or_else(|| String::from("auto"));
     }
+
+    #[wasm_bindgen(js_name = renderPdf)]
+    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> RenderPdfResult {
+        self.world.main = Some(id.inner());
+
+        let mut ir = self.prelude(RenderingMode::Pdf);
+        let main_source = self.world.main_source_mut();
+        let text = main_source.text().to_string();
+        ir += &text;
+        main_source.replace(&ir);
+
+        let aux_id = id.inner().join("$");
+        self.world.insert_file(aux_id, text);
+        self.world.aux = Some(aux_id);
+
+        let compiled = compile(&self.world);
+        let mut diagnostics =
+            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.world).into_vec();
+
+        let bytes = match compiled.output {
+            Ok(document) => {
+                match pdf(&document, &PdfOptions::default()) {
+                    Ok(pdf) => Some(pdf),
+                    Err(source_diagnostics) => {
+                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                            source_diagnostics,
+                            &self.world,
+                        ));
+
+                        None
+                    }
+                }
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &self.world,
+                ));
+
+                None
+            }
+        };
+
+        RenderPdfResult { bytes, diagnostics }
+    }
+}
+
+#[wasm_bindgen]
+pub struct PackageFile {
+    path: String,
+    content: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl PackageFile {
+    #[wasm_bindgen(constructor)]
+    pub fn new(path: String, content: Vec<u8>) -> Self {
+        Self { path, content }
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub struct ThemeColors {
+    primary: Rgb,
+    secondary: Rgb,
+    tertiary: Rgb,
+    outline: Rgb,
+    on_primary_container: Rgb,
+    on_secondary_container: Rgb,
+    on_tertiary_container: Rgb,
+    on_background: Rgb,
+}
+
+#[wasm_bindgen]
+impl ThemeColors {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        primary: Rgb,
+        secondary: Rgb,
+        tertiary: Rgb,
+        outline: Rgb,
+        on_primary_container: Rgb,
+        on_secondary_container: Rgb,
+        on_tertiary_container: Rgb,
+        on_background: Rgb,
+    ) -> Self {
+        Self {
+            primary,
+            secondary,
+            tertiary,
+            outline,
+            on_primary_container,
+            on_secondary_container,
+            on_tertiary_container,
+            on_background,
+        }
+    }
+}
+
+impl fmt::Display for ThemeColors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "(primary:{},secondary:{},tertiary:{},outline:{},on-primary-container:{},on-secondary-container:{},on-tertiary-container:{},on-background:{})",
+            self.primary,
+            self.secondary,
+            self.tertiary,
+            self.outline,
+            self.on_primary_container,
+            self.on_secondary_container,
+            self.on_tertiary_container,
+            self.on_background
+        )
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub struct Rgb(u8, u8, u8);
+
+#[wasm_bindgen]
+impl Rgb {
+    #[wasm_bindgen(constructor)]
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Self(r, g, b)
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("rgb({},{},{})", self.0, self.1, self.2)
+    }
+}
+
+impl fmt::Display for Rgb {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "rgb({},{},{})", self.0, self.1, self.2)
+    }
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CompileResult {
+    frames: Vec<RangedFrame>,
+    diagnostics: Vec<TypstDiagnostic>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct RenderPdfResult {
+    pub bytes: Option<Vec<u8>>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct RenderHtmlResult {
+    pub document: Option<String>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+}
+
+#[derive(Debug, Clone)]
+#[wasm_bindgen(js_name = "FileId")]
+pub struct FileIdWrapper(FileId);
+
+impl FileIdWrapper {
+    fn new(id: FileId) -> Self {
+        Self(id)
+    }
+
+    pub fn inner(&self) -> FileId {
+        self.0
+    }
 }
 
 #[derive(Debug)]
@@ -664,4 +674,10 @@ pub struct FrameRender {
     height: u32,
     #[serde(rename = "offsetHeight")]
     offset_height: f64,
+}
+
+enum RenderingMode {
+    Png,
+    Pdf,
+    // Html,
 }

@@ -83,13 +83,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
 }
 
-function passArray8ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 1, 1) >>> 0;
-    getUint8ArrayMemory0().set(arg, ptr / 1);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
-
 function _assertClass(instance, klass) {
     if (!(instance instanceof klass)) {
         throw new Error(`expected instance of ${klass.name}`);
@@ -116,6 +109,13 @@ function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_3.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
 }
 
 function isLikeNone(x) {
@@ -412,15 +412,6 @@ export class TypstState {
         return ret;
     }
     /**
-     * @param {FileId} id
-     * @returns {RenderPdfResult}
-     */
-    renderPdf(id) {
-        _assertClass(id, FileId);
-        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
@@ -444,6 +435,15 @@ export class TypstState {
      */
     resize(width, height) {
         wasm.typststate_resize(this.__wbg_ptr, !isLikeNone(width), isLikeNone(width) ? 0 : width, !isLikeNone(height), isLikeNone(height) ? 0 : height);
+    }
+    /**
+     * @param {FileId} id
+     * @returns {RenderPdfResult}
+     */
+    renderPdf(id) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
+        return ret;
     }
 }
 

@@ -3,11 +3,20 @@ import VuePdfEmbed from "vue-pdf-embed";
 
 const source = defineModel<string | Uint8Array>();
 
-const props = defineProps<{
-  monochrome?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    filename?: string;
+    monochrome?: boolean;
+  }>(),
+  {
+    filename: "document.pdf",
+    monochrome: false,
+  },
+);
 
 const container = useTemplateRef("container");
+const pdfEmbed = useTemplateRef("pdfEmbed");
+
 const { width, height } = useElementSize(container);
 
 async function loaded() {
@@ -39,16 +48,43 @@ function rerender(canvas: HTMLCanvasElement) {
 
   ctx.putImageData(imageData, 0, 0);
 }
+
+const downloading = ref(false);
+async function download() {
+  downloading.value = true;
+  await pdfEmbed.value?.download(props.filename);
+  downloading.value = false;
+}
+
+const printing = ref(false);
+async function print() {
+  printing.value = true;
+  await pdfEmbed.value?.print(undefined, props.filename);
+  printing.value = false;
+}
 </script>
 
 <template>
-  <div ref="container" class="size-full overflow-auto">
-    <VuePdfEmbed
-      :source="source"
-      :width="width"
-      :height="height"
-      @rendered="loaded"
-    />
+  <div class="relative size-full overflow-hidden">
+    <div ref="container" class="size-full overflow-auto">
+      <VuePdfEmbed
+        ref="pdfEmbed"
+        :source="source"
+        :width="width"
+        :height="height"
+        @rendered="loaded"
+      />
+    </div>
+
+    <m3-toolbar type="floating" class="justify-end">
+      <md-icon-button :disabled="downloading" @click="download">
+        <md-icon>download</md-icon>
+      </md-icon-button>
+
+      <md-icon-button :disabled="printing" @click="print">
+        <md-icon>print</md-icon>
+      </md-icon-button>
+    </m3-toolbar>
   </div>
 </template>
 

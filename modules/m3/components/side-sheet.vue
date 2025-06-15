@@ -4,7 +4,6 @@ const props = withDefaults(
     id?: string;
     class?: string;
     type?: "standard" | "modal" | "auto";
-    modelValue?: boolean;
   }>(),
   { id: undefined, class: undefined, type: "auto" },
 );

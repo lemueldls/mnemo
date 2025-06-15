@@ -31,6 +31,11 @@ export interface RenderPdfResult {
     diagnostics: TypstDiagnostic[];
 }
 
+export interface RenderHtmlResult {
+    document: string | undefined;
+    diagnostics: TypstDiagnostic[];
+}
+
 export type TypstError = EcoString;
 
 export interface Autocomplete {
@@ -79,24 +84,17 @@ export class TypstState {
   installPackage(spec: string, files: PackageFile[]): void;
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
-  renderPdf(id: FileId): RenderPdfResult;
   click(x: number, y: number): TypstJump | undefined;
   autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete;
   resize(width?: number | null, height?: number | null): void;
+  renderPdf(id: FileId): RenderPdfResult;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_packagefile_free: (a: number, b: number) => void;
-  readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbg_themecolors_free: (a: number, b: number) => void;
-  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly rgb_new: (a: number, b: number, c: number) => number;
-  readonly rgb_toString: (a: number) => [number, number];
   readonly __wbg_typststate_free: (a: number, b: number) => void;
-  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly typststate_new: () => number;
   readonly typststate_pt: (a: number) => number;
   readonly typststate_setPt: (a: number, b: number) => void;
@@ -108,10 +106,17 @@ export interface InitOutput {
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
-  readonly typststate_renderPdf: (a: number, b: number) => any;
   readonly typststate_click: (a: number, b: number, c: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_renderPdf: (a: number, b: number) => any;
+  readonly __wbg_packagefile_free: (a: number, b: number) => void;
+  readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_themecolors_free: (a: number, b: number) => void;
+  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly rgb_new: (a: number, b: number, c: number) => number;
+  readonly rgb_toString: (a: number) => [number, number];
+  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly start: () => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
   readonly qcms_profile_is_bogus: (a: number) => number;
