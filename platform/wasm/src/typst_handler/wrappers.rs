@@ -3,9 +3,9 @@ use std::ops::Range;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
-    WorldExt,
+    World, WorldExt,
     diag::{Severity, SourceDiagnostic},
-    ecow::EcoVec,
+    ecow::{EcoString, EcoVec, eco_format},
     syntax::{Span, SyntaxError},
 };
 use wasm_bindgen::prelude::*;
@@ -44,7 +44,14 @@ impl TypstDiagnostic {
     ) -> Box<[Self]> {
         diagnostics
             .into_iter()
-            .flat_map(|diagnostic| {
+            .flat_map(|mut diagnostic| {
+                if diagnostic.message == "failed to load file" {
+                    let source = world.source(diagnostic.span.id().unwrap()).unwrap();
+                    let text = source.get(world.range(diagnostic.span).unwrap()).unwrap();
+
+                    diagnostic.message = eco_format!("failed to load file: {text}");
+                }
+
                 map_span(diagnostic.span, world).map(|range| {
                     TypstDiagnostic {
                         range,

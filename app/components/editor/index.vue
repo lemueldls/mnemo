@@ -88,11 +88,7 @@ const prelude = computed(() =>
 
 const packages = await useInstalledPackages(() => props.spaceId);
 watchImmediate(packages, async (packages) => {
-  await Promise.all(
-    packages
-      .filter((pkg) => pkg.name !== "suiji")
-      .map((pkg) => installTypstPackage(pkg)),
-  );
+  await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
 });
 
 const { t } = useI18n();

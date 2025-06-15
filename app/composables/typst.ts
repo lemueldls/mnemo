@@ -64,7 +64,7 @@ export async function installTypstPackage(pkg: Package, namespace = "preview") {
   typstState.installPackage(
     spec,
     files.map(
-      (file) => new PackageFile(file.path, Uint8Array.from(file.content!)),
+      (file) => new PackageFile(file.path, new Uint8Array(file.content!)),
     ),
   );
 }

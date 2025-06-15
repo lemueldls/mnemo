@@ -25,6 +25,7 @@ use typst::{
     World, WorldExt, compile,
     diag::SourceDiagnostic,
     ecow::{EcoString, EcoVec},
+    foundations::Bytes,
     layout::{Abs, Frame, FrameItem, Page, PagedDocument, Point, Position},
     syntax::{
         FileId, Source, Span, SyntaxError, SyntaxKind, VirtualPath, ast, package::PackageSpec,
@@ -38,6 +39,8 @@ use typst_render::{render, render_merged};
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
 use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
+
+use crate::typst_handler::world::FileSlot;
 
 #[wasm_bindgen]
 pub struct TypstState {
@@ -110,7 +113,7 @@ impl TypstState {
     #[wasm_bindgen(js_name = insertFile)]
     pub fn insert_file(&mut self, path: String, text: String) -> FileIdWrapper {
         let id = FileId::new(None, VirtualPath::new(&path));
-        self.world.insert_file(id, text);
+        self.world.insert_source(id, text);
 
         FileIdWrapper::new(id)
     }
@@ -125,9 +128,11 @@ impl TypstState {
 
         for file in files {
             let id = FileId::new(package_spec.clone(), VirtualPath::new(&file.path));
-            let source = Source::new(id, String::from_utf8(file.content).unwrap());
 
-            self.world.files.insert(id, source);
+            match String::from_utf8(file.content.clone()) {
+                Ok(content) => self.world.insert_source(id, content),
+                Err(..) => self.world.insert_file(id, Bytes::new(file.content)),
+            }
         }
 
         Ok(())
@@ -198,9 +203,9 @@ impl TypstState {
             .files
             .entry(aux_id)
             .and_modify(|file| {
-                file.replace(&text);
+                file.source_mut().unwrap().replace(&text);
             })
-            .or_insert_with(|| Source::new(aux_id, text));
+            .or_insert_with(|| FileSlot::Source(Source::new(aux_id, text)));
         self.world.aux = Some(aux_id);
 
         let aux_source = self.world.aux_source();
@@ -474,7 +479,7 @@ impl TypstState {
         main_source.replace(&ir);
 
         let aux_id = id.inner().join("$");
-        self.world.insert_file(aux_id, text);
+        self.world.insert_source(aux_id, text);
         self.world.aux = Some(aux_id);
 
         let compiled = compile(&self.world);
