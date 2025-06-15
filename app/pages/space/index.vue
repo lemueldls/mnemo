@@ -228,7 +228,7 @@ async function createStickyNote() {
           </m3-top-app-bar>
 
           <div
-            class="medium:pr-0 medium:pb-3 flex min-h-0 flex-1 justify-center gap-4 pb-6 pl-3 pr-3"
+            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
             <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="article2.pdf" monochrome />

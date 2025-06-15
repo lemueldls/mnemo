@@ -1,14 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const __wbg_packagefile_free: (a: number, b: number) => void;
-export const packagefile_new: (a: number, b: number, c: number, d: number) => number;
-export const __wbg_themecolors_free: (a: number, b: number) => void;
-export const themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-export const rgb_new: (a: number, b: number, c: number) => number;
-export const rgb_toString: (a: number) => [number, number];
 export const __wbg_typststate_free: (a: number, b: number) => void;
-export const __wbg_fileid_free: (a: number, b: number) => void;
 export const typststate_new: () => number;
 export const typststate_pt: (a: number) => number;
 export const typststate_setPt: (a: number, b: number) => void;
@@ -20,10 +13,17 @@ export const typststate_insertFile: (a: number, b: number, c: number, d: number,
 export const typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
 export const typststate_installFont: (a: number, b: number, c: number) => void;
 export const typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
-export const typststate_renderPdf: (a: number, b: number) => any;
 export const typststate_click: (a: number, b: number, c: number) => any;
 export const typststate_autocomplete: (a: number, b: number, c: number) => any;
 export const typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
+export const typststate_renderPdf: (a: number, b: number) => any;
+export const __wbg_packagefile_free: (a: number, b: number) => void;
+export const packagefile_new: (a: number, b: number, c: number, d: number) => number;
+export const __wbg_themecolors_free: (a: number, b: number) => void;
+export const themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+export const rgb_new: (a: number, b: number, c: number) => number;
+export const rgb_toString: (a: number) => [number, number];
+export const __wbg_fileid_free: (a: number, b: number) => void;
 export const start: () => void;
 export const __wbg_rgb_free: (a: number, b: number) => void;
 export const qcms_profile_is_bogus: (a: number) => number;

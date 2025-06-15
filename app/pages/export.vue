@@ -22,7 +22,7 @@ const space = computed(() => spaces.value[spaceId.value]!);
             </template>
           </m3-top-app-bar>
 
-          <pdf-renderer class="bg-white" />
+          <pdf-renderer />
         </div>
       </div>
     </m3-page>

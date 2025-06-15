@@ -1,9 +1,5 @@
 <script setup lang="ts">
-const emit = defineEmits<{
-  (event: "update:modelValue", value: boolean): void;
-}>();
-const props = defineProps<{ modelValue: boolean }>();
-const visible = useVModel(props, "modelValue", emit);
+const visible = defineModel<boolean>();
 
 const today = new Date();
 const currentDate = ref(today);

@@ -2,7 +2,6 @@
 const props = withDefaults(
   defineProps<{
     type?: "standard" | "modal" | "auto";
-    modelValue?: boolean;
   }>(),
   { id: undefined, class: undefined, type: "auto" },
 );

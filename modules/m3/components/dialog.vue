@@ -2,13 +2,11 @@
 const props = withDefaults(
   defineProps<{
     type?: "basic" | "full-screen" | "auto";
-    modelValue?: boolean;
   }>(),
   { type: "auto" },
 );
 
-const emit = defineEmits<{ (event: "update:modelValue"): void }>();
-const visible = useVModel(props, "modelValue", emit);
+const visible = defineModel<boolean>();
 
 const { medium } = useBreakpoints(breakpointsM3);
 

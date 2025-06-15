@@ -10,8 +10,8 @@ const spaceId = usePageRouteQuery("space");
 
 const { d } = useI18n();
 
-// const spaces = await useSpaces();
-// const space = computed(() => spaces.value[spaceId.value]!);
+const spaces = await useSpaces();
+const space = computed(() => spaces.value[spaceId.value]!);
 
 const dailyNotesRef = await useStorageItem<Note[]>(
   `spaces/${spaceId.value}/daily/notes.json`,
@@ -35,7 +35,7 @@ const dailyNotes = await Promise.all(
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
       return (
-        `#set page(fill:rgb(0,0,0,0),width:730pt,height:auto,margin:16pt,header:none,footer:none)\n#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
+        `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
         item
       );
     }),
@@ -86,37 +86,38 @@ await Promise.all(
     .map((pkg) => installTypstPackage(pkg)),
 );
 
-// typstState.resize(200);
+typstState.resize(800);
 
 const path = `spaces/${spaceId.value}/export.typ`;
 const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
 
 const { bytes, diagnostics } = typstState.renderPdf(fileId);
 const pdf = bytes ? new Uint8Array(bytes) : null;
+
+const errors = diagnostics.filter(
+  (diagnostic) => diagnostic.severity === "error",
+);
 </script>
 
 <template>
   <div
     class="flex size-full items-center justify-center overflow-hidden px-4 pb-4"
   >
-    <div v-if="diagnostics.length > 0" class="rounded-lg p-4">
+    <div
+      v-if="errors.length > 0"
+      class="bg-m3-error-container text-m3-on-error-container rounded-lg p-4"
+    >
       <pre
-        v-for="(diagnostic, i) in diagnostics"
+        v-for="(error, i) in errors"
         :key="i"
-        :class="{
-          'bg-m3-error-container text-m3-on-error-container':
-            diagnostic.severity === 'error',
-          // 'bg-m3-warning-container text-m3-on-warning-container': diagnostic.severity === 'warning',
-          // 'bg-m3-info-container text-m3-on-info-container': diagnostic.severity === 'info',
-        }"
-      ><strong>{{ diagnostic.severity }}</strong> {{ diagnostic.message }}</pre>
+      ><strong>{{ error.severity }}</strong> {{ error.message }}</pre>
     </div>
 
     <md-outlined-card
       v-if="pdf"
-      class="max-w-180 m-4 h-full w-full overflow-hidden"
+      class="max-w-180 m-4 h-full w-full overflow-hidden bg-white"
     >
-      <LazyEmbededPdf v-model="pdf" />
+      <LazyEmbededPdf v-model="pdf" :filename="space.name" />
     </md-outlined-card>
   </div>
 </template>
