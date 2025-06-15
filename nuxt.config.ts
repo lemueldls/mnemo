@@ -85,10 +85,6 @@ export default defineNuxtConfig({
     experimental: { openAPI: true, websocket: true },
   },
   hub: {
-    // analytics: true,
-    // remote: true,
-    // ai: true,
-    // blob: true,
     cache: true,
     database: true,
     kv: true,

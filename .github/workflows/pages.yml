@@ -22,7 +22,7 @@ jobs:
           cache: "pnpm"
 
       - name: Use pages
-        run: echo "hub.workers=false" > .nuxtrc
+        run: echo "nitro.experimental.websocket=false" > .nuxtrc
 
       - name: Install dependencies
         run: pnpm install
