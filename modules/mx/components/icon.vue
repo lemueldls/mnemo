@@ -31,7 +31,7 @@ const fill = computed(() => (props.fill ? 1 : 0));
 </script>
 
 <template>
-  <span :class="['m3-icon', `material-symbols-${variant}`]">
+  <span :class="['icon', `material-symbols-${variant}`]">
     {{ name.replaceAll("-", "_") }}
   </span>
 </template>
@@ -39,7 +39,7 @@ const fill = computed(() => (props.fill ? 1 : 0));
 <style>
 @import "material-symbols/rounded.css";
 
-.m3-icon {
+.icon {
   width: 1em;
   height: 1em;
   font-variation-settings:

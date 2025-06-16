@@ -20,11 +20,11 @@ const floating = computed(() => props.type === "floating");
 <template>
   <div
     :class="[
-      'm3-toolbar',
-      { 'm3-toolbar--floating': floating, 'm3-toolbar--vibrant': vibrant },
+      'toolbar',
+      { 'toolbar--floating': floating, 'toolbar--vibrant': vibrant },
     ]"
   >
-    <div class="m3-toolbar__inner">
+    <div class="toolbar__inner">
       <md-elevation />
 
       <slot />
@@ -37,7 +37,7 @@ const floating = computed(() => props.type === "floating");
 
 @use "@material/web/tokens";
 
-.m3-toolbar {
+.toolbar {
   @apply absolute bottom-0 flex w-full;
 
   /* height: calc(4rem + env(safe-area-inset-bottom)); */
@@ -47,7 +47,7 @@ const floating = computed(() => props.type === "floating");
   }
 
   &__inner {
-    @apply bg-m3-surface-container relative flex justify-between p-4;
+    @apply bg-surface-container relative flex justify-between p-4;
 
     --md-elevation-level: 3;
   }
@@ -62,7 +62,7 @@ const floating = computed(() => props.type === "floating");
   }
 
   &--vibrant &__inner {
-    @apply bg-m3-primary-container text-m3-on-primary-container;
+    @apply bg-primary-container text-on-primary-container;
   }
 }
 </style>

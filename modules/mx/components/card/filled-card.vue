@@ -5,13 +5,13 @@ defineProps<CardProperties>();
 </script>
 
 <template>
-  <abstract-card class="m3-filled-card">
+  <abstract-card class="filled-card">
     <slot />
   </abstract-card>
 </template>
 
 <style scoped>
-.m3-filled-card {
-  @apply text-m3-on-surface bg-m3-surface-container-highest;
+.filled-card {
+  @apply text-on-surface bg-surface-container-highest;
 }
 </style>

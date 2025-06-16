@@ -74,7 +74,7 @@ const groupedSymbols: string[][] = computed(() => {
     </label>
 
     <label>
-      <span class="m3-label-large">
+      <span class="label-large">
         {{ $t("components.edit-space.form.color") }}
       </span>
 
@@ -94,7 +94,7 @@ const groupedSymbols: string[][] = computed(() => {
       </div>
     </label>
 
-    <m3-outlined-card class="flex flex-col gap-4 px-4">
+    <mx-outlined-card class="flex flex-col gap-4 px-4">
       <md-outlined-text-field
         class="w-full"
         :label="$t('components.edit-space.form.icon')"
@@ -118,26 +118,26 @@ const groupedSymbols: string[][] = computed(() => {
               :title="symbol"
               @click.prevent="space.icon = symbol"
             >
-              <m3-icon :name="symbol" />
+              <mx-icon :name="symbol" />
             </md-icon-button>
           </div>
         </template>
       </UseVirtualList>
-    </m3-outlined-card>
+    </mx-outlined-card>
 
     <label>
-      <span class="m3-label-large">
+      <span class="label-large">
         {{ $t("components.edit-space.form.preview") }}
       </span>
 
       <div class="flex items-end justify-between">
-        <m3-nav-drawer-item class="w-84">
+        <mx-nav-drawer-item class="w-84">
           <template #leading>
-            <m3-icon :name="space.icon" class="text-m3-primary" />
+            <mx-icon :name="space.icon" class="text-primary" />
           </template>
 
           {{ space.name }}
-        </m3-nav-drawer-item>
+        </mx-nav-drawer-item>
 
         <slot name="actions" />
       </div>

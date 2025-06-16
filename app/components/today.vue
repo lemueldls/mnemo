@@ -1,3 +1,3 @@
 <template>
-  <m3-daily-calendar />
+  <mx-daily-calendar />
 </template>

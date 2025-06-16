@@ -8,11 +8,11 @@ const space = computed(() => spaces.value[spaceId.value]!);
 </script>
 
 <template>
-  <m3-theme :color="space.color" :dark="false">
-    <m3-page>
+  <mx-theme :color="space.color" :dark="false">
+    <mx-page>
       <div class="flex h-full flex-1">
         <div class="flex size-full flex-1 flex-col">
-          <m3-top-app-bar>
+          <mx-top-app-bar>
             <template #leading>
               <nuxt-link-locale :to="`/space?id=${spaceId}`">
                 <md-icon-button>
@@ -20,13 +20,13 @@ const space = computed(() => spaces.value[spaceId.value]!);
                 </md-icon-button>
               </nuxt-link-locale>
             </template>
-          </m3-top-app-bar>
+          </mx-top-app-bar>
 
           <pdf-renderer />
         </div>
       </div>
-    </m3-page>
-  </m3-theme>
+    </mx-page>
+  </mx-theme>
 </template>
 
 <style lang="scss">

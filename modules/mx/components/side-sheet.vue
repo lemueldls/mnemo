@@ -18,17 +18,17 @@ const modal = computed(() =>
 </script>
 
 <template>
-  <m3-scrim :active="modal && visible" @click="visible = false" />
+  <mx-scrim :active="modal && visible" @click="visible = false" />
 
   <div
     :id="id"
     :aria-hidden="!visible"
     :class="[
       props.class,
-      'm3-side-sheet',
-      'm3-side-sheet--right',
-      modal ? 'm3-side-sheet--modal' : 'm3-side-sheet--standard',
-      { 'm3-side-sheet--hidden': !visible },
+      'side-sheet',
+      'side-sheet--right',
+      modal ? 'side-sheet--modal' : 'side-sheet--standard',
+      { 'side-sheet--hidden': !visible },
     ]"
   >
     <slot />
@@ -36,7 +36,7 @@ const modal = computed(() =>
 </template>
 
 <style lang="scss">
-.m3-side-sheet {
+.side-sheet {
   @apply max-w-100 flex h-full min-w-64 translate-x-0 flex-col p-3;
 
   padding-top: calc(0.75rem + env(safe-area-inset-top));
@@ -54,11 +54,11 @@ const modal = computed(() =>
   }
 
   &--standard {
-    @apply bg-m3-surface;
+    @apply bg-surface;
   }
 
   &--modal {
-    @apply bg-m3-surface-container-low z-1 absolute;
+    @apply bg-surface-container-low z-1 absolute;
   }
 
   &--modal#{&}--left {

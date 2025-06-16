@@ -38,18 +38,15 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
 
 <template>
   <div
-    :class="[
-      'm3-modal-date-picker',
-      { 'm3-modal-date-picker--hidden': !visible },
-    ]"
+    :class="['modal-date-picker', { 'modal-date-picker--hidden': !visible }]"
   >
     <md-elevation />
 
-    <div class="m3-modal-date-picker__header">
-      <span class="m3-modal-date-picker__supporting-text">Select Date</span>
+    <div class="modal-date-picker__header">
+      <span class="modal-date-picker__supporting-text">Select Date</span>
 
       <div class="flex items-center justify-between gap-2">
-        <span class="m3-modal-date-picker__heading">
+        <span class="modal-date-picker__heading">
           {{ useShortDate(currentDate) }}
         </span>
 
@@ -158,13 +155,13 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
 </template>
 
 <style lang="scss">
-.m3-modal-date-picker {
-  @apply bg-m3-surface-container-high absolute flex flex-col rounded-xl;
+.modal-date-picker {
+  @apply bg-surface-container-high absolute flex flex-col rounded-xl;
 
   --md-elevation-level: 3;
 
   &__supporting-text {
-    @apply m3-label-medium text-m3-on-surface-variant;
+    @apply label-medium text-on-surface-variant;
   }
 
   &__header {
@@ -172,7 +169,7 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
   }
 
   &__heading {
-    @apply m3-headline-large;
+    @apply headline-large;
   }
 
   // &__date {}

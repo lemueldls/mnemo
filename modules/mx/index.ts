@@ -6,14 +6,14 @@ import {
 } from "nuxt/kit";
 
 export default defineNuxtModule({
-  meta: { name: "m3" },
+  meta: { name: "mx" },
   setup() {
     const { resolve } = createResolver(import.meta.url);
 
     addImportsDir(resolve("./composables"));
 
     addComponentsDir({
-      prefix: "m3",
+      prefix: "mx",
       pathPrefix: false,
       path: resolve("./components"),
       ignore: ["**/abstract.vue"],

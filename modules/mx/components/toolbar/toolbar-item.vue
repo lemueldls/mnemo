@@ -3,8 +3,8 @@ defineProps<{ active?: boolean }>();
 </script>
 
 <template>
-  <div :class="['m3-toolbar-item', { 'm3-toolbar-item--active': active }]">
-    <div v-if="$slots.leading" class="m3-toolbar-item__leading">
+  <div :class="['toolbar-item', { 'toolbar-item--active': active }]">
+    <div v-if="$slots.leading" class="toolbar-item__leading">
       <md-ripple />
 
       <slot name="leading" />
@@ -15,19 +15,19 @@ defineProps<{ active?: boolean }>();
 </template>
 
 <style lang="scss">
-.m3-toolbar-item {
-  @apply m3-label-medium flex h-14 flex-1 cursor-pointer flex-col items-center justify-center gap-1;
+.toolbar-item {
+  @apply label-medium flex h-14 flex-1 cursor-pointer flex-col items-center justify-center gap-1;
 
   &__leading {
-    @apply text-m3-on-surface-variant relative flex h-8 w-16 items-center justify-center rounded-2xl;
+    @apply text-on-surface-variant relative flex h-8 w-16 items-center justify-center rounded-2xl;
   }
 
   &__trailing {
-    @apply text-m3-on-surface-variant flex;
+    @apply text-on-surface-variant flex;
   }
 
   &--active &__leading {
-    @apply bg-m3-secondary-container text-m3-on-secondary-container;
+    @apply bg-secondary-container text-on-secondary-container;
   }
 }
 </style>

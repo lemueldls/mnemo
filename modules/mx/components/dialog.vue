@@ -16,28 +16,28 @@ const basic = computed(() =>
 </script>
 
 <template>
-  <m3-scrim :active="visible && basic" @click="visible = false" />
+  <mx-scrim :active="visible && basic" @click="visible = false" />
 
-  <m3-container
+  <mx-container
     :elevation="3"
     :class="[
-      'm3-dialog',
-      basic ? 'm3-dialog--basic' : 'm3-dialog--full-screen',
-      { 'm3-dialog--hidden': !visible },
+      'dialog',
+      basic ? 'dialog--basic' : 'dialog--full-screen',
+      { 'dialog--hidden': !visible },
     ]"
   >
-    <div class="m3-dialog__inner">
-      <span v-if="$slots.headline" class="m3-dialog__headline">
+    <div class="dialog__inner">
+      <span v-if="$slots.headline" class="dialog__headline">
         <slot name="headline" />
       </span>
 
       <slot />
     </div>
-  </m3-container>
+  </mx-container>
 </template>
 
 <style lang="scss">
-.m3-dialog {
+.dialog {
   @apply pointer-events-none absolute flex h-full w-full items-center justify-center gap-1;
 
   &__inner {
@@ -45,7 +45,7 @@ const basic = computed(() =>
   }
 
   &__headline {
-    @apply m3-headline-small text-m3-on-surface text-center;
+    @apply headline-small text-on-surface text-center;
   }
 
   &--basic {
@@ -55,7 +55,7 @@ const basic = computed(() =>
   // &--fullscreen {}
 
   &--basic &__inner {
-    @apply min-w-70 max-w-140 bg-m3-surface-container-high flex flex-col rounded-xl p-6 opacity-100;
+    @apply min-w-70 max-w-140 bg-surface-container-high flex flex-col rounded-xl p-6 opacity-100;
 
     transform-origin: center -1rem;
     transform: scaleY(1) translateY(0);

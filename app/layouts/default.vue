@@ -40,12 +40,12 @@ const pages: Page[] = [
 </script>
 
 <template>
-  <m3-theme color="#16161d" class="absolute inset-0 h-full">
-    <m3-page>
-      <m3-nav-drawer v-model="drawerOpen">
+  <mx-theme color="#16161d" class="absolute inset-0 h-full">
+    <mx-page>
+      <mx-nav-drawer v-model="drawerOpen">
         <div id="header" class="flex items-center justify-between">
           <!-- <div>
-            <h2 class="text-m3-primary m3-title-medium">mnemo</h2>
+            <h2 class="text-primary title-medium">mnemo</h2>
           </div> -->
 
           <!-- <md-icon-button>
@@ -54,7 +54,7 @@ const pages: Page[] = [
         </div>
 
         <nuxt-link v-for="page in pages" :key="page.path" :to="page.path">
-          <m3-nav-drawer-item
+          <mx-nav-drawer-item
             :active="route.path === page.path"
             :style="{
               fontVariationSettings: `'FILL' ${
@@ -69,13 +69,13 @@ const pages: Page[] = [
             </template>
 
             {{ page.name }}
-          </m3-nav-drawer-item>
+          </mx-nav-drawer-item>
         </nuxt-link>
 
         <md-divider class="my-2 px-4" />
 
         <h3
-          class="text-m3-on-surface-variant m3-title-small flex items-center justify-between p-4 pb-2 pt-0"
+          class="text-on-surface-variant title-small flex items-center justify-between p-4 pb-2 pt-0"
         >
           {{ t("layouts.default.spaces") }}
 
@@ -89,24 +89,24 @@ const pages: Page[] = [
           :key="id"
           :to="`/space?id=${id}`"
         >
-          <m3-theme :color="space.color" harmonize>
-            <m3-nav-drawer-item>
+          <mx-theme :color="space.color" harmonize>
+            <mx-nav-drawer-item>
               <template #leading>
-                <m3-icon :name="space.icon" class="text-m3-primary" />
+                <mx-icon :name="space.icon" class="text-primary" />
               </template>
 
               {{ space.name }}
-            </m3-nav-drawer-item>
-          </m3-theme>
+            </mx-nav-drawer-item>
+          </mx-theme>
         </nuxt-link>
 
         <!-- <template #actions>
           <md-outlined-button @click="clear"> Logout </md-outlined-button>
         </template> -->
-      </m3-nav-drawer>
+      </mx-nav-drawer>
 
       <div class="flex flex-1 flex-col">
-        <m3-top-app-bar>
+        <mx-top-app-bar>
           <template v-if="!extraLarge" #leading>
             <md-icon-button @click="drawerOpen = !drawerOpen">
               <md-icon>menu</md-icon>
@@ -118,7 +118,7 @@ const pages: Page[] = [
               <md-icon>settings</md-icon>
             </md-icon-button>
           </template>
-        </m3-top-app-bar>
+        </mx-top-app-bar>
 
         <div
           :class="[
@@ -136,8 +136,8 @@ const pages: Page[] = [
       <new-space v-model="newSpaceOpen" />
 
       <side-bar v-if="medium" direction="vertical" />
-    </m3-page>
-  </m3-theme>
+    </mx-page>
+  </mx-theme>
 </template>
 
 <style>

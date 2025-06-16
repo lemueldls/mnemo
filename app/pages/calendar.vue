@@ -3,5 +3,5 @@ definePageMeta({ title: "Calendar" });
 </script>
 
 <template>
-  <m3-weekly-calendar />
+  <mx-weekly-calendar />
 </template>

@@ -28,23 +28,23 @@ watchEffect(() => {
 </script>
 
 <template>
-  <m3-scrim :active="modal && visible" @click="visible = false" />
+  <mx-scrim :active="modal && visible" @click="visible = false" />
 
   <div
     :class="[
-      'm3-nav-drawer',
-      'm3-nav-drawer--left',
-      modal ? 'm3-nav-drawer--modal' : 'm3-nav-drawer--standard',
-      { 'm3-nav-drawer--hidden': !visible },
+      'nav-drawer',
+      'nav-drawer--left',
+      modal ? 'nav-drawer--modal' : 'nav-drawer--standard',
+      { 'nav-drawer--hidden': !visible },
     ]"
     :style="{ '--md-elevation-level': modal ? 1 : 0 }"
   >
     <md-elevation />
 
-    <div class="m3-nav-drawer__inner">
+    <div class="nav-drawer__inner">
       <slot name="header" />
 
-      <div v-bind="$slots.default" class="m3-nav-drawer__content">
+      <div v-bind="$slots.default" class="nav-drawer__content">
         <slot />
       </div>
 
@@ -57,7 +57,7 @@ watchEffect(() => {
 @use "sass:map";
 @use "@material/web/tokens";
 
-.m3-nav-drawer {
+.nav-drawer {
   @apply z-1 h-full translate-x-0;
 
   padding-top: env(safe-area-inset-top);
@@ -89,11 +89,11 @@ watchEffect(() => {
   }
 
   &--standard {
-    @apply bg-m3-surface;
+    @apply bg-surface;
   }
 
   &--modal {
-    @apply bg-m3-surface-container-low absolute;
+    @apply bg-surface-container-low absolute;
   }
 
   &--modal#{&}--left {

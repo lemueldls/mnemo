@@ -25,12 +25,10 @@ const installedPackage = computed(() =>
 </script>
 
 <template>
-  <m3-elevated-card :key="pkg.name" class="flex flex-col gap-4">
+  <mx-elevated-card :key="pkg.name" class="flex flex-col gap-4">
     <div class="medium:flex-row flex flex-col justify-between gap-2">
       <div class="flex flex-col">
-        <h1
-          class="text-m3-on-surface-variant m3-title-large line-clamp-1 flex-1"
-        >
+        <h1 class="text-on-surface-variant title-large line-clamp-1 flex-1">
           {{ pkg.name }}
         </h1>
 
@@ -38,7 +36,7 @@ const installedPackage = computed(() =>
           <div
             v-for="(category, i) in pkg.categories"
             :key="i"
-            class="bg-m3-surface-container text-m3-on-surface-variant rounded-xl px-2 py-1"
+            class="bg-surface-container text-on-surface-variant rounded-xl px-2 py-1"
           >
             {{ category }}
           </div>
@@ -75,7 +73,7 @@ const installedPackage = computed(() =>
 
     <div class="flex flex-1 flex-col gap-2">
       <span
-        class="text-m3-on-surface-variant m3-body-large line-clamp-2 h-[2lh]"
+        class="text-on-surface-variant body-large line-clamp-2 h-[2lh]"
         :title="pkg.description"
       >
         {{ pkg.description }}
@@ -99,5 +97,5 @@ const installedPackage = computed(() =>
         {{ $t("components.package-card.install") }}
       </md-filled-tonal-button>
     </div>
-  </m3-elevated-card>
+  </mx-elevated-card>
 </template>

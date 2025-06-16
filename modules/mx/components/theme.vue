@@ -42,7 +42,7 @@ const selectionBackground = computed(() => {
   <Primitive
     :as
     :as-child
-    class="m3-theme"
+    class="theme"
     :style="{
       '--md-sys-color-background': parse(palette.background),
       '--md-sys-color-on-background': parse(palette.onBackground),
@@ -118,8 +118,8 @@ const selectionBackground = computed(() => {
 </template>
 
 <style lang="scss">
-.m3-theme {
-  @apply caret-m3-primary;
+.theme {
+  @apply caret-primary;
 
   scrollbar-color: var(--md-sys-color-primary) transparent;
 
@@ -134,7 +134,7 @@ const selectionBackground = computed(() => {
   }
 
   ::selection {
-    @apply text-m3-on-tertiary-container;
+    @apply text-on-tertiary-container;
     background-color: v-bind(selectionBackground);
   }
 }

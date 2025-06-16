@@ -12,10 +12,10 @@ defineProps<{ active?: boolean }>();
 
 <style lang="scss">
 .file-tree-item {
-  @apply rounded-6 m3-label-large relative flex h-10 cursor-pointer items-center px-4;
+  @apply rounded-6 label-large relative flex h-10 cursor-pointer items-center px-4;
 
   &--active {
-    @apply bg-m3-secondary-container;
+    @apply bg-secondary-container;
   }
 }
 </style>

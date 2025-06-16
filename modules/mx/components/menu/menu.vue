@@ -11,18 +11,18 @@ onClickOutside(element, () => {
 </script>
 
 <template>
-  <m3-container
+  <mx-container
     ref="element"
     :elevation="2"
-    :class="['m3-menu', { 'm3-menu--hidden': !visible }]"
+    :class="['menu', { 'menu--hidden': !visible }]"
   >
     <slot />
-  </m3-container>
+  </mx-container>
 </template>
 
 <style lang="scss">
-.m3-menu {
-  @apply rounded-1 text-m3-on-surface bg-m3-surface absolute flex flex-col gap-3 p-3 py-2;
+.menu {
+  @apply rounded-1 text-on-surface bg-surface absolute flex flex-col gap-3 p-3 py-2;
 
   top: calc(100% + 0.5rem);
 

@@ -154,43 +154,39 @@ function timeToMinutes(time: string) {
 </script>
 
 <template>
-  <div class="m3-calendar">
-    <div class="m3-calendar__head">
+  <div class="calendar">
+    <div class="calendar__head">
       <span class="w-12" />
 
-      <div v-for="day in days" :key="day" class="m3-calendar__cell">
+      <div v-for="day in days" :key="day" class="calendar__cell">
         {{ day }}
       </div>
     </div>
 
-    <div ref="container" class="m3-calendar__body">
+    <div ref="container" class="calendar__body">
       <div class="w-12">
         <span
           v-for="hour in 24"
           :key="hour"
-          class="m3-label-medium flex h-12 items-start justify-end pr-2"
+          class="label-medium flex h-12 items-start justify-end pr-2"
         >
           {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
       </div>
 
-      <div
-        v-for="day in days.length"
-        :key="day"
-        class="m3-calendar__body-column"
-      >
+      <div v-for="day in days.length" :key="day" class="calendar__body-column">
         <div
           v-for="hour in 24"
           :key="hour"
-          class="m3-calendar__cell relative flex cursor-pointer items-center"
+          class="calendar__cell relative flex cursor-pointer items-center"
           @click="openDialog(day, hour)"
         >
           <md-ripple />
 
-          <div class="border-(b m3-outline-variant) b-b-dashed w-full" />
+          <div class="border-(b outline-variant) b-b-dashed w-full" />
         </div>
 
-        <m3-theme
+        <mx-theme
           v-for="({ spaceId, from, to }, i) in schedule[day]"
           :key="i"
           :color="spaces![spaceId]!.color"
@@ -199,7 +195,7 @@ function timeToMinutes(time: string) {
             top: `${(from / 60) * (scrollHeight / 24)}px`,
             height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
           }"
-          class="bg-m3-primary-container bg-op-90 text-m3-on-primary-container m3-body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
+          class="bg-primary-container bg-op-90 text-on-primary-container body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
           @click="openEditDialog(day, i)"
         >
           <md-ripple />
@@ -226,13 +222,10 @@ function timeToMinutes(time: string) {
               })
             }}
           </span>
-        </m3-theme>
+        </mx-theme>
       </div>
 
-      <span
-        ref="caret"
-        class="border-(b m3-error) absolute w-full select-none"
-      />
+      <span ref="caret" class="border-(b error) absolute w-full select-none" />
     </div>
   </div>
 
@@ -249,23 +242,23 @@ function timeToMinutes(time: string) {
       class="flex flex-col gap-4 p-4"
       method="dialog"
     >
-      <span class="m3-label-large">Space</span>
+      <span class="label-large">Space</span>
 
       <div class="grid grid-cols-2 gap-4">
-        <m3-theme
+        <mx-theme
           v-for="(space, id) in spaces"
           :key="id"
           :color="space.color"
           harmonize
         >
-          <m3-elevated-card
+          <mx-elevated-card
             class="flex flex-col gap-2"
             @click="newSpaceId = id"
           >
             <md-ripple />
 
             <div class="flex flex-row items-center justify-between gap-2">
-              <md-icon class="text-m3-primary">{{ space.icon }}</md-icon>
+              <md-icon class="text-primary">{{ space.icon }}</md-icon>
               <md-radio
                 name="space"
                 :value="id"
@@ -273,16 +266,13 @@ function timeToMinutes(time: string) {
                 required
               />
             </div>
-            <span
-              class="m3-title-medium line-clamp-1 flex-1"
-              :title="space.name"
-            >
+            <span class="title-medium line-clamp-1 flex-1" :title="space.name">
               {{ space.name }}
             </span>
-          </m3-elevated-card>
-        </m3-theme>
+          </mx-elevated-card>
+        </mx-theme>
 
-        <m3-elevated-card
+        <mx-elevated-card
           v-if="Object.keys(spaces).length < 1"
           class="cursor-pointer"
           @click="newSpaceOpen = true"
@@ -290,15 +280,15 @@ function timeToMinutes(time: string) {
           <md-ripple />
 
           <div class="flex flex-row items-center justify-between gap-2">
-            <md-icon class="text-m3-primary">add</md-icon>
+            <md-icon class="text-primary">add</md-icon>
           </div>
-          <span class="m3-title-medium flex-1">Create a New Space</span>
-        </m3-elevated-card>
+          <span class="title-medium flex-1">Create a New Space</span>
+        </mx-elevated-card>
       </div>
 
-      <span class="m3-label-large">Day</span>
+      <span class="label-large">Day</span>
       <div class="flex gap-2">
-        <m3-filled-card v-for="(day, i) in days" :key="i" class="flex-1">
+        <mx-filled-card v-for="(day, i) in days" :key="i" class="flex-1">
           <md-ripple />
 
           <label class="flex gap-4">
@@ -312,12 +302,12 @@ function timeToMinutes(time: string) {
                   : newSpaceDays.add(i + 1)
               "
             />
-            <span class="m3-label-large">{{ day }}</span>
+            <span class="label-large">{{ day }}</span>
           </label>
-        </m3-filled-card>
+        </mx-filled-card>
       </div>
 
-      <span class="m3-label-large">Time</span>
+      <span class="label-large">Time</span>
       <div class="flex gap-2">
         <md-outlined-text-field
           class="flex-1"
@@ -396,11 +386,11 @@ function timeToMinutes(time: string) {
 </template>
 
 <style lang="scss">
-.m3-calendar {
-  @apply border-m3-outline-variant flex h-full flex-col rounded-xl border;
+.calendar {
+  @apply border-outline-variant flex h-full flex-col rounded-xl border;
 
   &__head {
-    @apply border-m3-outline-variant flex justify-between overflow-y-hidden border-b;
+    @apply border-outline-variant flex justify-between overflow-y-hidden border-b;
 
     scrollbar-gutter: stable;
   }
@@ -412,7 +402,7 @@ function timeToMinutes(time: string) {
   }
 
   &__cell {
-    @apply border-m3-outline-variant border-(b l) flex h-12 flex-1 items-center justify-center;
+    @apply border-outline-variant border-(b l) flex h-12 flex-1 items-center justify-center;
   }
 
   &__body &__cell {

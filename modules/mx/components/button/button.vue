@@ -7,28 +7,28 @@ defineProps<{
 </script>
 
 <template>
-  <m3-container
+  <mx-container
     :class="[
-      'm3-button',
-      type && `m3-button--${type}`,
+      'button',
+      type && `button--${type}`,
       {
-        'm3-button--with-content': $slots.default,
-        'm3-button--with-icon': icon,
+        'button--with-content': $slots.default,
+        'button--with-icon': icon,
       },
     ]"
     role="button"
     :disabled="disabled"
     ripple
   >
-    <span v-if="icon" :class="['m3-button__icon', icon]" />
+    <span v-if="icon" :class="['button__icon', icon]" />
 
     <slot />
-  </m3-container>
+  </mx-container>
 </template>
 
 <style lang="scss">
-.m3-button {
-  @apply m3-label-large rounded-5 m-1 h-10 min-w-10 items-center justify-center gap-2 p-2;
+.button {
+  @apply label-large rounded-5 m-1 h-10 min-w-10 items-center justify-center gap-2 p-2;
 
   &__icon {
     @apply text-6;
@@ -47,23 +47,23 @@ defineProps<{
   }
 
   &--elevated {
-    @apply text-m3-primary bg-surface-container-low;
+    @apply text-primary bg-surface-container-low;
   }
 
   &--filled {
-    @apply bg-m3-primary text-m3-on-primary;
+    @apply bg-primary text-on-primary;
   }
 
   &--filled-tonal {
-    @apply bg-m3-container text-m3-on-secondary-container;
+    @apply bg-container text-on-secondary-container;
   }
 
   &--outlined {
-    @apply border-m3-outline text-m3-primary border;
+    @apply border-outline text-primary border;
   }
 
   &--text {
-    @apply text-m3-primary;
+    @apply text-primary;
   }
   &--text#{&}--with-content {
     @apply min-w-12 pl-3;
@@ -72,8 +72,8 @@ defineProps<{
     @apply pr-4;
   }
 
-  &.m3-container--disabled {
-    @apply bg-opacity-12 text-opacity-38 text-m3-on-surface;
+  &.container--disabled {
+    @apply bg-opacity-12 text-opacity-38 text-on-surface;
   }
 }
 </style>

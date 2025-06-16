@@ -1,18 +1,18 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="m3-search">
-    <m3-container class="m3-search-container">
-      <m3-icon name="search" class="leading-icon" />
+  <div class="search">
+    <mx-container class="search-container">
+      <mx-icon name="search" class="leading-icon" />
 
       <input />
-    </m3-container>
+    </mx-container>
   </div>
 </template>
 
 <style scoped lang="scss">
-.m3-search-container {
-  @apply m3-body-large flex gap-4 rounded-full p-4;
+.search-container {
+  @apply body-large flex gap-4 rounded-full p-4;
 
   width: 250px;
   min-width: 22.5rem;

@@ -23,7 +23,7 @@ function createSpace() {
 </script>
 
 <template>
-  <m3-theme :color="space.color" harmonize>
+  <mx-theme :color="space.color" harmonize>
     <md-dialog :open="open" @closed="open = false">
       <span slot="headline">{{ $t("components.new-space.title") }}</span>
 
@@ -37,5 +37,5 @@ function createSpace() {
         </edit-space>
       </form>
     </md-dialog>
-  </m3-theme>
+  </mx-theme>
 </template>
