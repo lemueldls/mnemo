@@ -70,7 +70,7 @@ function previousDay() {
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex">
       <span
-        class="text-m3-primary m3-display-small grow-3 flex flex-1 items-center gap-2"
+        class="text-primary display-small grow-3 flex flex-1 items-center gap-2"
       >
         {{ title }}
 
@@ -94,14 +94,14 @@ function previousDay() {
         <span
           v-for="hour in 24"
           :key="hour"
-          class="m3-label-medium flex h-12 items-start justify-end pr-2"
+          class="label-medium flex h-12 items-start justify-end pr-2"
         >
           {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
       </div>
 
       <div class="relative flex-1">
-        <m3-theme
+        <mx-theme
           v-for="({ spaceId, from, to }, i) in todaysSchedule"
           :key="i"
           :color="spaces![spaceId]!.color"
@@ -114,7 +114,7 @@ function previousDay() {
               top: `${(from / 60) * (scrollHeight / 24)}px`,
               height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
             }"
-            class="bg-m3-primary-container bg-op-50 text-m3-on-primary-container m3-body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
+            class="bg-primary-container bg-op-50 text-on-primary-container body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
           >
             <md-ripple />
 
@@ -138,15 +138,15 @@ function previousDay() {
               }}
             </span>
           </nuxt-link>
-        </m3-theme>
+        </mx-theme>
 
         <div
           ref="caret"
-          class="border-(b-2 m3-error) absolute w-[calc(100%+1rem)] translate-x-[-1rem]"
+          class="border-(b-2 error) absolute w-[calc(100%+1rem)] translate-x-[-1rem]"
         />
       </div>
     </div>
 
-    <m3-modal-date-picker v-model="datePicker" />
+    <mx-modal-date-picker v-model="datePicker" />
   </div>
 </template>

@@ -66,23 +66,23 @@ function preloadItem(item: Item) {
 </script>
 
 <template>
-  <m3-nav-rail v-if="direction == 'vertical'">
-    <m3-nav-rail-item
+  <mx-nav-rail v-if="direction == 'vertical'">
+    <mx-nav-rail-item
       v-for="(item, id) in items"
       :key="id"
       :active="hash === id"
       @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <m3-icon :name="item.icon" :fill="sheet && hash == id" />
+        <mx-icon :name="item.icon" :fill="sheet && hash == id" />
       </template>
 
       {{ item.name }}
-    </m3-nav-rail-item>
-  </m3-nav-rail>
+    </mx-nav-rail-item>
+  </mx-nav-rail>
 
-  <m3-nav-bar v-else>
-    <m3-nav-bar-item
+  <mx-nav-bar v-else>
+    <mx-nav-bar-item
       v-for="(item, id) in items"
       :key="id"
       :active="hash === id"
@@ -91,14 +91,14 @@ function preloadItem(item: Item) {
       @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <m3-icon :name="item.icon" :fill="sheet && hash == id" />
+        <mx-icon :name="item.icon" :fill="sheet && hash == id" />
       </template>
 
       {{ item.name }}
-    </m3-nav-bar-item>
-  </m3-nav-bar>
+    </mx-nav-bar-item>
+  </mx-nav-bar>
 
-  <m3-side-sheet v-model="sheet" class="w-80">
+  <mx-side-sheet v-model="sheet" class="w-80">
     <div class="flex justify-end">
       <md-icon-button @click="sheet = false">
         <md-icon>close</md-icon>
@@ -106,5 +106,5 @@ function preloadItem(item: Item) {
     </div>
 
     <Primitive v-if="items[hash]" :as="items[hash]!.component" />
-  </m3-side-sheet>
+  </mx-side-sheet>
 </template>

@@ -5,13 +5,13 @@ defineProps<CardProperties>();
 </script>
 
 <template>
-  <abstract-card class="m3-outlined-card">
+  <abstract-card class="outlined-card">
     <slot />
   </abstract-card>
 </template>
 
 <style>
-.m3-outlined-card {
-  @apply border-1 border-m3-outline border-solid;
+.outlined-card {
+  @apply border-1 border-outline border-solid;
 }
 </style>

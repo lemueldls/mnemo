@@ -5,7 +5,7 @@ defineProps<CardProperties>();
 </script>
 
 <template>
-  <abstract-card class="m3-elevated-card">
+  <abstract-card class="elevated-card">
     <md-elevation />
 
     <slot />
@@ -13,8 +13,8 @@ defineProps<CardProperties>();
 </template>
 
 <style lang="scss">
-.m3-elevated-card {
-  @apply text-m3-on-surface bg-m3-surface-container-low;
+.elevated-card {
+  @apply text-on-surface bg-surface-container-low;
 
   --md-elevation-level: 1;
 }

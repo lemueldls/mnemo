@@ -100,7 +100,7 @@ const errors = diagnostics.filter(
   >
     <div
       v-if="errors.length > 0"
-      class="bg-m3-error-container text-m3-on-error-container rounded-lg p-4"
+      class="bg-error-container text-on-error-container rounded-lg p-4"
     >
       <pre
         v-for="(error, i) in errors"

@@ -194,7 +194,7 @@ const activeLineBackground = computed(() => {
   @apply size-full overflow-hidden;
 
   .cm-editor {
-    @apply m3-body-large h-full outline-none;
+    @apply body-large h-full outline-none;
   }
 
   .cm-scroller {
@@ -208,23 +208,23 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-content {
-    @apply caret-m3-primary p-0;
+    @apply caret-primary p-0;
 
     font-family: var(--font-mono);
   }
 
   .cm-selectionBackground {
-    @apply text-m3-on-surface-variant;
+    @apply text-on-surface-variant;
 
     background: var(--md-sys-color-surface-container-highest) !important;
   }
 
   .cm-selectionMatch {
-    @apply bg-m3-tertiary-container text-m3-on-tertiary-container;
+    @apply bg-tertiary-container text-on-tertiary-container;
   }
 
   .cm-cursor {
-    @apply border-m3-primary;
+    @apply border-primary;
   }
 
   .cm-activeLine {
@@ -232,7 +232,7 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-lintPoint-error::after {
-    @apply border-b-m3-error;
+    @apply border-b-error;
   }
 
   .cm-lintRange {
@@ -240,20 +240,20 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-lintRange-error {
-    @apply decoration-m3-error;
+    @apply decoration-error;
   }
 
   /* .cm-lintRange-hint {
-    @apply decoration-m3-error;
+    @apply decoration-error;
   } */
 
   .cm-tooltip {
-    @apply bg-m3-surface-container-lowest rounded-bl-0 m-0 max-w-xl rounded-lg border-none p-0 shadow;
+    @apply bg-surface-container-lowest rounded-bl-0 m-0 max-w-xl rounded-lg border-none p-0 shadow;
 
     font-family: var(--font-mono);
 
     [aria-selected="true"] {
-      @apply bg-m3-secondary-container! text-m3-on-secondary-container!;
+      @apply bg-secondary-container! text-on-secondary-container!;
     }
 
     li {
@@ -346,11 +346,11 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-diagnostic-error {
-    @apply text-m3-error border-m3-error;
+    @apply text-error border-error;
   }
 
   .cm-diagnostic-hint {
-    @apply text-m3-outline border-m3-outline;
+    @apply text-outline border-outline;
   }
 
   .typst-render {

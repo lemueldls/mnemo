@@ -76,7 +76,7 @@ async function print() {
       />
     </div>
 
-    <m3-toolbar type="floating" class="justify-end">
+    <mx-toolbar type="floating" class="justify-end">
       <md-icon-button :disabled="downloading" @click="download">
         <md-icon>download</md-icon>
       </md-icon-button>
@@ -84,7 +84,7 @@ async function print() {
       <md-icon-button :disabled="printing" @click="print">
         <md-icon>print</md-icon>
       </md-icon-button>
-    </m3-toolbar>
+    </mx-toolbar>
   </div>
 </template>
 

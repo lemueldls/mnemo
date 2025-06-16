@@ -3,8 +3,8 @@ defineProps<{ active?: boolean }>();
 </script>
 
 <template>
-  <div :class="['m3-nav-rail-item', { 'm3-nav-rail-item--active': active }]">
-    <div v-if="$slots.leading" class="m3-nav-rail-item__leading">
+  <div :class="['nav-rail-item', { 'nav-rail-item--active': active }]">
+    <div v-if="$slots.leading" class="nav-rail-item__leading">
       <md-ripple />
 
       <slot name="leading" />
@@ -15,19 +15,19 @@ defineProps<{ active?: boolean }>();
 </template>
 
 <style lang="scss">
-.m3-nav-rail-item {
-  @apply m3-label-medium flex h-14 cursor-pointer flex-col items-center justify-center gap-1;
+.nav-rail-item {
+  @apply label-medium flex h-14 cursor-pointer flex-col items-center justify-center gap-1;
 
   &__leading {
-    @apply text-m3-on-surface-variant relative flex h-8 w-14 items-center justify-center rounded-2xl;
+    @apply text-on-surface-variant relative flex h-8 w-14 items-center justify-center rounded-2xl;
   }
 
   &__trailing {
-    @apply text-m3-on-surface-variant flex;
+    @apply text-on-surface-variant flex;
   }
 
   &--active &__leading {
-    @apply bg-m3-secondary-container text-m3-on-secondary-container;
+    @apply bg-secondary-container text-on-secondary-container;
   }
 }
 </style>

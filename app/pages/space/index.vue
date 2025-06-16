@@ -175,7 +175,7 @@ async function createStickyNote() {
 </script>
 
 <template>
-  <m3-theme id="space-page" :color="space.color">
+  <mx-theme id="space-page" :color="space.color">
     <sticky-note
       v-for="(note, i) in activeStickyNotes"
       :key="note.id"
@@ -200,10 +200,10 @@ async function createStickyNote() {
       "
     />
 
-    <m3-page>
+    <mx-page>
       <div class="flex h-full flex-1">
         <div class="flex size-full flex-1 flex-col">
-          <m3-top-app-bar>
+          <mx-top-app-bar>
             <template #leading>
               <nuxt-link-locale to="/">
                 <md-icon-button>
@@ -225,14 +225,14 @@ async function createStickyNote() {
                 <md-icon>info</md-icon>
               </md-icon-button>
             </template>
-          </m3-top-app-bar>
+          </mx-top-app-bar>
 
           <div
             class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
-            <!-- <m3-outlined-card class="p-0! h-full flex-1 overflow-hidden">
+            <!-- <mx-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="article2.pdf" monochrome />
-            </m3-outlined-card> -->
+            </mx-outlined-card> -->
 
             <div class="max-w-180 medium:ml-3 relative size-full">
               <div class="absolute left--6 pb-8 pt-16">
@@ -301,13 +301,13 @@ async function createStickyNote() {
 
               <md-elevated-card id="editor">
                 <div id="editor-title" class="items-center gap-2">
-                  <div class="h-1px bg-m3-outline-variant w-2" />
+                  <div class="h-1px bg-outline-variant w-2" />
 
-                  <span class="m3-label-large">
+                  <span class="label-large">
                     {{ currentNote?.date }}
                   </span>
 
-                  <div class="h-1px bg-m3-outline-variant flex-1" />
+                  <div class="h-1px bg-outline-variant flex-1" />
 
                   <md-icon-button
                     :disabled="previousDayIndex === -1"
@@ -388,7 +388,7 @@ async function createStickyNote() {
 
         <form slot="content" method="dialog">
           <div class="mb-4 flex items-center gap-4">
-            <!-- <span class="flex-1 m3-display-small">
+            <!-- <span class="flex-1 display-small">
               {{ useShortDate(currentNote) }}
             </span>
 
@@ -446,8 +446,8 @@ async function createStickyNote() {
       <settings v-model="settingsOpen" />
 
       <side-bar v-if="medium" direction="vertical" />
-    </m3-page>
-  </m3-theme>
+    </mx-page>
+  </mx-theme>
 </template>
 
 <style lang="scss">
@@ -456,7 +456,7 @@ async function createStickyNote() {
 }
 
 #file-tree {
-  @apply border-(m3-outline r) w-64;
+  @apply border-(outline r) w-64;
 }
 
 #editor {
@@ -464,7 +464,7 @@ async function createStickyNote() {
 }
 
 #editor-title {
-  @apply text-m3-on-primary-container m3-headline-large flex w-full justify-between bg-transparent outline-none;
+  @apply text-on-primary-container headline-large flex w-full justify-between bg-transparent outline-none;
 
   font-family: var(--font-mono);
 }
@@ -474,7 +474,7 @@ async function createStickyNote() {
   // @apply medium:z-0 z-1 medium:hover:pl-0 pl-3 transition-all duration-200;
 
   &__inner {
-    @apply bg-m3-surface-container-high text-m3-on-surface-variant relative flex h-12 w-6 cursor-pointer items-center justify-center;
+    @apply bg-surface-container-high text-on-surface-variant relative flex h-12 w-6 cursor-pointer items-center justify-center;
   }
 }
 </style>

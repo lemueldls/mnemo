@@ -139,8 +139,8 @@ const selectionBackground = computed(() => {
   >
     <md-elevation />
 
-    <m3-filled-card
-      class="bg-m3-tertiary-container! flex flex-1 flex-col gap-4 rounded-xl p-4"
+    <mx-filled-card
+      class="bg-tertiary-container! flex flex-1 flex-col gap-4 rounded-xl p-4"
     >
       <div class="flex h-full flex-1 flex-col gap-4">
         <div ref="header" class="flex items-center gap-2">
@@ -163,7 +163,7 @@ const selectionBackground = computed(() => {
           class="h-full flex-1"
         />
       </div>
-    </m3-filled-card>
+    </mx-filled-card>
   </div>
 </template>
 
@@ -183,7 +183,7 @@ const selectionBackground = computed(() => {
   }
 
   &__title {
-    @apply m3-headline-large text-m3-on-primary-container z-1 w-0 flex-1 bg-transparent outline-none;
+    @apply headline-large text-on-primary-container z-1 w-0 flex-1 bg-transparent outline-none;
 
     touch-action: none;
     user-select: none;
@@ -192,7 +192,7 @@ const selectionBackground = computed(() => {
   }
 
   ::selection {
-    @apply text-m3-on-primary-container;
+    @apply text-on-primary-container;
     background-color: v-bind(selectionBackground);
   }
 }

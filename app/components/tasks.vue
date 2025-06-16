@@ -1,5 +1,5 @@
 <template>
-  <h3 class="m3-display-small">{{ $t("components.tasks.title") }}</h3>
+  <h3 class="display-small">{{ $t("components.tasks.title") }}</h3>
 
-  <div class="text-m3-error p-4">TODO</div>
+  <div class="text-error p-4">TODO</div>
 </template>

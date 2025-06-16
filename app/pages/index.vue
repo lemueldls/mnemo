@@ -26,16 +26,16 @@ const greeting = computed(() => {
 <template>
   <div id="home-page">
     <div id="main-column">
-      <m3-outlined-card
+      <mx-outlined-card
         id="intro"
         class="medium:border-1! medium:p-4! p-0! border-0!"
       >
         <div>
-          <h1 class="m3-display-medium">
+          <h1 class="display-medium">
             {{ greeting }}
           </h1>
 
-          <span class="text-m3-on-surface-variant m3-title-large">
+          <span class="text-on-surface-variant title-large">
             {{
               t("pages.index.date", { date: d(date, { dateStyle: "full" }) })
             }}
@@ -49,22 +49,22 @@ const greeting = computed(() => {
               :key="id"
               :to="`/space?id=${id}`"
             >
-              <m3-theme :color="space.color" harmonize>
-                <m3-elevated-card class="relative gap-2">
+              <mx-theme :color="space.color" harmonize>
+                <mx-elevated-card class="relative gap-2">
                   <md-ripple />
 
                   <div class="flex items-center gap-2">
-                    <m3-icon :name="space.icon" class="text-m3-primary" />
+                    <mx-icon :name="space.icon" class="text-primary" />
                   </div>
 
-                  <h3 class="m3-title-large line-clamp-1" :title="space.name">
+                  <h3 class="title-large line-clamp-1" :title="space.name">
                     {{ space.name }}
                   </h3>
-                </m3-elevated-card>
-              </m3-theme>
+                </mx-elevated-card>
+              </mx-theme>
             </nuxt-link>
 
-            <m3-elevated-card
+            <mx-elevated-card
               v-if="Object.keys(spaces).length < 1"
               class="relative cursor-pointer gap-2"
               @click="newSpaceOpen = true"
@@ -72,22 +72,22 @@ const greeting = computed(() => {
               <md-ripple />
 
               <div class="flex items-center gap-2">
-                <m3-icon name="add" class="text-m3-primary" />
+                <mx-icon name="add" class="text-primary" />
               </div>
 
-              <h3 class="m3-title-large">Create a New Space</h3>
-            </m3-elevated-card>
+              <h3 class="title-large">Create a New Space</h3>
+            </mx-elevated-card>
           </div>
         </div>
 
-        <m3-filled-card>
-          <h3 class="m3-label-large">Todo</h3>
+        <mx-filled-card>
+          <h3 class="label-large">Todo</h3>
 
-          <span class="text-m3-on-surface-varient m3-body-large">
+          <span class="text-on-surface-varient body-large">
             Nothing yet...
           </span>
-        </m3-filled-card>
-      </m3-outlined-card>
+        </mx-filled-card>
+      </mx-outlined-card>
     </div>
   </div>
 </template>

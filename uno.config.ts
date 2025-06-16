@@ -7,10 +7,10 @@ import {
   transformerCompileClass,
 } from "unocss";
 
-import { presetM3 } from "./modules/m3/uno.config.ts";
+import { presetMx } from "./modules/mx/uno.config";
 
 export default defineConfig({
-  presets: [presetWind3(), presetTypography(), presetM3()],
+  presets: [presetWind3(), presetTypography(), presetMx()],
   transformers: [
     transformerVariantGroup(),
     transformerDirectives(),

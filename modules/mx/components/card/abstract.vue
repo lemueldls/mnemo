@@ -8,13 +8,13 @@ defineProps<CardProperties>();
 </script>
 
 <template>
-  <div class="m3-card">
+  <div class="card">
     <slot />
   </div>
 </template>
 
 <style lang="scss">
-:where(.m3-card) {
+:where(.card) {
   @apply relative flex flex-col rounded-xl p-4;
 }
 </style>

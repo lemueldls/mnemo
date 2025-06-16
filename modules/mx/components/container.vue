@@ -4,7 +4,7 @@ export interface ContainerProperties {
   ripple?: boolean;
   active?: boolean;
   disabled?: boolean;
-  elevation?: number; // 0 | 1 | 2 | 3 | 4 | 5;
+  elevation?: 0 | 1 | 2 | 3 | 4 | 5;
 }
 
 const props = withDefaults(defineProps<ContainerProperties>(), {
@@ -46,7 +46,7 @@ async function handleClick() {
   if (!stateLayer.value) return;
 
   const ripple = document.createElement("div");
-  ripple.classList.add("m3-container__ripple");
+  ripple.classList.add("container__ripple");
 
   stateLayer.value.append(ripple);
 
@@ -84,8 +84,8 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   <div
     ref="container"
     :class="[
-      'm3-container',
-      { 'm3-container--active': active, 'm3-container--disabled': disabled },
+      'container',
+      { 'container--active': active, 'container--disabled': disabled },
     ]"
     :tabindex="ripple && !disabled ? 0 : -1"
     :disabled="disabled"
@@ -96,7 +96,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
     <div
       v-if="ripple && !disabled"
       ref="stateLayer"
-      class="m3-container__state-layer"
+      class="container__state-layer"
     />
 
     <slot />
@@ -104,7 +104,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
 </template>
 
 <style lang="scss">
-.m3-container {
+.container {
   @apply relative flex;
 
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
@@ -127,18 +127,18 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__state-layer {
-    @apply bg-m3-on-surface rounded-inherit absolute inset-0 overflow-hidden bg-opacity-0;
+    @apply bg-on-surface rounded-inherit absolute inset-0 overflow-hidden bg-opacity-0;
 
     transition-duration: 50ms;
     transition-property: background-color;
   }
 
   &--active:hover > &__state-layer {
-    @apply bg-m3-on-secondary-container;
+    @apply bg-on-secondary-container;
   }
 
   &__ripple {
-    @apply opacity-12 bg-m3-on-surface absolute inset-0;
+    @apply opacity-12 bg-on-surface absolute inset-0;
 
     transition-property: opacity;
   }
