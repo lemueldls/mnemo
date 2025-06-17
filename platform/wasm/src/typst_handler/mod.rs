@@ -238,7 +238,8 @@ impl TypstState {
                             | SyntaxKind::ModuleInclude
                             | SyntaxKind::Contextual
                             | SyntaxKind::ListItem
-                            | SyntaxKind::EnumItem,
+                            | SyntaxKind::EnumItem
+                            | SyntaxKind::Linebreak,
                         ) => {}
                         _ => {
                             ir += "\n#box() \\";

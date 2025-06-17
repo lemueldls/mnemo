@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
     World, WorldExt,
-    diag::{Severity, SourceDiagnostic},
+    diag::{Severity, SourceDiagnostic, Tracepoint},
     ecow::{EcoString, EcoVec, eco_format},
-    syntax::{Span, SyntaxError},
+    syntax::{Span, Spanned, SyntaxError},
 };
 use wasm_bindgen::prelude::*;
 
@@ -26,7 +26,7 @@ impl TypstDiagnostic {
         errors
             .into_iter()
             .flat_map(|error| {
-                map_span(error.span, world).map(|range| {
+                map_span(error.span, EcoVec::new(), world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::Error,
@@ -52,7 +52,7 @@ impl TypstDiagnostic {
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
 
-                map_span(diagnostic.span, world).map(|range| {
+                map_span(diagnostic.span, diagnostic.trace, world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
@@ -69,12 +69,30 @@ impl TypstDiagnostic {
     }
 }
 
-fn map_span(span: Span, world: &MnemoWorld) -> Option<Range<usize>> {
+fn map_span(
+    span: Span,
+    trace: EcoVec<Spanned<Tracepoint>>,
+    world: &MnemoWorld,
+) -> Option<Range<usize>> {
     let aux_source = world.aux_source();
 
-    let main_range = world.range(span)?;
+    let mut main_range = if world.main == span.id() {
+        world.range(span)
+    } else {
+        None
+    };
 
-    let aux_range = if world.main == span.id() {
+    if main_range.is_none() {
+        for tracepoint in trace {
+            if main_range.is_some() {
+                break;
+            } else if world.main == tracepoint.span.id() {
+                main_range = world.range(tracepoint.span)
+            }
+        }
+    }
+
+    let aux_range = if let Some(main_range) = main_range {
         let aux_start = world.map_main_to_aux(main_range.start);
         let aux_end = world.map_main_to_aux(main_range.end);
 
