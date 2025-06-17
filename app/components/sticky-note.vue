@@ -19,11 +19,7 @@ const { width: parentWidth, height: parentHeight } = useElementSize(parent);
 onMounted(() => {
   const root = rootRef.value!;
 
-  console.log({ ...note });
-
   watchImmediate([parentWidth, parentHeight], ([parentWidth, parentHeight]) => {
-    console.log({ parentWidth, parentHeight });
-
     if (parentWidth) {
       if (note.rx) note.x = Math.max(note.rx * parentWidth - note.width / 2, 0);
       note.x = Math.min(note.x, parentWidth - note.width);
@@ -34,8 +30,6 @@ onMounted(() => {
         note.y = Math.max(note.ry * parentHeight - note.height / 2, 0);
       note.y = Math.min(note.y, parentHeight - note.height);
     }
-
-    console.log({ x: note.x, y: note.y });
 
     root.style.transform = `translate(${note.x}px,${note.y}px)`;
   });
