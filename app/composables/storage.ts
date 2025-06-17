@@ -74,8 +74,6 @@ export function useStorageItem<T extends StorageValue>(
     watchDebounced(
       item,
       async (value) => {
-        console.log({ key, value });
-
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt: Date.now() });
 
