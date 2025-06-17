@@ -443,7 +443,7 @@ async function createStickyNote() {
         </div>
       </md-dialog>
 
-      <settings v-model="settingsOpen" />
+      <!-- <settings v-model="settingsOpen" /> -->
 
       <side-bar v-if="medium" direction="vertical" />
     </mx-page>
