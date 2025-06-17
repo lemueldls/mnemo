@@ -95,6 +95,11 @@ const { t } = useI18n();
 
 const typstState = await useTypst();
 
+const text = await useStorageItem(
+  () => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`,
+  "",
+);
+
 onMounted(() => {
   const container = containerRef.value!;
   const view = new EditorView({
@@ -108,32 +113,38 @@ onMounted(() => {
     }),
   });
 
+  let ready = false;
+
   watchImmediate(
     [path, () => props.spaceId, () => props.kind],
-    async ([path, spaceId, kind], [oldPath]) => {
-      const text = await useStorageItem(
-        `spaces/${spaceId}/${kind}/${path}.typ`,
-        "",
-      );
+    ([path], [oldPath]) =>
+      watch(
+        text,
+        async (text) => {
+          const fileId = typstState.insertFile(path, text);
 
-      const fileId = typstState.insertFile(path, text.value);
+          if (oldPath)
+            stateCache[oldPath] = view.state.toJSON({ history: historyField });
 
-      if (oldPath)
-        stateCache[oldPath] = view.state.toJSON({ history: historyField });
+          const cache = stateCache[path];
+          const stateConfig = await createStateConfig(typstState, path, fileId);
 
-      const cache = stateCache[path];
-      const stateConfig = await createStateConfig(typstState, path, fileId);
-
-      if (cache)
-        view.setState(
-          EditorState.fromJSON(cache, stateConfig, { history: historyField }),
-        );
-      else {
-        stateConfig.doc = text.value;
-        view.setState(EditorState.create(stateConfig));
-      }
-    },
+          if (cache)
+            view.setState(
+              EditorState.fromJSON(cache, stateConfig, {
+                history: historyField,
+              }),
+            );
+          else {
+            stateConfig.doc = text;
+            view.setState(EditorState.create(stateConfig));
+          }
+        },
+        { once: true, immediate: !ready },
+      ),
   );
+
+  ready = true;
 });
 
 async function createStateConfig(

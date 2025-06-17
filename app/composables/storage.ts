@@ -1,60 +1,47 @@
 import { createStorage, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
+import type { WatchStopHandle } from "vue";
+
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
 const itemRefs: { [key: string]: Promise<Ref<unknown>> } = {};
 
-function asyncComputedRef<T>(
+async function asyncComputedRef<T>(
   key: MaybeRefOrGetter<string>,
   handler: (key: string) => Promise<Ref<T>>,
 ) {
-  const keyValue = toValue(key);
+  const data = ref<T>();
 
-  if (keyValue in itemRefs) return itemRefs[keyValue] as Promise<Ref<T>>;
+  let stopSync: WatchStopHandle;
+  let item: Ref<T>;
 
-  // eslint-disable-next-line no-async-promise-executor
-  const item = new Promise<Ref<T>>(async (resolve) => {
-    const data = ref<T>();
-
-    const item = ref(await handler(keyValue));
-    let stopSync = watchImmediate(
-      item,
-      (item) => {
-        data.value = item;
-      },
-      { deep: true },
-    );
-
-    watch(
+  await new Promise<void>((resolve) =>
+    watchImmediate(
       toRef(key),
-      (key) => {
-        stopSync();
+      async (key) => {
+        stopSync?.();
 
-        asyncComputedRef(key, handler).then((item) => {
-          stopSync = watchImmediate(item, (item) => {
-            data.value = item;
-          });
+        itemRefs[key] ||= handler(key);
+        item = (await itemRefs[key]) as Ref<T>;
+
+        stopSync = watchImmediate(item, (item) => {
+          data.value = item;
+          resolve();
         });
       },
       { flush: "sync" },
-    );
+    ),
+  );
 
-    resolve(
-      computed({
-        get: () => data.value!,
-        set(value) {
-          item.value = value;
-        },
-      }),
-    );
+  return computed({
+    get: () => data.value!,
+    set(value) {
+      item.value = value;
+    },
   });
-
-  itemRefs[keyValue] = item;
-
-  return item;
 }
 
 export function useStorageItem<T extends StorageValue>(
@@ -87,6 +74,8 @@ export function useStorageItem<T extends StorageValue>(
     watchDebounced(
       item,
       async (value) => {
+        console.log({ key, value });
+
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt: Date.now() });
 
