@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Rgb, ThemeColors } from "mnemo-wasm";
 
-import type { Rgba } from "@material/material-color-utilities";
+import type { Rgba } from "~~/modules/mx/types";
 import { decodeTime } from "ulid";
 
 import type { Note } from "~/composables/spaces";

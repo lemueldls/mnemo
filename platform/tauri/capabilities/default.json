@@ -10,6 +10,7 @@
     "opener:default",
     "deep-link:default",
     "http:default",
-    "os:default"
+    "os:default",
+    "process:default"
   ]
 }

@@ -32,7 +32,7 @@ import { typst } from "./widget";
 
 import { typstLanguage } from "./languague";
 
-import type { Rgba } from "@material/material-color-utilities";
+import type { Rgba } from "~~/modules/mx/types";
 
 import type { EditorStateConfig } from "@codemirror/state";
 import { ThemeColors, type TypstState, type FileId } from "mnemo-wasm";

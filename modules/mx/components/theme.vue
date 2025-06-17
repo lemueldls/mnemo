@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Rgba } from "@material/material-color-utilities";
+import type { Rgba } from "~~/modules/mx/types";
 import { Primitive, type PrimitiveProps } from "reka-ui";
 
 interface Props extends PrimitiveProps {

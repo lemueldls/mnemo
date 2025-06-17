@@ -3,14 +3,20 @@ import {
   SchemeTonalSpot,
   Hct,
   argbFromHex,
-  rgbaFromArgb,
+  redFromArgb,
+  greenFromArgb,
+  blueFromArgb,
+  alphaFromArgb,
   Blend,
 } from "@material/material-color-utilities";
 
 import type { ThemeKeys, Theme } from "../types";
 
 const dynamicColors = Object.keys(MaterialDynamicColors).filter(
-  (key) => key !== "contentAccentToneDelta" && key !== "highestSurface",
+  (key) =>
+    key !== "contentAccentToneDelta" &&
+    key !== "colorSpec" &&
+    key !== "highestSurface",
 ) as ThemeKeys[];
 
 export function createTheme<K extends ThemeKeys>(
@@ -31,11 +37,16 @@ export function createTheme<K extends ThemeKeys>(
       const color = MaterialDynamicColors[key];
       const designColor = color.getArgb(scheme);
 
-      palette[key] = rgbaFromArgb(
-        argbHarmonize
-          ? Blend.harmonize(designColor, argbHarmonize)
-          : designColor,
-      );
+      const argb = argbHarmonize
+        ? Blend.harmonize(designColor, argbHarmonize)
+        : designColor;
+
+      palette[key] = {
+        r: redFromArgb(argb),
+        g: greenFromArgb(argb),
+        b: blueFromArgb(argb),
+        a: alphaFromArgb(argb),
+      };
     }
   });
 
