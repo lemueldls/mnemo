@@ -1,11 +1,12 @@
 [package]
+name = "mnemo"
+description = "Note-taking app designed to enhance the retention of information."
+
 authors.workspace = true
 categories.workspace = true
-# description = "A Tauri App"
 edition.workspace = true
 keywords.workspace = true
 license.workspace = true
-name = "mnemo-tauri"
 repository.workspace = true
 rust-version = "1.65"
 version.workspace = true
