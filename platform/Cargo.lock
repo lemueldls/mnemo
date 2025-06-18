@@ -2872,24 +2872,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mnemo-render"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "comemo",
- "image",
- "pixglyph",
- "resvg",
- "tiny-skia",
- "ttf-parser",
- "typst-ide",
- "typst-library",
- "typst-macros",
- "typst-timing",
-]
-
-[[package]]
-name = "mnemo-tauri"
+name = "mnemo"
 version = "0.1.0"
 dependencies = [
  "once_cell",
@@ -2908,6 +2891,23 @@ dependencies = [
  "time",
  "tokio",
  "ulid",
+]
+
+[[package]]
+name = "mnemo-render"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "comemo",
+ "image",
+ "pixglyph",
+ "resvg",
+ "tiny-skia",
+ "ttf-parser",
+ "typst-ide",
+ "typst-library",
+ "typst-macros",
+ "typst-timing",
 ]
 
 [[package]]

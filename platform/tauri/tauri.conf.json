@@ -25,9 +25,14 @@
     "security": {
       "csp": null
     },
-    "windows": [{ "title": "mnemo" }]
+    "windows": [{ "title": "Mnemo" }]
   },
   "plugins": {
+    "cli": {
+      "description": "Note-taking app designed to enhance the retention of information.",
+      "args": [],
+      "subcommands": {}
+    },
     "deep-link": {
       "mobile": [
         { "host": "mnemo.nuxt.dev" },
