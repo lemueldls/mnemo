@@ -33,7 +33,7 @@ function parse(color: Rgba) {
 }
 
 const selectionBackground = computed(() => {
-  const { r, g, b } = palette.value.tertiaryContainer;
+  const { r, g, b } = palette.value.onTertiary;
   return `rgba(${r},${g},${b},0.5)`;
 });
 </script>
@@ -124,7 +124,7 @@ const selectionBackground = computed(() => {
   scrollbar-color: var(--md-sys-color-primary) transparent;
 
   ::-webkit-scrollbar {
-    width: 0; // TODO: make float
+    /* width: 0; */
     background: transparent;
   }
 
@@ -134,7 +134,7 @@ const selectionBackground = computed(() => {
   }
 
   ::selection {
-    @apply text-on-tertiary-container;
+    @apply text-tertiary;
     background-color: v-bind(selectionBackground);
   }
 }

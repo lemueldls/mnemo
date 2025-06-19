@@ -66,14 +66,31 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
   typstState.setSize(16);
   typstState.setTheme(
     new ThemeColors(
-      parseColor(palette.primary),
-      parseColor(palette.secondary),
-      parseColor(palette.tertiary),
-      parseColor(palette.outline),
-      parseColor(palette.onPrimaryContainer),
-      parseColor(palette.onSecondaryContainer),
-      parseColor(palette.onTertiaryContainer),
+      parseColor(palette.background),
       parseColor(palette.onBackground),
+
+      parseColor(palette.outline),
+      parseColor(palette.outlineVariant),
+
+      parseColor(palette.primary),
+      parseColor(palette.onPrimary),
+      parseColor(palette.primaryContainer),
+      parseColor(palette.onPrimaryContainer),
+
+      parseColor(palette.secondary),
+      parseColor(palette.onSecondary),
+      parseColor(palette.secondaryContainer),
+      parseColor(palette.onSecondaryContainer),
+
+      parseColor(palette.tertiary),
+      parseColor(palette.onTertiary),
+      parseColor(palette.tertiaryContainer),
+      parseColor(palette.onTertiaryContainer),
+
+      parseColor(palette.error),
+      parseColor(palette.onError),
+      parseColor(palette.errorContainer),
+      parseColor(palette.onErrorContainer),
     ),
   );
 });

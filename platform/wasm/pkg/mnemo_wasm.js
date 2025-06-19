@@ -264,33 +264,69 @@ export class ThemeColors {
         wasm.__wbg_themecolors_free(ptr, 0);
     }
     /**
-     * @param {Rgb} primary
-     * @param {Rgb} secondary
-     * @param {Rgb} tertiary
-     * @param {Rgb} outline
-     * @param {Rgb} on_primary_container
-     * @param {Rgb} on_secondary_container
-     * @param {Rgb} on_tertiary_container
+     * @param {Rgb} background
      * @param {Rgb} on_background
+     * @param {Rgb} outline
+     * @param {Rgb} outline_variant
+     * @param {Rgb} primary
+     * @param {Rgb} on_primary
+     * @param {Rgb} primary_container
+     * @param {Rgb} on_primary_container
+     * @param {Rgb} secondary
+     * @param {Rgb} on_secondary
+     * @param {Rgb} secondary_container
+     * @param {Rgb} on_secondary_container
+     * @param {Rgb} tertiary
+     * @param {Rgb} on_tertiary
+     * @param {Rgb} tertiary_container
+     * @param {Rgb} on_tertiary_container
+     * @param {Rgb} error
+     * @param {Rgb} on_error
+     * @param {Rgb} error_container
+     * @param {Rgb} on_error_container
      */
-    constructor(primary, secondary, tertiary, outline, on_primary_container, on_secondary_container, on_tertiary_container, on_background) {
-        _assertClass(primary, Rgb);
-        var ptr0 = primary.__destroy_into_raw();
-        _assertClass(secondary, Rgb);
-        var ptr1 = secondary.__destroy_into_raw();
-        _assertClass(tertiary, Rgb);
-        var ptr2 = tertiary.__destroy_into_raw();
-        _assertClass(outline, Rgb);
-        var ptr3 = outline.__destroy_into_raw();
-        _assertClass(on_primary_container, Rgb);
-        var ptr4 = on_primary_container.__destroy_into_raw();
-        _assertClass(on_secondary_container, Rgb);
-        var ptr5 = on_secondary_container.__destroy_into_raw();
-        _assertClass(on_tertiary_container, Rgb);
-        var ptr6 = on_tertiary_container.__destroy_into_raw();
+    constructor(background, on_background, outline, outline_variant, primary, on_primary, primary_container, on_primary_container, secondary, on_secondary, secondary_container, on_secondary_container, tertiary, on_tertiary, tertiary_container, on_tertiary_container, error, on_error, error_container, on_error_container) {
+        _assertClass(background, Rgb);
+        var ptr0 = background.__destroy_into_raw();
         _assertClass(on_background, Rgb);
-        var ptr7 = on_background.__destroy_into_raw();
-        const ret = wasm.themecolors_new(ptr0, ptr1, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7);
+        var ptr1 = on_background.__destroy_into_raw();
+        _assertClass(outline, Rgb);
+        var ptr2 = outline.__destroy_into_raw();
+        _assertClass(outline_variant, Rgb);
+        var ptr3 = outline_variant.__destroy_into_raw();
+        _assertClass(primary, Rgb);
+        var ptr4 = primary.__destroy_into_raw();
+        _assertClass(on_primary, Rgb);
+        var ptr5 = on_primary.__destroy_into_raw();
+        _assertClass(primary_container, Rgb);
+        var ptr6 = primary_container.__destroy_into_raw();
+        _assertClass(on_primary_container, Rgb);
+        var ptr7 = on_primary_container.__destroy_into_raw();
+        _assertClass(secondary, Rgb);
+        var ptr8 = secondary.__destroy_into_raw();
+        _assertClass(on_secondary, Rgb);
+        var ptr9 = on_secondary.__destroy_into_raw();
+        _assertClass(secondary_container, Rgb);
+        var ptr10 = secondary_container.__destroy_into_raw();
+        _assertClass(on_secondary_container, Rgb);
+        var ptr11 = on_secondary_container.__destroy_into_raw();
+        _assertClass(tertiary, Rgb);
+        var ptr12 = tertiary.__destroy_into_raw();
+        _assertClass(on_tertiary, Rgb);
+        var ptr13 = on_tertiary.__destroy_into_raw();
+        _assertClass(tertiary_container, Rgb);
+        var ptr14 = tertiary_container.__destroy_into_raw();
+        _assertClass(on_tertiary_container, Rgb);
+        var ptr15 = on_tertiary_container.__destroy_into_raw();
+        _assertClass(error, Rgb);
+        var ptr16 = error.__destroy_into_raw();
+        _assertClass(on_error, Rgb);
+        var ptr17 = on_error.__destroy_into_raw();
+        _assertClass(error_container, Rgb);
+        var ptr18 = error_container.__destroy_into_raw();
+        _assertClass(on_error_container, Rgb);
+        var ptr19 = on_error_container.__destroy_into_raw();
+        const ret = wasm.themecolors_new(ptr0, ptr1, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7, ptr8, ptr9, ptr10, ptr11, ptr12, ptr13, ptr14, ptr15, ptr16, ptr17, ptr18, ptr19);
         this.__wbg_ptr = ret >>> 0;
         ThemeColorsFinalization.register(this, this.__wbg_ptr, this);
         return this;

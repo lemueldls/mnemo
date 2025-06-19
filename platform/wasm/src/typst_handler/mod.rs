@@ -62,16 +62,7 @@ impl Default for TypstState {
             height: String::from("auto"),
             pt: 0_f32,
             size: 0_f32,
-            theme: ThemeColors::new(
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-                Rgb(0, 0, 0),
-            ),
+            theme: ThemeColors::default(),
         }
     }
 }
@@ -176,9 +167,9 @@ impl TypstState {
                 #set table(stroke:theme.outline,inset:10pt)
 
                 #show heading:set block(above:0em,below:0em)
-                #show heading.where(level:1):set text(fill:theme.on-primary-container,size:32pt,weight:400)
-                #show heading.where(level:2):set text(fill:theme.on-secondary-container,size:28pt,weight:400)
-                #show heading.where(level:3):set text(fill:theme.on-primary-container,size:24pt,weight:400)
+                #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
+                #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
+                #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
                 #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
                 #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
@@ -530,40 +521,91 @@ impl PackageFile {
 }
 
 #[wasm_bindgen]
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Default, Clone, Copy, Serialize, Deserialize)]
 pub struct ThemeColors {
-    primary: Rgb,
-    secondary: Rgb,
-    tertiary: Rgb,
-    outline: Rgb,
-    on_primary_container: Rgb,
-    on_secondary_container: Rgb,
-    on_tertiary_container: Rgb,
+    background: Rgb,
     on_background: Rgb,
+
+    outline: Rgb,
+    outline_variant: Rgb,
+
+    primary: Rgb,
+    on_primary: Rgb,
+    primary_container: Rgb,
+    on_primary_container: Rgb,
+
+    secondary: Rgb,
+    on_secondary: Rgb,
+    secondary_container: Rgb,
+    on_secondary_container: Rgb,
+
+    tertiary: Rgb,
+    on_tertiary: Rgb,
+    tertiary_container: Rgb,
+    on_tertiary_container: Rgb,
+
+    error: Rgb,
+    on_error: Rgb,
+    error_container: Rgb,
+    on_error_container: Rgb,
 }
 
 #[wasm_bindgen]
 impl ThemeColors {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        primary: Rgb,
-        secondary: Rgb,
-        tertiary: Rgb,
-        outline: Rgb,
-        on_primary_container: Rgb,
-        on_secondary_container: Rgb,
-        on_tertiary_container: Rgb,
+        background: Rgb,
         on_background: Rgb,
+
+        outline: Rgb,
+        outline_variant: Rgb,
+
+        primary: Rgb,
+        on_primary: Rgb,
+        primary_container: Rgb,
+        on_primary_container: Rgb,
+
+        secondary: Rgb,
+        on_secondary: Rgb,
+        secondary_container: Rgb,
+        on_secondary_container: Rgb,
+
+        tertiary: Rgb,
+        on_tertiary: Rgb,
+        tertiary_container: Rgb,
+        on_tertiary_container: Rgb,
+
+        error: Rgb,
+        on_error: Rgb,
+        error_container: Rgb,
+        on_error_container: Rgb,
     ) -> Self {
         Self {
-            primary,
-            secondary,
-            tertiary,
-            outline,
-            on_primary_container,
-            on_secondary_container,
-            on_tertiary_container,
+            background,
             on_background,
+
+            outline,
+            outline_variant,
+
+            primary,
+            on_primary,
+            primary_container,
+            on_primary_container,
+
+            secondary,
+            on_secondary,
+            secondary_container,
+            on_secondary_container,
+
+            tertiary,
+            on_tertiary,
+            tertiary_container,
+            on_tertiary_container,
+
+            error,
+            on_error,
+            error_container,
+            on_error_container,
         }
     }
 }
@@ -572,21 +614,33 @@ impl fmt::Display for ThemeColors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "(primary:{},secondary:{},tertiary:{},outline:{},on-primary-container:{},on-secondary-container:{},on-tertiary-container:{},on-background:{})",
-            self.primary,
-            self.secondary,
-            self.tertiary,
+            "(background:{},on-background:{},outline:{},outline-variant:{},primary:{},on-primary:{},primary-container:{},on-primary-container:{},secondary:{},on-secondary:{},secondary-container:{},on-secondary-container:{},tertiary:{},on-tertiary:{},tertiary-container:{},on-tertiary-container:{},error:{},on-error:{},error-container:{},on-error-container:{})",
+            self.background,
+            self.on_background,
             self.outline,
+            self.outline_variant,
+            self.primary,
+            self.on_primary,
+            self.primary_container,
             self.on_primary_container,
+            self.secondary,
+            self.on_secondary,
+            self.secondary_container,
             self.on_secondary_container,
+            self.tertiary,
+            self.on_tertiary,
+            self.tertiary_container,
             self.on_tertiary_container,
-            self.on_background
+            self.error,
+            self.on_error,
+            self.error_container,
+            self.on_error_container,
         )
     }
 }
 
 #[wasm_bindgen]
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Default, Clone, Copy, Serialize, Deserialize)]
 pub struct Rgb(u8, u8, u8);
 
 #[wasm_bindgen]

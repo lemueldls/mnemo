@@ -25,7 +25,7 @@ const installedPackage = computed(() =>
 </script>
 
 <template>
-  <mx-elevated-card :key="pkg.name" class="flex flex-col gap-4">
+  <md-elevated-card :key="pkg.name" class="flex flex-col gap-4 p-4">
     <div class="medium:flex-row flex flex-col justify-between gap-2">
       <div class="flex flex-col">
         <h1 class="text-on-surface-variant title-large line-clamp-1 flex-1">
@@ -97,5 +97,5 @@ const installedPackage = computed(() =>
         {{ $t("components.package-card.install") }}
       </md-filled-tonal-button>
     </div>
-  </mx-elevated-card>
+  </md-elevated-card>
 </template>

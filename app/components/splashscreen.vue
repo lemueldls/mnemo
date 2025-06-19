@@ -23,9 +23,9 @@ whenever(ready, () => emit("ready", true));
   <mx-theme id="splashscreen" color="#16161d" dark :class="{ ready }">
     <div class="m-16 flex w-full max-w-sm flex-col gap-2">
       <div class="label-large flex justify-between">
-        <span class="font-bold">{{
-          $t("components.splashscreen.loading")
-        }}</span>
+        <span class="font-bold">
+          {{ $t("components.splashscreen.loading") }}
+        </span>
 
         <span>{{ progress }} / {{ totalProgress }}</span>
       </div>
@@ -39,8 +39,8 @@ whenever(ready, () => emit("ready", true));
 #splashscreen {
   @apply text-on-background bg-background z-12 absolute inset-0 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden opacity-100 transition-opacity;
 
-  background-color: #3f4178;
-  color: #c0c1ff;
+  background-color: #4c4d72;
+  color: #cecefa;
 
   &.ready {
     @apply pointer-events-none select-none opacity-0;

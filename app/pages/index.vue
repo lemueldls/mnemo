@@ -26,7 +26,7 @@ const greeting = computed(() => {
 <template>
   <div id="home-page">
     <div id="main-column">
-      <mx-outlined-card
+      <md-outlined-card
         id="intro"
         class="medium:border-1! medium:p-4! p-0! border-0!"
       >
@@ -50,7 +50,7 @@ const greeting = computed(() => {
               :to="`/space?id=${id}`"
             >
               <mx-theme :color="space.color" harmonize>
-                <mx-elevated-card class="relative gap-2">
+                <md-elevated-card class="relative gap-2 p-4">
                   <md-ripple />
 
                   <div class="flex items-center gap-2">
@@ -60,13 +60,13 @@ const greeting = computed(() => {
                   <h3 class="title-large line-clamp-1" :title="space.name">
                     {{ space.name }}
                   </h3>
-                </mx-elevated-card>
+                </md-elevated-card>
               </mx-theme>
             </nuxt-link>
 
-            <mx-elevated-card
+            <md-elevated-card
               v-if="Object.keys(spaces).length < 1"
-              class="relative cursor-pointer gap-2"
+              class="relative cursor-pointer gap-2 p-4"
               @click="newSpaceOpen = true"
             >
               <md-ripple />
@@ -76,18 +76,18 @@ const greeting = computed(() => {
               </div>
 
               <h3 class="title-large">Create a New Space</h3>
-            </mx-elevated-card>
+            </md-elevated-card>
           </div>
         </div>
 
-        <mx-filled-card>
+        <md-filled-card class="p-4">
           <h3 class="label-large">Todo</h3>
 
           <span class="text-on-surface-varient body-large">
             Nothing yet...
           </span>
-        </mx-filled-card>
-      </mx-outlined-card>
+        </md-filled-card>
+      </md-outlined-card>
     </div>
   </div>
 </template>

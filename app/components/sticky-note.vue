@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import interact from "interactjs";
 import type { StickyNote } from "~/composables/sticky";
+import type { Rgba } from "~~/modules/mx/types";
 
 const model = defineModel<StickyNote>();
 const note = toReactive(model) as StickyNote;
@@ -119,11 +120,27 @@ onMounted(() => {
     });
 });
 
+const dark = useDark();
 const theme = useMaterialTheme();
 const selectionBackground = computed(() => {
   const { r, g, b } = theme!.value.palette.primaryContainer;
   return `rgba(${r},${g},${b},0.5)`;
 });
+
+const stickyNoteContainer = computed(() =>
+  dark.value
+    ? theme!.value.palette.onTertiaryContainer
+    : theme!.value.palette.tertiaryContainer,
+);
+// const onStickyNoteContainer = computed(() =>
+//   dark.value
+//     ? theme!.value.palette.tertiaryContainer
+//     : theme!.value.palette.onTertiaryContainer,
+// );
+
+function encodeColor({ r, g, b, a }: Rgba) {
+  return `rgb(${r},${g},${b},${a})`;
+}
 </script>
 
 <template>
@@ -134,7 +151,11 @@ const selectionBackground = computed(() => {
     <md-elevation />
 
     <mx-filled-card
-      class="bg-tertiary-container! flex flex-1 flex-col gap-4 rounded-xl p-4"
+      class="flex flex-1 flex-col gap-4 rounded-xl p-4"
+      :style="{
+        backgroundColor: encodeColor(stickyNoteContainer),
+        // color: encodeColor(onStickyNoteContainer),
+      }"
     >
       <div class="flex h-full flex-1 flex-col gap-4">
         <div ref="header" class="flex items-center gap-2">
