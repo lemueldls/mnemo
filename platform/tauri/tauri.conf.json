@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/@tauri-apps/cli/config.schema.json",
   "version": "0.1.0",
-  "productName": "mnemo",
+  "productName": "Mnemo",
   "identifier": "dev.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "pnpm build",
@@ -25,7 +25,14 @@
     "security": {
       "csp": null
     },
-    "windows": [{ "title": "Mnemo", "backgroundColor": "#4c4d72", "titleBarStyle": "Overlay" }]
+    "windows": [
+      {
+        "title": "Mnemo",
+        "backgroundColor": "#4c4d72",
+        "titleBarStyle": "Overlay",
+        "decorations": false
+      }
+    ]
   },
   "plugins": {
     "cli": {
@@ -37,7 +44,8 @@
       "mobile": [
         { "host": "mnemo.nuxt.dev" },
         { "host": "mnemo.pages.dev" },
-        { "host": "notes.lemueldls.dev" }
+        { "host": "notes.lemueldls.dev" },
+        { "host": "notes.lemueldls.workers.dev" }
       ],
       "desktop": {
         "schemes": ["mnemo"]
