@@ -24,11 +24,10 @@ const greeting = computed(() => {
 </script>
 
 <template>
-  <div id="home-page">
-    <div id="main-column">
-      <md-outlined-card
-        id="intro"
-        class="medium:border-1! medium:p-4! p-0! border-0!"
+  <div class="flex h-full flex-1">
+    <div class="flex h-full flex-1 flex-col gap-4">
+      <mx-outlined-card
+        class="medium:border-1! medium:p-4! p-0! border-0! medium:overflow-auto flex h-full flex-1 flex-col gap-4"
       >
         <div>
           <h1 class="display-medium">
@@ -43,7 +42,7 @@ const greeting = computed(() => {
         </div>
 
         <div class="flex-shrink-0">
-          <div id="progress">
+          <div id="spaces">
             <nuxt-link
               v-for="(space, id) in spaces"
               :key="id"
@@ -87,35 +86,15 @@ const greeting = computed(() => {
             Nothing yet...
           </span>
         </md-filled-card>
-      </md-outlined-card>
+      </mx-outlined-card>
     </div>
   </div>
 </template>
 
 <style>
-#home-page {
-  @apply flex flex-1;
-}
-
-#progress {
+#spaces {
   @apply grid gap-4;
 
-  /* grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr)); */
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-}
-
-#notes {
-  @apply grid gap-4;
-
-  grid-template-columns: repeat(auto-fill, minmax(17.125rem, 1fr));
-  /* grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); */
-}
-
-#main-column {
-  @apply flex flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden;
-}
-
-#intro {
-  @apply flex flex-1 flex-col gap-4;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
 }
 </style>

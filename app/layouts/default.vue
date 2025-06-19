@@ -122,8 +122,8 @@ const pages: Page[] = [
 
         <div
           :class="[
-            'mb-3 flex h-full flex-1 flex-col overflow-auto',
-            { 'ml-3': !extraLarge, 'mr-3': !medium },
+            'flex h-full flex-1 flex-col overflow-auto pb-3',
+            { 'pl-3': !extraLarge, 'pr-3': !medium },
           ]"
         >
           <slot />

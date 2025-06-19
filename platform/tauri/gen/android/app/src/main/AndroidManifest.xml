@@ -42,6 +42,14 @@
         <data android:scheme="http" />
         <data android:host="notes.lemueldls.dev" />
       </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" />
+        <data android:scheme="http" />
+        <data android:host="notes.lemueldls.workers.dev" />
+      </intent-filter>
       <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
     </activity>
 

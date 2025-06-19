@@ -25,17 +25,11 @@ const theme = computed(() =>
 
 provide(m3ThemeKey, theme);
 
-// const { palette } = toRefs(theme);
 const palette = computed(() => theme.value.palette);
 
 function parse(color: Rgba) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
-
-const selectionBackground = computed(() => {
-  const { r, g, b } = palette.value.onTertiary;
-  return `rgba(${r},${g},${b},0.5)`;
-});
 </script>
 
 <template>
@@ -124,7 +118,7 @@ const selectionBackground = computed(() => {
   scrollbar-color: var(--md-sys-color-primary) transparent;
 
   ::-webkit-scrollbar {
-    /* width: 0; */
+    width: 0;
     background: transparent;
   }
 
@@ -134,8 +128,7 @@ const selectionBackground = computed(() => {
   }
 
   ::selection {
-    @apply text-tertiary;
-    background-color: v-bind(selectionBackground);
+    @apply text-tertiary bg-on-tertiary;
   }
 }
 </style>
