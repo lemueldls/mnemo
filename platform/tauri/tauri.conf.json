@@ -25,14 +25,7 @@
     "security": {
       "csp": null
     },
-    "windows": [
-      {
-        "title": "Mnemo",
-        "backgroundColor": "#4c4d72",
-        "titleBarStyle": "Overlay",
-        "decorations": false
-      }
-    ]
+    "windows": []
   },
   "plugins": {
     "cli": {
