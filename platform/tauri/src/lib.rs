@@ -15,20 +15,10 @@ pub fn run() {
         builder = builder
             .plugin(tauri_plugin_cli::init())
             .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-                let window = app.get_webview_window("main").unwrap_or_else(|| {
-                    let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-                        .title("Mnemo")
-                        .background_color(Color::from_str("#4c4d72").unwrap());
-
-                    #[cfg(target_os = "macos")]
-                    let win_builder = win_builder.title_bar_style(tauri::TitleBarStyle::Overlay);
-                    #[cfg(target_os = "linux")]
-                    let win_builder = win_builder.decorations(false);
-
-                    win_builder.build().unwrap()
-                });
-
-                window.set_focus().unwrap();
+                let _ = app
+                    .get_webview_window("main")
+                    .expect("no main window")
+                    .set_focus();
             }))
             .plugin(tauri_plugin_updater::Builder::new().build())
     }
@@ -41,6 +31,17 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
+            let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+                .title("Mnemo")
+                .background_color(Color::from_str("#4c4d72").unwrap());
+
+            #[cfg(target_os = "macos")]
+            let win_builder = win_builder.title_bar_style(tauri::TitleBarStyle::Overlay);
+            #[cfg(target_os = "linux")]
+            let win_builder = win_builder.decorations(false);
+
+            win_builder.build().unwrap();
+
             #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
