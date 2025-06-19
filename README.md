@@ -11,10 +11,8 @@
 ## TODO
 
 - Sync notes with Durable Objects.
-- Custom font loader.
-- Better screenshot tool.
 - Better daily calendar.
-- Better local search
+- Better local search.
 - Global search system.
 - Flash cards and quiz generator.
 - Reference study sheet generator.
