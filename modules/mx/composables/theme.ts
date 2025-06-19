@@ -31,7 +31,7 @@ export function createTheme<K extends ThemeKeys>(
     const argbColor = argbFromHex(source);
     const argbHarmonize = harmonize && argbFromHex(harmonize);
 
-    const scheme = new SchemeTonalSpot(Hct.fromInt(argbColor), dark, 0);
+    const scheme = new SchemeTonalSpot(Hct.fromInt(argbColor), dark, 0, "2025");
 
     for (const key of keys) {
       const color = MaterialDynamicColors[key];

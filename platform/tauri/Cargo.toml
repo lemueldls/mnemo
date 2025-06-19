@@ -1,6 +1,6 @@
 [package]
-name = "mnemo"
 description = "Note-taking app designed to enhance the retention of information."
+name = "mnemo"
 
 authors.workspace = true
 categories.workspace = true

@@ -69,7 +69,7 @@ export class Rgb {
 }
 export class ThemeColors {
   free(): void;
-  constructor(primary: Rgb, secondary: Rgb, tertiary: Rgb, outline: Rgb, on_primary_container: Rgb, on_secondary_container: Rgb, on_tertiary_container: Rgb, on_background: Rgb);
+  constructor(background: Rgb, on_background: Rgb, outline: Rgb, outline_variant: Rgb, primary: Rgb, on_primary: Rgb, primary_container: Rgb, on_primary_container: Rgb, secondary: Rgb, on_secondary: Rgb, secondary_container: Rgb, on_secondary_container: Rgb, tertiary: Rgb, on_tertiary: Rgb, tertiary_container: Rgb, on_tertiary_container: Rgb, error: Rgb, on_error: Rgb, error_container: Rgb, on_error_container: Rgb);
 }
 export class TypstState {
   free(): void;
@@ -113,7 +113,7 @@ export interface InitOutput {
   readonly __wbg_packagefile_free: (a: number, b: number) => void;
   readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
   readonly __wbg_themecolors_free: (a: number, b: number) => void;
-  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number) => [number, number];
   readonly __wbg_fileid_free: (a: number, b: number) => void;

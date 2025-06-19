@@ -92,7 +92,7 @@ class RustWebViewClient(context: Context): WebViewClient() {
 
     companion object {
         init {
-            System.loadLibrary("mnemo_tauri")
+            System.loadLibrary("mnemo")
         }
     }
 

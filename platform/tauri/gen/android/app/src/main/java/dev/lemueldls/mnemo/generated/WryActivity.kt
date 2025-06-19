@@ -117,7 +117,7 @@ abstract class WryActivity : AppCompatActivity() {
 
     companion object {
         init {
-            System.loadLibrary("mnemo_tauri")
+            System.loadLibrary("mnemo")
         }
     }
 

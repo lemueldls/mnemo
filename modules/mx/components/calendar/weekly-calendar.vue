@@ -251,8 +251,8 @@ function timeToMinutes(time: string) {
           :color="space.color"
           harmonize
         >
-          <mx-elevated-card
-            class="flex flex-col gap-2"
+          <md-elevated-card
+            class="flex flex-col gap-2 p-4"
             @click="newSpaceId = id"
           >
             <md-ripple />
@@ -269,12 +269,12 @@ function timeToMinutes(time: string) {
             <span class="title-medium line-clamp-1 flex-1" :title="space.name">
               {{ space.name }}
             </span>
-          </mx-elevated-card>
+          </md-elevated-card>
         </mx-theme>
 
-        <mx-elevated-card
+        <md-elevated-card
           v-if="Object.keys(spaces).length < 1"
-          class="cursor-pointer"
+          class="cursor-pointer p-4"
           @click="newSpaceOpen = true"
         >
           <md-ripple />
@@ -283,12 +283,12 @@ function timeToMinutes(time: string) {
             <md-icon class="text-primary">add</md-icon>
           </div>
           <span class="title-medium flex-1">Create a New Space</span>
-        </mx-elevated-card>
+        </md-elevated-card>
       </div>
 
       <span class="label-large">Day</span>
       <div class="flex gap-2">
-        <mx-filled-card v-for="(day, i) in days" :key="i" class="flex-1">
+        <md-filled-card v-for="(day, i) in days" :key="i" class="flex-1 p-4">
           <md-ripple />
 
           <label class="flex gap-4">
@@ -304,7 +304,7 @@ function timeToMinutes(time: string) {
             />
             <span class="label-large">{{ day }}</span>
           </label>
-        </mx-filled-card>
+        </md-filled-card>
       </div>
 
       <span class="label-large">Time</span>

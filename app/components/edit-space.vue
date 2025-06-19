@@ -94,7 +94,7 @@ const groupedSymbols: string[][] = computed(() => {
       </div>
     </label>
 
-    <mx-outlined-card class="flex flex-col gap-4 px-4">
+    <md-outlined-card class="flex flex-col gap-4 p-4">
       <md-outlined-text-field
         class="w-full"
         :label="$t('components.edit-space.form.icon')"
@@ -123,7 +123,7 @@ const groupedSymbols: string[][] = computed(() => {
           </div>
         </template>
       </UseVirtualList>
-    </mx-outlined-card>
+    </md-outlined-card>
 
     <label>
       <span class="label-large">
