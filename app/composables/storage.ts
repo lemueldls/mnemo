@@ -15,25 +15,21 @@ async function asyncComputedRef<T>(
 ) {
   const data = ref<T>();
 
-  let stopSync: WatchStopHandle;
   let item: Ref<T>;
+  let stopSync: WatchStopHandle;
 
   await new Promise<void>((resolve) =>
-    watchImmediate(
-      toRef(key),
-      async (key) => {
-        stopSync?.();
+    watchImmediate(toRef(key), async (key) => {
+      stopSync?.();
 
-        itemRefs[key] ||= handler(key);
-        item = (await itemRefs[key]) as Ref<T>;
+      itemRefs[key] ||= handler(key);
+      item = (await itemRefs[key]) as Ref<T>;
 
-        stopSync = watchImmediate(item, (item) => {
-          data.value = item;
-          resolve();
-        });
-      },
-      { flush: "sync" },
-    ),
+      stopSync = watchImmediate(item, (item) => {
+        data.value = item;
+        resolve();
+      });
+    }),
   );
 
   return computed({
