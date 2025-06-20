@@ -51,10 +51,10 @@ async function asyncComputedRef<T>(
 
       stopSync = watchImmediate(item, (item) => {
         data.value = item;
-        triggerRef(root);
-
         resolve();
       });
+
+      triggerRef(root);
     }),
   );
 
