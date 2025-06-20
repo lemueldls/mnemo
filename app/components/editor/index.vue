@@ -137,14 +137,14 @@ onMounted(() => {
     ([path], [oldPath]) =>
       watch(
         text,
-        async (text) => {
+        (text) => {
           const fileId = typstState.insertFile(path, text);
 
           if (oldPath)
             stateCache[oldPath] = view.state.toJSON({ history: historyField });
 
           const cache = stateCache[path];
-          const stateConfig = await createStateConfig(typstState, path, fileId);
+          const stateConfig = createStateConfig(typstState, fileId);
 
           if (cache)
             view.setState(
@@ -164,16 +164,10 @@ onMounted(() => {
   ready = true;
 });
 
-async function createStateConfig(
+function createStateConfig(
   typstState: TypstState,
-  path: string,
   fileId: FileId,
-): Promise<EditorStateConfig> {
-  const text = await useStorageItem(
-    () => `spaces/${props.spaceId}/${props.kind}/${path}.typ`,
-    "",
-  );
-
+): EditorStateConfig {
   return {
     extensions: [
       typst(typstState, text, prelude, fileId),
