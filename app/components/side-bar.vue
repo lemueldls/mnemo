@@ -58,7 +58,20 @@ function handleClick(id: string | number) {
   }
 }
 
-whenever(logicNot(sheet), () => router.replace({ ...route, hash: "" }));
+let manuallyOpened = false;
+whenever(
+  sheet,
+  () => {
+    manuallyOpened = true;
+  },
+  { once: true },
+);
+
+whenever(logicNot(sheet), () => {
+  console.log({ manuallyOpened });
+  if (manuallyOpened) router.back();
+  else router.replace({ ...route, hash: "" });
+});
 
 function preloadItem(item: Item) {
   preloadComponents(item.name);
