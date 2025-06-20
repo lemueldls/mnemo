@@ -1,7 +1,11 @@
 import { createStorage, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
-import type { WatchStopHandle } from "vue";
+import type {
+  DebuggerOptions,
+  WatchStopHandle,
+  WritableComputedOptions,
+} from "vue";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
@@ -9,15 +13,35 @@ const localDb = createStorage({
 
 const itemRefs: { [key: string]: Promise<Ref<unknown>> } = {};
 
+function shallowComputed<T, S = T>(
+  options: WritableComputedOptions<T, S>,
+  debugOptions?: DebuggerOptions,
+): WritableComputedRef<T, S> {
+  const root = computed(options, debugOptions);
+  Object.defineProperty(root, "__v_isShallow", {
+    configurable: true,
+    enumerable: false,
+    value: true,
+  });
+
+  return root;
+}
+
 async function asyncComputedRef<T>(
   key: MaybeRefOrGetter<string>,
   handler: (key: string) => Promise<Ref<T>>,
 ) {
-  const data = ref<T>();
-
   let item: Ref<T>;
-  let stopSync: WatchStopHandle;
+  const data = shallowRef<T>();
 
+  const root = shallowComputed({
+    get: () => data.value!,
+    set(value) {
+      item.value = value;
+    },
+  });
+
+  let stopSync: WatchStopHandle;
   await new Promise<void>((resolve) =>
     watchImmediate(toRef(key), async (key) => {
       stopSync?.();
@@ -27,17 +51,14 @@ async function asyncComputedRef<T>(
 
       stopSync = watchImmediate(item, (item) => {
         data.value = item;
+        triggerRef(root);
+
         resolve();
       });
     }),
   );
 
-  return computed({
-    get: () => data.value!,
-    set(value) {
-      item.value = value;
-    },
-  });
+  return root;
 }
 
 export function useStorageItem<T extends StorageValue>(
