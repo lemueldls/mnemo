@@ -351,13 +351,18 @@ async function createStickyNote() {
             </pre>
         </span> -->
 
-        <form slot="content" method="dialog" class="flex flex-col gap-8">
+        <form
+          slot="content"
+          method="dialog"
+          class="flex flex-col gap-8"
+          @submit.prevent="updateSpace"
+        >
           <edit-space v-model="space">
             <template #actions>
-              <md-text-button class="text-error" @click="deleteSpace">
+              <md-text-button class="text-error" @click.prevent="deleteSpace">
                 Delete
               </md-text-button>
-              <md-text-button @click="updateSpace">Confirm</md-text-button>
+              <md-text-button>Confirm</md-text-button>
             </template>
           </edit-space>
         </form>

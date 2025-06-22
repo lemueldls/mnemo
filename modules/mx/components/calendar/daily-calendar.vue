@@ -101,44 +101,48 @@ function previousDay() {
       </div>
 
       <div class="relative flex-1">
-        <mx-theme
-          v-for="({ spaceId, from, to }, i) in todaysSchedule"
-          :key="i"
-          :color="spaces![spaceId]!.color"
-          harmonize
-          as-child
-        >
-          <nuxt-link
-            :to="`/space?id=${spaceId}`"
-            :style="{
-              top: `${(from / 60) * (scrollHeight / 24)}px`,
-              height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
-            }"
-            class="bg-primary-container bg-op-50 text-on-primary-container body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
+        <template v-for="({ spaceId, from, to }, i) in todaysSchedule" :key="i">
+          <mx-theme
+            v-if="spaces![spaceId]"
+            :color="spaces[spaceId].color"
+            harmonize
+            as-child
           >
-            <md-ripple />
+            <nuxt-link
+              :to="`/space?id=${spaceId}`"
+              :style="{
+                top: `${(from / 60) * (scrollHeight / 24)}px`,
+                height: `${(to / 60 - from / 60) * (scrollHeight / 24)}px`,
+              }"
+              class="bg-primary-container bg-op-50 text-on-primary-container body-small absolute flex w-full cursor-pointer flex-col items-center justify-center rounded-xl p-2 text-center"
+            >
+              <md-ripple />
 
-            <span class="w-full truncate font-semibold">
-              {{ spaces![spaceId]!.name }}
-            </span>
+              <span
+                class="w-full truncate font-semibold"
+                :title="spaces[spaceId].name"
+              >
+                {{ spaces[spaceId].name }}
+              </span>
 
-            <span class="w-full truncate">
-              {{
-                $d(new Date(0, 0, 0, 0, from), {
-                  hour: "numeric",
-                  minute: "numeric",
-                })
-              }}
-              -
-              {{
-                $d(new Date(0, 0, 0, 0, to), {
-                  hour: "numeric",
-                  minute: "numeric",
-                })
-              }}
-            </span>
-          </nuxt-link>
-        </mx-theme>
+              <span class="w-full truncate">
+                {{
+                  $d(new Date(0, 0, 0, 0, from), {
+                    hour: "numeric",
+                    minute: "numeric",
+                  })
+                }}
+                -
+                {{
+                  $d(new Date(0, 0, 0, 0, to), {
+                    hour: "numeric",
+                    minute: "numeric",
+                  })
+                }}
+              </span>
+            </nuxt-link>
+          </mx-theme>
+        </template>
 
         <div
           ref="caret"

@@ -27,10 +27,15 @@ function createSpace() {
     <md-dialog :open="open" @closed="open = false">
       <span slot="headline">{{ $t("components.new-space.title") }}</span>
 
-      <form slot="content" method="dialog" class="flex flex-col gap-8">
+      <form
+        slot="content"
+        method="dialog"
+        class="flex flex-col gap-8"
+        @submit.prevent="createSpace"
+      >
         <edit-space v-model="space">
           <template #actions>
-            <md-text-button @click="createSpace">
+            <md-text-button>
               {{ $t("components.new-space.form.create") }}
             </md-text-button>
           </template>
