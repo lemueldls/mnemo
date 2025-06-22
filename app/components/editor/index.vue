@@ -197,12 +197,6 @@ function createStateConfig(
     ],
   };
 }
-
-const activeLineBackground = computed(() => {
-  const { secondaryContainer } = palette.value;
-
-  return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
-});
 </script>
 
 <template>
@@ -250,7 +244,7 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-activeLine {
-    background-color: v-bind(activeLineBackground);
+    @apply bg-surface-container rounded;
   }
 
   .cm-lintPoint-error::after {
@@ -376,19 +370,10 @@ const activeLineBackground = computed(() => {
   }
 
   .typst-render {
-    display: inline;
-    cursor: text;
-    vertical-align: top;
+    @apply hover:bg-surface-container inline-block cursor-text align-top transition-colors;
+
     -wekkit-user-drag: none;
     -moz-user-drag: none;
-    // user-select: none;
-    // pointer-events: none;
-    /* overflow: hidden; */
-    /* display: flex; */
-
-    /* &:hover {
-      background-color: v-bind(activeLineBackground);
-    } */
   }
 }
 </style>
