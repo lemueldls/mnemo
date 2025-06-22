@@ -63,84 +63,69 @@ const groupedSymbols: string[][] = computed(() => {
 </script>
 
 <template>
-  <form method="dialog" class="flex flex-col gap-8">
-    <label class="flex gap-4">
-      <md-outlined-text-field
-        class="flex-1"
-        :label="$t('components.edit-space.form.name')"
-        :value="space.name"
-        @input="space.name = $event.target.value"
-      />
-    </label>
+  <label class="flex gap-4">
+    <md-outlined-text-field
+      class="flex-1"
+      :label="$t('components.edit-space.form.name')"
+      :value="space.name"
+      required
+      @input="space.name = $event.target.value"
+    />
+  </label>
 
-    <label>
-      <span class="label-large">
-        {{ $t("components.edit-space.form.color") }}
-      </span>
+  <label>
+    <span class="label-large">
+      {{ $t("components.edit-space.form.color") }}
+    </span>
 
+    <div class="medium:mx-20 flex flex-wrap items-center justify-center gap-2">
       <div
-        class="medium:mx-20 flex flex-wrap items-center justify-center gap-2"
+        v-for="c in colors"
+        :key="c.name"
+        class="relative h-12 w-12 cursor-pointer"
+        :style="{ backgroundColor: c.hex }"
+        :title="c.name"
+        @click="space.color = c.hex"
       >
-        <div
-          v-for="c in colors"
-          :key="c.name"
-          class="relative h-12 w-12 cursor-pointer"
-          :style="{ backgroundColor: c.hex }"
-          :title="c.name"
-          @click="space.color = c.hex"
-        >
-          <md-ripple />
+        <md-ripple />
+      </div>
+    </div>
+  </label>
+
+  <md-outlined-card class="flex flex-col gap-4 p-4">
+    <md-outlined-text-field
+      class="w-full"
+      :label="$t('components.edit-space.form.icon')"
+      type="search"
+      @input="iconSearch = $event.target.value"
+    >
+      <md-icon slot="leading-icon">search</md-icon>
+    </md-outlined-text-field>
+
+    <UseVirtualList
+      ref="icon-container"
+      :list="groupedSymbols"
+      :options="{ itemHeight: 56 }"
+      height="200px"
+    >
+      <template #default="{ data: symbols }">
+        <div class="mb-4 flex gap-4">
+          <md-icon-button
+            v-for="symbol in symbols"
+            :key="symbol"
+            :title="symbol"
+            toggle
+            :selected="space.icon === symbol"
+            @click.prevent="space.icon = symbol"
+          >
+            <mx-icon :name="symbol" />
+          </md-icon-button>
         </div>
-      </div>
-    </label>
+      </template>
+    </UseVirtualList>
+  </md-outlined-card>
 
-    <md-outlined-card class="flex flex-col gap-4 p-4">
-      <md-outlined-text-field
-        class="w-full"
-        :label="$t('components.edit-space.form.icon')"
-        type="search"
-        @input="iconSearch = $event.target.value"
-      >
-        <md-icon slot="leading-icon">search</md-icon>
-      </md-outlined-text-field>
-
-      <UseVirtualList
-        ref="icon-container"
-        :list="groupedSymbols"
-        :options="{ itemHeight: 56 }"
-        height="200px"
-      >
-        <template #default="{ data: symbols }">
-          <div class="mb-4 flex gap-4">
-            <md-icon-button
-              v-for="symbol in symbols"
-              :key="symbol"
-              :title="symbol"
-              @click.prevent="space.icon = symbol"
-            >
-              <mx-icon :name="symbol" />
-            </md-icon-button>
-          </div>
-        </template>
-      </UseVirtualList>
-    </md-outlined-card>
-
-    <label>
-      <span class="label-large">
-        {{ $t("components.edit-space.form.preview") }}
-      </span>
-
-      <div class="flex items-end justify-between">
-        <mx-nav-drawer-item class="w-84">
-          <template #leading>
-            <mx-icon :name="space.icon" class="text-primary" />
-          </template>
-
-          {{ space.name }}
-        </mx-nav-drawer-item>
-
-        <slot name="actions" />
-      </div>
-    </label>
-  </form>
+  <div class="flex items-end justify-end">
+    <slot name="actions" />
+  </div>
 </template>
