@@ -19,7 +19,10 @@
       "icons/icon.ico"
     ],
     "targets": "all",
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "macOS": {
+      "signingIdentity": "-"
+    }
   },
   "app": {
     "security": {
