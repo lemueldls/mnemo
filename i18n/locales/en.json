@@ -23,10 +23,16 @@
   "pages": {
     "index": {
       "greeting": {
-        "morning": "Good morning, {name}",
-        "afternoon": "Good afternoon, {name}",
-        "evening": "Good evening, {name}",
-        "night": "Good night, {name}"
+        "morning": "Good morning.",
+        "afternoon": "Good afternoon.",
+        "evening": "Good evening.",
+        "night": "Good night.",
+        "with-name": {
+          "morning": "Good morning, {name}.",
+          "afternoon": "Good afternoon, {name}.",
+          "evening": "Good evening, {name}.",
+          "night": "Good night, {name}."
+        }
       },
       "date": "Today is {date}"
     }

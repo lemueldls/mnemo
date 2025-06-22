@@ -11,15 +11,24 @@ const newSpaceOpen = useNewSpaceOpen();
 const spaces = await useSpaces();
 
 const greeting = computed(() => {
+  const nameValue = name.value;
   const hour = date.value.getHours();
 
   return hour >= 4 && hour <= 11
-    ? t("pages.index.greeting.morning", { name: name.value })
+    ? nameValue
+      ? t("pages.index.greeting.with-name.morning", { name: nameValue })
+      : t("pages.index.greeting.morning")
     : hour >= 12 && hour <= 16
-      ? t("pages.index.greeting.afternoon", { name: name.value })
+      ? nameValue
+        ? t("pages.index.greeting.with-name.afternoon", { name: nameValue })
+        : t("pages.index.greeting.afternoon")
       : hour >= 17 && hour <= 20
-        ? t("pages.index.greeting.evening", { name: name.value })
-        : t("pages.index.greeting.night", { name: name.value });
+        ? nameValue
+          ? t("pages.index.greeting.with-name.evening", { name: nameValue })
+          : t("pages.index.greeting.evening")
+        : nameValue
+          ? t("pages.index.greeting.with-name.night", { name: nameValue })
+          : t("pages.index.greeting.night");
 });
 </script>
 
