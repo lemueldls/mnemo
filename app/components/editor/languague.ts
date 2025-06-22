@@ -38,9 +38,12 @@ export const createLanguage = (typstState: TypstState) =>
 async function autocomplete(
   typstState: TypstState,
   context: CompletionContext,
-): Promise<CompletionResult> {
+): Promise<CompletionResult | null> {
   const { pos, explicit } = context;
-  const { offset, completions } = typstState.autocomplete(pos, explicit);
+  const result = typstState.autocomplete(pos, explicit);
+  if (!result) return null;
+
+  const { offset, completions } = result;
 
   return {
     from: offset,
