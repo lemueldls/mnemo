@@ -36,7 +36,7 @@ pub fn run() {
                 .background_color(Color::from_str("#4c4d72").unwrap());
 
             #[cfg(target_os = "macos")]
-            let win_builder = win_builder.title_bar_style(tauri::TitleBarStyle::Overlay);
+            let win_builder = win_builder.title_bar_style(tauri::TitleBarStyle::Transparent);
             #[cfg(target_os = "linux")]
             let win_builder = win_builder.decorations(false);
 

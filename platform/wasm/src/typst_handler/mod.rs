@@ -138,14 +138,27 @@ impl TypstState {
         let page_config = match rendering_mode {
             RenderingMode::Png => {
                 format!(
-                    "#set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)",
+                    r#"
+                        #set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)
+
+                        #set text(top-edge:"ascender",bottom-edge:"descender")
+                        #set par(leading:0em,linebreaks:"simple")
+
+                        #show math.equation.where(block:true):set block(above:0em,below:0em)
+                        #show heading:set block(above:0em,below:0em)
+                        #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
+                        #show list:set block(above:0em,below:0em)
+                        #show enum:set block(above:0em,below:0em)
+                    "#,
                     width = self.width,
                     height = self.height,
                 )
             }
             RenderingMode::Pdf => {
                 format!(
-                    "#set page(width:{width},height:{height},margin:16pt)",
+                    r#"
+                        #set page(width:{width},height:{height},margin:16pt)
+                    "#,
                     width = self.width,
                     height = self.height,
                 )
@@ -155,18 +168,15 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:{size}pt,top-edge:"ascender",bottom-edge:"descender")
-                #set align(horizon)
-                #set par(leading:0em,linebreaks:"simple")
-                {page_config}
+                #set text(fill:theme.on-background,size:{size}pt)
+
                 #context {{show math.equation:set text(size:text.size*2)}}
-                #show math.equation.where(block:true):set block(above:0em,below:0em)
+
                 #show math.equation.where(block:true):set text(size:{size}pt*1.125)
                 #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
 
-                #set table(stroke:theme.outline,inset:10pt)
+                #set table(stroke:theme.outline)
 
-                #show heading:set block(above:0em,below:0em)
                 #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
                 #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
                 #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
@@ -174,8 +184,7 @@ impl TypstState {
                 #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
 
-                #show list:set block(above:0em,below:0em)
-                #show enum:set block(above:0em,below:0em)
+                {page_config}
             "#,
             theme = self.theme,
             size = self.size,
@@ -360,7 +369,9 @@ impl TypstState {
                     let canvas = mnemo_render::render(document, height, offset_height, self.pt);
 
                     let encoding = BASE64.encode(&canvas.encode_png().unwrap());
-                    let height = height.round() as u32;
+
+                    let height = height.ceil() as u32;
+
                     let render = FrameRender {
                         encoding,
                         height,
@@ -412,41 +423,31 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn autocomplete(&self, aux_cursor_utf16: usize, explicit: bool) -> Autocomplete {
+    pub fn autocomplete(&self, aux_cursor_utf16: usize, explicit: bool) -> Option<Autocomplete> {
         let main_source = self.world.main_source();
         let aux_source = self.world.aux_source();
 
-        let aux_cursor = aux_source.utf16_to_byte(aux_cursor_utf16).unwrap();
+        let aux_cursor = aux_source.utf16_to_byte(aux_cursor_utf16)?;
         let main_cursor = self.world.map_aux_to_main(aux_cursor);
 
-        let results = typst_ide::autocomplete(
+        let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
             self.document.as_ref(),
             main_source,
             main_cursor,
             explicit,
-        );
+        )?;
 
-        match results {
-            Some((main_offset, completions)) => {
-                let aux_offset = self.world.map_main_to_aux(main_offset);
-                let aux_offset_utf16 = aux_source.byte_to_utf16(aux_offset).unwrap();
+        let aux_offset = self.world.map_main_to_aux(main_offset);
+        let aux_offset_utf16 = aux_source.byte_to_utf16(aux_offset)?;
 
-                Autocomplete {
-                    offset: aux_offset_utf16,
-                    completions: completions
-                        .into_iter()
-                        .map(TypstCompletion::from)
-                        .collect::<Box<[_]>>(),
-                }
-            }
-            None => {
-                Autocomplete {
-                    offset: 0,
-                    completions: Box::new([]),
-                }
-            }
-        }
+        Some(Autocomplete {
+            offset: aux_offset_utf16,
+            completions: completions
+                .into_iter()
+                .map(TypstCompletion::from)
+                .collect::<Box<[_]>>(),
+        })
     }
 
     #[wasm_bindgen]
@@ -692,7 +693,7 @@ impl FileIdWrapper {
         Self(id)
     }
 
-    pub fn inner(&self) -> FileId {
+    fn inner(&self) -> FileId {
         self.0
     }
 }

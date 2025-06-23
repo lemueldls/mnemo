@@ -22,7 +22,6 @@ pub fn render_offset_frame(
     pixel_per_pt: f32,
 ) -> sk::Pixmap {
     let mut size = frame.size();
-    // size.y -= Abs::pt(offset_height);
     size.y = Abs::pt(height);
 
     let pxw = (pixel_per_pt * size.x.to_f32()).round().max(1.0) as u32;
@@ -34,11 +33,8 @@ pub fn render_offset_frame(
 
     let mut canvas = sk::Pixmap::new(pxw, pxh).unwrap();
 
-    // let top = Abs::pt(offset_height);
-    let bottom = Abs::pt(offset_height + height);
-    let frame_items = frame.items().filter(|(point, _item)|
-            // point.y >= top &&
-            point.y <= bottom);
+    let offset = Abs::pt(offset_height + height);
+    let frame_items = frame.items().filter(|(pos, _item)| pos.y <= offset);
 
     render_frame(&mut canvas, state, frame_items);
 

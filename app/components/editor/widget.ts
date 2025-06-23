@@ -7,14 +7,22 @@ import {
 
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type { TypstState, FileId, RangedFrame } from "mnemo-wasm";
+import type {
+  TypstState,
+  FileId,
+  RangedFrame,
+  CompileResult,
+} from "mnemo-wasm";
 
 import type { ViewUpdate, DecorationSet } from "@codemirror/view";
 
 import type { Range } from "@codemirror/state";
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
 
+import { LRUCache } from "lru-cache";
+
 class TypstWidget extends WidgetType {
+  #container = document.createElement("div");
   #image = document.createElement("img");
 
   public constructor(
@@ -24,10 +32,15 @@ class TypstWidget extends WidgetType {
   ) {
     super();
 
+    this.#container.classList.add("typst-render");
+    this.#container.style.height = `${frame.render.height / window.devicePixelRatio}px`;
+
     this.#image.draggable = false;
-    this.#image.classList.add("typst-render");
+    this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
     this.#image.addEventListener("click", this.handleJump.bind(this));
-    // this.#image.addEventListener("mousedown", this.handleJump.bind(this));
+    this.#image.addEventListener("mousedown", this.handleJump.bind(this));
+
+    this.#container.append(this.#image);
   }
 
   private async handleJump(event: MouseEvent) {
@@ -53,34 +66,34 @@ class TypstWidget extends WidgetType {
   }
 
   public toDOM() {
-    this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
-
-    return this.#image;
+    return this.#container;
   }
 
   public override get estimatedHeight() {
-    return (
-      this.#image.height || this.frame.render.height / window.devicePixelRatio
-    );
-  }
-
-  public override ignoreEvent(event: Event) {
-    return event.type === "mousedown";
+    return this.frame.render.height / window.devicePixelRatio;
   }
 
   public override destroy() {
     this.#image.removeEventListener("click", this.handleJump);
+    this.#image.removeEventListener("mousedown", this.handleJump);
   }
 }
+
+const cache = new LRUCache<string, CompileResult>({ max: 3 });
 
 function decorate(
   typstState: TypstState,
   update: ViewUpdate,
+  path: string,
   fileId: FileId,
   text: string,
   prelude: string,
 ) {
-  const compileResult = compileTypstState(typstState, fileId, text, prelude);
+  let compileResult: CompileResult;
+  if (update.docChanged || !cache.has(path)) {
+    compileResult = typstState.compile(fileId, text, prelude);
+    cache.set(path, compileResult);
+  } else compileResult = cache.get(path)!;
 
   const { view, state } = update;
 
@@ -173,9 +186,10 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
 export const viewPlugin = (
   typstState: TypstState,
+  path: Ref<string>,
+  fileId: FileId,
   textItem: Ref<string>,
   prelude: Ref<string>,
-  fileId: FileId,
 ) =>
   ViewPlugin.define((_view) => {
     return {
@@ -195,6 +209,7 @@ export const viewPlugin = (
           const decorations = decorate(
             typstState,
             update,
+            path.value,
             fileId,
             text,
             prelude.value,
@@ -209,9 +224,10 @@ export const viewPlugin = (
 
 export const typst = (
   typstState: TypstState,
+  path: Ref<string>,
+  fileId: FileId,
   textItem: Ref<string>,
   prelude: Ref<string>,
-  fileId: FileId,
 ) =>
   StateField.define({
     create() {
@@ -222,7 +238,7 @@ export const typst = (
         effect.is(stateEffect),
       );
 
-      if (effect) {
+      if (effect?.value.decorations) {
         if (effect.value.decorations.size > 0) return effect.value.decorations;
 
         const max = Math.max(
@@ -240,29 +256,6 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, textItem, prelude, fileId),
+      viewPlugin(typstState, path, fileId, textItem, prelude),
     ],
   });
-
-function compileTypstState(
-  typstState: TypstState,
-  fileId: FileId,
-  text: string,
-  prelude: string,
-) {
-  let result;
-
-  try {
-    result = typstState.compile(fileId, text, prelude);
-  } catch (error) {
-    console.error(error);
-
-    // console.log("retrying...");
-    // result = syncTypstState(typstState, fileId, text);
-    // window.location.reload();
-
-    throw error;
-  }
-
-  return result;
-}

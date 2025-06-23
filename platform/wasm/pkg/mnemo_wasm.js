@@ -459,7 +459,7 @@ export class TypstState {
     /**
      * @param {number} aux_cursor_utf16
      * @param {boolean} explicit
-     * @returns {Autocomplete}
+     * @returns {Autocomplete | undefined}
      */
     autocomplete(aux_cursor_utf16, explicit) {
         const ret = wasm.typststate_autocomplete(this.__wbg_ptr, aux_cursor_utf16, explicit);

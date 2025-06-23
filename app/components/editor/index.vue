@@ -170,7 +170,7 @@ function createStateConfig(
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, text, prelude, fileId),
+      typst(typstState, path, fileId, text, prelude),
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
@@ -197,6 +197,16 @@ function createStateConfig(
     ],
   };
 }
+
+const selectionBackground = computed(() => {
+  const { r, g, b } = palette.value.onTertiary;
+  return `rgba(${r},${g},${b},0.5)`;
+});
+const activeLineBackground = computed(() => {
+  const { secondaryContainer } = palette.value;
+
+  return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
+});
 </script>
 
 <template>
@@ -229,14 +239,17 @@ function createStateConfig(
     font-family: var(--font-mono);
   }
 
-  .cm-selectionBackground {
+  .cm-selectionBackground,
+  .cm-content ::selection {
     @apply text-tertiary;
 
-    background: var(--md-sys-color-on-tertiary) !important;
+    background-color: v-bind(selectionBackground) !important;
   }
 
   .cm-selectionMatch {
-    @apply text-on-surface-variant bg-surface-container-highest;
+    @apply bg-tertiary;
+
+    color: v-bind(selectionBackground) !important;
   }
 
   .cm-cursor {
@@ -244,7 +257,9 @@ function createStateConfig(
   }
 
   .cm-activeLine {
-    @apply bg-surface-container rounded;
+    @apply rounded;
+
+    background-color: v-bind(activeLineBackground);
   }
 
   .cm-lintPoint-error::after {
@@ -372,7 +387,7 @@ function createStateConfig(
   .typst-render {
     @apply hover:bg-surface-container inline-block cursor-text align-top transition-colors;
 
-    -wekkit-user-drag: none;
+    -webkit-user-drag: none;
     -moz-user-drag: none;
   }
 }
