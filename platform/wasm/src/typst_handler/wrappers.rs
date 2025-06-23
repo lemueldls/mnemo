@@ -5,7 +5,7 @@ use tsify::Tsify;
 use typst::{
     World, WorldExt,
     diag::{Severity, SourceDiagnostic, Tracepoint},
-    ecow::{EcoString, EcoVec, eco_format},
+    ecow::{EcoVec, eco_format},
     syntax::{Span, Spanned, SyntaxError},
 };
 use wasm_bindgen::prelude::*;
@@ -182,11 +182,6 @@ pub struct TypstCompletion {
     label: String,
     apply: Option<String>,
     detail: Option<String>,
-}
-
-pub struct TypstCompleteResponse {
-    offset: usize,
-    completions: Vec<TypstCompletion>,
 }
 
 impl From<typst_ide::Completion> for TypstCompletion {

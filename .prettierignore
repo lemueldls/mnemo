@@ -1,9 +1,12 @@
+.android/
 .data/
 .devenv/
+.direnv/
 .nuxt/
 .output/
-platform/
 dist/
 node_modules/
-
+platform/
+public/fonts/maple/build-config.json
+server/database/migrations/meta/
 pnpm-lock.yaml
