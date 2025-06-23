@@ -1,3 +1,11 @@
+import { isTauri } from "@tauri-apps/api/core";
+import { openUrl } from "@tauri-apps/plugin-opener";
+
+export function openExternalUrl(url: string) {
+  if (isTauri()) openUrl(url);
+  else window.open(url, "_blank");
+}
+
 export function usePageRouteQuery(name: string, defaultValue: string = "") {
   const route = useRoute();
   const { path: originalPath } = route;

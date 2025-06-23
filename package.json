@@ -30,6 +30,7 @@
     "@material/web": "^2.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@replit/codemirror-vscode-keymap": "^6.0.2",
+    "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-cli": "^2.2.1",
     "@tauri-apps/plugin-deep-link": "^2.3.0",
     "@tauri-apps/plugin-http": "^2.4.4",
