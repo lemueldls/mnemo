@@ -85,7 +85,7 @@ export class TypstState {
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
   click(x: number, y: number): TypstJump | undefined;
-  autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete;
+  autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
   resize(width?: number | null, height?: number | null): void;
   renderPdf(id: FileId): RenderPdfResult;
 }

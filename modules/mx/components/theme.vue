@@ -25,11 +25,17 @@ const theme = computed(() =>
 
 provide(m3ThemeKey, theme);
 
+// const { palette } = toRefs(theme);
 const palette = computed(() => theme.value.palette);
 
 function parse(color: Rgba) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
+
+const selectionBackground = computed(() => {
+  const { r, g, b } = palette.value.onTertiary;
+  return `rgba(${r},${g},${b},0.5)`;
+});
 </script>
 
 <template>
@@ -128,7 +134,9 @@ function parse(color: Rgba) {
   }
 
   ::selection {
-    @apply text-tertiary bg-on-tertiary;
+    @apply text-tertiary;
+
+    background-color: v-bind(selectionBackground);
   }
 }
 </style>

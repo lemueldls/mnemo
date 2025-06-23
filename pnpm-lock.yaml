@@ -52,7 +52,7 @@ importers:
         version: 1.4.2
       '@material/material-color-utilities':
         specifier: npm:@ktibow/material-color-utilities-nightly
-        version: '@ktibow/material-color-utilities-nightly@0.3.11750123513666'
+        version: '@ktibow/material-color-utilities-nightly@0.3.11750642744987'
       '@material/web':
         specifier: ^2.3.0
         version: 2.3.0
@@ -95,6 +95,9 @@ importers:
       interactjs:
         specifier: ^1.10.27
         version: 1.10.27
+      lru-cache:
+        specifier: ^11.1.0
+        version: 11.1.0
       material-symbols:
         specifier: ^0.31.7
         version: 0.31.7
@@ -1326,8 +1329,8 @@ packages:
   '@keyv/serialize@1.0.3':
     resolution: {integrity: sha512-qnEovoOp5Np2JDGonIDL6Ayihw0RhnRh6vxPuHo4RDn1UOzwEo4AeIfpL6UGIrsceWrCMiVPgwRjbHu4vYFc3g==}
 
-  '@ktibow/material-color-utilities-nightly@0.3.11750123513666':
-    resolution: {integrity: sha512-ONhxpyXuCITR/DgM//7jPk3msGyb6XDxWOHe8124EAmHWOTXCJQ0CWslRik4Vn6HHFeBaQRm5DP1t2UcuLKdrg==}
+  '@ktibow/material-color-utilities-nightly@0.3.11750642744987':
+    resolution: {integrity: sha512-dwkD3Gyyocn0bqK+WO5JToqq6chJOUZ1CsFeuwn9AswbJAc9vYcXVnjrREBXfU9qRAeov4xrzPKHRx6KuPMDrQ==}
 
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
@@ -4907,6 +4910,10 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
+  lru-cache@11.1.0:
+    resolution: {integrity: sha512-QIXZUBJUx+2zHUdQujWejBkcD9+cs94tLn0+YL8UrCh+D5sCXZ4c7LaEH48pNwRY3MLDgqUFyhlCyjJPf1WP0A==}
+    engines: {node: 20 || >=22}
+
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
@@ -8008,7 +8015,7 @@ snapshots:
     dependencies:
       buffer: 6.0.3
 
-  '@ktibow/material-color-utilities-nightly@0.3.11750123513666': {}
+  '@ktibow/material-color-utilities-nightly@0.3.11750642744987': {}
 
   '@kwsites/file-exists@1.1.1':
     dependencies:
@@ -12162,6 +12169,8 @@ snapshots:
       triple-beam: 1.4.1
 
   lru-cache@10.4.3: {}
+
+  lru-cache@11.1.0: {}
 
   lru-cache@5.1.1:
     dependencies:
