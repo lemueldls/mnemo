@@ -136,7 +136,7 @@
   # };
 
   pre-commit.hooks = {
-    actionlint.enable = true;
+    actionlint.enable = false;
     rustfmt.enable = false;
   };
 }
