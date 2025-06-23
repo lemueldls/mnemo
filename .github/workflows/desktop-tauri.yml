@@ -14,6 +14,20 @@ on:
         required: true
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
         required: true
+      NUXT_PUBLIC_API_BASE_URL:
+        required: true
+      NUXT_SESSION_PASSWORD:
+        required: true
+      NUXT_OAUTH_GITHUB_CLIENT_ID:
+        required: true
+      NUXT_OAUTH_GITHUB_CLIENT_SECRET:
+        required: true
+      NUXT_OAUTH_GITHUB_REDIRECT_URL:
+        required: true
+      WINDOWS_CERTIFICATE:
+        required: true
+      WINDOWS_CERTIFICATE_PASSWORD:
+        required: true
 
 jobs:
   build:
@@ -130,6 +144,18 @@ jobs:
           certutil -decode certificate/tempCert.txt certificate/certificate.pfx
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
+
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📥 Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: 📥 Install frontend dependencies
+        run: pnpm install
 
       - name: 🔨 Build using tauri action (publish artifacts on release)
         uses: tauri-apps/tauri-action@42e9df6c59070d114bf90dcd3943a1b8f138b113 # v0.5.20
