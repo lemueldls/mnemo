@@ -4,37 +4,21 @@ mod world;
 mod wrappers;
 
 use core::fmt;
-use std::{
-    borrow::Cow,
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-    iter,
-    ops::Range,
-    path::{Path, PathBuf},
-    str::FromStr,
-    sync::Mutex,
-};
+use std::{borrow::Cow, ops::Range, str::FromStr};
 
 use data_encoding::BASE64;
 use index_mapper::IndexMapper;
-use mnemo_render::sk;
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::Error;
 use tsify::Tsify;
 use typst::{
-    World, WorldExt, compile,
-    diag::SourceDiagnostic,
-    ecow::{EcoString, EcoVec},
+    WorldExt, compile,
+    ecow::EcoString,
     foundations::Bytes,
-    layout::{Abs, Frame, FrameItem, Page, PagedDocument, Point, Position},
-    syntax::{
-        FileId, Source, Span, SyntaxError, SyntaxKind, VirtualPath, ast, package::PackageSpec,
-    },
-    visualize::Color,
+    layout::{Abs, PagedDocument, Point},
+    syntax::{FileId, Source, SyntaxKind, VirtualPath, package::PackageSpec},
 };
 // use typst_html::html;
-use typst_pdf::{PdfOptions, PdfStandard, pdf};
-use typst_render::{render, render_merged};
+use typst_pdf::{PdfOptions, pdf};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 use world::MnemoWorld;
