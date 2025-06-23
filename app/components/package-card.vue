@@ -81,7 +81,14 @@ const installedPackage = computed(() =>
     </div>
 
     <div class="flex gap-2">
-      <div class="flex-[2]" />
+      <md-filled-tonal-button
+        class="flex-[2]"
+        :title="pkg.repository"
+        @click="openExternalUrl(pkg.repository)"
+      >
+        {{ $t("components.package-card.repository") }}
+      </md-filled-tonal-button>
+
       <md-outlined-button
         v-if="installedPackage"
         class="flex-[3]"
@@ -89,13 +96,13 @@ const installedPackage = computed(() =>
       >
         {{ $t("components.package-card.uninstall") }}
       </md-outlined-button>
-      <md-filled-tonal-button
+      <md-filled-button
         v-else
         class="flex-[3]"
         @click.prevent="emit('install', pkg)"
       >
         {{ $t("components.package-card.install") }}
-      </md-filled-tonal-button>
+      </md-filled-button>
     </div>
   </md-elevated-card>
 </template>

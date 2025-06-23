@@ -16,9 +16,9 @@ export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "consta
 
 export interface TypstCompletion {
     type: TypstCompletionKind;
-    label: string;
-    apply: string | undefined;
-    detail: string | undefined;
+    label: EcoString;
+    apply: EcoString | undefined;
+    detail: EcoString | undefined;
 }
 
 export interface CompileResult {

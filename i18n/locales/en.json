@@ -59,7 +59,8 @@
       "version": "Version",
       "installed": "(Installed)",
       "install": "Install",
-      "uninstall": "Uninstall"
+      "uninstall": "Uninstall",
+      "repository": "Repository"
     },
     "packages": {
       "title": "Packages",

@@ -1,5 +1,3 @@
-// import wasm from "vite-plugin-wasm";
-
 const defaultLocale = "en";
 const locales = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
@@ -35,13 +33,6 @@ export default defineNuxtConfig({
     "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
-  imports: {
-    dirs: [
-      "composables",
-      "composables/*/index.{ts,js,mjs,mts}",
-      "composables/*/server.{ts,js,mjs,mts}",
-    ],
-  },
   devtools: { enabled: !platform },
   app: {
     // pageTransition: { name: "conjure" },
