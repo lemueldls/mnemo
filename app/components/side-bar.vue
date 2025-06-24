@@ -53,24 +53,22 @@ watchImmediate(hash, (hash) => {
 function handleClick(id: string | number) {
   if (sheet.value && id === hash.value) sheet.value = false;
   else {
-    router.push({ ...route, hash: "#" + id });
+    if (manuallyOpened) router.replace({ ...route, hash: "#" + id });
+    else router.push({ ...route, hash: "#" + id });
     sheet.value = true;
   }
 }
 
 let manuallyOpened = false;
-whenever(
-  sheet,
-  () => {
-    manuallyOpened = true;
-  },
-  { once: true },
-);
+whenever(sheet, () => {
+  manuallyOpened = true;
+});
 
 whenever(logicNot(sheet), () => {
-  console.log({ manuallyOpened });
-  if (manuallyOpened) router.back();
-  else router.replace({ ...route, hash: "" });
+  if (manuallyOpened) {
+    manuallyOpened = false;
+    router.back();
+  } else router.replace({ ...route, hash: "" });
 });
 
 function preloadItem(item: Item) {
