@@ -385,7 +385,7 @@ const activeLineBackground = computed(() => {
   }
 
   .typst-render {
-    @apply hover:bg-surface-container inline-block cursor-text align-top transition-colors;
+    @apply hover:bg-surface-container inline-block cursor-text align-top transition-colors hover:rounded;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
