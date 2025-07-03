@@ -37,37 +37,35 @@ const items: { [key: string]: Item } = {
   sync: { name: t("components.side-bar.sync"), icon: "sync", component: Sync },
 };
 
-const router = useRouter();
 const route = useRoute();
+const router = useRouter();
 
 const hash = computed(() => route.hash?.slice(1));
-const sheet = ref(!!items[hash.value]);
+const sheetOpened = ref(!!items[hash.value]);
 
 watchImmediate(hash, (hash) => {
-  if (!hash) sheet.value = false;
+  if (!hash) sheetOpened.value = false;
 
   const item = items[hash];
-  if (item) sheet.value = true;
+  if (item) sheetOpened.value = true;
 });
 
 let manuallyOpened = false;
-whenever(sheet, () => {
-  manuallyOpened = true;
-});
 
-whenever(logicNot(sheet), () => {
-  if (manuallyOpened) {
+watch(sheetOpened, (sheet) => {
+  if (sheet) manuallyOpened = true;
+  else if (manuallyOpened) {
     manuallyOpened = false;
     router.back();
   } else router.replace({ ...route, hash: "" });
 });
 
 function handleClick(id: string | number) {
-  if (sheet.value && id === hash.value) sheet.value = false;
+  if (sheetOpened.value && id === hash.value) sheetOpened.value = false;
   else {
     if (manuallyOpened) router.replace({ ...route, hash: "#" + id });
     else router.push({ ...route, hash: "#" + id });
-    sheet.value = true;
+    sheetOpened.value = true;
   }
 }
 
@@ -85,7 +83,7 @@ function preloadItem(item: Item) {
       @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <mx-icon :name="item.icon" :fill="sheet && hash == id" />
+        <mx-icon :name="item.icon" :fill="sheetOpened && hash == id" />
       </template>
 
       {{ item.name }}
@@ -102,16 +100,16 @@ function preloadItem(item: Item) {
       @click="handleClick(id)"
     >
       <template v-if="item.icon" #leading>
-        <mx-icon :name="item.icon" :fill="sheet && hash == id" />
+        <mx-icon :name="item.icon" :fill="sheetOpened && hash == id" />
       </template>
 
       {{ item.name }}
     </mx-nav-bar-item>
   </mx-nav-bar>
 
-  <mx-side-sheet v-model="sheet" class="w-80">
+  <mx-side-sheet v-model="sheetOpened" class="w-80">
     <div class="flex justify-end">
-      <md-icon-button @click="sheet = false">
+      <md-icon-button @click="sheetOpened = false">
         <md-icon>close</md-icon>
       </md-icon-button>
     </div>
