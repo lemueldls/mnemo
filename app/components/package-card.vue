@@ -27,21 +27,9 @@ const installedPackage = computed(() =>
 <template>
   <md-elevated-card :key="pkg.name" class="flex flex-col gap-4 p-4">
     <div class="medium:flex-row flex flex-col justify-between gap-2">
-      <div class="flex flex-col">
-        <h1 class="text-on-surface-variant title-large line-clamp-1 flex-1">
-          {{ pkg.name }}
-        </h1>
-
-        <div class="flex gap-2">
-          <div
-            v-for="(category, i) in pkg.categories"
-            :key="i"
-            class="bg-surface-container text-on-surface-variant rounded-xl px-2 py-1"
-          >
-            {{ category }}
-          </div>
-        </div>
-      </div>
+      <h1 class="text-on-surface-variant title-large font-semibold">
+        {{ pkg.name }}
+      </h1>
 
       <md-outlined-select
         :label="$t('components.package-card.version')"
@@ -72,6 +60,16 @@ const installedPackage = computed(() =>
     </div>
 
     <div class="flex flex-1 flex-col gap-2">
+      <!-- <div class="flex gap-2">
+        <div
+          v-for="(category, i) in pkg.categories"
+          :key="i"
+          class="bg-surface-container text-on-surface-variant rounded-xl px-2 py-1"
+        >
+          {{ category }}
+        </div>
+      </div> -->
+
       <span
         class="text-on-surface-variant body-large line-clamp-2 h-[2lh]"
         :title="pkg.description"
@@ -84,7 +82,7 @@ const installedPackage = computed(() =>
       <md-filled-tonal-button
         class="flex-[2]"
         :title="pkg.repository"
-        @click="openExternalUrl(pkg.repository)"
+        @click.prevent="openExternalUrl(pkg.repository)"
       >
         {{ $t("components.package-card.repository") }}
       </md-filled-tonal-button>
