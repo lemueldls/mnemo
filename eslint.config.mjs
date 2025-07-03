@@ -1,7 +1,7 @@
 // @ts-check
-import { createConfigForNuxt } from "@nuxt/eslint-config";
+import withNuxt from "./.nuxt/eslint.config.mjs";
 
-export default createConfigForNuxt({ features: { tooling: true } }).prepend({
+export default withNuxt({
   rules: {
     "vue/html-self-closing": "off",
     "vue/no-multiple-template-root": "off",
