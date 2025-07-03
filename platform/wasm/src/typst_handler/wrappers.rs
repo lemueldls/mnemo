@@ -26,7 +26,7 @@ impl TypstDiagnostic {
         errors
             .into_iter()
             .flat_map(|error| {
-                map_span(error.span, EcoVec::new(), world).map(|range| {
+                map_span(error.span, true, EcoVec::new(), world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::Error,
@@ -52,7 +52,7 @@ impl TypstDiagnostic {
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
 
-                map_span(diagnostic.span, diagnostic.trace, world).map(|range| {
+                map_span(diagnostic.span, diagnostic.severity == Severity::Error, diagnostic.trace, world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),
@@ -71,6 +71,7 @@ impl TypstDiagnostic {
 
 fn map_span(
     span: Span,
+    is_error: bool,
     trace: EcoVec<Spanned<Tracepoint>>,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
@@ -83,6 +84,10 @@ fn map_span(
     };
 
     if main_range.is_none() {
+        if !is_error {
+            return None;
+        }
+
         for tracepoint in trace {
             if main_range.is_some() {
                 break;

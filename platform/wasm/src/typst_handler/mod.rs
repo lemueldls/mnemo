@@ -351,7 +351,6 @@ impl TypstState {
                 .into_iter()
                 .map(|(range, height, offset_height)| {
                     let canvas = mnemo_render::render(document, height, offset_height, self.pt);
-
                     let encoding = BASE64.encode(&canvas.encode_png().unwrap());
 
                     let height = height.ceil() as u32;

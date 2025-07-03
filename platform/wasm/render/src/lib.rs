@@ -33,8 +33,8 @@ pub fn render_offset_frame(
 
     let mut canvas = sk::Pixmap::new(pxw, pxh).unwrap();
 
-    let offset = Abs::pt(offset_height + height);
-    let frame_items = frame.items().filter(|(pos, _item)| pos.y <= offset);
+    let cutoff = Abs::pt(offset_height + height);
+    let frame_items = frame.items().filter(|(pos, _item)| pos.y < cutoff);
 
     render_frame(&mut canvas, state, frame_items);
 
