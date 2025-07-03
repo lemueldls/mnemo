@@ -29,9 +29,13 @@ const filteredPackages = computed(() => {
     return packages;
   }
 
+  const searchLower = search.value.toLowerCase();
+
   return Object.fromEntries(
-    Object.entries(packages).filter(([name]) =>
-      name.toLowerCase().includes(search.value.toLowerCase()),
+    Object.entries(packages).filter(
+      ([name, [pkg]]) =>
+        name.toLowerCase().includes(searchLower) ||
+        pkg!.description.toLowerCase().includes(searchLower),
     ),
   );
 });
@@ -55,8 +59,8 @@ async function uninstallPackage(pkg: Package) {
 </script>
 
 <template>
-  <md-dialog :open="open" @closed="open = false">
-    <div slot="headline" class="flex justify-between gap-4">
+  <md-dialog :open="open" class="size-xl" @closed="open = false">
+    <div slot="headline" class="flex justify-between gap-6">
       <span>{{ $t("components.packages.title") }}</span>
 
       <md-outlined-text-field
@@ -71,14 +75,14 @@ async function uninstallPackage(pkg: Package) {
       </md-icon-button> -->
     </div>
 
-    <form slot="content" method="dialog" class="w-xl overflow-hidden">
+    <form slot="content" method="dialog" class="px-0">
       <UseVirtualList
         v-if="Object.keys(filteredPackages).length > 0"
         ref="container"
         :list="Object.values(filteredPackages)"
         :options="{ itemHeight: medium ? 220 : 264 }"
-        height="26rem"
-        class="virtual-list"
+        height="27rem"
+        class="virtual-list px-6"
       >
         <template #default="{ data: versionedPackage }">
           <package-card
@@ -90,12 +94,19 @@ async function uninstallPackage(pkg: Package) {
           />
         </template>
       </UseVirtualList>
-      <span v-else>{{ $t("components.packages.form.no-results") }}</span>
+
+      <md-filled-card v-else class="label-large mx-4 p-4">
+        {{ $t("components.packages.form.no-results") }}
+      </md-filled-card>
     </form>
   </md-dialog>
 </template>
 
 <style>
+/* .virtual-list {
+  height: 29rem !important;
+} */
+
 .virtual-list > div {
   @apply flex flex-col gap-4;
 }
