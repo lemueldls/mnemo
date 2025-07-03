@@ -1,17 +1,19 @@
 import { createStorage, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
-import type {
-  DebuggerOptions,
-  WatchStopHandle,
-  WritableComputedOptions,
+import {
+  onWatcherCleanup,
+  type DebuggerOptions,
+  type WatchStopHandle,
+  type WritableComputedOptions,
 } from "vue";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-const itemRefs: { [key: string]: Promise<Ref<unknown>> } = {};
+const itemRefs: { [key: string]: Promise<Ref<unknown>> | undefined } = {};
+const itemRefCount: { [key: string]: number } = {};
 
 function shallowComputed<T, S = T>(
   options: WritableComputedOptions<T, S>,
@@ -37,6 +39,7 @@ async function asyncComputedRef<T>(
   const root = shallowComputed({
     get: () => data.value!,
     set(value) {
+      console.log("setting", toValue(key), "to", value, "with", item);
       item.value = value;
     },
   });
@@ -44,16 +47,41 @@ async function asyncComputedRef<T>(
   let stopSync: WatchStopHandle;
   await new Promise<void>((resolve) =>
     watchImmediate(toRef(key), async (key) => {
-      stopSync?.();
+      itemRefCount[key] ??= 0;
+      itemRefCount[key]++;
 
-      itemRefs[key] ||= handler(key);
+      onWatcherCleanup(() => {
+        stopSync?.();
+
+        if (!itemRefCount[key] || itemRefCount[key] <= 1) {
+          delete itemRefs[key];
+          delete itemRefCount[key];
+        } else itemRefCount[key]--;
+      });
+
+      itemRefs[key] ??= handler(key);
       item = (await itemRefs[key]) as Ref<T>;
+
+      tryOnScopeDispose(async () => {
+        stopSync?.();
+
+        itemRefs[key] = undefined;
+        item = await handler(key);
+
+        const firstItem = itemRefs[key] as unknown as Promise<Ref<T>>;
+        if (firstItem) item = await firstItem;
+        else itemRefs[key] = Promise.resolve(item);
+
+        stopSync = watchImmediate(item, (item) => {
+          data.value = item;
+        });
+      });
 
       stopSync = watchImmediate(item, (item) => {
         data.value = item;
-        resolve();
       });
 
+      resolve();
       triggerRef(root);
     }),
   );
