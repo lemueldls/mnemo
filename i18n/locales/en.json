@@ -66,7 +66,7 @@
       "title": "Packages",
       "form": {
         "search": "Search packages",
-        "no-results": "No packages found"
+        "no-results": "No packages found."
       }
     },
     "settings": {
