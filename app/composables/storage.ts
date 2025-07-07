@@ -39,7 +39,6 @@ async function asyncComputedRef<T>(
   const root = shallowComputed({
     get: () => data.value!,
     set(value) {
-      console.log("setting", toValue(key), "to", value, "with", item);
       item.value = value;
     },
   });
@@ -54,7 +53,9 @@ async function asyncComputedRef<T>(
         stopSync?.();
 
         if (!itemRefCount[key] || itemRefCount[key] <= 1) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete itemRefs[key];
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete itemRefCount[key];
         } else itemRefCount[key]--;
       });
@@ -96,24 +97,9 @@ export function useStorageItem<T extends StorageValue>(
   // const { $sync } = useNuxtApp();
 
   return asyncComputedRef(toRef(key), async (key) => {
-    const localItem = await localDb.getItem<T>(key);
-    if (!localItem) {
-      await updateLocalItem(key, initialValue);
+    const storageItem = await getStorageItem<T>(key, initialValue);
 
-      // await updateRemoteItem(key, initialValue);
-    }
-
-    // $sync.getMeta(key).then(async (syncMeta) => {
-    //   const localMeta = await localDb.getMeta(key);
-    //   if (!localMeta) throw createError("local meta not found")
-
-    //   if (syncMeta.updatedAt > localMeta.updatedAt) {
-    //     const value = await $sync.getItem(key);
-    //     updateLocalItem(key, value)
-    //   }
-    // });
-
-    const item = ref(localItem || initialValue);
+    const item = ref(storageItem);
     // const { ready, loggedIn } = useUserSession();
 
     watchDebounced(
@@ -131,8 +117,32 @@ export function useStorageItem<T extends StorageValue>(
     //   item.value = await $sync.getItem<T>(key, { initialValue });
     // });
 
-    return item;
+    return item as Ref<T>;
   });
+}
+
+export async function getStorageItem<T extends StorageValue>(
+  key: string,
+  initialValue: T,
+) {
+  const localItem = await localDb.getItem<T>(key);
+  if (!localItem) {
+    await updateLocalItem(key, initialValue);
+
+    // await updateRemoteItem(key, initialValue);
+  }
+
+  // $sync.getMeta(key).then(async (syncMeta) => {
+  //   const localMeta = await localDb.getMeta(key);
+  //   if (!localMeta) throw createError("local meta not found")
+
+  //   if (syncMeta.updatedAt > localMeta.updatedAt) {
+  //     const value = await $sync.getItem(key);
+  //     updateLocalItem(key, value)
+  //   }
+  // });
+
+  return localItem || initialValue;
 }
 
 async function updateLocalItem<T extends StorageValue>(key: string, value: T) {

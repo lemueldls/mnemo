@@ -21,10 +21,9 @@ use typst::{
 use typst_pdf::{PdfOptions, pdf};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
-use world::MnemoWorld;
+use world::{FileSlot, MnemoWorld};
+pub use wrappers::TypstFileId;
 use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
-
-use crate::typst_handler::world::FileSlot;
 
 #[wasm_bindgen]
 pub struct TypstState {
@@ -86,11 +85,11 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = insertFile)]
-    pub fn insert_file(&mut self, path: String, text: String) -> FileIdWrapper {
-        let id = FileId::new(None, VirtualPath::new(&path));
+    pub fn insert_file(&mut self, path: String, text: String) -> TypstFileId {
+        let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
         self.world.insert_source(id, text);
 
-        FileIdWrapper::new(id)
+        TypstFileId::new(id)
     }
 
     #[wasm_bindgen(js_name = installPackage)]
@@ -176,13 +175,13 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn compile(&mut self, id: &FileIdWrapper, text: String, prelude: &str) -> CompileResult {
+    pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
         let mut ir = self.prelude(RenderingMode::Png) + prelude;
 
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
 
-        let aux_id = id.inner().join("$");
+        let aux_id = id.inner().with_extension("aux.typ");
         self.world
             .files
             .entry(aux_id)
@@ -445,7 +444,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = renderPdf)]
-    pub fn render_pdf(&mut self, id: &FileIdWrapper) -> RenderPdfResult {
+    pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
         self.world.main = Some(id.inner());
 
         let mut ir = self.prelude(RenderingMode::Pdf);
@@ -454,7 +453,7 @@ impl TypstState {
         ir += &text;
         main_source.replace(&ir);
 
-        let aux_id = id.inner().join("$");
+        let aux_id = id.inner().with_extension("aux.typ");
         self.world.insert_source(aux_id, text);
         self.world.aux = Some(aux_id);
 
@@ -665,20 +664,6 @@ pub struct RenderPdfResult {
 pub struct RenderHtmlResult {
     pub document: Option<String>,
     pub diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Debug, Clone)]
-#[wasm_bindgen(js_name = "FileId")]
-pub struct FileIdWrapper(FileId);
-
-impl FileIdWrapper {
-    fn new(id: FileId) -> Self {
-        Self(id)
-    }
-
-    fn inner(&self) -> FileId {
-        self.0
-    }
 }
 
 #[derive(Debug)]

@@ -6,11 +6,25 @@ use typst::{
     World, WorldExt,
     diag::{Severity, SourceDiagnostic, Tracepoint},
     ecow::{EcoVec, eco_format},
-    syntax::{Span, Spanned, SyntaxError},
+    syntax::{FileId, Span, Spanned, SyntaxError},
 };
 use wasm_bindgen::prelude::*;
 
 use crate::typst_handler::world::MnemoWorld;
+
+#[derive(Debug, Clone)]
+#[wasm_bindgen(js_name = "FileId")]
+pub struct TypstFileId(pub(crate) FileId);
+
+impl TypstFileId {
+    pub fn new(id: FileId) -> Self {
+        Self(id)
+    }
+
+    pub fn inner(&self) -> FileId {
+        self.0
+    }
+}
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -52,7 +66,13 @@ impl TypstDiagnostic {
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
 
-                map_span(diagnostic.span, diagnostic.severity == Severity::Error, diagnostic.trace, world).map(|range| {
+                map_span(
+                    diagnostic.span,
+                    diagnostic.severity == Severity::Error,
+                    diagnostic.trace,
+                    world,
+                )
+                .map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::from_severity(diagnostic.severity),

@@ -94,6 +94,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly __wbg_typststate_free: (a: number, b: number) => void;
   readonly typststate_new: () => number;
   readonly typststate_pt: (a: number) => number;
@@ -116,7 +117,6 @@ export interface InitOutput {
   readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number) => [number, number];
-  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly start: () => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
   readonly qcms_profile_is_bogus: (a: number) => number;

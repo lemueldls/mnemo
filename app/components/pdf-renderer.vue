@@ -4,7 +4,7 @@ import { Rgb, ThemeColors } from "mnemo-wasm";
 import type { Rgba } from "~~/modules/mx/types";
 import { decodeTime } from "ulid";
 
-import type { Note } from "~/composables/spaces";
+import type { Note } from "~/composables/notes";
 
 const spaceId = usePageRouteQuery("space");
 
@@ -13,19 +13,19 @@ const { d } = useI18n();
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
-const dailyNotesRef = await useStorageItem<Note[]>(
+const dailyNotesItem = await getStorageItem<Note[]>(
   `spaces/${spaceId.value}/daily/notes.json`,
   [],
 );
 
 const dailyNotes = await Promise.all(
-  dailyNotesRef.value.toReversed().map(async (note) => {
-    const item = await useStorageItem<string>(
+  dailyNotesItem.toReversed().map(async (note) => {
+    const item = await getStorageItem<string>(
       `spaces/${spaceId.value}/daily/${note.id}.typ`,
       "",
     );
 
-    return { note, item: item.value };
+    return { note, item };
   }),
 ).then((notes) =>
   notes
@@ -41,12 +41,12 @@ const dailyNotes = await Promise.all(
     }),
 );
 
-const prelude = await useStorageItem(
-  () => `spaces/${spaceId.value}/prelude/main.typ`,
+const prelude = await getStorageItem(
+  `spaces/${spaceId.value}/prelude/main.typ`,
   "",
 );
 
-dailyNotes.unshift(prelude.value);
+dailyNotes.unshift(prelude);
 
 const typstState = await useTypst();
 

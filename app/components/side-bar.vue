@@ -60,6 +60,13 @@ watch(sheetOpened, (sheet) => {
   } else router.replace({ ...route, hash: "" });
 });
 
+watch(
+  () => route.query,
+  () => {
+    manuallyOpened = false;
+  },
+);
+
 function handleClick(id: string | number) {
   if (sheetOpened.value && id === hash.value) sheetOpened.value = false;
   else {
@@ -108,7 +115,11 @@ function preloadItem(item: Item) {
   </mx-nav-bar>
 
   <mx-side-sheet v-model="sheetOpened" class="w-80">
-    <div class="flex justify-end">
+    <div class="mb-3 flex justify-between">
+      <h3 v-if="items[hash]" class="headline-medium text-on-surface-variant">
+        {{ items[hash]!.name }}
+      </h3>
+
       <md-icon-button @click="sheetOpened = false">
         <md-icon>close</md-icon>
       </md-icon-button>

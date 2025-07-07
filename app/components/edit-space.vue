@@ -6,7 +6,7 @@ import type { Space } from "~/composables/spaces";
 
 import { UseVirtualList } from "@vueuse/components";
 
-const space = defineModel<Space>();
+const space = defineModel<Space>({ required: true });
 
 const colors = [
   { name: "Red", hex: "#fb2c36" }, // oklch(.637 .237 25.331)
@@ -48,8 +48,8 @@ const filteredSymbols = computed(() => {
     : symbols;
 });
 
-const groupedSymbols: string[][] = computed(() => {
-  const groups = [];
+const groupedSymbols = computed(() => {
+  const groups: string[][] = [];
   const entries = Object.entries(filteredSymbols.value);
 
   for (const [i, symbol] of entries) {
@@ -108,10 +108,15 @@ const groupedSymbols: string[][] = computed(() => {
       :options="{ itemHeight: 56 }"
       height="200px"
     >
-      <template #default="{ data: symbols }">
+      <template #default="{ data: symbolGroup }">
         <div class="mb-4 flex gap-4">
-          <md-icon-button
-            v-for="symbol in symbols"
+          <component
+            :is="
+              space.icon === symbol
+                ? 'md-filled-tonal-icon-button'
+                : 'md-icon-button'
+            "
+            v-for="symbol in symbolGroup"
             :key="symbol"
             :title="symbol"
             toggle
@@ -119,7 +124,7 @@ const groupedSymbols: string[][] = computed(() => {
             @click.prevent="space.icon = symbol"
           >
             <mx-icon :name="symbol" />
-          </md-icon-button>
+          </component>
         </div>
       </template>
     </UseVirtualList>

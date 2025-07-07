@@ -1,4 +1,9 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  if (from.path !== to.path && from.hash && !to.hash)
+  const fromPath = from.fullPath.replace(/#.*$/, "");
+  const toPath = to.fullPath.replace(/#.*$/, "");
+
+  if (from.hash) console.log({ fromPath, toPath });
+
+  if (fromPath !== toPath && from.hash && !to.hash)
     return navigateTo({ ...to, hash: from.hash });
 });
