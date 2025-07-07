@@ -6,11 +6,11 @@ const open = defineModel<boolean>();
 // const router = useRouter();
 
 const spaces = await useSpaces();
-const space = ref({
+const space = ref<Space>({
   name: "",
-  icon: "",
+  icon: undefined,
   color: "#16161d", // Eigengrau
-  order: spaces.value.length,
+  order: Object.keys(spaces.value).length,
 });
 
 function createSpace() {

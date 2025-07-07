@@ -1,5 +1,12 @@
-import type { Note } from "~/composables/spaces";
 import { ulid, decodeTime } from "ulid";
+
+export interface Note {
+  id: string;
+  // name?: string;
+  datetime: [number, number, number, number, number];
+}
+
+export type NoteKind = "daily" | "sticky" | "prelude";
 
 export async function useSpaceNotes(spaceId: MaybeRefOrGetter<string>) {
   return await useStorageItem<Note[]>(
@@ -23,21 +30,36 @@ export function addDailyNote(notes: Ref<Note[]>) {
   notes.value.unshift({ id, datetime });
 }
 
-export async function loadDailyNotes(notes: Ref<Note[]>) {
+export async function loadDailyNotes(
+  spaceId: string,
+  notes: Ref<Note[]>,
+  archived: boolean,
+) {
   const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const date = today.getDate();
 
   let addToday = true;
 
-  for (const note of notes.value) {
-    const date = new Date(note.datetime[0], note.datetime[1], note.datetime[2]);
-    if (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    ) {
-      addToday = false;
+  const end = notes.value.length - 1;
+  for (let i = end; i >= 0; i--) {
+    const note = notes.value[i]!;
 
-      break;
+    if (
+      addToday &&
+      note.datetime[2] === date &&
+      note.datetime[1] === month &&
+      note.datetime[0] === year &&
+      !archived
+    )
+      addToday = false;
+    else {
+      const item = await getStorageItem<string>(
+        `spaces/${spaceId}/daily/${note.id}.typ`,
+        "",
+      );
+      if (!item) notes.value.splice(i, 1);
     }
   }
 

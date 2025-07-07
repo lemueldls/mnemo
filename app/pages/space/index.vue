@@ -23,10 +23,10 @@ useSeoMeta({
 const { medium } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);
-const settingsOpen = ref(false);
+// const settingsOpen = ref(false);
 
 const preludeOpen = ref(false);
-const focusOpen = ref(false);
+// const focusOpen = ref(false);
 const stickyNotesOpen = ref(false);
 const packagesOpen = ref(false);
 const screenshotOpen = ref(false);
@@ -34,6 +34,7 @@ const screenshotOpen = ref(false);
 const router = useRouter();
 
 function deleteSpace() {
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete spaces.value[spaceId.value];
 
   void router.push("/");
@@ -93,9 +94,7 @@ const { data: notes } = await useAsyncData(
     // const item = await useStorageItem<Note[]>(`spaces/${spaceId.value}/daily/notes.json`, []);
     // const notes = item.value!;
 
-    // console.log({ spaceNotes: spaceNotes.value });
-
-    const notes = await loadDailyNotes(spaceNotes);
+    const notes = await loadDailyNotes(spaceId.value, spaceNotes, false);
 
     return notes.map((note) => {
       const {

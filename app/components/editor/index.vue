@@ -1,41 +1,40 @@
 <script setup lang="ts">
-import {
-  highlightSpecialChars,
-  drawSelection,
-  dropCursor,
-  rectangularSelection,
-  crosshairCursor,
-  keymap,
-  placeholder,
-  EditorView,
-} from "@codemirror/view";
+import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+import { history, historyField } from "@codemirror/commands";
 
-import { EditorState } from "@codemirror/state";
 import {
+  bracketMatching,
+  defaultHighlightStyle,
   // foldGutter,
   indentOnInput,
   syntaxHighlighting,
-  defaultHighlightStyle,
-  bracketMatching,
 } from "@codemirror/language";
-import { history, historyField } from "@codemirror/commands";
+
 import { highlightSelectionMatches } from "@codemirror/search";
-import { closeBrackets, autocompletion } from "@codemirror/autocomplete";
+import { EditorState } from "@codemirror/state";
+
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightSpecialChars,
+  keymap,
+  placeholder,
+  rectangularSelection,
+} from "@codemirror/view";
 
 import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
-
 import { Rgb } from "mnemo-wasm";
-
-import type { NoteKind } from "~/composables/spaces";
-
-import { typst } from "./widget";
+import { ThemeColors, type FileId, type TypstState } from "mnemo-wasm";
 
 import { typstLanguage } from "./languague";
-
-import type { Rgba } from "~~/modules/mx/types";
+import { typst } from "./widget";
 
 import type { EditorStateConfig } from "@codemirror/state";
-import { ThemeColors, type TypstState, type FileId } from "mnemo-wasm";
+
+import type { NoteKind } from "~/composables/notes";
+import type { Rgba } from "~~/modules/mx/types";
 
 const props = defineProps<{
   spaceId: string;
@@ -43,7 +42,10 @@ const props = defineProps<{
   readonly?: boolean;
 }>();
 
-const path = defineModel<string>({ required: true });
+const pathId = defineModel<string>({ required: true });
+const fullPath = computed(
+  () => `spaces/${props.spaceId}/${props.kind}/${pathId.value}.typ`,
+);
 
 const pixelPerPoint = ref(window.devicePixelRatio);
 // const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
@@ -96,7 +98,7 @@ const containerRef = useTemplateRef("container");
 const stateCache: { [key: string]: unknown } = {};
 
 const preludeItem = await useStorageItem(
-  () => `spaces/${props.spaceId}/prelude/main.typ`,
+  () => `spaces/${props.spaceId}/prelude.typ`,
   "",
 );
 const prelude = computed(() =>
@@ -112,10 +114,7 @@ const { t } = useI18n();
 
 const typstState = await useTypst();
 
-const text = await useStorageItem(
-  () => `spaces/${props.spaceId}/${props.kind}/${path.value}.typ`,
-  "",
-);
+const text = await useStorageItem(fullPath, "");
 
 onMounted(() => {
   const container = containerRef.value!;
@@ -132,33 +131,33 @@ onMounted(() => {
 
   let ready = false;
 
-  watchImmediate(
-    [path, () => props.spaceId, () => props.kind],
-    ([path], [oldPath]) =>
-      watch(
-        text,
-        (text) => {
-          const fileId = typstState.insertFile(path, text);
+  watchImmediate(fullPath, (fullPath, oldFullPath) =>
+    watch(
+      text,
+      (text) => {
+        const fileId = typstState.insertFile(fullPath, text);
 
-          if (oldPath)
-            stateCache[oldPath] = view.state.toJSON({ history: historyField });
+        if (oldFullPath)
+          stateCache[oldFullPath] = view.state.toJSON({
+            history: historyField,
+          });
 
-          const cache = stateCache[path];
-          const stateConfig = createStateConfig(typstState, fileId);
+        const cache = stateCache[fullPath];
+        const stateConfig = createStateConfig(typstState, fileId);
 
-          if (cache)
-            view.setState(
-              EditorState.fromJSON(cache, stateConfig, {
-                history: historyField,
-              }),
-            );
-          else {
-            stateConfig.doc = text;
-            view.setState(EditorState.create(stateConfig));
-          }
-        },
-        { once: true, immediate: !ready },
-      ),
+        if (cache)
+          view.setState(
+            EditorState.fromJSON(cache, stateConfig, {
+              history: historyField,
+            }),
+          );
+        else {
+          stateConfig.doc = text;
+          view.setState(EditorState.create(stateConfig));
+        }
+      },
+      { once: true, immediate: !ready },
+    ),
   );
 
   ready = true;
@@ -170,7 +169,7 @@ function createStateConfig(
 ): EditorStateConfig {
   return {
     extensions: [
-      typst(typstState, path, fileId, text, prelude),
+      typst(typstState, fullPath, fileId, text, prelude),
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
