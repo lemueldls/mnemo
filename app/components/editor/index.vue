@@ -97,7 +97,7 @@ const containerRef = useTemplateRef("container");
 const stateCache: { [key: string]: unknown } = {};
 
 const preludeItem = await useStorageItem(
-  () => `spaces/${props.spaceId}/prelude.typ`,
+  () => `spaces/${props.spaceId}/prelude/main.typ`,
   "",
 );
 const prelude = computed(() =>
