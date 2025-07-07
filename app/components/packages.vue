@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { UseVirtualList } from "@vueuse/components";
+
 import type { Package } from "~~/server/api/list-packages";
 
-import { UseVirtualList } from "@vueuse/components";
 
 const props = defineProps<{ spaceId: string }>();
 

@@ -1,5 +1,6 @@
-import type { H3Event } from "h3";
 import { prefixStorage } from "unstorage";
+
+import type { H3Event } from "h3";
 
 export async function useUserStorage(event: H3Event) {
   await setUserSession(event, {

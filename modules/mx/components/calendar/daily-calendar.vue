@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { today, getLocalTimeZone, getDayOfWeek } from "@internationalized/date";
+import { getDayOfWeek, getLocalTimeZone, today } from "@internationalized/date";
 
 const timeZone = getLocalTimeZone();
 const day = ref(today(timeZone));

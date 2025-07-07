@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import interact from "interactjs";
+
 import type { StickyNote } from "~/composables/sticky";
 import type { Rgba } from "~~/modules/mx/types";
 

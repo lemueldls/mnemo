@@ -1,16 +1,16 @@
 import {
-  MaterialDynamicColors,
-  SchemeTonalSpot,
-  Hct,
-  argbFromHex,
-  redFromArgb,
-  greenFromArgb,
-  blueFromArgb,
   alphaFromArgb,
+  argbFromHex,
   Blend,
+  blueFromArgb,
+  greenFromArgb,
+  Hct,
+  MaterialDynamicColors,
+  redFromArgb,
+  SchemeTonalSpot,
 } from "@material/material-color-utilities";
 
-import type { ThemeKeys, Theme } from "../types";
+import type { Theme, ThemeKeys } from "../types";
 
 const dynamicColors = Object.keys(MaterialDynamicColors).filter(
   (key) =>

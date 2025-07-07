@@ -1,11 +1,12 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import {
   createInsertSchema,
   createSelectSchema,
   // createUpdateSchema,
 } from "drizzle-valibot";
-import { cuid2, string, pipe, email, date } from "valibot";
+
+import { cuid2, date, email, pipe, string } from "valibot";
 
 export const users = sqliteTable("users", {
   id: text("id").notNull().primaryKey(),

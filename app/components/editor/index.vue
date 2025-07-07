@@ -32,7 +32,6 @@ import { typstLanguage } from "./languague";
 import { typst } from "./widget";
 
 import type { EditorStateConfig } from "@codemirror/state";
-
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 

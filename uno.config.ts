@@ -1,10 +1,10 @@
 import {
   defineConfig,
-  presetWind3,
   presetTypography,
-  transformerVariantGroup,
-  transformerDirectives,
+  presetWind3,
   transformerCompileClass,
+  transformerDirectives,
+  transformerVariantGroup,
 } from "unocss";
 
 import { presetMx } from "./modules/mx/uno.config";

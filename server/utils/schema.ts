@@ -1,10 +1,11 @@
-import type { H3Event } from "h3";
 import {
   safeParseAsync,
+  type GenericIssue,
   type GenericSchema,
   type GenericSchemaAsync,
-  type GenericIssue,
 } from "valibot";
+
+import type { H3Event } from "h3";
 
 export async function readBodyWithSchema<
   const TSchema extends
