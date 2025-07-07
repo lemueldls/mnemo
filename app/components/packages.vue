@@ -3,7 +3,6 @@ import { UseVirtualList } from "@vueuse/components";
 
 import type { Package } from "~~/server/api/list-packages";
 
-
 const props = defineProps<{ spaceId: string }>();
 
 const { $api } = useNuxtApp();
