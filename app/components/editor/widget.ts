@@ -8,7 +8,6 @@ import {
   WidgetType,
 } from "@codemirror/view";
 
-
 import { LRUCache } from "lru-cache";
 
 import type { Range } from "@codemirror/state";
@@ -20,9 +19,6 @@ import type {
   RangedFrame,
   TypstState,
 } from "mnemo-wasm";
-
-
-
 
 class TypstWidget extends WidgetType {
   #container = document.createElement("div");
