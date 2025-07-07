@@ -68,10 +68,10 @@ const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
           "
         >
           <md-select-option
-            :selected="i === currentDate.getMonth()"
-            :value="i"
             v-for="(month, i) in months"
             :key="month"
+            :selected="i === currentDate.getMonth()"
+            :value="i"
           >
             <span slot="headline">{{ month }}</span>
           </md-select-option>

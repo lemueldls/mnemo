@@ -1,25 +1,28 @@
-import {
-  Decoration,
-  ViewPlugin,
-  WidgetType,
-  EditorView,
-} from "@codemirror/view";
-
+import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
 import { StateEffect, StateField } from "@codemirror/state";
 
-import type {
-  TypstState,
-  FileId,
-  RangedFrame,
-  CompileResult,
-} from "mnemo-wasm";
+import {
+  Decoration,
+  EditorView,
+  ViewPlugin,
+  WidgetType,
+} from "@codemirror/view";
 
-import type { ViewUpdate, DecorationSet } from "@codemirror/view";
-
-import type { Range } from "@codemirror/state";
-import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
 
 import { LRUCache } from "lru-cache";
+
+import type { Range } from "@codemirror/state";
+import type { DecorationSet, ViewUpdate } from "@codemirror/view";
+
+import type {
+  CompileResult,
+  FileId,
+  RangedFrame,
+  TypstState,
+} from "mnemo-wasm";
+
+
+
 
 class TypstWidget extends WidgetType {
   #container = document.createElement("div");

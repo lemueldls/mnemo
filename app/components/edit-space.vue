@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import symbols from "~/assets/symbols.json";
-// import type { MaterialSymbol } from "material-symbols";
+import { UseVirtualList } from "@vueuse/components";
 
 import type { Space } from "~/composables/spaces";
 
-import { UseVirtualList } from "@vueuse/components";
+import symbols from "~/assets/symbols.json";
+// import type { MaterialSymbol } from "material-symbols";
+
+
 
 const space = defineModel<Space>({ required: true });
 

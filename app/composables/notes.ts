@@ -1,4 +1,4 @@
-import { ulid, decodeTime } from "ulid";
+import { decodeTime, ulid } from "ulid";
 
 export interface Note {
   id: string;

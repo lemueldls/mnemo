@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // import Chat from "./chat.vue";
-import Today from "./today.vue";
-import Tasks from "./tasks.vue";
 import Study from "./study.vue";
 import Sync from "./sync.vue";
+import Tasks from "./tasks.vue";
+import Today from "./today.vue";
 
 import type { MaterialSymbol } from "material-symbols";
 

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Rgb, ThemeColors } from "mnemo-wasm";
-
-import type { Rgba } from "~~/modules/mx/types";
 import { decodeTime } from "ulid";
 
 import type { Note } from "~/composables/notes";
+import type { Rgba } from "~~/modules/mx/types";
 
 const spaceId = usePageRouteQuery("space");
 

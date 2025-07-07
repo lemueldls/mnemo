@@ -1,4 +1,4 @@
-import type { ThemeKeys, Theme } from "../types";
+import type { Theme, ThemeKeys } from "../types";
 
 export const m3ThemeKey = Symbol("theme");
 
