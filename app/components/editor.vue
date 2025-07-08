@@ -28,12 +28,12 @@ import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId, type TypstState } from "mnemo-wasm";
 
-import { typstLanguage } from "./languague";
-import { typst } from "./widget";
-
 import type { EditorStateConfig } from "@codemirror/state";
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
+
+import { typstLanguage } from "~/lib/editor/language";
+import { typst } from "~/lib/editor/widget";
 
 const props = defineProps<{
   spaceId: string;
@@ -162,6 +162,34 @@ onMounted(() => {
   ready = true;
 });
 
+const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
+  (view, from, to, text) => {
+    if (text === " ") {
+      const state = view.state;
+      const pos = from;
+      const before = state.doc.sliceString(
+        pos - 1,
+        pos,
+      ) as keyof typeof bracketPairs;
+      const after = state.doc.sliceString(
+        pos,
+        pos + 1,
+      ) as keyof typeof bracketPairs;
+      const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
+
+      if (bracketPairs[before] && after === bracketPairs[before]) {
+        // Insert a space before the closing bracket
+        view.dispatch({
+          changes: { from: pos, to: pos, insert: " " },
+          selection: { anchor: pos + 1 },
+        });
+      }
+    }
+
+    return false;
+  },
+);
+
 function createStateConfig(
   typstState: TypstState,
   fileId: FileId,
@@ -191,6 +219,7 @@ function createStateConfig(
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
+      addSpaceBeforeClosingBracket,
       keymap.of(vscodeKeymap),
     ],
   };
@@ -198,9 +227,20 @@ function createStateConfig(
 
 const selectionBackground = computed(() => {
   const { r, g, b } = palette.value.onTertiary;
+
+  return `rgba(${r},${g},${b},0.5)`;
+});
+const selectionMatch = computed(() => {
+  const { r, g, b } = palette.value.tertiaryContainer;
+
   return `rgba(${r},${g},${b},0.5)`;
 });
 const activeLineBackground = computed(() => {
+  const { primaryContainer } = palette.value;
+
+  return `rgba(${primaryContainer.r},${primaryContainer.g},${primaryContainer.b},0.25)`;
+});
+const renderHoverBackground = computed(() => {
   const { secondaryContainer } = palette.value;
 
   return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
@@ -245,9 +285,9 @@ const activeLineBackground = computed(() => {
   }
 
   .cm-selectionMatch {
-    @apply bg-tertiary;
+    @apply bg-on-tertiary-container;
 
-    color: v-bind(selectionBackground) !important;
+    color: v-bind(selectionMatch) !important;
   }
 
   .cm-cursor {
@@ -383,10 +423,14 @@ const activeLineBackground = computed(() => {
   }
 
   .typst-render {
-    @apply hover:bg-surface-container inline-block cursor-text align-top transition-colors hover:rounded;
+    @apply inline-block cursor-text align-top transition-colors hover:rounded;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
+
+    &:hover {
+      background-color: v-bind(renderHoverBackground);
+    }
   }
 }
 </style>
