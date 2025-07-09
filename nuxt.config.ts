@@ -36,7 +36,6 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@unocss/nuxt",
     "nuxt-ssr-lit",
-    "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
   devtools: { enabled: !platform },
@@ -60,12 +59,12 @@ export default defineNuxtConfig({
       platform,
       apiBaseUrl: "",
     },
-    session: {
-      password: "",
-      maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
-      cookie: isDev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
+    oauth: {
+      github: {
+        clientId: "",
+        clientSecret: "",
+        redirectURL: "",
+      },
     },
   },
   future: { compatibilityVersion: 4 },
@@ -85,6 +84,7 @@ export default defineNuxtConfig({
     experimental: { openAPI: true, websocket: isWorkers },
   },
   hub: {
+    remote: true,
     workers: isWorkers,
     cache: true,
     database: true,

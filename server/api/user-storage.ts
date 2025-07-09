@@ -9,11 +9,11 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    await requireUserSession(request);
+    await requireUser(request.headers);
   },
 
   async open(peer) {
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     peer.subscribe(`users:${user.id}`);
   },
 
@@ -21,7 +21,7 @@ export default defineWebSocketHandler({
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
 
     const hasItem = await userStorage.hasItem(key);
@@ -41,7 +41,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     peer.unsubscribe(`users:${user.id}`);
   },
 });
