@@ -10,10 +10,8 @@ export default defineOAuthGitHubEventHandler({
 
     return sendRedirect(event, "/auth/confirm");
   },
-  onError(event, error) {
-    console.error("GitHub OAuth error:", error);
-
-    return sendRedirect(event, "/");
+  onError(_event, error) {
+    throw createError(error);
   },
 });
 
