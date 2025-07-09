@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import "@material/web/all";
-import "@material/web/labs/card/outlined-card";
-import "@material/web/labs/card/filled-card";
 import "@material/web/labs/card/elevated-card";
+import "@material/web/labs/card/filled-card";
+import "@material/web/labs/card/outlined-card";
 
 const { t, te } = useI18n();
 

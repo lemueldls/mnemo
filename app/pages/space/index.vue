@@ -15,6 +15,10 @@ watchImmediate(spaceId, async (spaceId) => {
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value!]!);
 
+watchImmediate(space, (space) => {
+  if (!space) throw createError({ status: 404 });
+});
+
 useSeoMeta({
   title: () => space.value.name,
   ogTitle: () => space.value.name,
@@ -212,7 +216,7 @@ async function createStickyNote() {
             </template>
 
             <div class="flex flex-1 items-center justify-center gap-2">
-              <md-icon>{{ space.icon }}</md-icon>
+              <md-icon v-if="space.icon">{{ space.icon }}</md-icon>
 
               <span class="line-clamp-1" :title="space.name">
                 {{ space.name }}

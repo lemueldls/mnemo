@@ -61,8 +61,12 @@ const greeting = computed(() => {
                 <md-elevated-card class="relative gap-2 p-4">
                   <md-ripple />
 
-                  <div class="flex items-center gap-2">
-                    <mx-icon :name="space.icon" class="text-primary" />
+                  <div class="flex h-6 items-center gap-2">
+                    <mx-icon
+                      v-if="space.icon"
+                      :name="space.icon"
+                      class="text-primary"
+                    />
                   </div>
 
                   <h3 class="title-large line-clamp-1" :title="space.name">
