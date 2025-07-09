@@ -24,9 +24,10 @@ export default defineWebSocketHandler({
     const { user } = await requireUserSession(peer);
     const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
 
-    const meta = await userStorage.getMeta(key);
+    const hasItem = await userStorage.hasItem(key);
+    const meta = hasItem ? await userStorage.getMeta(key) : undefined;
 
-    if (!meta.updatedAt || updatedAt > (meta.updatedAt as number)) {
+    if (!meta?.updatedAt || updatedAt > (meta.updatedAt as number)) {
       await userStorage.setItem(key, value);
       await userStorage.setMeta(key, { updatedAt });
 
