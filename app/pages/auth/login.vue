@@ -4,7 +4,7 @@ definePageMeta({ layout: "empty" });
 const session = useRouteQuery("session");
 
 window.open(`mnemo://auth/login?session=${session.value}`, "_self");
-await navigateTo("/");
+window.close();
 </script>
 
 <template>

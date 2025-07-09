@@ -36,6 +36,7 @@ if (isTauri()) {
     );
 
     cookie.value = decodeURIComponent(session);
+    window.location.reload();
   });
 
   onUnmounted(() => {

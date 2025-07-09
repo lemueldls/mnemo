@@ -154,7 +154,7 @@ export function useStorageItem<T extends StorageValue>(
     const storageItem = await getStorageItem<T>(key, initialValue);
     const item = ref(storageItem);
 
-    watchDebounced(
+    watchThrottled(
       item,
       async (value) => {
         if (!syncQueue.delete(key)) {
@@ -166,7 +166,7 @@ export function useStorageItem<T extends StorageValue>(
           useSync().updateItem(key, toRaw(value), updatedAt);
         }
       },
-      { debounce: 500, deep: true },
+      { throttle: 1000, deep: true },
     );
 
     return item as Ref<T>;
