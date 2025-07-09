@@ -16,7 +16,11 @@ const isWorkers = remoteProjectType !== "pages";
 
 // const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 
-const siteUrl = platform ? "https://tauri.localhost" : "http://localhost:3000";
+const siteUrl = platform
+  ? "https://tauri.localhost"
+  : import.meta.dev
+    ? "http://localhost:3000"
+    : "https://mnemo.nuxt.dev";
 // const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -59,7 +63,7 @@ export default defineNuxtConfig({
       maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
       cookie: isDev
         ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "lax", secure: true, httpOnly: true },
+        : { sameSite: "lax", secure: true, httpOnly: false },
     },
   },
   future: { compatibilityVersion: 4 },
