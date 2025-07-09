@@ -134,6 +134,7 @@ onMounted(() => {
     watch(
       text,
       (text) => {
+        console.log({fullPath, text})
         const fileId = typstState.insertFile(fullPath, text);
 
         if (oldFullPath)
