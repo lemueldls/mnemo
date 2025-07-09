@@ -3,6 +3,11 @@ import { isTauri } from "@tauri-apps/api/core";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
+const runtimeConfig = useRuntimeConfig();
+const { platform, apiBaseUrl } = runtimeConfig.public;
+
+const { user, clear, openInPopup } = useUserSession();
+
 if (isTauri()) {
   const unlisten = await onOpenUrl((urls) => {
     const [callback] = urls;
@@ -23,16 +28,8 @@ if (isTauri()) {
     const cookie = useCookie(
       "nuxt-session",
       import.meta.dev
-        ? {
-            sameSite: "lax",
-            secure: false,
-            httpOnly: false,
-          }
-        : {
-            sameSite: "lax",
-            secure: true,
-            httpOnly: true,
-          },
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "none", secure: true, httpOnly: false },
     );
 
     cookie.value = decodeURIComponent(session);
@@ -43,11 +40,6 @@ if (isTauri()) {
     unlisten();
   });
 }
-
-const { user, clear, openInPopup } = useUserSession();
-
-const runtimeConfig = useRuntimeConfig();
-const { platform, apiBaseUrl } = runtimeConfig.public;
 
 async function login() {
   if (platform) {
