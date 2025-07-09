@@ -1,5 +1,47 @@
 <script setup lang="ts">
+import { isTauri } from "@tauri-apps/api/core";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { openUrl } from "@tauri-apps/plugin-opener";
+
+if (isTauri()) {
+  const unlisten = await onOpenUrl((urls) => {
+    const [callback] = urls;
+    if (!callback)
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No callback URL provided",
+      });
+
+    const callbackUrl = new URL(callback);
+    const session = callbackUrl.searchParams.get("session");
+    if (!session)
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No session ID provided",
+      });
+
+    const cookie = useCookie(
+      "nuxt-session",
+      import.meta.dev
+        ? {
+            sameSite: "lax",
+            secure: false,
+            httpOnly: false,
+          }
+        : {
+            sameSite: "lax",
+            secure: true,
+            httpOnly: true,
+          },
+    );
+
+    cookie.value = decodeURIComponent(session);
+  });
+
+  onUnmounted(() => {
+    unlisten();
+  });
+}
 
 const { user, clear, openInPopup } = useUserSession();
 
@@ -53,7 +95,7 @@ function formatBytes(bytes: number) {
     <md-filled-tonal-button v-if="user" @click="clear">
       {{ $t("components.sync.logout") }}
     </md-filled-tonal-button>
-    <md-filled-button v-else disabled @click="login">
+    <md-filled-button v-else @click="login">
       {{ $t("components.sync.continue-with-github") }}
     </md-filled-button>
   </div>

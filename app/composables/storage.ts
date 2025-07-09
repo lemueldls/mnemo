@@ -15,6 +15,8 @@ const localDb = createStorage({
 const itemRefs: { [key: string]: Promise<Ref<unknown>> | undefined } = {};
 const itemRefCount: { [key: string]: number } = {};
 
+const syncQueue = new Set<string>();
+
 function shallowComputed<T, S = T>(
   options: WritableComputedOptions<T, S>,
   debugOptions?: DebuggerOptions,
@@ -90,32 +92,82 @@ async function asyncComputedRef<T>(
   return root;
 }
 
+const useSync = createSharedComposable(() => {
+  const { ready, loggedIn } = useUserSession();
+
+  let updateItemCallback: (
+    key: string,
+    value: StorageValue,
+    updatedAt: number,
+  ) => void;
+
+  whenever(
+    logicAnd(ready, loggedIn),
+    () => {
+      const { send } = useWebSocket("/api/user-storage", {
+        async onMessage(_ws, event) {
+          const { key, value, updatedAt } = JSON.parse(
+            typeof event.data === "string"
+              ? event.data
+              : await event.data.text(),
+          ) as { key: string; value: StorageValue; updatedAt: number };
+
+          const meta = await localDb.getMeta(key);
+
+          if (!meta.updatedAt || updatedAt > (meta.updatedAt as number)) {
+            await localDb.setItem(key, value);
+            await localDb.setMeta(key, { updatedAt });
+
+            const itemRef = await itemRefs[key];
+
+            if (itemRef && itemRef.value !== value) {
+              syncQueue.add(key);
+              itemRef.value = value;
+            }
+          }
+        },
+      });
+
+      updateItemCallback = (
+        key: string,
+        value: StorageValue,
+        updatedAt: number,
+      ) => {
+        send(JSON.stringify({ key, value, updatedAt }));
+      };
+    },
+    { immediate: true },
+  );
+
+  return {
+    updateItem(key: string, value: StorageValue, updatedAt: number) {
+      updateItemCallback?.(key, value, updatedAt);
+    },
+  };
+});
+
 export function useStorageItem<T extends StorageValue>(
   key: MaybeRefOrGetter<string>,
   initialValue: T,
 ) {
-  // const { $sync } = useNuxtApp();
-
   return asyncComputedRef(toRef(key), async (key) => {
     const storageItem = await getStorageItem<T>(key, initialValue);
-
     const item = ref(storageItem);
-    // const { ready, loggedIn } = useUserSession();
 
     watchDebounced(
       item,
       async (value) => {
-        await localDb.setItem(key, value);
-        await localDb.setMeta(key, { updatedAt: Date.now() });
+        if (!syncQueue.delete(key)) {
+          const updatedAt = Date.now();
 
-        // if (loggedIn.value) await updateRemoteItem(key, value);
+          await localDb.setItem(key, value);
+          await localDb.setMeta(key, { updatedAt });
+
+          useSync().updateItem(key, toRaw(value), updatedAt);
+        }
       },
       { debounce: 500, deep: true },
     );
-
-    // whenever(logicAnd(ready, loggedIn), async () => {
-    //   item.value = await $sync.getItem<T>(key, { initialValue });
-    // });
 
     return item as Ref<T>;
   });
@@ -126,28 +178,23 @@ export async function getStorageItem<T extends StorageValue>(
   initialValue: T,
 ) {
   const localItem = await localDb.getItem<T>(key);
-  if (!localItem) {
-    await updateLocalItem(key, initialValue);
 
-    // await updateRemoteItem(key, initialValue);
+  if (!localItem) {
+    await localDb.setItem(key, initialValue);
+    await localDb.setMeta(key, { updatedAt: Date.now() });
   }
 
-  // $sync.getMeta(key).then(async (syncMeta) => {
-  //   const localMeta = await localDb.getMeta(key);
-  //   if (!localMeta) throw createError("local meta not found")
+  const value = localItem || initialValue;
 
-  //   if (syncMeta.updatedAt > localMeta.updatedAt) {
-  //     const value = await $sync.getItem(key);
-  //     updateLocalItem(key, value)
-  //   }
-  // });
+  const localMeta = localDb.getMeta(key) as Promise<
+    { updatedAt?: number } | undefined
+  >;
 
-  return localItem || initialValue;
-}
+  localMeta.then((meta) => {
+    useSync().updateItem(key, value, meta?.updatedAt || Date.now());
+  });
 
-async function updateLocalItem<T extends StorageValue>(key: string, value: T) {
-  await localDb.setItem(key, value);
-  await localDb.setMeta(key, { updatedAt: Date.now() });
+  return value;
 }
 
 // const updateRemoteItem = useThrottleFn(async (key, value) => {
@@ -155,8 +202,8 @@ async function updateLocalItem<T extends StorageValue>(key: string, value: T) {
 //   await $sync.setItem(key, value!);
 // }, 500);
 
-export async function useStorageKeys(base: string) {
-  const { $sync } = useNuxtApp();
+// export async function useStorageKeys(base: string) {
+//   const { $sync } = useNuxtApp();
 
-  return await $sync.getKeys(base);
-}
+//   return await $sync.getKeys(base);
+// }

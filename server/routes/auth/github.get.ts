@@ -4,11 +4,11 @@ import type { H3Event } from "h3";
 
 export default defineOAuthGitHubEventHandler({
   config: { emailRequired: true },
-  async onSuccess(event, { user, tokens }) {
+  async onSuccess(event, { user }) {
     if (!user.email) throw createError("Email is required");
     await login(event, user.email);
 
-    return sendRedirect(event, "/confirm");
+    return sendRedirect(event, "/auth/confirm");
   },
   onError(event, error) {
     console.error("GitHub OAuth error:", error);
