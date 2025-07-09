@@ -13,7 +13,7 @@ async function login() {
     });
     if (error) throw createError(error);
   } else {
-    const { data, error } = await auth.signIn.social({
+    const { error } = await auth.signIn.social({
       provider: "github",
     });
     if (error) throw createError(error);

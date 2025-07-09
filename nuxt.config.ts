@@ -84,7 +84,6 @@ export default defineNuxtConfig({
     experimental: { openAPI: true, websocket: isWorkers },
   },
   hub: {
-    remote: true,
     workers: isWorkers,
     cache: true,
     database: true,
