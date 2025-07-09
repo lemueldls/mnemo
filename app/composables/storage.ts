@@ -16,8 +16,6 @@ export const useCrdt = createSharedComposable(async () => {
   const bytes = await localDb.getItemRaw("crdt");
   if (bytes) doc.import(bytes);
 
-  const { ready, loggedIn } = useUserSession();
-
   const runtimeConfig = useRuntimeConfig();
   const { apiBaseUrl } = runtimeConfig.public;
 
@@ -34,7 +32,8 @@ export const useCrdt = createSharedComposable(async () => {
     },
   });
 
-  whenever(logicAnd(ready, loggedIn), open, { immediate: true });
+  const { loggedIn } = useAuth();
+  whenever(loggedIn, open, { immediate: true });
 
   doc.subscribeLocalUpdates((bytes) => {
     send(bytes.buffer as ArrayBuffer);
@@ -88,8 +87,6 @@ export const useCrdtUndoManager = createSharedComposable(async () => {
 });
 
 const useSync = createSharedComposable(() => {
-  const { ready, loggedIn } = useUserSession();
-
   const runtimeConfig = useRuntimeConfig();
   const { apiBaseUrl } = runtimeConfig.public;
 
@@ -118,7 +115,8 @@ const useSync = createSharedComposable(() => {
     },
   });
 
-  whenever(logicAnd(ready, loggedIn), open, { immediate: true });
+  const { loggedIn } = useAuth();
+  whenever(loggedIn, open, { immediate: true });
 
   return {
     updateItem(key: string, value: StorageValue, updatedAt: number) {

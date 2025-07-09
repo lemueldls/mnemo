@@ -1,10 +1,10 @@
 export default defineWebSocketHandler({
   async upgrade(request) {
-    await requireUserSession(request);
+    await requireUser(request.headers);
   },
 
   async open(peer) {
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     const key = `users:${user.id}:crdt`;
 
     peer.subscribe(key);
@@ -16,7 +16,7 @@ export default defineWebSocketHandler({
   },
 
   async message(peer, message) {
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     const key = `users:${user.id}:crdt`;
     const bytes = message.uint8Array();
 
@@ -26,7 +26,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    const { user } = await requireUserSession(peer);
+    const user = await requireUser(peer.request.headers);
     peer.unsubscribe(`users:${user.id}:crdt`);
   },
 });

@@ -1,52 +1,28 @@
 <script setup lang="ts">
+import { signInSocial } from "@daveyplate/better-auth-tauri";
 import { isTauri } from "@tauri-apps/api/core";
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
-import { openUrl } from "@tauri-apps/plugin-opener";
 
-const runtimeConfig = useRuntimeConfig();
-const { platform, apiBaseUrl } = runtimeConfig.public;
-
-const { user, clear, openInPopup } = useUserSession();
-
-if (isTauri()) {
-  const unlisten = await onOpenUrl((urls) => {
-    const [callback] = urls;
-    if (!callback)
-      throw createError({
-        statusCode: 400,
-        statusMessage: "No callback URL provided",
-      });
-
-    const callbackUrl = new URL(callback);
-    const session = callbackUrl.searchParams.get("session");
-    if (!session)
-      throw createError({
-        statusCode: 400,
-        statusMessage: "No session ID provided",
-      });
-
-    const maxAge = 60 * 60 * 24 * 7 * 4 * 4; // 4 months
-    const cookie = useCookie(
-      "nuxt-session",
-      import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: false, maxAge }
-        : { sameSite: "none", secure: true, httpOnly: false, maxAge },
-    );
-
-    cookie.value = decodeURIComponent(session);
-    window.location.reload();
-  });
-
-  onUnmounted(() => {
-    unlisten();
-  });
-}
+const auth = useAuth();
+const { user } = auth;
 
 async function login() {
-  if (platform) {
-    const baseUrl = apiBaseUrl ? new URL(apiBaseUrl) : useRequestURL();
-    await openUrl(new URL("/auth/github", baseUrl));
-  } else openInPopup("/auth/github");
+  if (isTauri()) {
+    const { error } = await signInSocial({
+      authClient: auth.client,
+      provider: "github",
+    });
+    if (error) throw createError(error);
+  } else {
+    const { data, error } = await auth.signIn.social({
+      provider: "github",
+    });
+    if (error) throw createError(error);
+  }
+}
+
+async function logout() {
+  const { error } = await auth.signOut();
+  if (error) throw createError(error);
 }
 
 const quota = ref<number>();
@@ -93,7 +69,7 @@ function formatBytes(bytes: number) {
       <md-linear-progress :value="usage / quota" />
     </md-outlined-card>
 
-    <md-filled-tonal-button v-if="user" @click="clear">
+    <md-filled-tonal-button v-if="user" @click="logout">
       {{ $t("components.sync.logout") }}
     </md-filled-tonal-button>
     <md-filled-button v-else @click="login">
