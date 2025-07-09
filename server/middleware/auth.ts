@@ -1,12 +1,11 @@
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event);
+  const origin = getRequestHeader(event, "Origin");
 
   setHeaders(event, {
-    // "Cross-Origin-Resource-Policy": "cross-origin",
-    // "Cross-Origin-Opener-Policy": "unsafe-none",
-    // "Cross-Origin-Embedder-Policy": "unsafe-none",
-    "Access-Control-Allow-Origin": url.origin,
-    // "Access-Control-Allow-Credentials": "true",
-    // "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Origin": origin || url.origin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true",
   });
 });
