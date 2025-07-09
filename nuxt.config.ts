@@ -58,8 +58,8 @@ export default defineNuxtConfig({
       password: "",
       maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
       cookie: isDev
-        ? { sameSite: "none", secure: true }
-        : { sameSite: "lax", secure: false },
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "lax", secure: true, httpOnly: true },
     },
   },
   future: { compatibilityVersion: 4 },

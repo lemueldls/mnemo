@@ -10,8 +10,7 @@
 
 ## TODO
 
-- Sync notes with Durable Objects.
-- Assets manager.
+- Static assets manager.
 - Publishing service.
 - Better daily calendar.
 - Better local search.
