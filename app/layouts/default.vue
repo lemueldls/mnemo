@@ -63,9 +63,11 @@ const pages: Page[] = [
             }"
           >
             <template #leading>
-              <md-icon>
-                {{ page.icon }}
-              </md-icon>
+              <div class="size-6">
+                <md-icon v-if="page.icon">
+                  {{ page.icon }}
+                </md-icon>
+              </div>
             </template>
 
             {{ page.name }}
@@ -92,7 +94,13 @@ const pages: Page[] = [
           <mx-theme :color="space.color" harmonize>
             <mx-nav-drawer-item>
               <template #leading>
-                <mx-icon :name="space.icon" class="text-primary" />
+                <div class="size-6">
+                  <mx-icon
+                    v-if="space.icon"
+                    :name="space.icon"
+                    class="text-primary"
+                  />
+                </div>
               </template>
 
               {{ space.name }}

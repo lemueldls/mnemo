@@ -259,7 +259,12 @@ function timeToMinutes(time: string) {
             <md-ripple />
 
             <div class="flex flex-row items-center justify-between gap-2">
-              <md-icon class="text-primary">{{ space.icon }}</md-icon>
+              <div class="h-6">
+                <md-icon v-if="space.icon" class="text-primary">
+                  {{ space.icon }}
+                </md-icon>
+              </div>
+
               <md-radio
                 name="space"
                 :value="id"
