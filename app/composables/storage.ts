@@ -1,98 +1,14 @@
-import { LoroDoc, type Container } from "loro-crdt";
+import { LoroDoc, UndoManager, type Container } from "loro-crdt";
 import { createStorage, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
-
-import {
-  onWatcherCleanup,
-  type DebuggerOptions,
-  type WatchStopHandle,
-  type WritableComputedOptions,
-} from "vue";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-const itemRefs: { [key: string]: Promise<Ref<unknown>> | undefined } = {};
-const itemRefCount: { [key: string]: number } = {};
+const itemRefs: { [key: string]: Ref<unknown> | undefined } = {};
 
 const syncQueue = new Set<string>();
-
-function shallowComputed<T, S = T>(
-  options: WritableComputedOptions<T, S>,
-  debugOptions?: DebuggerOptions,
-): WritableComputedRef<T, S> {
-  const root = computed(options, debugOptions);
-  Object.defineProperty(root, "__v_isShallow", {
-    configurable: true,
-    enumerable: false,
-    value: true,
-  });
-
-  return root;
-}
-
-async function asyncComputedRef<T>(
-  key: MaybeRefOrGetter<string>,
-  handler: (key: string) => Promise<Ref<T>>,
-) {
-  let item: Ref<T>;
-  const data = shallowRef<T>();
-
-  const root = shallowComputed({
-    get: () => data.value!,
-    set(value) {
-      item.value = value;
-    },
-  });
-
-  let stopSync: WatchStopHandle;
-  await new Promise<void>((resolve) =>
-    watchImmediate(toRef(key), async (key) => {
-      itemRefCount[key] ??= 0;
-      itemRefCount[key]++;
-
-      onWatcherCleanup(() => {
-        stopSync?.();
-
-        if (!itemRefCount[key] || itemRefCount[key] <= 1) {
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete itemRefs[key];
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete itemRefCount[key];
-        } else itemRefCount[key]--;
-      });
-
-      itemRefs[key] ??= handler(key);
-      item = (await itemRefs[key]) as Ref<T>;
-
-      tryOnScopeDispose(async () => {
-        stopSync?.();
-
-        itemRefs[key] = undefined;
-        item = await handler(key);
-
-        const firstItem = itemRefs[key] as unknown as Promise<Ref<T>>;
-        if (firstItem) item = await firstItem;
-        else itemRefs[key] = Promise.resolve(item);
-        itemRefs[key] = Promise.resolve(item);
-
-        stopSync = watchImmediate(item, (item) => {
-          data.value = item;
-        });
-      });
-
-      stopSync = watchImmediate(item, (item) => {
-        data.value = item;
-      });
-
-      resolve();
-      triggerRef(root);
-    }),
-  );
-
-  return root;
-}
 
 export const useCrdt = createSharedComposable(async () => {
   const doc = new LoroDoc();
@@ -140,14 +56,16 @@ export const useCrdt = createSharedComposable(async () => {
             for (const [key, value] of Object.entries(diff.updated))
               item[key] = value;
 
-            await localDb.setItem(key, item);
-            await localDb.setMeta(key, { updatedAt: Date.now() });
+            const itemRef = itemRefs[key];
 
-            const itemRef = await itemRefs[key];
             if (itemRef && itemRef.value !== item) {
               syncQueue.add(key);
               itemRef.value = item;
+            } else {
+              await localDb.setItem(key, item);
+              await localDb.setMeta(key, { updatedAt: Date.now() });
             }
+
             break;
           }
         }
@@ -156,6 +74,17 @@ export const useCrdt = createSharedComposable(async () => {
   });
 
   return doc;
+});
+
+export const useCrdtUndoManager = createSharedComposable(async () => {
+  const doc = await useCrdt();
+
+  const undoManager = new UndoManager(doc, {
+    maxUndoSteps: 100,
+    mergeInterval: 1000,
+  });
+
+  return undoManager;
 });
 
 const useSync = createSharedComposable(() => {
@@ -177,15 +106,14 @@ const useSync = createSharedComposable(() => {
       const meta = await localDb.getMeta(key);
 
       if (!meta.updatedAt || updatedAt > (meta.updatedAt as number)) {
-        await localDb.setItem(key, value);
-        await localDb.setMeta(key, { updatedAt });
-
-        const itemRef = await itemRefs[key];
+        const itemRef = itemRefs[key];
 
         if (itemRef && itemRef.value !== value) {
           syncQueue.add(key);
           itemRef.value = value;
-        }
+        } else await localDb.setItem(key, value);
+
+        await localDb.setMeta(key, { updatedAt });
       }
     },
   });
@@ -199,13 +127,19 @@ const useSync = createSharedComposable(() => {
   };
 });
 
-export function useStorageItem<T extends StorageValue>(
+export async function useStorageItem<T extends StorageValue>(
   key: MaybeRefOrGetter<string>,
   initialValue: T,
 ) {
-  return asyncComputedRef(toRef(key), async (key) => {
+  const keyRef = toRef(key);
+
+  const { error, data, pending } = await useAsyncData(key, async () => {
+    const key = keyRef.value;
+
     const storageItem = await getStorageItem<T>(key, initialValue);
     const item = ref(storageItem);
+
+    itemRefs[key] = item;
 
     watchThrottled(
       item,
@@ -224,6 +158,29 @@ export function useStorageItem<T extends StorageValue>(
 
     return item as Ref<T>;
   });
+
+  watchImmediate(error, (error) => {
+    if (error) throw createError(error);
+  });
+
+  const root = computed<T>({
+    get: (oldValue) => (pending.value ? oldValue! : data.value!.value),
+    set: (value) => {
+      data.value!.value = value;
+    },
+  });
+
+  Object.defineProperty(root, "__v_isShallow", {
+    configurable: true,
+    enumerable: false,
+    value: true,
+  });
+
+  whenever(logicNot(pending), () => {
+    triggerRef(root);
+  });
+
+  return root;
 }
 
 export async function useStorageText(key: string, initialValue?: string) {
