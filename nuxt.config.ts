@@ -18,7 +18,7 @@ const isWorkers = remoteProjectType !== "pages";
 
 const siteUrl = platform
   ? "https://tauri.localhost"
-  : import.meta.dev
+  : isDev
     ? "http://localhost:3000"
     : "https://mnemo.nuxt.dev";
 // const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
@@ -63,7 +63,7 @@ export default defineNuxtConfig({
       maxAge: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
       cookie: isDev
         ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "lax", secure: true, httpOnly: false },
+        : { sameSite: "none", secure: true, httpOnly: false },
     },
   },
   future: { compatibilityVersion: 4 },
