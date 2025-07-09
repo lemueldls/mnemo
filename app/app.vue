@@ -71,19 +71,13 @@ onMounted(() => {
   resize();
 
   window.addEventListener("resize", resize);
-  window.addEventListener("mousedown", (event) => {
+  window.addEventListener("mouseup", (event) => {
     x.value = event.clientX;
     y.value = event.clientY;
   });
 });
 
 const ready = ref(false);
-
-// const session = useCookie("nuxt-session");
-
-// watchEffect(() => {
-//   console.log({ session: session.value });
-// });
 </script>
 
 <template>
