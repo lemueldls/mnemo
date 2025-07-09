@@ -15,7 +15,7 @@ const space = ref<Space>({
 
 function createSpace() {
   const id = createId();
-  spaces.value[id] = space.value;
+  spaces.set(id, space.value);
 
   // void router.push(`/space?id=${id}`);
   open.value = false;

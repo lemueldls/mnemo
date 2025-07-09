@@ -1,3 +1,5 @@
+import wasm from "vite-plugin-wasm";
+
 const defaultLocale = "en";
 const locales = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
@@ -87,6 +89,9 @@ export default defineNuxtConfig({
     cache: true,
     database: true,
     kv: true,
+  },
+  vite: {
+    plugins: [wasm()],
   },
   fonts: {
     families: [

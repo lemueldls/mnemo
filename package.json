@@ -42,6 +42,7 @@
     "drizzle-valibot": "^0.4.2",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
+    "loro-crdt": "^1.5.9",
     "lru-cache": "^11.1.0",
     "material-symbols": "^0.31.7",
     "mnemo-wasm": "workspace:*",
