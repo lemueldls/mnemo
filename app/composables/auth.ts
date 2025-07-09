@@ -1,17 +1,12 @@
-import { defu } from "defu";
 import { createAuthClient } from "better-auth/client";
 import { setupBetterAuthTauri } from "@daveyplate/better-auth-tauri";
+
 import type {
   InferSessionFromClient,
   InferUserFromClient,
   ClientOptions,
 } from "better-auth/client";
 import type { RouteLocationRaw } from "vue-router";
-
-interface RuntimeAuthConfig {
-  redirectUserTo: RouteLocationRaw | string;
-  redirectGuestTo: RouteLocationRaw | string;
-}
 
 export function useAuth() {
   const { apiBaseUrl } = useRuntimeConfig().public;
@@ -34,20 +29,13 @@ export function useAuth() {
     },
     onSuccess(callbackURL) {
       console.log("Auth successful, callback URL:", callbackURL);
-      if (callbackURL) navigateTo(callbackURL);
+      if (callbackURL) navigateTo(callbackURL, { external: true });
     },
     onError(error) {
       throw createError(error);
     },
   });
 
-  const options = defu(
-    useRuntimeConfig().public.auth as Partial<RuntimeAuthConfig>,
-    {
-      redirectUserTo: "/",
-      redirectGuestTo: "/",
-    },
-  );
   const session = useState<InferSessionFromClient<ClientOptions> | null>(
     "auth:session",
     () => null,
@@ -99,7 +87,6 @@ export function useAuth() {
 
       return res;
     },
-    options,
     fetchSession,
     client,
   };
