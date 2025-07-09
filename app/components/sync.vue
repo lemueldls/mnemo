@@ -25,11 +25,12 @@ if (isTauri()) {
         statusMessage: "No session ID provided",
       });
 
+    const maxAge = 60 * 60 * 24 * 7 * 4 * 4; // 4 months
     const cookie = useCookie(
       "nuxt-session",
       import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
+        ? { sameSite: "lax", secure: false, httpOnly: false, maxAge }
+        : { sameSite: "none", secure: true, httpOnly: false, maxAge },
     );
 
     cookie.value = decodeURIComponent(session);
@@ -82,8 +83,6 @@ function formatBytes(bytes: number) {
 
       <md-linear-progress :value="usage / quota" />
     </md-outlined-card>
-
-    <span class="text-error">TODO</span>
 
     <md-filled-tonal-button v-if="user" @click="clear">
       {{ $t("components.sync.logout") }}

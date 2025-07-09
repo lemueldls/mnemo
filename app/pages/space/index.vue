@@ -38,15 +38,14 @@ const screenshotOpen = ref(false);
 const router = useRouter();
 
 function deleteSpace() {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  delete spaces.value[spaceId.value];
+  spaces.delete(spaceId.value);
 
   void router.push("/");
   infoOpen.value = false;
 }
 
 function updateSpace() {
-  spaces.value[spaceId.value] = space;
+  spaces.set(spaceId.value, space.value);
 }
 
 const screenshotBlob = ref<Blob>();

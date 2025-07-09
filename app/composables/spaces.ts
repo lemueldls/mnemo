@@ -8,5 +8,5 @@ export interface Space {
 }
 
 export async function useSpaces() {
-  return await useStorageItem<{ [id: string]: Space }>("spaces.json", {});
+  return await useStorageMap<{ [id: string]: Space }>("spaces.json");
 }
