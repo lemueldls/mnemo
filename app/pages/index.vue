@@ -6,10 +6,6 @@ const name = await useStorageItem("name", "");
 const { t, d } = useI18n();
 const date = useNow({ interval: 1000 * 60 * 15 });
 
-const newSpaceOpen = useNewSpaceOpen();
-
-const spaces = await useSpaces();
-
 const greeting = computed(() => {
   const nameValue = name.value;
   const hour = date.value.getHours();
@@ -30,6 +26,12 @@ const greeting = computed(() => {
           ? t("pages.index.greeting.with-name.night", { name: nameValue })
           : t("pages.index.greeting.night");
 });
+
+useHead({ title: greeting });
+
+const spaces = await useSpaces();
+
+const newSpaceOpen = useNewSpaceOpen();
 </script>
 
 <template>
