@@ -8,6 +8,8 @@ const localDb = createStorage({
 
 const itemRefs: { [key: string]: Ref<unknown> | undefined } = {};
 
+const syncQueue = new Set<string>();
+
 export const useCrdt = createSharedComposable(async () => {
   const { LoroDoc } = await import("loro-crdt");
 
@@ -64,7 +66,10 @@ export const useCrdt = createSharedComposable(async () => {
             await localDb.setMeta(key, { updatedAt: Date.now() });
 
             const itemRef = itemRefs[key];
-            if (itemRef) itemRef.value = item;
+            if (itemRef && itemRef.value !== item) {
+              syncQueue.add(key);
+              itemRef.value = item;
+            }
 
             break;
           }
@@ -97,7 +102,10 @@ const useSync = createSharedComposable(() => {
         await localDb.setMeta(key, { updatedAt });
 
         const itemRef = itemRefs[key];
-        if (itemRef) itemRef.value = value;
+        if (itemRef && itemRef.value !== value) {
+          syncQueue.add(key);
+          itemRef.value = value;
+        }
       }
     },
   });
@@ -129,14 +137,14 @@ export async function useStorageItem<T extends StorageValue>(
     watchThrottled(
       item,
       async (value) => {
-        // if (!syncQueue.delete(key)) {
-        const updatedAt = Date.now();
+        if (!syncQueue.delete(key)) {
+          const updatedAt = Date.now();
 
-        await localDb.setItem(key, value);
-        await localDb.setMeta(key, { updatedAt });
+          await localDb.setItem(key, value);
+          await localDb.setMeta(key, { updatedAt });
 
-        useSync().updateItem(key, value, updatedAt);
-        // }
+          useSync().updateItem(key, value, updatedAt);
+        }
       },
       { throttle: 1000, deep: true },
     );
