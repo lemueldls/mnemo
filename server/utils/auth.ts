@@ -27,6 +27,13 @@ export function serverAuth() {
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
+    trustedOrigins: [
+      "https://mnemo.nuxt.dev",
+      "https://mnemo.pages.dev",
+      "https://notes.lemueldls.dev",
+      "https://notes.workers.lemueldls.dev",
+      "https://tauri.localhost",
+    ],
     database: {
       dialect: new D1Dialect({
         database: hubDatabase() as D1Database,
@@ -61,7 +68,7 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       defaultCookieAttributes: import.meta.dev
         ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: true },
+        : { sameSite: "none", secure: true, httpOnly: false },
     },
   });
 
