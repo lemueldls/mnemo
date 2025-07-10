@@ -169,8 +169,8 @@ jobs:
         with:
           name: "bundles-${{matrix.os}}${{matrix.args}}"
           path: |
-            target/**/release/bundle
-            target/**/release/mnemo*
+            platform/target/**/release/bundle
+            platform/target/**/release/mnemo*
 
       - name: 📤 Upload debug symbols (windows only)
         if: contains(matrix.os, 'windows')
@@ -178,13 +178,13 @@ jobs:
         with:
           name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
           path: |
-            target/release/mnemo.pdb
+            platform/target/release/mnemo.pdb
 
       - name: 📤 Publish debug symbols to release (windows only)
         if: contains(matrix.os, 'windows') && (inputs.tagName != '')
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
-          files: target/release/mnemo.pdb
+          files: platform/target/release/mnemo.pdb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -193,14 +193,14 @@ jobs:
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: |
-            target/release/bundle/nsis/*
-            target/**/release/bundle/macos/*.tar.gz*
-            target/**/release/bundle/dmg/*.dmg
-            target/release/bundle/deb/*.deb
-            target/release/bundle/rpm/*.rpm
-            target/**/release/mnemo
-            target/release/mnemo.exe
-            target/release/mnemo.pdb
+            platform/target/release/bundle/nsis/*
+            platform/target/**/release/bundle/macos/*.tar.gz*
+            platform/target/**/release/bundle/dmg/*.dmg
+            platform/target/release/bundle/deb/*.deb
+            platform/target/release/bundle/rpm/*.rpm
+            platform/target/**/release/mnemo
+            platform/target/release/mnemo.exe
+            platform/target/release/mnemo.pdb
 
       - name: 📜 Create SBOM
         uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0
@@ -214,8 +214,8 @@ jobs:
         uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
         with:
           subject-path: ${{
-            contains(matrix.os, 'ubuntu') && 'target/release/mnemo' ||
-            contains(matrix.os, 'windows') && 'target/release/mnemo.exe' ||
-            contains(matrix.os, 'macos') && 'target/universal-apple-darwin/release/mnemo'
+            contains(matrix.os, 'ubuntu') && 'platform/target/release/mnemo' ||
+            contains(matrix.os, 'windows') && 'platform/target/release/mnemo.exe' ||
+            contains(matrix.os, 'macos') && 'platform/target/universal-apple-darwin/release/mnemo'
             }}
           sbom-path: "sbom.spdx.json"
