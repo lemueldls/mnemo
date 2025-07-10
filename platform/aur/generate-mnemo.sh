@@ -17,7 +17,7 @@ arch=('x86_64')
 url="https://github.com/lemueldls/mnemo"
 license=('MIT')
 depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup' 'pango' 'webkit2gtk-4.1' 'openssl')
-makedepends=('cargo' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
+makedepends=('cargo' 'pnpm' 'nodejs' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
 source=("\$pkgname-v\$pkgver.tar.gz::https://github.com/lemueldls/\$pkgname/archive/refs/tags/\$pkgname-v\$pkgver.tar.gz")
 sha256sums=('$sha256sum')
 _builddir="\$pkgname-\$pkgname-v\$pkgver/platform"
