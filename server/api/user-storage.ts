@@ -9,23 +9,26 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    console.log("[UPGRADE]", { headers: request.headers });
-    await requireUser(request.headers);
+    const { headers, context } = request;
+
+    const auth = serverAuth();
+
+    const session = await auth.api.getSession({ headers });
+    if (!session)
+      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+
+    context.base = `users:${session.user.id}`;
   },
 
   async open(peer) {
-    console.log("[OPEN]", { headers: peer.request.headers });
-    const user = await requireUser(peer.request.headers);
-    peer.subscribe(`users:${user.id}`);
+    peer.subscribe(peer.context.base as string);
   },
 
   async message(peer, message) {
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    console.log("[MESSAGE]", { headers: peer.request.headers });
-    const user = await requireUser(peer.request.headers);
-    const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
+    const userStorage = prefixStorage(hubKV(), peer.context.base as string);
 
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;
@@ -34,7 +37,7 @@ export default defineWebSocketHandler({
       await userStorage.setItem(key, value);
       await userStorage.setMeta(key, { updatedAt });
 
-      peer.publish(`users:${user.id}`, item);
+      peer.publish(peer.context.base as string, item);
     } else
       peer.send({
         key,
@@ -44,8 +47,6 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    console.log("[CLOSE]", { headers: peer.request.headers });
-    const user = await requireUser(peer.request.headers);
-    peer.unsubscribe(`users:${user.id}`);
+    peer.unsubscribe(peer.context.base as string);
   },
 });
