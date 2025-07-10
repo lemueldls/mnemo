@@ -59,6 +59,9 @@ export default defineNuxtConfig({
       platform,
       apiBaseUrl: "",
     },
+    session: {
+      password: "",
+    },
     oauth: {
       github: {
         clientId: "",

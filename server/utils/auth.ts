@@ -20,13 +20,13 @@ export async function requireUser(headers: Headers) {
 let _auth: ReturnType<typeof betterAuth>;
 
 export function serverAuth() {
+  const { password } = runtimeConfig.session;
   const { github } = runtimeConfig.oauth;
-
-  // hubKV().clear();
 
   _auth ||= betterAuth({
     appName: "Mnemo",
     baseURL: getBaseURL(),
+    secret: password || undefined,
     database: {
       dialect: new D1Dialect({
         database: hubDatabase() as D1Database,
