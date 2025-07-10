@@ -65,9 +65,7 @@ export const useCrdt = createSharedComposable(async () => {
             await localDb.setItem(key, item);
             await localDb.setMeta(key, { updatedAt: Date.now() });
 
-            if (itemRef && itemRef.value !== item) {
-              itemRef.value = item;
-            }
+            if (itemRef) itemRef.value = item;
 
             break;
           }
@@ -101,9 +99,7 @@ const useSync = createSharedComposable(() => {
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt });
 
-        if (itemRef && itemRef.value !== value) {
-          itemRef.value = value;
-        }
+        if (itemRef) itemRef.value = value;
       }
     },
   });
