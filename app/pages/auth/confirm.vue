@@ -4,7 +4,7 @@ definePageMeta({ layout: "empty" });
 const token = useRouteQuery("token");
 
 const cookie = useCookie(
-  "mnemo.session_token",
+  import.meta.dev ? "mnemo.session_token" : "_Secure-mnemo.session_token",
   import.meta.dev
     ? { sameSite: "lax", secure: false, httpOnly: false }
     : { sameSite: "none", secure: true, httpOnly: false },
