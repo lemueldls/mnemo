@@ -1,8 +1,5 @@
-import { object, string } from "valibot";
-import { validatedQuery } from "~~/server/utils/schema";
-
 export default defineEventHandler(async (event) => {
-  const query = await validatedQuery(event, object({ redirect: string() }));
+  const query = getQuery<{ redirect: string }>(event);
   const token = getCookie(event, "mnemo.session_token");
 
   if (!token)
