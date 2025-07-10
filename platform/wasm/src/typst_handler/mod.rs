@@ -98,7 +98,7 @@ impl TypstState {
         spec: &str,
         files: Vec<PackageFile>,
     ) -> Result<(), TypstError> {
-        let package_spec = Some(PackageSpec::from_str(spec).map_err(|err| TypstError(err))?);
+        let package_spec = Some(PackageSpec::from_str(spec).map_err(TypstError)?);
 
         for file in files {
             let id = FileId::new(package_spec.clone(), VirtualPath::new(&file.path));
@@ -290,7 +290,7 @@ impl TypstState {
                 }
 
                 let source = self.world.main_source_mut();
-                source.replace(&partial_ir.get(..end_byte)?);
+                source.replace(partial_ir.get(..end_byte)?);
 
                 // crate::log!("[RANGE_UTF8]: {aux_range:?}");
                 // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
