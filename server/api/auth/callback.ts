@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const query = await validatedQuery(event, object({ redirect: string() }));
   const token = getCookie(
     event,
-    import.meta.dev ? "mnemo.session_token" : "_Secure-mnemo.session_token",
+    import.meta.dev ? "mnemo.session_token" : "__Secure-mnemo.session_token",
   );
 
   if (!token)
