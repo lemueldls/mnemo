@@ -5,10 +5,8 @@ export default defineEventHandler(async (event) => {
   if (!token)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
-  const url = new URL(
-    `/auth/confirm?token=${encodeURIComponent(token)}`,
-    query.redirect,
+  await sendRedirect(
+    event,
+    `${query.redirect}/auth/confirm?token=${encodeURIComponent(token)}`,
   );
-
-  await sendRedirect(event, url.href);
 });
