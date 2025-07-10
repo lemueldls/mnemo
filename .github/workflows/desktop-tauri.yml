@@ -24,10 +24,10 @@ on:
         required: true
       NUXT_OAUTH_GITHUB_REDIRECT_URL:
         required: true
-      WINDOWS_CERTIFICATE:
-        required: true
-      WINDOWS_CERTIFICATE_PASSWORD:
-        required: true
+      # WINDOWS_CERTIFICATE:
+      #   required: true
+      # WINDOWS_CERTIFICATE_PASSWORD:
+      #   required: true
 
 jobs:
   build:
@@ -133,17 +133,17 @@ jobs:
         run: |
           cargo --locked test --package=models
 
-      - name: 🔑 Import windows signing certificate
-        if: contains(matrix.os, 'windows')
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-        run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
-          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
-          Remove-Item -path certificate -include tempCert.txt
-          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
+      # - name: 🔑 Import windows signing certificate
+      #   if: contains(matrix.os, 'windows')
+      #   env:
+      #     WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      #     WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      #   run: |
+      #     New-Item -ItemType directory -Path certificate
+      #     Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
+      #     certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+      #     Remove-Item -path certificate -include tempCert.txt
+      #     Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
 
       - name: 📥 Install pnpm
         uses: pnpm/action-setup@v4
