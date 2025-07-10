@@ -1,3 +1,5 @@
+name-template: "Mnemo Draft v$RESOLVED_VERSION"
+tag-template: "mnemo-v$RESOLVED_VERSION"
 change-template: "- #$NUMBER $TITLE @$AUTHOR"
 sort-direction: ascending
 
