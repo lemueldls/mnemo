@@ -78,6 +78,7 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-06-03",
   nitro: {
+    minify: false,
     moduleSideEffects: ["@material/web"],
     prerender: {
       routes: ["/", "/calendar", "/space"],
