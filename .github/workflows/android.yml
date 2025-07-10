@@ -76,6 +76,18 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=${SCCACHE_PATH}" >> $GITHUB_ENV
 
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📥 Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: 📥 Install frontend dependencies
+        run: pnpm install
+
       - name: 🔨 Build app bundle
         run: |
           pnpm tauri android init
