@@ -65,13 +65,6 @@ jobs:
       # - name: 📝 Check spelling using typos-action
       #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
-      - name: 📥 Cached install cargo-auditable
-        uses: baptiste0928/cargo-install@e38323ef017552d7f7af73a3f4db467f278310ed # v3
-        with:
-          crate: cargo-auditable
-          version: 0.6.7
-          locked: true
-
       - name: 📦 Run sccache
         if: ${{ !inputs.publish }}
         uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
