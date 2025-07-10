@@ -8,8 +8,6 @@ const localDb = createStorage({
 
 const itemRefs: { [key: string]: Ref<unknown> | undefined } = {};
 
-const syncQueue = new Set<string>();
-
 export const useCrdt = createSharedComposable(async () => {
   const { LoroDoc } = await import("loro-crdt");
 
@@ -64,12 +62,11 @@ export const useCrdt = createSharedComposable(async () => {
 
             const itemRef = itemRefs[key];
 
+            await localDb.setItem(key, item);
+            await localDb.setMeta(key, { updatedAt: Date.now() });
+
             if (itemRef && itemRef.value !== item) {
-              syncQueue.add(key);
               itemRef.value = item;
-            } else {
-              await localDb.setItem(key, item);
-              await localDb.setMeta(key, { updatedAt: Date.now() });
             }
 
             break;
@@ -101,12 +98,12 @@ const useSync = createSharedComposable(() => {
       if (!meta.updatedAt || updatedAt > (meta.updatedAt as number)) {
         const itemRef = itemRefs[key];
 
-        if (itemRef && itemRef.value !== value) {
-          syncQueue.add(key);
-          itemRef.value = value;
-        } else await localDb.setItem(key, value);
-
+        await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt });
+
+        if (itemRef && itemRef.value !== value) {
+          itemRef.value = value;
+        }
       }
     },
   });
@@ -138,14 +135,14 @@ export async function useStorageItem<T extends StorageValue>(
     watchThrottled(
       item,
       async (value) => {
-        if (!syncQueue.delete(key)) {
-          const updatedAt = Date.now();
+        // if (!syncQueue.delete(key)) {
+        const updatedAt = Date.now();
 
-          await localDb.setItem(key, value);
-          await localDb.setMeta(key, { updatedAt });
+        await localDb.setItem(key, value);
+        await localDb.setMeta(key, { updatedAt });
 
-          useSync().updateItem(key, toRaw(value), updatedAt);
-        }
+        useSync().updateItem(key, value, updatedAt);
+        // }
       },
       { throttle: 1000, deep: true },
     );
