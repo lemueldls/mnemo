@@ -32,8 +32,10 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-                .title("Mnemo")
                 .background_color(Color::from_str("#4c4d72").unwrap());
+
+            #[cfg(desktop)]
+            let win_builder = win_builder.title("Mnemo");
 
             #[cfg(target_os = "macos")]
             let win_builder = win_builder.title_bar_style(tauri::TitleBarStyle::Transparent);
