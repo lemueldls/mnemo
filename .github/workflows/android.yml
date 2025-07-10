@@ -91,7 +91,6 @@ jobs:
       - name: 🔨 Build app bundle
         run: |
           pnpm tauri android init
-          cp -a platform/tauri/icons/android/mipmap-* platform/tauri/gen/android/app/src/main/res/
           pnpm tauri android build
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
