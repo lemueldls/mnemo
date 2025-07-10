@@ -26,6 +26,8 @@ jobs:
 
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
+        with:
+          android: false
 
       # - name: 🛡️ Verify tag matches version in tauri config (publish only)
       #   if: inputs.publish
