@@ -1,5 +1,4 @@
 import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
 
 const defaultLocale = "en";
 const locales = [
@@ -76,7 +75,6 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-06-03",
   nitro: {
-    esbuild: { options: { target: "esnext" } },
     moduleSideEffects: ["@material/web"],
     prerender: {
       routes: ["/", "/calendar", "/space"],
@@ -91,7 +89,7 @@ export default defineNuxtConfig({
     kv: true,
   },
   vite: {
-    plugins: [wasm(), topLevelAwait()],
+    plugins: [wasm()],
   },
   fonts: {
     families: [
