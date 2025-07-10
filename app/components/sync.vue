@@ -15,7 +15,7 @@ async function login() {
   } else {
     const { error } = await auth.signIn.social({
       provider: "github",
-      callbackURL: `/api/callback?redirect=${encodeURIComponent(window.location.origin)}`,
+      callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.origin)}`,
     });
     if (error) throw createError(error);
   }
