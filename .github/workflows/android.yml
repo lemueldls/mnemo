@@ -91,7 +91,7 @@ jobs:
       - name: 🔑 Extract android signing key
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > platform/tauri/gen/android/app/key.jks
-          echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/key.properties
+          echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
 
       - name: 🔨 Build app bundle
         run: |
