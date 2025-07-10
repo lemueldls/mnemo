@@ -15,6 +15,8 @@ jobs:
       contents: write
     uses: ./.github/workflows/desktop-tauri.yml
     with:
-      releaseName: Draft
+      tagName: mnemo-v__VERSION__
+      releaseName: "Mnemo Draft v__VERSION__"
       releaseDraft: true
+      prerelease: true
     secrets: inherit

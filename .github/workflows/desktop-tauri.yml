@@ -12,6 +12,9 @@ on:
       releaseDraft:
         required: false
         type: boolean
+      prerelease:
+        required: false
+        type: boolean
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
         required: true
@@ -161,7 +164,7 @@ jobs:
           tagName: ${{ inputs.tagName }}
           releaseName: ${{ inputs.releaseName }}
           releaseDraft: ${{ inputs.releaseDraft }}
-          prerelease: false
+          prerelease: ${{ inputs.prerelease }}
           args: ${{ matrix.args }}
           retryAttempts: 1
 
