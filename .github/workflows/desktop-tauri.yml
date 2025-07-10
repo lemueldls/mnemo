@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: 🛡️ Verify tag matches version in tauri config (publish only)
-        if: inputs.tagName != ''
+        if: !inputs.releaseDraft && inputs.tagName != ''
         shell: bash
         run: |
           CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
