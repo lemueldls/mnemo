@@ -59,6 +59,9 @@ export function serverAuth() {
     plugins: [tauri({ scheme: "mnemo" })],
     advanced: {
       cookiePrefix: "mnemo",
+      cookieOptions: import.meta.dev
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "none", secure: true, httpOnly: false },
     },
   });
 
