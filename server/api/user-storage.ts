@@ -21,6 +21,7 @@ export default defineWebSocketHandler({
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
+    console.log({ headers: peer.request.headers });
     const user = await requireUser(peer.request.headers);
     const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
 
