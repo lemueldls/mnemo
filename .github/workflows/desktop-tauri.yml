@@ -91,13 +91,6 @@ jobs:
       # - name: 📝 Check spelling using typos-action
       #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
-      - name: 📥 Cached install cargo-auditable
-        uses: baptiste0928/cargo-install@e38323ef017552d7f7af73a3f4db467f278310ed # v3
-        with:
-          crate: cargo-auditable
-          version: 0.6.7
-          locked: true
-
       - name: 📐 Run rustfmt and fail if any warnings (ubuntu only)
         if: contains(matrix.os, 'ubuntu')
         run: |
@@ -168,7 +161,6 @@ jobs:
           releaseName: ${{ inputs.releaseName }}
           releaseDraft: false
           prerelease: false
-          tauriScript: cargo --locked auditable tauri
           args: ${{ matrix.args }}
           retryAttempts: 1
 

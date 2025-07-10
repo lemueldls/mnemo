@@ -6,7 +6,6 @@ RUN xbps-install -Syu || xbps-install -yu xbps \
 RUN rustup-init -y -q \
     && . $HOME/.cargo/env \
     && rustup target add wasm32-unknown-unknown \
-    && cargo --locked install cargo-auditable@0.6.7 \
     && rm -rf $HOME/.cargo/registry $HOME/.cargo/git
 LABEL org.opencontainers.image.source="https://github.com/lemueldls/mnemo"
 LABEL org.opencontainers.image.title="Mnemo Void Package Builder"
