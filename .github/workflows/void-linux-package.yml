@@ -71,11 +71,11 @@ jobs:
           xbps-rindex --privkey private.pem --sign --signedby "lemueldls@users.noreply.github.com" hostdir/binpkgs
           xbps-rindex --privkey private.pem --sign-pkg hostdir/binpkgs/*.xbps
 
-      - name: 🛡️ Attest build provenance (publish release only)
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
-        with:
-          subject-path: |
-            ~/void-packages/hostdir/binpkgs/*
+      # - name: 🛡️ Attest build provenance (publish release only)
+      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      #   with:
+      #     subject-path: |
+      #       ~/void-packages/hostdir/binpkgs/*
 
       - name: 🚀 Publish
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
