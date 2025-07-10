@@ -2,7 +2,10 @@ import { object, string } from "valibot";
 
 export default defineEventHandler(async (event) => {
   const query = await validatedQuery(event, object({ redirect: string() }));
-  const token = getCookie(event, "mnemo.session_token");
+  const token = getCookie(
+    event,
+    import.meta.dev ? "mnemo.session_token" : "_Secure-mnemo.session_token",
+  );
 
   if (!token)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
