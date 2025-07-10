@@ -1,0 +1,17 @@
+name: "🖥️"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ format('desktop-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  pr:
+    permissions:
+      contents: write
+    uses: ./.github/workflows/desktop-tauri.yml
+    secrets: inherit

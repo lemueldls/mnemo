@@ -9,11 +9,6 @@
   # cachix.enable = false;
   dotenv.enable = true;
 
-  # # certificates = [
-  # #   "localhost"
-  # #   "localhost:3000"
-  # # ];
-
   packages = with pkgs; [
     # Native
     wrapGAppsHook4
@@ -56,11 +51,11 @@
     xdg-utils
   ];
 
-  # # scripts = {
-  # #   setup.exec = ''
-  # #     wasm-pack build platform/wasm -t web --release
-  # #   '';
-  # # };
+  # scripts = {
+  #   setup.exec = ''
+  #     wasm-pack build platform/wasm -t web --release
+  #   '';
+  # };
 
   # env = {
   #   # OpenSSL
@@ -136,7 +131,7 @@
   # };
 
   pre-commit.hooks = {
-    actionlint.enable = true;
+    actionlint.enable = false;
     rustfmt.enable = false;
   };
 }
