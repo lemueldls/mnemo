@@ -59,14 +59,9 @@ export function serverAuth() {
     plugins: [tauri({ scheme: "mnemo" })],
     advanced: {
       cookiePrefix: "mnemo",
-      cookies: {
-        session_token: {
-          name: "session_token",
-          attributes: import.meta.dev
-            ? { sameSite: "lax", secure: false, httpOnly: false }
-            : { sameSite: "none", secure: true, httpOnly: true },
-        },
-      },
+      defaultCookieAttributes: import.meta.dev
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "none", secure: true, httpOnly: true },
     },
   });
 
