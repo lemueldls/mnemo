@@ -5,8 +5,6 @@ export default defineEventHandler(async (event) => {
   const query = await validatedQuery(event, object({ redirect: string() }));
   const token = getCookie(event, "mnemo.session_token");
 
-  console.log({ query, session: token });
-
   if (!token)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
