@@ -176,9 +176,9 @@ export async function useStorageText(key: string, initialValue?: string) {
 
   const computedRef = computed({
     get: () => item.value,
-    set: (newText) => {
-      item.value = newText;
-      text.update(newText);
+    set(newValue) {
+      item.value = newValue;
+      text.update(newValue);
 
       commit();
     },
@@ -198,9 +198,9 @@ export async function useStorageMap<T extends object>(
 
   const computedRef = computed({
     get: () => item.value,
-    set: (newValue) => {
+    set(newValue) {
+      item.value = newValue;
       for (const [key, value] of Object.entries(newValue)) {
-        item.value[key as keyof T] = value;
         map.set(key, value);
       }
 
@@ -228,7 +228,7 @@ export async function useStorageMap<T extends object>(
 const commit = useThrottleFn(
   async () => {
     const doc = await useCrdt();
-    const bytes = doc.export({ mode: "update" });
+    const bytes = doc.export({ mode: "snapshot" });
     await localDb.setItemRaw("crdt", bytes);
   },
   1000,
