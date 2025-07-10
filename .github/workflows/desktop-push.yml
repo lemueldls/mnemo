@@ -14,4 +14,7 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/desktop-tauri.yml
+    with:
+      releaseName: Draft
+      releaseDraft: true
     secrets: inherit

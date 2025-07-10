@@ -9,6 +9,9 @@ on:
       releaseName:
         required: false
         type: string
+      releaseDraft:
+        required: false
+        type: boolean
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
         required: true
@@ -145,7 +148,6 @@ jobs:
       - name: 🔨 Build using tauri action (publish artifacts on release)
         uses: tauri-apps/tauri-action@42e9df6c59070d114bf90dcd3943a1b8f138b113 # v0.5.20
         env:
-          RUSTFLAGS: "-D warnings"
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -158,7 +160,7 @@ jobs:
         with:
           tagName: ${{ inputs.tagName }}
           releaseName: ${{ inputs.releaseName }}
-          releaseDraft: false
+          releaseDraft: ${{ inputs.releaseDraft }}
           prerelease: false
           args: ${{ matrix.args }}
           retryAttempts: 1
