@@ -9,10 +9,12 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
+    console.log("[UPGRADE]", { headers: request.headers });
     await requireUser(request.headers);
   },
 
   async open(peer) {
+    console.log("[OPEN]", { headers: peer.request.headers });
     const user = await requireUser(peer.request.headers);
     peer.subscribe(`users:${user.id}`);
   },
@@ -21,7 +23,7 @@ export default defineWebSocketHandler({
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    console.log({ headers: peer.request.headers });
+    console.log("[MESSAGE]", { headers: peer.request.headers });
     const user = await requireUser(peer.request.headers);
     const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
 
@@ -42,6 +44,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
+    console.log("[CLOSE]", { headers: peer.request.headers });
     const user = await requireUser(peer.request.headers);
     peer.unsubscribe(`users:${user.id}`);
   },
