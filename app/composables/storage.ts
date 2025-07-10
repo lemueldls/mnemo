@@ -60,11 +60,10 @@ export const useCrdt = createSharedComposable(async () => {
             for (const [key, value] of Object.entries(diff.updated))
               item[key] = value;
 
-            const itemRef = itemRefs[key];
-
             await localDb.setItem(key, item);
             await localDb.setMeta(key, { updatedAt: Date.now() });
 
+            const itemRef = itemRefs[key];
             if (itemRef) itemRef.value = item;
 
             break;
@@ -94,11 +93,10 @@ const useSync = createSharedComposable(() => {
       const meta = await localDb.getMeta(key);
 
       if (!meta.updatedAt || updatedAt > (meta.updatedAt as number)) {
-        const itemRef = itemRefs[key];
-
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt });
 
+        const itemRef = itemRefs[key];
         if (itemRef) itemRef.value = value;
       }
     },
@@ -189,7 +187,7 @@ export async function useStorageText(key: string, initialValue?: string) {
   return extendRef(computedRef, {});
 }
 
-export async function useStorageMap<T extends Record<string, unknown>>(
+export async function useStorageMap<T extends object>(
   key: string,
   initialValue?: T,
 ) {
@@ -200,9 +198,11 @@ export async function useStorageMap<T extends Record<string, unknown>>(
 
   const computedRef = computed({
     get: () => item.value,
-    set: (newMap) => {
-      item.value = newMap;
-      for (const [key, value] of Object.entries(newMap)) map.set(key, value);
+    set: (newValue) => {
+      for (const [key, value] of Object.entries(newValue)) {
+        item.value[key as keyof T] = value;
+        map.set(key, value);
+      }
 
       commit();
     },
