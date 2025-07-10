@@ -20,11 +20,10 @@ depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon
 makedepends=('cargo' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
 source=("\$pkgname-v\$pkgver.tar.gz::https://github.com/lemueldls/\$pkgname/archive/refs/tags/\$pkgname-v\$pkgver.tar.gz")
 sha256sums=('$sha256sum')
-_builddir="\$pkgname-\$pkgname-v\$pkgver"
+_builddir="\$pkgname-\$pkgname-v\$pkgver/platform"
 prepare() {
     cd "\$srcdir/\$_builddir" || exit 1
     export RUSTUP_TOOLCHAIN=stable
-    cargo --locked install cargo-auditable@0.6.7
     rustup toolchain install \$RUSTUP_TOOLCHAIN --target wasm32-unknown-unknown --profile minimal --no-self-update
     cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
     cargo fetch --locked --target wasm32-unknown-unknown
