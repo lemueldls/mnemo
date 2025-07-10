@@ -35,7 +35,6 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    "nuxt-ssr-lit",
     "reka-ui/nuxt",
   ],
   devtools: { enabled: !platform },
@@ -78,8 +77,6 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-06-03",
   nitro: {
-    minify: false,
-    moduleSideEffects: ["@material/web"],
     prerender: {
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
@@ -115,5 +112,5 @@ export default defineNuxtConfig({
     strategy: "no_prefix",
     baseUrl: siteUrl,
   },
-  ssrLit: { litElementPrefix: ["md-"] },
+  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
 });
