@@ -1,12 +1,16 @@
+import { object, string } from "valibot";
+
 export default defineEventHandler(async (event) => {
-  const query = getQuery<{ redirect: string }>(event);
+  const query = await validatedQuery(event, object({ redirect: string() }));
   const token = getCookie(event, "mnemo.session_token");
 
   if (!token)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
-  await sendRedirect(
-    event,
-    `${query.redirect}/auth/confirm?token=${encodeURIComponent(token)}`,
+  const url = new URL(
+    `/auth/confirm?token=${encodeURIComponent(token)}`,
+    query.redirect,
   );
+
+  await sendRedirect(event, url.href);
 });
