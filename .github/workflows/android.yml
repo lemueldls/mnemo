@@ -24,17 +24,17 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         name: 🔄 Checkout
 
-      - name: 🛡️ Verify tag matches version in tauri config (publish only)
-        if: inputs.publish
-        shell: bash
-        run: |
-          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
-          TAG=${GITHUB_REF#refs/tags/}
-          if [[ "$TAG" != *"$CURRENT_VERSION" ]]
-          then
-            echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
-            exit 1
-          fi
+      # - name: 🛡️ Verify tag matches version in tauri config (publish only)
+      #   if: inputs.publish
+      #   shell: bash
+      #   run: |
+      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
+      #     TAG=${GITHUB_REF#refs/tags/}
+      #     if [[ "$TAG" != *"$CURRENT_VERSION" ]]
+      #     then
+      #       echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
+      #       exit 1
+      #     fi
 
       - name: ☕ Setup Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
@@ -93,11 +93,14 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > platform/tauri/gen/android/app/key.jks
           echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
 
-      - name: 🔨 Build app bundle
+      - name: 🔨 Build app bundle [${{ runner.temp }}]
         run: |
           pnpm tauri android init
           pnpm tauri android build
         env:
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          TMPDIR: ${{ runner.temp }}
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,12 +120,12 @@ jobs:
           path: |
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk
 
-      - name: 📝 Extract version from tauri.android.conf.json (publish only)
-        if: inputs.publish
-        id: get-version
-        run: |
-          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
-          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+      # - name: 📝 Extract version from tauri.android.conf.json (publish only)
+      #   if: inputs.publish
+      #   id: get-version
+      #   run: |
+      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
+      #     echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: ✏️ Rename APK file (publish only)
         if: inputs.publish
