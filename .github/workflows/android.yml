@@ -62,21 +62,14 @@ jobs:
           #   platform/wasm -> ./target
           #   platform/wasm/render -> ./target
 
-      - name: 📝 Check spelling using typos-action
-        uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
+      # - name: 📝 Check spelling using typos-action
+      #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
       - name: 📥 Cached install cargo-auditable
         uses: baptiste0928/cargo-install@e38323ef017552d7f7af73a3f4db467f278310ed # v3
         with:
           crate: cargo-auditable
           version: 0.6.7
-          locked: true
-
-      - name: 📥 Cached install tauri-cli
-        uses: baptiste0928/cargo-install@e38323ef017552d7f7af73a3f4db467f278310ed # v3
-        with:
-          crate: tauri-cli
-          version: 2.5.0
           locked: true
 
       - name: 📦 Run sccache

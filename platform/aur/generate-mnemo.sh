@@ -24,7 +24,6 @@ _builddir="\$pkgname-\$pkgname-v\$pkgver"
 prepare() {
     cd "\$srcdir/\$_builddir" || exit 1
     export RUSTUP_TOOLCHAIN=stable
-    cargo --locked install tauri-cli@2.5.0
     cargo --locked install cargo-auditable@0.6.7
     rustup toolchain install \$RUSTUP_TOOLCHAIN --target wasm32-unknown-unknown --profile minimal --no-self-update
     cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
