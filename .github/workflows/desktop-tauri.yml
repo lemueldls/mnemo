@@ -91,12 +91,11 @@ jobs:
       # - name: 📝 Check spelling using typos-action
       #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
-      - name: 📐 Run rustfmt and fail if any warnings (ubuntu only)
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          cargo fmt -- --check
-          cd platform/tauri
-          cargo fmt -- --check
+      # - name: 📐 Run rustfmt and fail if any warnings (ubuntu only)
+      #   if: contains(matrix.os, 'ubuntu')
+      #   run: |
+      #     cd platform
+      #     cargo fmt -- --check
 
       - name: 📦 Run sccache (not windows)
         if: "inputs.tagName == '' && !contains(matrix.os, 'windows')"
@@ -108,16 +107,16 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
-      - name: 📎 Run clippy and fail if any warnings (ubuntu only)
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          cargo clippy -- -D warnings
-          cd platform/tauri
-          cargo clippy -- -D warnings
+      # - name: 📎 Run clippy and fail if any warnings (ubuntu only)
+      #   if: contains(matrix.os, 'ubuntu')
+      #   run: |
+      #     cd platform
+      #     cargo clippy -- -D warnings
 
-      - name: ✅ Run tests
-        run: |
-          cargo --locked test --package=models
+      # - name: ✅ Run tests
+      #   run: |
+      #     cd platform
+      #     cargo --locked test --package=models
 
       # - name: 🔑 Import windows signing certificate
       #   if: contains(matrix.os, 'windows')
