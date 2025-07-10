@@ -99,6 +99,6 @@
     "vite-plugin-wasm": "^3.5.0",
     "vue": "^3.5.17",
     "wasm-pack": "^0.13.1",
-    "wrangler": "^4.24.0"
+    "wrangler": "^4.24.1"
   }
 }
