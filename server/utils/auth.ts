@@ -28,11 +28,13 @@ export function serverAuth() {
     baseURL: getBaseURL(),
     secret: password || undefined,
     trustedOrigins: [
+      "http://localhost:3000",
+      "http://tauri.localhost",
+      "https://tauri.localhost",
       "https://mnemo.nuxt.dev",
       "https://mnemo.pages.dev",
       "https://notes.lemueldls.dev",
       "https://notes.workers.lemueldls.dev",
-      "https://tauri.localhost",
     ],
     database: {
       dialect: new D1Dialect({
@@ -66,9 +68,9 @@ export function serverAuth() {
     plugins: [tauri({ scheme: "mnemo" })],
     advanced: {
       cookiePrefix: "mnemo",
-      defaultCookieAttributes: import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
+      // defaultCookieAttributes: import.meta.dev
+      //   ? { sameSite: "lax", secure: false, httpOnly: false }
+      //   : { sameSite: "none", secure: true, httpOnly: false },
     },
   });
 
