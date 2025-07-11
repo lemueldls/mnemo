@@ -27,6 +27,7 @@ jobs:
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
+          tool-cache: true
           android: false
 
       # - name: 🛡️ Verify tag matches version in tauri config (publish only)
@@ -56,30 +57,30 @@ jobs:
       - name: 🦀 Install rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android,wasm32-unknown-unknown
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-      - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-          # workspaces: |
-          #   platform/tauri -> ./target
-          #   platform/wasm -> ./target
-          #   platform/wasm/render -> ./target
+      # - name: 📦 Rust cache
+      #   uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
+      #   with:
+      #     save-if: ${{ github.ref == 'refs/heads/main' }}
+      #     # workspaces: |
+      #     #   platform/tauri -> ./target
+      #     #   platform/wasm -> ./target
+      #     #   platform/wasm/render -> ./target
 
       # - name: 📝 Check spelling using typos-action
       #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
-      - name: 📦 Run sccache
-        if: ${{ !inputs.publish }}
-        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+      # - name: 📦 Run sccache
+      #   if: ${{ !inputs.publish }}
+      #   uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
-      - name: 📦 Set Rust caching env vars only on non-release runs
-        if: ${{ !inputs.publish }}
-        shell: bash
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-          echo "RUSTC_WRAPPER=${SCCACHE_PATH}" >> $GITHUB_ENV
+      # - name: 📦 Set Rust caching env vars only on non-release runs
+      #   if: ${{ !inputs.publish }}
+      #   shell: bash
+      #   run: |
+      #     echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+      #     echo "RUSTC_WRAPPER=${SCCACHE_PATH}" >> $GITHUB_ENV
 
       - name: 📥 Install pnpm
         uses: pnpm/action-setup@v4
@@ -98,14 +99,11 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > platform/tauri/gen/android/app/key.jks
           echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
 
-      - run: mkdir /home/runner/work/perm
-
       - name: 🔨 Build app bundle
         run: |
           pnpm tauri android init
           pnpm tauri android build
         env:
-          TMPDIR: /home/runner/work/perm
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
