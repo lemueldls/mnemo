@@ -19,7 +19,7 @@ const isWorkers = remoteProjectType !== "pages";
 // const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 
 const siteUrl = platform
-  ? "https://tauri.localhost"
+  ? "http://tauri.localhost"
   : isDev
     ? "http://localhost:3000"
     : "https://mnemo.nuxt.dev";

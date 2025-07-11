@@ -30,7 +30,6 @@ export function serverAuth() {
     trustedOrigins: [
       "http://localhost:3000",
       "http://tauri.localhost",
-      "https://tauri.localhost",
       "https://mnemo.nuxt.dev",
       "https://mnemo.pages.dev",
       "https://notes.lemueldls.dev",
@@ -44,7 +43,9 @@ export function serverAuth() {
     },
     secondaryStorage: {
       async get(key) {
-        return (await hubKV().hasItem(`_auth:${key}`))
+        const hasItem = await hubKV().hasItem(`_auth:${key}`);
+
+        return hasItem
           ? JSON.stringify(await hubKV().getItem(`_auth:${key}`))
           : null;
       },
