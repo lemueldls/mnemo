@@ -32,7 +32,8 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-                .background_color(Color::from_str("#4c4d72").unwrap());
+                .background_color(Color::from_str("#4c4d72").unwrap())
+                .use_https_scheme(true);
 
             #[cfg(desktop)]
             let win_builder = win_builder.title("Mnemo");
