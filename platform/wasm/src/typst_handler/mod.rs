@@ -272,6 +272,7 @@ impl TypstState {
 
         let mut offset_height = 0_f64;
         let mut diagnostics = Vec::new();
+        let mut compiled_warnings = None;
 
         let ranged_heights = block_ranges
             .into_iter()
@@ -296,10 +297,7 @@ impl TypstState {
                 // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
 
                 let compiled = compile::<PagedDocument>(&self.world);
-                diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                    compiled.warnings,
-                    &self.world,
-                ));
+                compiled_warnings = Some(compiled.warnings);
 
                 match compiled.output {
                     Ok(document) => {
@@ -366,6 +364,10 @@ impl TypstState {
         } else {
             Vec::new()
         };
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &self.world));
+        }
 
         self.document = last_document;
         self.world.main_source_mut().replace(&ir);
