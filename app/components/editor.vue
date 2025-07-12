@@ -295,8 +295,6 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-activeLine {
-    @apply rounded;
-
     background-color: v-bind(activeLineBackground);
   }
 
