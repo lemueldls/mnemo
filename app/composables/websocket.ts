@@ -29,24 +29,22 @@ export interface WebSocketOptions {
 }
 
 export interface WebSocketReturn {
-  data: Readonly<Ref<string | ArrayBuffer | null>>;
+  // data: Readonly<Ref<string | null>>;
   status: Readonly<Ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED">>;
   close: (code?: number, reason?: string) => Promise<void>;
   open: () => void;
-  send: (data: string | ArrayBuffer | Uint8Array) => Promise<boolean>;
+  send: (data: string | Uint8Array) => Promise<boolean>;
   // ws: Readonly<Ref<WS | null>>;
 }
 
 class WebSocketMessageWrapper implements WebSocketMessage {
-  constructor(public data: string | ArrayBuffer | Uint8Array) {}
+  constructor(public data: string | Uint8Array) {}
 
   async bytes(): Promise<Uint8Array> {
     if (this.data instanceof Uint8Array) {
       return this.data;
     }
-    if (this.data instanceof ArrayBuffer) {
-      return new Uint8Array(this.data);
-    }
+
     return new TextEncoder().encode(this.data as string);
   }
 
@@ -54,7 +52,9 @@ class WebSocketMessageWrapper implements WebSocketMessage {
     if (typeof this.data === "string") {
       return this.data;
     }
+
     const bytes = await this.bytes();
+
     return new TextDecoder().decode(bytes);
   }
 }
@@ -75,7 +75,7 @@ export function useWebSocket(
   } = options;
 
   const urlRef = toRef(url);
-  const data = ref<string | ArrayBuffer | null>(null);
+  // const data = ref<string | ArrayBuffer | null>(null);
   const status = ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED">("CLOSED");
   const ws = ref<WS | null>(null);
 
@@ -151,10 +151,10 @@ export function useWebSocket(
         ws.value.addListener((message) => {
           switch (message.type) {
             case "Binary": {
-              const binaryData = new Uint8Array(message.data).buffer;
+              const binaryData = new Uint8Array(message.data);
               const wrappedMessage = new WebSocketMessageWrapper(binaryData);
 
-              data.value = binaryData;
+              // data.value = binaryData;
 
               onMessage?.(ws.value as WS, wrappedMessage);
 
@@ -165,7 +165,7 @@ export function useWebSocket(
               const textData = message.data;
               const wrappedTextMessage = new WebSocketMessageWrapper(textData);
 
-              data.value = textData;
+              // data.value = textData;
 
               onMessage?.(ws.value as WS, wrappedTextMessage);
 
@@ -200,11 +200,20 @@ export function useWebSocket(
           startHeartbeat();
         });
 
-        ws.value.addEventListener("message", (event: MessageEvent) => {
-          const wrappedMessage = new WebSocketMessageWrapper(event.data);
-          data.value = event.data;
-          onMessage?.(ws.value as WS, wrappedMessage);
-        });
+        ws.value.addEventListener(
+          "message",
+          async (event: MessageEvent<string | Blob>) => {
+            const wrappedMessage = new WebSocketMessageWrapper(
+              typeof event.data === "string"
+                ? event.data
+                : await event.data.bytes(),
+            );
+
+            // data.value = event.data;
+
+            onMessage?.(ws.value as WS, wrappedMessage);
+          },
+        );
 
         ws.value.addEventListener("error", (event: Event) => {
           onError?.(ws.value as WS, event);
@@ -285,7 +294,7 @@ export function useWebSocket(
   });
 
   return {
-    data: readonly(data),
+    // data: readonly(data),
     status: readonly(status),
     close,
     open,

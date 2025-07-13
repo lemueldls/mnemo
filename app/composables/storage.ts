@@ -41,7 +41,7 @@ export const useCrdt = createSharedComposable(async () => {
   whenever(loggedIn, open, { immediate: true });
 
   doc.subscribeLocalUpdates(async (bytes) => {
-    await send(bytes.buffer as ArrayBuffer);
+    await send(bytes);
   });
 
   doc.subscribe(async (event) => {
@@ -87,9 +87,12 @@ const useSync = createSharedComposable(() => {
     immediate: false,
 
     async onMessage(_ws, event) {
-      const { key, value, updatedAt } = JSON.parse(
-        typeof event.data === "string" ? event.data : await event.text(),
-      ) as { key: string; value: StorageValue; updatedAt: number };
+      const text = await event.text();
+      const { key, value, updatedAt } = JSON.parse(text) as {
+        key: string;
+        value: StorageValue;
+        updatedAt: number;
+      };
 
       const meta = await localDb.getMeta(key);
 
