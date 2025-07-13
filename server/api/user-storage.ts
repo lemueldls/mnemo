@@ -18,19 +18,10 @@ export default defineWebSocketHandler({
   },
 
   async message(peer, message) {
-    console.log("[message context]", JSON.stringify(peer.context));
-    console.log(
-      "[message headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
     const { user } = await requireUserSession(peer);
-    const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
-
-    console.log("[message user]", JSON.stringify(user));
     const base = `users:${user.id}`;
+
+    const userStorage = prefixStorage(hubKV(), base);
 
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;

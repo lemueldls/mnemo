@@ -13,10 +13,7 @@ if (session) {
 const activeSession = useApiSession().value!;
 
 if (platform === "true") {
-  await navigateTo(
-    `mnemo:///auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
-    { external: true },
-  );
+  window.location.href = `mnemo:///auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`;
 } else {
   const redirectUrl = new URL(redirect);
 
@@ -25,13 +22,10 @@ if (platform === "true") {
   else {
     redirectUrl.searchParams.set("session", activeSession);
 
-    await navigateTo(
-      new URL(
-        `/auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
-        redirectUrl,
-      ),
-      { external: true },
-    );
+    window.location.href = new URL(
+      `/auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
+      redirectUrl,
+    ).href;
   }
 }
 </script>
