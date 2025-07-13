@@ -15,7 +15,14 @@ if (platform === "true")
     `mnemo:///auth/confirm?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirect)}`,
     { external: true },
   );
-else await navigateTo(new URL(redirect).pathname);
+else {
+  const redirectUrl = new URL(redirect);
+  1;
+
+  if (redirectUrl.origin === window.location.origin)
+    await navigateTo(redirectUrl.pathname);
+  else await navigateTo(redirect, { external: true });
+}
 </script>
 
 <template>
