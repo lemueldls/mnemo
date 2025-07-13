@@ -1,26 +1,38 @@
 <script lang="ts" setup>
 definePageMeta({ layout: "empty" });
 
-const token = useRouteQuery("token").value as string;
+const session = useRouteQuery("session").value as string;
 const redirect = useRouteQuery("redirect").value as string;
 const platform = useRouteQuery("platform").value as string;
 
-useApiToken().value = token as string;
+if (session) {
+  useApiSession().value = session;
+  await useAuth().fetch();
+}
 
-const auth = useAuth();
-await auth.fetchSession();
+const activeSession = useApiSession().value!;
 
-if (platform === "true")
+if (platform === "true") {
   await navigateTo(
-    `mnemo:///auth/confirm?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirect)}`,
+    `mnemo:///auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
     { external: true },
   );
-else {
+} else {
   const redirectUrl = new URL(redirect);
 
   if (redirectUrl.origin === useRequestURL().origin)
-    await navigateTo(redirectUrl.pathname);
-  else await navigateTo(redirect, { external: true });
+    await navigateTo(redirectUrl.pathname, { external: true });
+  else {
+    redirectUrl.searchParams.set("session", activeSession);
+
+    await navigateTo(
+      new URL(
+        `/auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
+        redirectUrl,
+      ),
+      { external: true },
+    );
+  }
 }
 </script>
 

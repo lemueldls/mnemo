@@ -17,10 +17,10 @@ if (isTauri()) {
       });
 
     const callbackUrl = new URL(callback);
-    const token = callbackUrl.searchParams.get("token")!;
+    const session = callbackUrl.searchParams.get("session")!;
     const redirect = callbackUrl.searchParams.get("redirect")!;
 
-    await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
+    await navigateTo({ path: "/auth/confirm", query: { session, redirect } });
   });
 
   onUnmounted(() => {

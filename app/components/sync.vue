@@ -2,26 +2,23 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-const auth = useAuth();
-const { user } = auth;
+const { user, clear } = useAuth();
 
 async function login() {
   const isPlatform = isTauri();
 
-  const { error, data } = await auth.signIn.social({
-    provider: "github",
-    callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.href)}&platform=${isPlatform}`,
-    disableRedirect: isPlatform,
-  });
+  const provider = "github";
 
-  if (error) throw createError(error);
+  const endpoint = `/auth/${provider}?redirect=${encodeURIComponent(window.location.href)}&platform=${isPlatform}`;
 
-  if (isPlatform) await openUrl(data.url!);
-}
+  const url = new URL(endpoint, useApiBaseUrl());
 
-async function logout() {
-  const { error } = await auth.signOut();
-  if (error) throw createError(error);
+  console.log(url.origin, useRequestURL().origin);
+
+  if (isPlatform) await openUrl(url);
+  else if (url.origin === useRequestURL().origin)
+    await navigateTo(endpoint, { external: true });
+  else await navigateTo(url, { external: true });
 }
 
 const quota = ref<number>();
@@ -68,7 +65,7 @@ function formatBytes(bytes: number) {
       <md-linear-progress :value="usage / quota" />
     </md-outlined-card>
 
-    <md-filled-tonal-button v-if="user" @click="logout">
+    <md-filled-tonal-button v-if="user" @click="clear">
       {{ $t("components.sync.logout") }}
     </md-filled-tonal-button>
     <md-filled-button v-else @click="login">

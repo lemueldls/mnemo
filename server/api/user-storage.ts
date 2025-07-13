@@ -9,31 +9,11 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    console.log("[upgrade]", JSON.stringify(request.context));
-    console.log(
-      "[upgrade headers]",
-      request.headers
-        ? JSON.stringify(Object.fromEntries(request.headers.entries()))
-        : null,
-    );
-    const user = await requireUser(request.headers);
-    request.context.base = `users:${user.id}`;
-
-    console.log("[upgrade user]", JSON.stringify(user));
+    await requireUserSession(request);
   },
 
   async open(peer) {
-    console.log("[open]", JSON.stringify(peer.context));
-    console.log(
-      "[open headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
-    const user = await requireUser(peer.request.headers);
-    console.log("[open user]", JSON.stringify(user));
-
+    const { user } = await requireUserSession(peer);
     peer.subscribe(`users:${user.id}`);
   },
 
@@ -46,14 +26,14 @@ export default defineWebSocketHandler({
         : null,
     );
 
-    const user = await requireUser(peer.request.headers);
+    const { user } = await requireUserSession(peer);
+    const userStorage = prefixStorage(hubKV(), `users:${user.id}`);
+
     console.log("[message user]", JSON.stringify(user));
     const base = `users:${user.id}`;
 
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
-
-    const userStorage = prefixStorage(hubKV(), base);
 
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;
@@ -72,16 +52,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    console.log("[close]", JSON.stringify(peer.context));
-    console.log(
-      "[close headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
-    const user = await requireUser(peer.request.headers);
-    console.log("[close user]", JSON.stringify(user));
+    const user = await requireUserSession(peer);
     peer.unsubscribe(`users:${user.id}`);
   },
 });

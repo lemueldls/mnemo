@@ -136,8 +136,8 @@ export function useWebSocket(
       if (isTauri()) {
         const headers = new Headers();
 
-        const token = useApiToken().value;
-        headers.append("Cookie", `mnemo.session_token=${token || ""};`);
+        const token = useApiSession().value;
+        headers.append("Cookie", `nuxt-session=${token || ""};`);
 
         ws.value = await TauriWebSocket.connect(wsUrl, { headers });
 
