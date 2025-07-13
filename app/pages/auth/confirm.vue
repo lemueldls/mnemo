@@ -17,9 +17,8 @@ if (platform === "true")
   );
 else {
   const redirectUrl = new URL(redirect);
-  1;
 
-  if (redirectUrl.origin === window.location.origin)
+  if (redirectUrl.origin === useRequestURL().origin)
     await navigateTo(redirectUrl.pathname);
   else await navigateTo(redirect, { external: true });
 }
