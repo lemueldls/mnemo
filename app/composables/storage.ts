@@ -1,7 +1,6 @@
-import indexedDbDriver from "unstorage/drivers/indexedb";
-import { useWebSocket } from "./websocket";
 import type { Container } from "loro-crdt";
 import { createStorage, type StorageValue } from "unstorage";
+import indexedDbDriver from "unstorage/drivers/indexedb";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
@@ -24,13 +23,16 @@ export const useCrdt = createSharedComposable(async () => {
   const bytes = await localDb.getItemRaw("crdt");
   if (bytes) doc.import(bytes);
 
-  const url = new URL("/api/crdt", useApiBaseUrl());
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  const runtimeConfig = useRuntimeConfig();
+  const { apiBaseUrl } = runtimeConfig.public;
+
+  const endpoint = "/api/crdt";
+  const url = apiBaseUrl ? new URL(endpoint, apiBaseUrl) : endpoint;
 
   const { open, send } = useWebSocket(url, {
     immediate: false,
     async onMessage(_ws, event) {
-      const bytes = await event.bytes();
+      const bytes = await event.data.bytes();
       doc.import(bytes);
 
       await localDb.setItemRaw("crdt", bytes);
@@ -40,8 +42,8 @@ export const useCrdt = createSharedComposable(async () => {
   const { loggedIn } = useAuth();
   whenever(loggedIn, open, { immediate: true });
 
-  doc.subscribeLocalUpdates(async (bytes) => {
-    await send(bytes);
+  doc.subscribeLocalUpdates((bytes) => {
+    send(bytes.buffer as ArrayBuffer);
   });
 
   doc.subscribe(async (event) => {
@@ -80,19 +82,18 @@ export const useCrdt = createSharedComposable(async () => {
 });
 
 const useSync = createSharedComposable(() => {
-  const url = new URL("/api/user-storage", useApiBaseUrl());
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  const runtimeConfig = useRuntimeConfig();
+  const { apiBaseUrl } = runtimeConfig.public;
+
+  const endpoint = "/api/user-storage";
+  const url = apiBaseUrl ? new URL(endpoint, apiBaseUrl) : endpoint;
 
   const { open, send } = useWebSocket(url, {
     immediate: false,
-
     async onMessage(_ws, event) {
-      const text = await event.text();
-      const { key, value, updatedAt } = JSON.parse(text) as {
-        key: string;
-        value: StorageValue;
-        updatedAt: number;
-      };
+      const { key, value, updatedAt } = JSON.parse(
+        typeof event.data === "string" ? event.data : await event.data.text(),
+      ) as { key: string; value: StorageValue; updatedAt: number };
 
       const meta = await localDb.getMeta(key);
 
@@ -113,8 +114,8 @@ const useSync = createSharedComposable(() => {
   whenever(loggedIn, open, { immediate: true });
 
   return {
-    async updateItem(key: string, value: StorageValue, updatedAt: number) {
-      await send(JSON.stringify({ key, value, updatedAt }));
+    updateItem(key: string, value: StorageValue, updatedAt: number) {
+      send(JSON.stringify({ key, value, updatedAt }));
     },
   };
 });
@@ -142,7 +143,7 @@ export async function useStorageItem<T extends StorageValue>(
           await localDb.setItem(key, value);
           await localDb.setMeta(key, { updatedAt });
 
-          await useSync().updateItem(key, value, updatedAt);
+          useSync().updateItem(key, value, updatedAt);
         }
       },
       { throttle: 1000, deep: true },
@@ -260,8 +261,8 @@ export async function getStorageItem<T extends StorageValue>(
     { updatedAt?: number } | undefined
   >;
 
-  localMeta.then(async (meta) => {
-    await useSync().updateItem(key, value, meta?.updatedAt || Date.now());
+  localMeta.then((meta) => {
+    useSync().updateItem(key, value, meta?.updatedAt || Date.now());
   });
 
   return value;

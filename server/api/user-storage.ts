@@ -15,7 +15,7 @@ export default defineWebSocketHandler({
     console.log("[request upgrade]", JSON.stringify(request.context));
     console.log(
       "[request cookie]",
-      JSON.stringify(request.headers.getSetCookie()),
+      JSON.stringify(request.headers.get("cookie")),
     );
   },
 
@@ -23,7 +23,7 @@ export default defineWebSocketHandler({
     console.log("[open]", JSON.stringify(peer.context));
     console.log(
       "[open cookie]",
-      JSON.stringify(peer.request.headers.getSetCookie()),
+      JSON.stringify(peer.request.headers.get("cookie")),
     );
 
     peer.subscribe(peer.context.base as string);
@@ -33,7 +33,7 @@ export default defineWebSocketHandler({
     console.log("[message]", JSON.stringify(peer.context));
     console.log(
       "[message cookie]",
-      JSON.stringify(peer.request.headers.getSetCookie()),
+      JSON.stringify(peer.request.headers.get("cookie")),
     );
 
     const item = parse(StorageItemSchema, message.json());
@@ -61,7 +61,7 @@ export default defineWebSocketHandler({
     console.log("[close]", JSON.stringify(peer.context));
     console.log(
       "[close cookie]",
-      JSON.stringify(peer.request.headers.getSetCookie()),
+      JSON.stringify(peer.request.headers.get("cookie")),
     );
 
     peer.unsubscribe(peer.context.base as string);
