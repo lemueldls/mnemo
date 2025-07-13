@@ -1,5 +1,3 @@
-// import { appendResponseHeader } from "h3";
-
 import type { UserSession, UserSessionComposable } from "#auth-utils";
 
 /**
@@ -9,21 +7,21 @@ import type { UserSession, UserSessionComposable } from "#auth-utils";
 export function useAuth(): UserSessionComposable {
   const { $api } = useNuxtApp();
 
-  // const serverEvent = import.meta.server ? useRequestEvent() : null;
+  const serverEvent = import.meta.server ? useRequestEvent() : null;
   const sessionState = useState<UserSession | null>("nuxt-session", () => null);
   const authReadyState = useState("nuxt-auth-ready", () => false);
 
   const clear = async () => {
     await $api("/api/_auth/session", {
       method: "DELETE",
-      // onResponse({ response: { headers } }) {
-      //   // Forward the Set-Cookie header to the main server event
-      //   if (import.meta.server && serverEvent) {
-      //     for (const setCookie of headers.getSetCookie()) {
-      //       appendResponseHeader(serverEvent, "Set-Cookie", setCookie);
-      //     }
-      //   }
-      // },
+      onResponse({ response: { headers } }) {
+        // Forward the Set-Cookie header to the main server event
+        if (import.meta.server && serverEvent) {
+          for (const setCookie of headers.getSetCookie()) {
+            appendResponseHeader(serverEvent, "Set-Cookie", setCookie);
+          }
+        }
+      },
     });
 
     sessionState.value = null;
@@ -37,9 +35,8 @@ export function useAuth(): UserSessionComposable {
       },
       retry: false,
     }).catch(() => null);
-    if (!authReadyState.value) {
-      authReadyState.value = true;
-    }
+
+    if (!authReadyState.value) authReadyState.value = true;
   };
 
   const popupListener = (e: StorageEvent) => {
