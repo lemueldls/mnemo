@@ -1,27 +1,32 @@
 export default defineWebSocketHandler({
   async upgrade(request) {
-    const user = await requireUser(request.headers);
-    request.context.base = `users:${user.id}:crdt`;
+    await requireUser(request.headers);
   },
 
   async open(peer) {
-    peer.subscribe(peer.context.base as string);
+    const user = await requireUser(peer.request.headers);
+    const key = `users:${user.id}:crdt`;
 
-    if (await hubKV().hasItem(peer.context.base as string)) {
-      const bytes = await hubKV().getItemRaw(peer.context.base as string);
+    peer.subscribe(key);
 
+    if (await hubKV().hasItem(key)) {
+      const bytes = await hubKV().getItemRaw(key);
       peer.send(bytes);
     }
   },
 
   async message(peer, message) {
+    const user = await requireUser(peer.request.headers);
+    const key = `users:${user.id}:crdt`;
     const bytes = message.uint8Array();
 
-    peer.publish(peer.context.base as string, bytes);
-    await hubKV().setItemRaw(peer.context.base as string, bytes);
+    peer.publish(key, bytes);
+
+    await hubKV().setItemRaw(key, bytes);
   },
 
   async close(peer) {
-    peer.unsubscribe(peer.context.base as string);
+    const user = await requireUser(peer.request.headers);
+    peer.unsubscribe(`users:${user.id}:crdt`);
   },
 });
