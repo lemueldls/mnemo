@@ -14,10 +14,12 @@ export default defineWebSocketHandler({
   },
 
   async open(peer) {
+    console.log("[open]", JSON.stringify(peer.context));
     peer.subscribe(peer.context.base as string);
   },
 
   async message(peer, message) {
+    console.log("[message]", JSON.stringify(peer.context));
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
@@ -40,6 +42,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
+    console.log("[close]", JSON.stringify(peer.context));
     peer.unsubscribe(peer.context.base as string);
   },
 });
