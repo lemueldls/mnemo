@@ -8,19 +8,11 @@ const runtimeConfig = useRuntimeConfig();
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
 
-  const token = headers.getSetCookie();
-  if (token)
-    throw createError(
-      "yes token in " + JSON.stringify(Object.fromEntries(headers.entries())),
-    );
-  else
-    throw createError(
-      "no token in " + JSON.stringify(Object.fromEntries(headers.entries())),
-    );
-
   const session = await auth.api.getSession({ headers });
   if (!session)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+
+  throw createError("yes session in " + JSON.stringify(session));
 
   return session.user;
 }
