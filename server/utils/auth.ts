@@ -56,9 +56,6 @@ export function serverAuth() {
         await hubKV().removeItem(`_auth:${key}`);
       },
     },
-    session: {
-      expiresIn: 60 * 60 * 24 * 7 * 4 * 4, // 4 months
-    },
     socialProviders: {
       github: {
         clientId: github.clientId!,
@@ -66,23 +63,21 @@ export function serverAuth() {
         redirectURI: github.redirectURL,
       },
     },
-    plugins: [tauri({ scheme: "mnemo" })],
     advanced: {
       cookiePrefix: "mnemo",
-      // defaultCookieAttributes: import.meta.dev
-      //   ? { sameSite: "lax", secure: false, httpOnly: false }
-      //   : { sameSite: "none", secure: true, httpOnly: false },
+      useSecureCookies: false,
+      defaultCookieAttributes: import.meta.dev
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "none", secure: true, httpOnly: false },
     },
   });
 
   return _auth;
 }
 
-function getBaseURL() {
+export function getBaseURL() {
   const { apiBaseUrl } = runtimeConfig.public;
-
   const url = apiBaseUrl ? new URL(apiBaseUrl) : getRequestURL(useEvent());
-  const baseURL = url.origin;
 
-  return baseURL;
+  return url.origin;
 }

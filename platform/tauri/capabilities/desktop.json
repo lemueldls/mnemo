@@ -10,6 +10,7 @@
   ],
   "permissions": [
     "cli:default",
-    "updater:default"
+    "updater:default",
+    "websocket:default"
   ]
 }

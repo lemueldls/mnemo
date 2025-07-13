@@ -4,6 +4,30 @@ import "@material/web/labs/card/elevated-card";
 import "@material/web/labs/card/filled-card";
 import "@material/web/labs/card/outlined-card";
 
+import { isTauri } from "@tauri-apps/api/core";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+
+if (isTauri()) {
+  const unlisten = await onOpenUrl(async (urls) => {
+    const [callback] = urls;
+    if (!callback)
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No callback URL provided",
+      });
+
+    const callbackUrl = new URL(callback);
+    const token = callbackUrl.searchParams.get("token")!;
+    const redirect = callbackUrl.searchParams.get("redirect")!;
+
+    await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
+  });
+
+  onUnmounted(() => {
+    unlisten();
+  });
+}
+
 const { t, te } = useI18n();
 
 const route = useRoute();
