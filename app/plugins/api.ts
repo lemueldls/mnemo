@@ -8,15 +8,16 @@ export default defineNuxtPlugin({
   setup(_nuxtApp) {
     const isPlatform = isTauri();
 
-    const fetch = (
-      import.meta.client ? (isPlatform ? ofetch : useRequestFetch()) : $fetch
-    ) as $Fetch;
+    const headers = new Headers();
+
+    watchImmediate(useApiSession(), (token) => {
+      headers.set("Cookie", `nuxt-session=${token || ""};`);
+    });
+
+    const fetch = isPlatform ? ofetch : ($fetch as $Fetch);
 
     const api = fetch.create(
-      {
-        baseURL: useApiBaseUrl(),
-        headers: useRequestHeaders(["cookie"]),
-      },
+      { baseURL: useApiBaseUrl(), headers: headers },
       { fetch: isPlatform ? tauriFetch : undefined },
     );
 

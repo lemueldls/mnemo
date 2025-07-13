@@ -18,7 +18,7 @@ if (platform === "true") {
   const redirectUrl = new URL(redirect);
 
   if (redirectUrl.origin === useRequestURL().origin)
-    await navigateTo(redirectUrl.pathname, { external: true });
+    await navigateTo(redirectUrl.pathname);
   else {
     redirectUrl.searchParams.set("session", activeSession);
 

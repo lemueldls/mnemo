@@ -61,6 +61,7 @@ export default defineNuxtConfig({
       apiBaseUrl: "",
     },
     session: {
+      name: "nuxt-session",
       password: "",
       maxAge: 60 * 60 * 24 * 30, // 30 days
       cookie: isDev
