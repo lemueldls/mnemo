@@ -8,13 +8,15 @@ const runtimeConfig = useRuntimeConfig();
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
 
-  console.log({ headers });
-  console.log(headers.getSetCookie());
-
-  headers.set(
-    "__Secure-mnemo.session_token",
-    headers.get("mnemo.session_token")!,
-  );
+  const token = headers.getSetCookie();
+  if (token)
+    throw createError(
+      "yes token in " + JSON.stringify(Object.fromEntries(headers.entries())),
+    );
+  else
+    throw createError(
+      "no token in " + JSON.stringify(Object.fromEntries(headers.entries())),
+    );
 
   const session = await auth.api.getSession({ headers });
   if (!session)
