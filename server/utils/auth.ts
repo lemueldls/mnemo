@@ -3,12 +3,18 @@ import { betterAuth } from "better-auth";
 import { D1Dialect } from "@atinux/kysely-d1";
 import { D1Database } from "@cloudflare/workers-types";
 
-import { tauri } from "@daveyplate/better-auth-tauri/plugin";
-
 const runtimeConfig = useRuntimeConfig();
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
+
+  console.log({ headers });
+  console.log(headers.getSetCookie());
+
+  headers.set(
+    "__Secure-mnemo.session_token",
+    headers.get("mnemo.session_token")!,
+  );
 
   const session = await auth.api.getSession({ headers });
   if (!session)
