@@ -12,16 +12,30 @@ export default defineWebSocketHandler({
     const user = await requireUser(request.headers);
     request.context.base = `users:${user.id}`;
 
-    console.log("[upgrade]", JSON.stringify(request.context));
+    console.log("[request upgrade]", JSON.stringify(request.context));
+    console.log(
+      "[request cookie]",
+      JSON.stringify(request.headers.getSetCookie()),
+    );
   },
 
   async open(peer) {
     console.log("[open]", JSON.stringify(peer.context));
+    console.log(
+      "[open cookie]",
+      JSON.stringify(peer.request.headers.getSetCookie()),
+    );
+
     peer.subscribe(peer.context.base as string);
   },
 
   async message(peer, message) {
     console.log("[message]", JSON.stringify(peer.context));
+    console.log(
+      "[message cookie]",
+      JSON.stringify(peer.request.headers.getSetCookie()),
+    );
+
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
@@ -45,6 +59,11 @@ export default defineWebSocketHandler({
 
   async close(peer) {
     console.log("[close]", JSON.stringify(peer.context));
+    console.log(
+      "[close cookie]",
+      JSON.stringify(peer.request.headers.getSetCookie()),
+    );
+
     peer.unsubscribe(peer.context.base as string);
   },
 });
