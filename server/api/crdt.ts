@@ -5,24 +5,24 @@ export default defineWebSocketHandler({
 
   async open(peer) {
     const { user } = await requireUserSession(peer);
-    const key = `users:${user.id}:crdt`;
+    const base = `users:${user.id}:crdt`;
 
-    peer.subscribe(key);
+    peer.subscribe(base);
 
-    if (await hubKV().hasItem(key)) {
-      const bytes = await hubKV().getItemRaw(key);
+    if (await hubKV().hasItem(base)) {
+      const bytes = await hubKV().getItemRaw(base);
       peer.send(bytes);
     }
   },
 
   async message(peer, message) {
     const { user } = await requireUserSession(peer);
-    const key = `users:${user.id}:crdt`;
+    const base = `users:${user.id}:crdt`;
     const bytes = message.uint8Array();
 
-    peer.publish(key, bytes);
+    peer.publish(base, bytes);
 
-    await hubKV().setItemRaw(key, bytes);
+    await hubKV().setItemRaw(base, bytes);
   },
 
   async close(peer) {

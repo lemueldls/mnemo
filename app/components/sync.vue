@@ -18,7 +18,7 @@ async function login() {
   if (isPlatform) await openUrl(url);
   else if (url.origin === useRequestURL().origin)
     await navigateTo(endpoint, { external: true });
-  else await navigateTo(url, { external: true });
+  else window.location.href = url.href;
 }
 
 const quota = ref<number>();
