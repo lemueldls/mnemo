@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/client";
-import { setupBetterAuthTauri } from "@daveyplate/better-auth-tauri";
+
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 import type {
   InferSessionFromClient,
@@ -7,61 +8,50 @@ import type {
   ClientOptions,
 } from "better-auth/client";
 import type { RouteLocationRaw } from "vue-router";
+import { isTauri } from "@tauri-apps/api/core";
 
-export function useAuth() {
-  const { apiBaseUrl } = useRuntimeConfig().public;
-  const url = apiBaseUrl ? new URL(apiBaseUrl) : useRequestURL();
-  const baseURL = url.origin;
+export const useAuth = createSharedComposable(() => {
+  const headers = new Headers();
 
-  const headers = import.meta.server ? useRequestHeaders() : undefined;
+  const token = useApiToken().value;
+  headers.append("Cookie", `mnemo.session_token=${token || ""};`);
 
   const client = createAuthClient({
-    baseURL,
-    fetchOptions: { headers },
-  });
-
-  setupBetterAuthTauri({
-    authClient: client,
-    scheme: "mnemo",
-    debugLogs: true,
-    onRequest(href) {
-      console.log("Auth request:", href);
-    },
-    onSuccess(callbackURL) {
-      console.log("Auth successful, callback URL:", callbackURL);
-      if (callbackURL) navigateTo(callbackURL, { external: true });
-    },
-    onError(error) {
-      throw createError(error);
+    baseURL: useApiBaseUrl(),
+    fetchOptions: {
+      headers,
+      customFetchImpl: isTauri() ? tauriFetch : undefined,
     },
   });
 
-  const session = useState<InferSessionFromClient<ClientOptions> | null>(
-    "auth:session",
-    () => null,
-  );
-  const user = useState<InferUserFromClient<ClientOptions> | null>(
-    "auth:user",
-    () => null,
-  );
-  const sessionFetching = import.meta.server
-    ? ref(false)
-    : useState("auth:sessionFetching", () => false);
+  const session = ref<InferSessionFromClient<ClientOptions> | null>(null);
+  const user = ref<InferUserFromClient<ClientOptions> | null>(null);
+  const sessionFetching = ref(false);
 
   const fetchSession = async () => {
-    if (sessionFetching.value) {
-      console.log("already fetching session");
+    if (sessionFetching.value) return;
+
+    sessionFetching.value = true;
+
+    const headers = new Headers();
+
+    const token = useApiToken().value;
+    headers.append("Cookie", `mnemo.session_token=${token || ""};`);
+
+    const { error, data } = await client.getSession({
+      fetchOptions: { headers },
+    });
+
+    if (error) {
+      console.error("Error fetching session:", error);
+
       return;
     }
-    sessionFetching.value = true;
-    const { data } = await client.getSession({
-      fetchOptions: {
-        headers,
-      },
-    });
+
     session.value = data?.session || null;
     user.value = data?.user || null;
     sessionFetching.value = false;
+
     return data;
   };
 
@@ -83,6 +73,8 @@ export function useAuth() {
       session.value = null;
       user.value = null;
 
+      useApiToken().value = null;
+
       if (redirectTo) await navigateTo(redirectTo);
 
       return res;
@@ -90,4 +82,4 @@ export function useAuth() {
     fetchSession,
     client,
   };
-}
+});

@@ -1,21 +1,21 @@
 <script lang="ts" setup>
 definePageMeta({ layout: "empty" });
 
-const token = useRouteQuery("token");
+const token = useRouteQuery("token").value as string;
+const redirect = useRouteQuery("redirect").value as string;
+const platform = useRouteQuery("platform").value as string;
 
-const cookie = useCookie(
-  import.meta.dev ? "mnemo.session_token" : "__Secure-mnemo.session_token",
-  import.meta.dev
-    ? { sameSite: "lax", secure: false, httpOnly: false }
-    : { sameSite: "none", secure: true, httpOnly: false },
-);
-
-cookie.value = token.value as string;
+useApiToken().value = token as string;
 
 const auth = useAuth();
 await auth.fetchSession();
 
-await navigateTo("/");
+if (platform === "true")
+  await navigateTo(
+    `mnemo:///auth/confirm?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirect)}`,
+    { external: true },
+  );
+else await navigateTo(new URL(redirect).pathname);
 </script>
 
 <template>

@@ -9,15 +9,8 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    const { headers, context } = request;
-
-    const auth = serverAuth();
-
-    const session = await auth.api.getSession({ headers });
-    if (!session)
-      throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-
-    context.base = `users:${session.user.id}`;
+    const user = await requireUser(request.headers);
+    request.context.base = `users:${user.id}`;
   },
 
   async open(peer) {

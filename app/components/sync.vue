@@ -1,24 +1,22 @@
 <script setup lang="ts">
-import { signInSocial } from "@daveyplate/better-auth-tauri";
 import { isTauri } from "@tauri-apps/api/core";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const auth = useAuth();
 const { user } = auth;
 
 async function login() {
-  if (isTauri()) {
-    const { error } = await signInSocial({
-      authClient: auth.client,
-      provider: "github",
-    });
-    if (error) throw createError(error);
-  } else {
-    const { error } = await auth.signIn.social({
-      provider: "github",
-      callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.origin)}`,
-    });
-    if (error) throw createError(error);
-  }
+  const isPlatform = isTauri();
+
+  const { error, data } = await auth.signIn.social({
+    provider: "github",
+    callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.href)}&platform=${isPlatform}`,
+    disableRedirect: isPlatform,
+  });
+
+  if (error) throw createError(error);
+
+  if (isPlatform) await openUrl(data.url!);
 }
 
 async function logout() {
