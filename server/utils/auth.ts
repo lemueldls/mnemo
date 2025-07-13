@@ -12,8 +12,6 @@ export async function requireUser(headers: Headers) {
   if (!session)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
-  throw createError("yes session in " + JSON.stringify(session));
-
   return session.user;
 }
 
