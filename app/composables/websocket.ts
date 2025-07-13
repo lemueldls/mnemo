@@ -1,304 +1,346 @@
-import { isTauri } from "@tauri-apps/api/core";
-import TauriWebSocket from "@tauri-apps/plugin-websocket";
+import type { Fn, TimerHandle } from "@vueuse/shared";
+import type { ShallowRef } from "vue";
 
-type WS = TauriWebSocket | WebSocket;
+export type WebSocketStatus = "OPEN" | "CONNECTING" | "CLOSED";
+export type WebSocketHeartbeatMessage = string | ArrayBuffer | Blob;
 
-export interface WebSocketMessage {
-  data: string | ArrayBuffer | Uint8Array;
-  bytes(): Promise<Uint8Array>;
-  text(): Promise<string>;
-}
+const DEFAULT_PING_MESSAGE = "ping";
 
-export interface WebSocketOptions {
+export interface UseWebSocketOptions {
+  onConnected?: (ws: WebSocket) => void;
+  onDisconnected?: (ws: WebSocket, event: CloseEvent) => void;
+  onError?: (ws: WebSocket, event: Event) => void;
+  onMessage?: (ws: WebSocket, event: MessageEvent) => void;
+
+  /**
+   * Send heartbeat for every x milliseconds passed
+   *
+   * @default false
+   */
+  heartbeat?:
+    | boolean
+    | {
+        /**
+         * Message for the heartbeat
+         *
+         * @default 'ping'
+         */
+        message?: MaybeRefOrGetter<WebSocketHeartbeatMessage>;
+
+        /**
+         * Response message for the heartbeat, if undefined the message will be used
+         */
+        responseMessage?: MaybeRefOrGetter<WebSocketHeartbeatMessage>;
+
+        /**
+         * Interval, in milliseconds
+         *
+         * @default 1000
+         */
+        interval?: number;
+
+        /**
+         * Heartbeat response timeout, in milliseconds
+         *
+         * @default 1000
+         */
+        pongTimeout?: number;
+      };
+
+  /**
+   * Enabled auto reconnect
+   *
+   * @default false
+   */
+  autoReconnect?:
+    | boolean
+    | {
+        /**
+         * Maximum retry times.
+         *
+         * Or you can pass a predicate function (which returns true if you want to retry).
+         *
+         * @default -1
+         */
+        retries?: number | ((retried: number) => boolean);
+
+        /**
+         * Delay for reconnect, in milliseconds
+         *
+         * @default 1000
+         */
+        delay?: number;
+
+        /**
+         * On maximum retry times reached.
+         */
+        onFailed?: Fn;
+      };
+
+  /**
+   * Immediately open the connection when calling this composable
+   *
+   * @default true
+   */
   immediate?: boolean;
+
+  /**
+   * Automatically connect to the websocket when URL changes
+   *
+   * @default true
+   */
+  autoConnect?: boolean;
+
+  /**
+   * Automatically close a connection
+   *
+   * @default true
+   */
+  autoClose?: boolean;
+
+  /**
+   * List of one or more sub-protocol strings
+   *
+   * @default []
+   */
   protocols?: string[];
-  onOpen?: (ws: WS, event: Event) => void;
-  onMessage?: (ws: WS, event: WebSocketMessage) => void;
-  onError?: (ws: WS, event: Event) => void;
-  onClose?: (ws: WS, event: CloseEvent) => void;
-  heartbeat?: {
-    message?: string | ArrayBuffer | Uint8Array;
-    interval?: number;
-    pongTimeout?: number;
-  };
-  autoReconnect?: {
-    retries?: number;
-    delay?: number;
-    onFailed?: () => void;
-  };
 }
 
-export interface WebSocketReturn {
-  // data: Readonly<Ref<string | null>>;
-  status: Readonly<Ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED">>;
-  close: (code?: number, reason?: string) => Promise<void>;
-  open: () => void;
-  send: (data: string | Uint8Array) => Promise<boolean>;
-  // ws: Readonly<Ref<WS | null>>;
+export interface UseWebSocketReturn<T> {
+  /**
+   * Reference to the latest data received via the websocket,
+   * can be watched to respond to incoming messages
+   */
+  data: Ref<T | null>;
+
+  /**
+   * The current websocket status, can be only one of:
+   * 'OPEN', 'CONNECTING', 'CLOSED'
+   */
+  status: ShallowRef<WebSocketStatus>;
+
+  /**
+   * Closes the websocket connection gracefully.
+   */
+  close: WebSocket["close"];
+
+  /**
+   * Reopen the websocket connection.
+   * If there the current one is active, will close it before opening a new one.
+   */
+  open: Fn;
+
+  /**
+   * Sends data through the websocket connection.
+   *
+   * @param data
+   * @param useBuffer when the socket is not yet open, store the data into the buffer and sent them one connected. Default to true.
+   */
+  send: (data: string | ArrayBuffer | Blob, useBuffer?: boolean) => boolean;
+
+  /**
+   * Reference to the WebSocket instance.
+   */
+  ws: Ref<WebSocket | undefined>;
 }
 
-class WebSocketMessageWrapper implements WebSocketMessage {
-  constructor(public data: string | Uint8Array) {}
-
-  async bytes(): Promise<Uint8Array> {
-    if (this.data instanceof Uint8Array) {
-      return this.data;
-    }
-
-    return new TextEncoder().encode(this.data as string);
-  }
-
-  async text(): Promise<string> {
-    if (typeof this.data === "string") {
-      return this.data;
-    }
-
-    const bytes = await this.bytes();
-
-    return new TextDecoder().decode(bytes);
-  }
+function resolveNestedOptions<T>(options: T | true): T {
+  if (options === true) return {} as T;
+  return options;
 }
 
-export function useWebSocket(
-  url: MaybeRefOrGetter<string | URL>,
-  options: WebSocketOptions = {},
-): WebSocketReturn {
+/**
+ * Reactive WebSocket client.
+ *
+ * @see https://vueuse.org/useWebSocket
+ * @param url
+ */
+export function useWebSocket<Data = any>(
+  url: MaybeRefOrGetter<string | URL | undefined>,
+  options: UseWebSocketOptions = {},
+): UseWebSocketReturn<Data> {
   const {
-    immediate = true,
-    protocols = [],
-    onOpen,
-    onMessage,
+    onConnected,
+    onDisconnected,
     onError,
-    onClose,
-    heartbeat,
-    autoReconnect,
+    onMessage,
+    immediate = true,
+    autoConnect = true,
+    autoClose = true,
+    protocols = [],
   } = options;
 
+  const data: Ref<Data | null> = ref(null);
+  const status = shallowRef<WebSocketStatus>("CLOSED");
+  const wsRef = ref<WebSocket | undefined>();
   const urlRef = toRef(url);
-  // const data = ref<string | ArrayBuffer | null>(null);
-  const status = ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED">("CLOSED");
-  const ws = ref<WS | null>(null);
 
-  let heartbeatTimer: NodeJS.Timeout | null = null;
-  let reconnectTimer: NodeJS.Timeout | null = null;
-  let reconnectAttempts = 0;
+  let heartbeatPause: Fn | undefined;
+  let heartbeatResume: Fn | undefined;
+
   let explicitlyClosed = false;
+  let retried = 0;
 
-  const cleanup = () => {
-    if (heartbeatTimer) {
-      clearTimeout(heartbeatTimer);
-      heartbeatTimer = null;
-    }
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
-  };
+  let bufferedData: (string | ArrayBuffer | Blob)[] = [];
 
-  const startHeartbeat = () => {
-    if (!heartbeat) return;
+  let retryTimeout: TimerHandle;
+  let pongTimeoutWait: TimerHandle;
 
-    cleanup();
-    heartbeatTimer = setTimeout(() => {
-      if (ws.value && status.value === "OPEN") {
-        send(heartbeat.message || "ping");
-        startHeartbeat();
-      }
-    }, heartbeat.interval || 30000);
-  };
-
-  const attemptReconnect = () => {
-    if (explicitlyClosed || !autoReconnect) return;
-
-    if (reconnectAttempts < (autoReconnect.retries || 5)) {
-      reconnectAttempts++;
-      reconnectTimer = setTimeout(() => {
-        if (!explicitlyClosed) {
-          open();
-        }
-      }, autoReconnect.delay || 1000);
-    } else {
-      autoReconnect.onFailed?.();
+  const _sendBuffer = () => {
+    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
+      for (const buffer of bufferedData) wsRef.value.send(buffer);
+      bufferedData = [];
     }
   };
 
-  const open = async () => {
-    if (ws.value && status.value === "OPEN") return;
-
-    cleanup();
-    explicitlyClosed = false;
-
-    const resolvedUrl = unref(urlRef);
-    const wsUrl =
-      resolvedUrl instanceof URL ? resolvedUrl.toString() : resolvedUrl;
-
-    try {
-      if (isTauri()) {
-        const headers = new Headers();
-
-        const token = useApiToken().value;
-        headers.append("Cookie", `mnemo.session_token=${token || ""};`);
-
-        ws.value = await TauriWebSocket.connect(wsUrl, { headers });
-
-        status.value = "OPEN";
-        reconnectAttempts = 0;
-
-        onOpen?.(ws.value as WS, new Event("open"));
-        startHeartbeat();
-
-        // Set up message listener
-        ws.value.addListener((message) => {
-          switch (message.type) {
-            case "Binary": {
-              const binaryData = new Uint8Array(message.data);
-              const wrappedMessage = new WebSocketMessageWrapper(binaryData);
-
-              // data.value = binaryData;
-
-              onMessage?.(ws.value as WS, wrappedMessage);
-
-              break;
-            }
-
-            case "Text": {
-              const textData = message.data;
-              const wrappedTextMessage = new WebSocketMessageWrapper(textData);
-
-              // data.value = textData;
-
-              onMessage?.(ws.value as WS, wrappedTextMessage);
-
-              break;
-            }
-
-            case "Close": {
-              status.value = "CLOSED";
-              cleanup();
-              onClose?.(ws.value as WS, new CloseEvent("close"));
-
-              if (!explicitlyClosed) {
-                attemptReconnect();
-              }
-
-              break;
-            }
-          }
-        });
-      } else {
-        // Use native WebSocket
-        status.value = "CONNECTING";
-        ws.value = new WebSocket(
-          wsUrl,
-          protocols.length > 0 ? protocols : undefined,
-        );
-
-        ws.value.addEventListener("open", (event: Event) => {
-          status.value = "OPEN";
-          reconnectAttempts = 0;
-          onOpen?.(ws.value as WS, event);
-          startHeartbeat();
-        });
-
-        ws.value.addEventListener(
-          "message",
-          async (event: MessageEvent<string | Blob>) => {
-            const wrappedMessage = new WebSocketMessageWrapper(
-              typeof event.data === "string"
-                ? event.data
-                : await event.data.bytes(),
-            );
-
-            // data.value = event.data;
-
-            onMessage?.(ws.value as WS, wrappedMessage);
-          },
-        );
-
-        ws.value.addEventListener("error", (event: Event) => {
-          onError?.(ws.value as WS, event);
-        });
-
-        ws.value.addEventListener("close", (event: CloseEvent) => {
-          status.value = "CLOSED";
-          cleanup();
-          onClose?.(ws.value as WS, event);
-
-          if (!explicitlyClosed) {
-            attemptReconnect();
-          }
-        });
-      }
-    } catch (error) {
-      status.value = "CLOSED";
-      console.error("WebSocket connection failed:", error);
-      if (!explicitlyClosed) {
-        attemptReconnect();
-      }
+  const resetRetry = () => {
+    if (retryTimeout != null) {
+      clearTimeout(retryTimeout);
+      retryTimeout = undefined;
     }
   };
 
-  const close = async (code?: number, reason?: string) => {
+  const resetHeartbeat = () => {
+    clearTimeout(pongTimeoutWait);
+    pongTimeoutWait = undefined;
+  };
+
+  // Status code 1000 -> Normal Closure https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+  const close: WebSocket["close"] = (code = 1000, reason) => {
+    resetRetry();
+    if (!import.meta.client || !wsRef.value) return;
     explicitlyClosed = true;
-    cleanup();
-
-    if (ws.value) {
-      status.value = "CLOSING";
-      if (isTauri()) {
-        // await (ws.value as TauriWebSocket).disconnect();
-      } else {
-        (ws.value as WebSocket).close(code, reason);
-      }
-    }
-    status.value = "CLOSED";
+    resetHeartbeat();
+    heartbeatPause?.();
+    wsRef.value.close(code, reason);
+    wsRef.value = undefined;
   };
 
-  const send = async (
-    messageData: string | ArrayBuffer | Uint8Array,
-  ): Promise<boolean> => {
-    if (!ws.value || status.value !== "OPEN") {
+  const send = (data: string | ArrayBuffer | Blob, useBuffer = true) => {
+    if (!wsRef.value || status.value !== "OPEN") {
+      if (useBuffer) bufferedData.push(data);
       return false;
     }
+    _sendBuffer();
+    wsRef.value.send(data);
+    return true;
+  };
 
-    try {
-      if (isTauri()) {
-        let sendData: string | number[];
+  const _init = () => {
+    if (explicitlyClosed || typeof urlRef.value === "undefined") return;
 
-        if (typeof messageData === "string") {
-          sendData = messageData;
-        } else if (messageData instanceof ArrayBuffer) {
-          sendData = Array.from(new Uint8Array(messageData));
+    const ws = new WebSocket(urlRef.value, protocols);
+    wsRef.value = ws;
+    status.value = "CONNECTING";
+
+    ws.onopen = () => {
+      status.value = "OPEN";
+      retried = 0;
+      onConnected?.(ws!);
+      heartbeatResume?.();
+      _sendBuffer();
+    };
+
+    ws.onclose = (ev) => {
+      status.value = "CLOSED";
+      resetHeartbeat();
+      heartbeatPause?.();
+      onDisconnected?.(ws, ev);
+
+      if (
+        !explicitlyClosed &&
+        options.autoReconnect &&
+        (wsRef.value == null || ws === wsRef.value)
+      ) {
+        const {
+          retries = -1,
+          delay = 1000,
+          onFailed,
+        } = resolveNestedOptions(options.autoReconnect);
+
+        const checkRetires =
+          typeof retries === "function"
+            ? retries
+            : () =>
+                typeof retries === "number" &&
+                (retries < 0 || retried < retries);
+
+        if (checkRetires(retried)) {
+          retried += 1;
+          retryTimeout = setTimeout(_init, delay);
         } else {
-          sendData = Array.from(messageData);
+          onFailed?.();
         }
+      }
+    };
 
-        await (ws.value as TauriWebSocket).send(sendData);
-      } else {
-        (ws.value as WebSocket).send(messageData);
+    ws.onerror = (e) => {
+      onError?.(ws!, e);
+    };
+
+    ws.onmessage = (e: MessageEvent) => {
+      if (options.heartbeat) {
+        resetHeartbeat();
+        const { message = DEFAULT_PING_MESSAGE, responseMessage = message } =
+          resolveNestedOptions(options.heartbeat);
+        if (e.data === toValue(responseMessage)) return;
       }
 
-      return true;
-    } catch (error) {
-      console.error("Failed to send WebSocket message:", error);
-      return false;
-    }
+      data.value = e.data;
+      onMessage?.(ws!, e);
+    };
   };
 
-  if (immediate) {
-    open();
+  if (options.heartbeat) {
+    const {
+      message = DEFAULT_PING_MESSAGE,
+      interval = 1000,
+      pongTimeout = 1000,
+    } = resolveNestedOptions(options.heartbeat);
+
+    const { pause, resume } = useIntervalFn(
+      () => {
+        send(toValue(message), false);
+        if (pongTimeoutWait != null) return;
+        pongTimeoutWait = setTimeout(() => {
+          // auto-reconnect will be trigger with ws.onclose()
+          close();
+          explicitlyClosed = false;
+        }, pongTimeout);
+      },
+      interval,
+      { immediate: false },
+    );
+
+    heartbeatPause = pause;
+    heartbeatResume = resume;
   }
 
-  // Cleanup on unmount
-  tryOnScopeDispose(async () => {
-    await close();
-  });
+  if (autoClose) {
+    if (import.meta.client)
+      useEventListener("beforeunload", () => close(), { passive: true });
+    tryOnScopeDispose(close);
+  }
+
+  const open = () => {
+    if (!import.meta.client) return;
+
+    close();
+    explicitlyClosed = false;
+    retried = 0;
+    _init();
+  };
+
+  if (immediate) open();
+
+  if (autoConnect) watch(urlRef, open);
 
   return {
-    // data: readonly(data),
-    status: readonly(status),
+    data,
+    status,
     close,
-    open,
     send,
-    // ws: readonly(ws),
+    open,
+    ws: wsRef,
   };
 }
