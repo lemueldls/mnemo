@@ -1,85 +1,87 @@
-import { createAuthClient } from "better-auth/client";
+// import { appendResponseHeader } from "h3";
 
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+import type { UserSession, UserSessionComposable } from "#auth-utils";
 
-import type {
-  InferSessionFromClient,
-  InferUserFromClient,
-  ClientOptions,
-} from "better-auth/client";
-import type { RouteLocationRaw } from "vue-router";
-import { isTauri } from "@tauri-apps/api/core";
+/**
+ * Composable to get back the user session and utils around it.
+ * @see https://github.com/atinux/nuxt-auth-utils
+ */
+export function useAuth(): UserSessionComposable {
+  const { $api } = useNuxtApp();
 
-export const useAuth = createSharedComposable(() => {
-  const headers = new Headers();
+  // const serverEvent = import.meta.server ? useRequestEvent() : null;
+  const sessionState = useState<UserSession | null>("nuxt-session", () => null);
+  const authReadyState = useState("nuxt-auth-ready", () => false);
 
-  const token = useApiToken().value;
-  headers.append("Cookie", `mnemo.session_token=${token || ""};`);
-
-  const client = createAuthClient({
-    baseURL: useApiBaseUrl(),
-    fetchOptions: {
-      headers,
-      customFetchImpl: isTauri() ? tauriFetch : undefined,
-    },
-  });
-
-  const session = ref<InferSessionFromClient<ClientOptions> | null>(null);
-  const user = ref<InferUserFromClient<ClientOptions> | null>(null);
-  const sessionFetching = ref(false);
-
-  const fetchSession = async () => {
-    if (sessionFetching.value) return;
-
-    sessionFetching.value = true;
-
-    const headers = new Headers();
-
-    const token = useApiToken().value;
-    headers.append("Cookie", `mnemo.session_token=${token || ""};`);
-
-    const { error, data } = await client.getSession({
-      fetchOptions: { headers },
+  const clear = async () => {
+    await $api("/api/_auth/session", {
+      method: "DELETE",
+      // onResponse({ response: { headers } }) {
+      //   // Forward the Set-Cookie header to the main server event
+      //   if (import.meta.server && serverEvent) {
+      //     for (const setCookie of headers.getSetCookie()) {
+      //       appendResponseHeader(serverEvent, "Set-Cookie", setCookie);
+      //     }
+      //   }
+      // },
     });
 
-    if (error) {
-      console.error("Error fetching session:", error);
-
-      return;
-    }
-
-    session.value = data?.session || null;
-    user.value = data?.user || null;
-    sessionFetching.value = false;
-
-    return data;
+    sessionState.value = null;
+    useApiSession().value = null;
   };
 
-  if (import.meta.client) {
-    client.$store.listen("$sessionSignal", async (signal) => {
-      if (!signal) return;
-      await fetchSession();
-    });
-  }
+  const fetch = async () => {
+    sessionState.value = await $api<UserSession>("/api/_auth/session", {
+      headers: {
+        accept: "application/json",
+      },
+      retry: false,
+    }).catch(() => null);
+    if (!authReadyState.value) {
+      authReadyState.value = true;
+    }
+  };
+
+  const popupListener = (e: StorageEvent) => {
+    if (e.key === "temp-nuxt-auth-utils-popup") {
+      fetch();
+      window.removeEventListener("storage", popupListener);
+    }
+  };
+  const openInPopup = (
+    route: string,
+    size: { width?: number; height?: number } = {},
+  ) => {
+    // Set a local storage item to tell the popup that we pending auth
+    localStorage.setItem("temp-nuxt-auth-utils-popup", "true");
+
+    const width = size.width ?? 960;
+    const height = size.height ?? 600;
+    const top =
+      (window.top?.outerHeight ?? 0) / 2 +
+      (window.top?.screenY ?? 0) -
+      height / 2;
+    const left =
+      (window.top?.outerWidth ?? 0) / 2 +
+      (window.top?.screenX ?? 0) -
+      width / 2;
+
+    window.open(
+      route,
+      "nuxt-auth-utils-popup",
+      `width=${width}, height=${height}, top=${top}, left=${left}, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no`,
+    );
+
+    window.addEventListener("storage", popupListener);
+  };
 
   return {
-    session,
-    user,
-    loggedIn: computed(() => !!session.value),
-    signIn: client.signIn,
-    signUp: client.signUp,
-    async signOut({ redirectTo }: { redirectTo?: RouteLocationRaw } = {}) {
-      const res = await client.signOut();
-      session.value = null;
-      user.value = null;
-
-      useApiToken().value = null;
-
-      if (redirectTo) await navigateTo(redirectTo);
-
-      return res;
-    },
-    fetchSession,
-    client,
+    ready: computed(() => authReadyState.value),
+    loggedIn: computed(() => Boolean(sessionState.value?.user)),
+    user: computed(() => sessionState.value?.user || null),
+    session: sessionState,
+    fetch,
+    openInPopup,
+    clear,
   };
-});
+}
