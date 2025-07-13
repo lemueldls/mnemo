@@ -55,6 +55,8 @@ function formatBytes(bytes: number) {
 
 <template>
   <div class="flex h-full flex-col gap-4">
+    <div class="text-error p-4">TODO</div>
+
     <md-outlined-card v-if="usage && quota" class="flex flex-col gap-2 p-4">
       <div class="label-large flex justify-between">
         <strong>{{ $t("components.sync.local-quota") }}</strong>
