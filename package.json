@@ -39,7 +39,7 @@
     "@tauri-apps/plugin-websocket": "^2.4.0",
     "@vueuse/math": "^13.5.0",
     "@vueuse/router": "^13.5.0",
-    "drizzle-orm": "^0.44.2",
+    "drizzle-orm": "^0.44.3",
     "drizzle-valibot": "^0.4.2",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
