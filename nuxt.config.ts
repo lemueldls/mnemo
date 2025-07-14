@@ -59,7 +59,6 @@ export default defineNuxtConfig({
       apiBaseUrl: "",
     },
     session: {
-      name: "nuxt-session",
       password: "",
     },
     oauth: {
