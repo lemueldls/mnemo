@@ -72,17 +72,17 @@ export default defineWebSocketHandler({
       });
   },
 
-  async close(peer) {
-    console.log("[close context]", JSON.stringify(peer.context));
-    console.log(
-      "[close headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
+  // async close(peer) {
+  //   console.log("[close context]", JSON.stringify(peer.context));
+  //   console.log(
+  //     "[close headers]",
+  //     peer.request.headers
+  //       ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
+  //       : null,
+  //   );
 
-    const user = await requireUser(peer.request.headers);
-    console.log("[close user]", JSON.stringify(user));
-    peer.unsubscribe(`users:${user.id}`);
-  },
+  //   const user = await requireUser(peer.request.headers);
+  //   console.log("[close user]", JSON.stringify(user));
+  //   peer.unsubscribe(`users:${user.id}`);
+  // },
 });
