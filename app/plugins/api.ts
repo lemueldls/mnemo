@@ -10,14 +10,14 @@ export default defineNuxtPlugin({
 
     const headers = new Headers();
 
-    watchImmediate(useApiSession(), (token) => {
-      headers.set("Cookie", `nuxt-session=${token || ""};`);
+    watchImmediate(useApiToken(), (token) => {
+      headers.set("Cookie", `mnemo.session_token=${token || ""};`);
     });
 
     const fetch = isPlatform ? ofetch : ($fetch as $Fetch);
 
     const api = fetch.create(
-      { baseURL: useApiBaseUrl(), headers: headers },
+      { baseURL: useApiBaseUrl(), headers },
       { fetch: isPlatform ? tauriFetch : undefined },
     );
 

@@ -1,29 +1,31 @@
 <script lang="ts" setup>
 definePageMeta({ layout: "empty" });
 
-const session = useRouteQuery("session").value as string;
+const token = useRouteQuery("token").value as string;
 const redirect = useRouteQuery("redirect").value as string;
 const platform = useRouteQuery("platform").value as string;
 
-if (session) {
+if (token) {
+  useApiToken().value = token;
+
   const auth = useAuth();
   await auth.fetchSession();
 }
 
-const activeSession = useApiSession().value!;
+const activeToken = useApiToken().value!;
 
 if (platform === "true") {
-  window.location.href = `mnemo:///auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`;
+  window.location.href = `mnemo:///auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
 } else {
   const redirectUrl = new URL(redirect);
 
   if (redirectUrl.origin === useRequestURL().origin)
     await navigateTo(redirectUrl.pathname);
   else {
-    redirectUrl.searchParams.set("session", activeSession);
+    redirectUrl.searchParams.set("token", activeToken);
 
     window.location.href = new URL(
-      `/auth/confirm?session=${encodeURIComponent(activeSession)}&redirect=${encodeURIComponent(redirect)}`,
+      `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`,
       redirectUrl,
     ).href;
   }

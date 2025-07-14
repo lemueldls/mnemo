@@ -82,7 +82,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^59.0.1",
-    "nuxt": "4.0.0-rc.0",
+    "nuxt": "^3.17.7",
     "nuxt-auth-utils": "^0.5.20",
     "nuxt-ssr-lit": "^1.6.30",
     "postcss-html": "^1.8.0",
@@ -101,5 +101,12 @@
     "vue": "^3.5.17",
     "wasm-pack": "^0.13.1",
     "wrangler": "^4.24.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "nitropack": "npm:nitropack-nightly@latest",
+      "h3": "npm:h3-nightly@latest",
+      "crossws": "=0.4.1"
+    }
   }
 }

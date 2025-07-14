@@ -17,9 +17,10 @@ export default defineWebSocketHandler({
         : null,
     );
     const user = await requireUser(request.headers);
-    request.context.base = `users:${user.id}`;
 
     console.log("[upgrade user]", JSON.stringify(user));
+
+    return { context: { base: `users:${user.id}` } };
   },
 
   async open(peer) {

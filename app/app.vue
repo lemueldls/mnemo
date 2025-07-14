@@ -20,6 +20,8 @@ if (isTauri()) {
     const token = callbackUrl.searchParams.get("token")!;
     const redirect = callbackUrl.searchParams.get("redirect")!;
 
+    console.log({ callbackUrl, token, redirect });
+
     await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
   });
 
