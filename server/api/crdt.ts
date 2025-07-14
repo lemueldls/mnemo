@@ -25,8 +25,8 @@ export default defineWebSocketHandler({
     await hubKV().setItemRaw(key, bytes);
   },
 
-  async close(peer) {
-    const user = await requireUser(peer.request.headers);
-    peer.unsubscribe(`users:${user.id}:crdt`);
-  },
+  // async close(peer) {
+  //   const user = await requireUser(peer.request.headers);
+  //   peer.unsubscribe(`users:${user.id}:crdt`);
+  // },
 });
