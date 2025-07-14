@@ -84,7 +84,6 @@ export default defineNuxtConfig({
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
-    preset: isWorkers ? "cloudflare-module" : "cloudflare-pages",
     experimental: { openAPI: true, websocket: isWorkers },
   },
   hub: {
