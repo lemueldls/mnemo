@@ -1,12 +1,107 @@
 diff --git a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-index daaf8185b9a086dfd0eb0edf17768cce45392582..593d75e21ab578aaa953e1245d4298cd1ec28273 100644
+index daaf8185b9a086dfd0eb0edf17768cce45392582..f4bb68f3a1c1f9b6ecea310cb175946f7513a996 100644
 --- a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 +++ b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-@@ -1,6 +1,6 @@
+@@ -1,79 +1,44 @@
  import "#nitro-internal-pollyfills";
  import { DurableObject } from "cloudflare:workers";
 -import wsAdapter from "crossws/adapters/cloudflare-durable";
+-import { useNitroApp } from "nitropack/runtime";
+-import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
+-import { createHandler, fetchHandler } from "./_module-handler.mjs";
 +import wsAdapter from "crossws/adapters/cloudflare";
- import { useNitroApp } from "nitropack/runtime";
- import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
- import { createHandler, fetchHandler } from "./_module-handler.mjs";
++import { createHandler } from "./_module-handler.mjs";
++
+ const DURABLE_BINDING = "$DurableObject";
+ const DURABLE_INSTANCE = "server";
+-const nitroApp = useNitroApp();
+-const getDurableStub = (env) => {
+-  const binding = env[DURABLE_BINDING];
+-  if (!binding) {
+-    throw new Error(
+-      `Durable Object binding "${DURABLE_BINDING}" not available.`
+-    );
+-  }
+-  const id = binding.idFromName(DURABLE_INSTANCE);
+-  return binding.get(id);
+-};
+-const ws = import.meta._websocket ? wsAdapter({
+-  ...nitroApp.h3App.websocket,
++
++const ws = wsAdapter({
+   instanceName: DURABLE_INSTANCE,
+   bindingName: DURABLE_BINDING
+-}) : void 0;
++}) ;
++
+ export default createHandler({
+-  fetch(request, env, context, url, ctxExt) {
+-    if (env.ASSETS && isPublicAssetURL(url.pathname)) {
+-      return env.ASSETS.fetch(request);
+-    }
+-    ctxExt.durableFetch = (req = request) => getDurableStub(env).fetch(req);
+-    if (import.meta._websocket && request.headers.get("upgrade") === "websocket") {
++  fetch(request, env, context) {
++    if (request.headers.get("upgrade") === "websocket") {
+       return ws.handleUpgrade(request, env, context);
+     }
+   }
+ });
++
+ export class $DurableObject extends DurableObject {
+   constructor(state, env) {
+     super(state, env);
+-    state.waitUntil(
+-      nitroApp.hooks.callHook("cloudflare:durable:init", this, {
+-        state,
+-        env
+-      })
+-    );
+-    if (import.meta._websocket) {
+-      ws.handleDurableInit(this, state, env);
+-    }
++    ws.handleDurableInit(this, state, env);
+   }
++
+   fetch(request) {
+-    if (import.meta._websocket && request.headers.get("upgrade") === "websocket") {
+-      return ws.handleDurableUpgrade(this, request);
+-    }
+-    const url = new URL(request.url);
+-    return fetchHandler(request, this.env, this.ctx, url, nitroApp, {
+-      durable: this
+-    });
++    return ws.handleDurableUpgrade(this, request);
+   }
+-  publish(topic, data, opts) {
+-    if (!ws) {
+-      throw new Error("WebSocket not available");
+-    }
+-    return ws.publish(topic, data, opts);
+-  }
+-  alarm() {
+-    this.ctx.waitUntil(
+-      nitroApp.hooks.callHook("cloudflare:durable:alarm", this)
+-    );
++
++  webSocketMessage(client, message) {
++    return ws.handleDurableMessage(this, client, message);
+   }
+-  async webSocketMessage(client, message) {
+-    if (import.meta._websocket) {
+-      return ws.handleDurableMessage(this, client, message);
+-    }
++
++  webSocketPublish(topic, message, opts) {
++    return ws.handleDurablePublish(this, topic, message, opts);
+   }
+-  async webSocketClose(client, code, reason, wasClean) {
+-    if (import.meta._websocket) {
+-      return ws.handleDurableClose(this, client, code, reason, wasClean);
+-    }
++
++  webSocketClose(client, code, reason, wasClean) {
++    return ws.handleDurableClose(this, client, code, reason, wasClean);
+   }
+ }
++

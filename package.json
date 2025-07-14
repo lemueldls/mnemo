@@ -106,7 +106,6 @@
   },
   "pnpm": {
     "overrides": {
-      "nitropack": "npm:nitropack-nightly@latest",
       "h3": "npm:h3-nightly@latest",
       "crossws": "=0.4.1"
     },
