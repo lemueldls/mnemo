@@ -6,8 +6,8 @@ const redirect = useRouteQuery("redirect").value as string;
 const platform = useRouteQuery("platform").value as string;
 
 if (session) {
-  useApiSession().value = session;
-  await useAuth().fetch();
+  const auth = useAuth();
+  await auth.fetchSession();
 }
 
 const activeSession = useApiSession().value!;
