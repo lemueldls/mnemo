@@ -9,7 +9,7 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    console.log("[upgrade]", JSON.stringify(request.context));
+    console.log("[upgrade context]", JSON.stringify(request.context));
     console.log(
       "[upgrade headers]",
       request.headers
@@ -24,7 +24,7 @@ export default defineWebSocketHandler({
   },
 
   async open(peer) {
-    console.log("[open]", JSON.stringify(peer.context));
+    console.log("[open context]", JSON.stringify(peer.context));
     console.log(
       "[open headers]",
       peer.request.headers
@@ -73,7 +73,7 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    console.log("[close]", JSON.stringify(peer.context));
+    console.log("[close context]", JSON.stringify(peer.context));
     console.log(
       "[close headers]",
       peer.request.headers

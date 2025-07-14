@@ -1,4 +1,5 @@
 import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 const defaultLocale = "en";
 const locales = [
@@ -90,7 +91,7 @@ export default defineNuxtConfig({
     kv: true,
   },
   vite: {
-    plugins: [wasm()],
+    plugins: [wasm(), topLevelAwait()],
   },
   fonts: {
     families: [
