@@ -35,8 +35,6 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@vueuse/nuxt",
     "@unocss/nuxt",
-    "nuxt-ssr-lit",
-    "nuxt-auth-utils",
     "reka-ui/nuxt",
   ],
   devtools: { enabled: !platform },
@@ -63,10 +61,13 @@ export default defineNuxtConfig({
     session: {
       name: "nuxt-session",
       password: "",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      cookie: isDev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
+    },
+    oauth: {
+      github: {
+        clientId: "",
+        clientSecret: "",
+        redirectURL: "",
+      },
     },
   },
   future: { compatibilityVersion: 4 },

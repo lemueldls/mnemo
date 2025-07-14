@@ -37,8 +37,8 @@ export const useCrdt = createSharedComposable(async () => {
     },
   });
 
-  const { ready, loggedIn } = useAuth();
-  whenever(logicAnd(ready, loggedIn), open, { immediate: true });
+  const { loggedIn } = useAuth();
+  whenever(loggedIn, open, { immediate: true });
 
   doc.subscribeLocalUpdates(async (bytes) => {
     await send(bytes);
@@ -109,8 +109,8 @@ const useSync = createSharedComposable(() => {
     },
   });
 
-  const { ready, loggedIn } = useAuth();
-  whenever(logicAnd(ready, loggedIn), open, { immediate: true });
+  const { loggedIn } = useAuth();
+  whenever(loggedIn, open, { immediate: true });
 
   return {
     async updateItem(key: string, value: StorageValue, updatedAt: number) {
