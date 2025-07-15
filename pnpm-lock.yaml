@@ -6,7 +6,6 @@ settings:
 
 overrides:
   h3: npm:h3-nightly@latest
-  nitropack: npm:nitropack-nightly@latest
   crossws: ^0.4.1
 
 patchedDependencies:
@@ -235,9 +234,6 @@ importers:
       eslint-plugin-unicorn:
         specifier: ^59.0.1
         version: 59.0.1(eslint@9.31.0(jiti@2.4.2))
-      nitropack:
-        specifier: npm:nitropack-nightly@latest
-        version: nitropack-nightly@2.12.0-20250715-004419.128c517b(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nuxt:
         specifier: ^3.17.7
         version: 3.17.7(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.0.13)(@vue/compiler-sfc@3.5.17)(db0@0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2)))(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(eslint@9.31.0(jiti@2.4.2))(idb-keyval@6.2.2)(ioredis@5.6.1)(magicast@0.3.5)(meow@13.2.0)(optionator@0.9.4)(rollup@4.45.0)(sass@1.89.2)(srvx@0.8.2)(stylelint@16.21.1(typescript@5.8.3))(terser@5.43.1)(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.13)(jiti@2.4.2)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0))(yaml@2.8.0)
@@ -5371,16 +5367,6 @@ packages:
 
   nitro-cloudflare-dev@0.2.2:
     resolution: {integrity: sha512-aZfNTVdgXPQeAmXW0Tw8hm3usAHr4qVG4Bg3WhHBGeZYuXr9OyT04Ztb+STkMzhyaXvfMHViAaPUPg06iAYqag==}
-
-  nitropack-nightly@2.12.0-20250715-004419.128c517b:
-    resolution: {integrity: sha512-/pz0gY+o+2xUTffhSm8JeQtCEzT0GNXPhDofeWq3V8ecsBosc5U7pdVnGAKI5C/GEhlIGqgyFvgS9uwAp9AVLw==}
-    engines: {node: ^16.11.0 || >=17.0.0}
-    hasBin: true
-    peerDependencies:
-      xml2js: ^0.6.2
-    peerDependenciesMeta:
-      xml2js:
-        optional: true
 
   nitropack@2.11.13:
     resolution: {integrity: sha512-xKng/szRZmFEsrB1Z+sFzYDhXL5KUtUkEouPCj9LiBPhJ7qV3jdOv1MSis++8H8zNI6dEurt51ZlK4VRDvedsA==}
@@ -12833,107 +12819,6 @@ snapshots:
       consola: 3.4.2
       mlly: 1.7.4
       pkg-types: 2.2.0
-
-  nitropack-nightly@2.12.0-20250715-004419.128c517b(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@netlify/functions': 3.1.10(rollup@4.45.0)
-      '@rollup/plugin-alias': 5.1.1(rollup@4.45.0)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.45.0)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.45.0)
-      '@rollup/plugin-json': 6.1.0(rollup@4.45.0)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.45.0)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.45.0)
-      '@rollup/plugin-terser': 0.4.4(rollup@4.45.0)
-      '@vercel/nft': 0.29.4(rollup@4.45.0)
-      archiver: 7.0.1
-      c12: 3.1.0(magicast@0.3.5)
-      chokidar: 4.0.3
-      citty: 0.1.6
-      compatx: 0.2.0
-      confbox: 0.2.2
-      consola: 3.4.2
-      cookie-es: 2.0.0
-      croner: 9.1.0
-      crossws: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
-      db0: 0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))
-      defu: 6.1.4
-      destr: 2.0.5
-      dot-prop: 9.0.0
-      esbuild: 0.25.6
-      escape-string-regexp: 5.0.0
-      etag: 1.8.1
-      exsolve: 1.0.7
-      globby: 14.1.0
-      gzip-size: 7.0.0
-      h3: h3-nightly@1.15.2-20250418-133010-0c9b276(srvx@0.8.2)
-      hookable: 5.5.3
-      httpxy: 0.1.7
-      ioredis: 5.6.1
-      jiti: 2.4.2
-      klona: 2.0.6
-      knitwork: 1.2.0
-      listhen: 1.9.0(srvx@0.8.2)
-      magic-string: 0.30.17
-      magicast: 0.3.5
-      mime: 4.0.7
-      mlly: 1.7.4
-      node-fetch-native: 1.6.6
-      node-mock-http: 1.0.1
-      ofetch: 1.4.1
-      ohash: 2.0.11
-      pathe: 2.0.3
-      perfect-debounce: 1.0.0
-      pkg-types: 2.2.0
-      pretty-bytes: 6.1.1
-      radix3: 1.1.2
-      rollup: 4.45.0
-      rollup-plugin-visualizer: 6.0.3(rollup@4.45.0)
-      scule: 1.3.0
-      semver: 7.7.2
-      serve-placeholder: 2.0.2
-      serve-static: 2.2.0
-      source-map: 0.7.4
-      std-env: 3.9.0
-      ufo: 1.6.1
-      ultrahtml: 1.6.0
-      uncrypto: 0.1.3
-      unctx: 2.4.1
-      unenv: 2.0.0-rc.18
-      unimport: 5.1.0
-      unplugin-utils: 0.2.4
-      unstorage: 1.16.1(@netlify/blobs@9.1.2)(db0@0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2)))(idb-keyval@6.2.2)(ioredis@5.6.1)(srvx@0.8.2)
-      untyped: 2.0.0
-      unwasm: 0.3.9
-      youch: 4.1.0-beta.8
-      youch-core: 0.3.3
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@electric-sql/pglite'
-      - '@libsql/client'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/kv'
-      - aws4fetch
-      - better-sqlite3
-      - drizzle-orm
-      - encoding
-      - idb-keyval
-      - mysql2
-      - rolldown
-      - sqlite3
-      - srvx
-      - supports-color
-      - uploadthing
 
   nitropack@2.11.13(patch_hash=23f2a6f66da96241749ef5563351e4af98b7dbe9305b4d0216b19642db41fefc)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
