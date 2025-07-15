@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   crossws:
-    hash: 59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4
+    hash: 101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644
     path: patches/crossws.patch
   nitropack:
     hash: 23f2a6f66da96241749ef5563351e4af98b7dbe9305b4d0216b19642db41fefc
@@ -113,7 +113,7 @@ importers:
         version: 1.2.12
       crossws:
         specifier: ^0.4.1
-        version: 0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2)
+        version: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
       idb-keyval:
         specifier: ^6.2.2
         version: 6.2.2
@@ -10994,7 +10994,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  crossws@0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2):
+  crossws@0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2):
     optionalDependencies:
       srvx: 0.8.2
 
@@ -12114,7 +12114,7 @@ snapshots:
   h3-nightly@1.15.2-20250418-133010-0c9b276(srvx@0.8.2):
     dependencies:
       cookie-es: 1.2.2
-      crossws: 0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
       defu: 6.1.4
       destr: 2.0.5
       iron-webcrypto: 1.2.1
@@ -12566,7 +12566,7 @@ snapshots:
       citty: 0.1.6
       clipboardy: 4.0.0
       consola: 3.4.2
-      crossws: 0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
       defu: 6.1.4
       get-port-please: 3.2.0
       h3: h3-nightly@1.15.2-20250418-133010-0c9b276(srvx@0.8.2)
@@ -12855,7 +12855,7 @@ snapshots:
       consola: 3.4.2
       cookie-es: 2.0.0
       croner: 9.1.0
-      crossws: 0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
       db0: 0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))
       defu: 6.1.4
       destr: 2.0.5
@@ -12956,7 +12956,7 @@ snapshots:
       consola: 3.4.2
       cookie-es: 2.0.0
       croner: 9.1.0
-      crossws: 0.4.1(patch_hash=59afbd0bc856de709b50e89cd2f6679bd7732a8cd19e17c8c6229de7a402d7e4)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=101d5ca90ada3fbcf73aee9534bc4a831fc49e660de2245754f4432c33673644)(srvx@0.8.2)
       db0: 0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))
       defu: 6.1.4
       destr: 2.0.5
