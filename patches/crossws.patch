@@ -1,13 +1,15 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..6e36d849453bd8934e75bda86b11955f252d2c26 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..9c5ad25f06dcbb82facb09aadf7f080a6661600e 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
-@@ -75,14 +75,18 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -74,15 +74,19 @@ const cloudflareAdapter = (opts = {}) => {
+         headers: upgradeHeaders
        });
      },
-     handleDurableInit: async (obj, state, env) => {
+-    handleDurableInit: async (obj, state, env) => {
++    handleDurableInit: (obj, state, env) => {
 +      state.blockConcurrencyWhile(async () => {
-+        obj.context = (await state.storage.get("context")) || {};
++        obj.context = (await state.storage.get("context", { allowConcurrency: false })) || {};
 +      });
      },
      handleDurableUpgrade: async (obj, request) => {
@@ -20,7 +22,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..6e36d849453bd8934e75bda86b11955f
        }
 +      console.log(1, "object context", obj.context);
 +      console.log("setting context", context ? JSON.stringify(context) : "nothing lol")
-+      await obj.ctx.storage.put("context", context);
++      await obj.ctx.storage.put("context", context, { allowConcurrency: false });
        const peers = getPeers(globalPeers, namespace);
        const pair = new WebSocketPair();
        const client = pair[0];
@@ -39,9 +41,9 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..6e36d849453bd8934e75bda86b11955f
 -      const peer = CloudflareDurablePeer._restore(obj, ws);
 +      console.log(2, "object context", obj.context);
 +      console.log("getting context")
-+      const context = await obj.ctx.storage.get("context") || {};
++      const context = await obj.ctx.storage.get("context", { allowConcurrency: false }) || {};
 +      console.log("got", context)
-+      console.log(await obj.ctx.storage.get("context"))
++      console.log(await obj.ctx.storage.get("context", { allowConcurrency: false }))
 +      const peer = CloudflareDurablePeer._restore(
 +        obj,
 +        ws,
@@ -51,7 +53,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..6e36d849453bd8934e75bda86b11955f
      },
      handleDurableClose: async (obj, ws, code, reason, wasClean) => {
 -      const peer = CloudflareDurablePeer._restore(obj, ws);
-+      const context = await obj.ctx.storage.get("context") || {};
++      const context = await obj.ctx.storage.get("context", { allowConcurrency: false }) || {};
 +      const peer = CloudflareDurablePeer._restore(
 +        obj,
 +        ws,
