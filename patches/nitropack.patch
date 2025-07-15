@@ -1,8 +1,8 @@
 diff --git a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-index daaf8185b9a086dfd0eb0edf17768cce45392582..4576621ec5506c1c4357f26a36eaf850c952b9e3 100644
+index daaf8185b9a086dfd0eb0edf17768cce45392582..ec4919759f2f32f0c8e91ab067f1e3d6111dbfc9 100644
 --- a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 +++ b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-@@ -1,79 +1,57 @@
+@@ -1,79 +1,58 @@
  import "#nitro-internal-pollyfills";
  import { DurableObject } from "cloudflare:workers";
 -import wsAdapter from "crossws/adapters/cloudflare-durable";
@@ -14,7 +14,8 @@ index daaf8185b9a086dfd0eb0edf17768cce45392582..4576621ec5506c1c4357f26a36eaf850
 +
  const DURABLE_BINDING = "$DurableObject";
  const DURABLE_INSTANCE = "server";
--const nitroApp = useNitroApp();
++
+ const nitroApp = useNitroApp();
 -const getDurableStub = (env) => {
 -  const binding = env[DURABLE_BINDING];
 -  if (!binding) {
@@ -27,7 +28,6 @@ index daaf8185b9a086dfd0eb0edf17768cce45392582..4576621ec5506c1c4357f26a36eaf850
 -};
 -const ws = import.meta._websocket ? wsAdapter({
 +
-+// const nitroApp = useNitroApp();
 +// const getDurableStub = (env) => {
 +//   const binding = env[DURABLE_BINDING];
 +//   if (!binding) {
