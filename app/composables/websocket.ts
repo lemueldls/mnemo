@@ -59,7 +59,7 @@ class WebSocketMessageWrapper implements WebSocketMessage {
   }
 }
 
-export function useWebSocket(
+export function useApiWebSocket(
   url: MaybeRefOrGetter<string | URL>,
   options: WebSocketOptions = {},
 ): WebSocketReturn {

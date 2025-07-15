@@ -1,5 +1,4 @@
 import indexedDbDriver from "unstorage/drivers/indexedb";
-import { useWebSocket } from "./websocket";
 import type { Container } from "loro-crdt";
 import { createStorage, type StorageValue } from "unstorage";
 
@@ -85,7 +84,6 @@ const useSync = createSharedComposable(() => {
 
   const { open, send } = useWebSocket(url, {
     immediate: false,
-
     async onMessage(_ws, event) {
       const text = await event.text();
       const { key, value, updatedAt } = JSON.parse(text) as {
