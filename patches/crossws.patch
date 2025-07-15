@@ -1,12 +1,13 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca385543d801 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..6e36d849453bd8934e75bda86b11955f252d2c26 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
-@@ -75,14 +75,16 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -75,14 +75,18 @@ const cloudflareAdapter = (opts = {}) => {
        });
      },
      handleDurableInit: async (obj, state, env) => {
 +      state.blockConcurrencyWhile(async () => {
++        obj.context = (await state.storage.get("context")) || {};
 +      });
      },
      handleDurableUpgrade: async (obj, request) => {
@@ -17,12 +18,13 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca38
        if (endResponse) {
          return endResponse;
        }
++      console.log(1, "object context", obj.context);
 +      console.log("setting context", context ? JSON.stringify(context) : "nothing lol")
 +      await obj.ctx.storage.put("context", context);
        const peers = getPeers(globalPeers, namespace);
        const pair = new WebSocketPair();
        const client = pair[0];
-@@ -90,6 +92,7 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -90,6 +94,7 @@ const cloudflareAdapter = (opts = {}) => {
        const peer = CloudflareDurablePeer._restore(
          obj,
          server,
@@ -30,14 +32,16 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca38
          request,
          namespace
        );
-@@ -103,15 +106,29 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -103,15 +108,31 @@ const cloudflareAdapter = (opts = {}) => {
        });
      },
      handleDurableMessage: async (obj, ws, message) => {
 -      const peer = CloudflareDurablePeer._restore(obj, ws);
++      console.log(2, "object context", obj.context);
 +      console.log("getting context")
 +      const context = await obj.ctx.storage.get("context") || {};
-+      console.log(JSON.stringify(context))
++      console.log("got", context)
++      console.log(await obj.ctx.storage.get("context"))
 +      const peer = CloudflareDurablePeer._restore(
 +        obj,
 +        ws,
@@ -57,12 +61,12 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca38
        peers.delete(peer);
        const details = { code, reason, wasClean };
        await hooks.callHook("close", peer, details);
-+      // await obj.ctx.storage.deleteAlarm();
-+      // await obj.ctx.storage.deleteAll();
++      await obj.ctx.storage.deleteAlarm();
++      await obj.ctx.storage.deleteAll();
      },
      handleDurablePublish: async (_obj, topic, data, opts2) => {
        return durablePublish(topic, data, opts2);
-@@ -134,7 +151,11 @@ class CloudflareDurablePeer extends Peer {
+@@ -134,7 +155,11 @@ class CloudflareDurablePeer extends Peer {
    get peers() {
      return new Set(
        this.#getwebsockets().map(
@@ -75,7 +79,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca38
        )
      );
    }
-@@ -172,7 +193,7 @@ class CloudflareDurablePeer extends Peer {
+@@ -172,7 +197,7 @@ class CloudflareDurablePeer extends Peer {
    close(code, reason) {
      this._internal.ws.close(code, reason);
    }
@@ -84,7 +88,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..feccab2a8e1dce1597cb192786bfca38
      let peer = ws._crosswsPeer;
      if (peer) {
        return peer;
-@@ -180,6 +201,7 @@ class CloudflareDurablePeer extends Peer {
+@@ -180,6 +205,7 @@ class CloudflareDurablePeer extends Peer {
      const state = ws.deserializeAttachment() || {};
      peer = ws._crosswsPeer = new CloudflareDurablePeer({
        ws,
