@@ -10,7 +10,7 @@ overrides:
 
 patchedDependencies:
   nitropack:
-    hash: 8995e34080d8c805a340f961c5bf56edda1fd82084a18af401660d265c6f460b
+    hash: ff51202cd0cb5287e8f7ea5f98665c92d6139e6d70185765c013ec53b83b9a32
     path: patches/nitropack.patch
 
 importers:
@@ -12928,7 +12928,7 @@ snapshots:
       - supports-color
       - uploadthing
 
-  nitropack@2.11.13(patch_hash=8995e34080d8c805a340f961c5bf56edda1fd82084a18af401660d265c6f460b)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
+  nitropack@2.11.13(patch_hash=ff51202cd0cb5287e8f7ea5f98665c92d6139e6d70185765c013ec53b83b9a32)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -13154,7 +13154,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       nanotar: 0.2.0
-      nitropack: 2.11.13(patch_hash=8995e34080d8c805a340f961c5bf56edda1fd82084a18af401660d265c6f460b)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
+      nitropack: 2.11.13(patch_hash=ff51202cd0cb5287e8f7ea5f98665c92d6139e6d70185765c013ec53b83b9a32)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nypm: 0.6.0
       ofetch: 1.4.1
       ohash: 2.0.11
