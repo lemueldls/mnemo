@@ -41,6 +41,7 @@
     "@vueuse/math": "^13.5.0",
     "@vueuse/router": "^13.5.0",
     "better-auth": "^1.2.12",
+    "crossws": "^0.4.1",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
     "loro-crdt": "^1.5.9",
@@ -107,10 +108,12 @@
   "pnpm": {
     "overrides": {
       "h3": "npm:h3-nightly@latest",
-      "crossws": "=0.4.1"
+      "nitropack": "npm:nitropack-nightly@latest",
+      "crossws": "^0.4.1"
     },
     "patchedDependencies": {
-      "nitropack": "patches/nitropack.patch"
+      "nitropack": "patches/nitropack.patch",
+      "crossws": "patches/crossws.patch"
     }
   }
 }
