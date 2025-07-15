@@ -1,5 +1,5 @@
 diff --git a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-index daaf8185b9a086dfd0eb0edf17768cce45392582..593d75e21ab578aaa953e1245d4298cd1ec28273 100644
+index daaf8185b9a086dfd0eb0edf17768cce45392582..49d0e12e824f442d66a7a6d5c21c1b910562ed86 100644
 --- a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 +++ b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 @@ -1,6 +1,6 @@
@@ -10,3 +10,12 @@ index daaf8185b9a086dfd0eb0edf17768cce45392582..593d75e21ab578aaa953e1245d4298cd
  import { useNitroApp } from "nitropack/runtime";
  import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
  import { createHandler, fetchHandler } from "./_module-handler.mjs";
+@@ -34,6 +34,8 @@ export default createHandler({
+   }
+ });
+ export class $DurableObject extends DurableObject {
++  context;
++
+   constructor(state, env) {
+     super(state, env);
+     state.waitUntil(
