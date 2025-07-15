@@ -1,12 +1,12 @@
 diff --git a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-index daaf8185b9a086dfd0eb0edf17768cce45392582..ec4919759f2f32f0c8e91ab067f1e3d6111dbfc9 100644
+index daaf8185b9a086dfd0eb0edf17768cce45392582..0473a074b1000761ae737b7a8f81bc5d7e4359ff 100644
 --- a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 +++ b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-@@ -1,79 +1,58 @@
+@@ -1,79 +1,59 @@
  import "#nitro-internal-pollyfills";
  import { DurableObject } from "cloudflare:workers";
 -import wsAdapter from "crossws/adapters/cloudflare-durable";
--import { useNitroApp } from "nitropack/runtime";
+ import { useNitroApp } from "nitropack/runtime";
 -import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
 -import { createHandler, fetchHandler } from "./_module-handler.mjs";
 +import wsAdapter from "crossws/adapters/cloudflare";
