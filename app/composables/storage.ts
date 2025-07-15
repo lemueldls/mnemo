@@ -26,7 +26,7 @@ export const useCrdt = createSharedComposable(async () => {
   const url = new URL("/api/crdt", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-  const { open, send } = useWebSocket(url, {
+  const { open, send } = useApiWebSocket(url, {
     immediate: false,
     async onMessage(_ws, event) {
       const bytes = await event.bytes();
@@ -82,7 +82,7 @@ const useSync = createSharedComposable(() => {
   const url = new URL("/api/user-storage", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-  const { open, send } = useWebSocket(url, {
+  const { open, send } = useApiWebSocket(url, {
     immediate: false,
     async onMessage(_ws, event) {
       const text = await event.text();
