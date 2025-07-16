@@ -245,7 +245,7 @@ export function useApiWebSocket(
     if (ws.value) {
       status.value = "CLOSING";
       if (isTauri()) {
-        // await (ws.value as TauriWebSocket).disconnect();
+        await (ws.value as TauriWebSocket).disconnect();
       } else {
         (ws.value as WebSocket).close(code, reason);
       }
