@@ -13,7 +13,7 @@ patchedDependencies:
     hash: c57cced06a44a3a1bc81f877f6573854634c146567a69f5000c6908aa094712c
     path: patches/crossws.patch
   nitropack:
-    hash: 1f299daefa517a00102c486ac331bd7ef0d4824471fa7ba7748e2cc5e44852ca
+    hash: 260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c
     path: patches/nitropack.patch
 
 importers:
@@ -113,6 +113,9 @@ importers:
       crossws:
         specifier: ^0.4.1
         version: 0.4.1(patch_hash=c57cced06a44a3a1bc81f877f6573854634c146567a69f5000c6908aa094712c)(srvx@0.8.2)
+      defu:
+        specifier: ^6.1.4
+        version: 6.1.4
       idb-keyval:
         specifier: ^6.2.2
         version: 6.2.2
@@ -236,7 +239,7 @@ importers:
         version: 59.0.1(eslint@9.31.0(jiti@2.4.2))
       nitropack:
         specifier: npm:nitropack-nightly@latest
-        version: nitropack-nightly@2.12.0-20250715-004419.128c517b(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
+        version: nitropack-nightly@2.12.0-20250715-130505.f0183731(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nuxt:
         specifier: ^3.17.7
         version: 3.17.7(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.0.13)(@vue/compiler-sfc@3.5.17)(db0@0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2)))(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(eslint@9.31.0(jiti@2.4.2))(idb-keyval@6.2.2)(ioredis@5.6.1)(magicast@0.3.5)(meow@13.2.0)(optionator@0.9.4)(rollup@4.45.0)(sass@1.89.2)(srvx@0.8.2)(stylelint@16.21.1(typescript@5.8.3))(terser@5.43.1)(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.13)(jiti@2.4.2)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0))(yaml@2.8.0)
@@ -5371,8 +5374,8 @@ packages:
   nitro-cloudflare-dev@0.2.2:
     resolution: {integrity: sha512-aZfNTVdgXPQeAmXW0Tw8hm3usAHr4qVG4Bg3WhHBGeZYuXr9OyT04Ztb+STkMzhyaXvfMHViAaPUPg06iAYqag==}
 
-  nitropack-nightly@2.12.0-20250715-004419.128c517b:
-    resolution: {integrity: sha512-/pz0gY+o+2xUTffhSm8JeQtCEzT0GNXPhDofeWq3V8ecsBosc5U7pdVnGAKI5C/GEhlIGqgyFvgS9uwAp9AVLw==}
+  nitropack-nightly@2.12.0-20250715-130505.f0183731:
+    resolution: {integrity: sha512-Beof9FFvvZC3H8ChW4w3U8xfBQR9AkEAtFjJJxGiQza+NN79P6r9aQzHVDVNKnshAx5s1GkkUVdxmujkO+Zn3Q==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -12833,7 +12836,7 @@ snapshots:
       mlly: 1.7.4
       pkg-types: 2.2.0
 
-  nitropack-nightly@2.12.0-20250715-004419.128c517b(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
+  nitropack-nightly@2.12.0-20250715-130505.f0183731(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -12934,7 +12937,7 @@ snapshots:
       - supports-color
       - uploadthing
 
-  nitropack@2.11.13(patch_hash=1f299daefa517a00102c486ac331bd7ef0d4824471fa7ba7748e2cc5e44852ca)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
+  nitropack@2.11.13(patch_hash=260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -13160,7 +13163,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       nanotar: 0.2.0
-      nitropack: 2.11.13(patch_hash=1f299daefa517a00102c486ac331bd7ef0d4824471fa7ba7748e2cc5e44852ca)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
+      nitropack: 2.11.13(patch_hash=260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nypm: 0.6.0
       ofetch: 1.4.1
       ohash: 2.0.11

@@ -23,25 +23,28 @@ export const useCrdt = createSharedComposable(async () => {
   const bytes = await localDb.getItemRaw("crdt");
   if (bytes) doc.import(bytes);
 
-  // const url = new URL("/api/crdt", useApiBaseUrl());
-  // url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  const url = new URL("/api/crdt", useApiBaseUrl());
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-  // const { open, send } = useApiWebSocket(url, {
-  //   immediate: false,
-  //   async onMessage(_ws, event) {
-  //     const bytes = await event.bytes();
-  //     doc.import(bytes);
+  const { open, close, send } = useApiWebSocket(url, {
+    immediate: false,
+    async onMessage(_ws, event) {
+      const bytes = await event.bytes();
+      doc.import(bytes);
 
-  //     await localDb.setItemRaw("crdt", bytes);
-  //   },
-  // });
+      await localDb.setItemRaw("crdt", bytes);
+    },
+  });
 
-  // const { loggedIn } = useAuth();
-  // whenever(loggedIn, open, { immediate: true });
+  const { loggedIn } = useAuth();
+  watchImmediate([loggedIn, useOnline()], ([loggedIn, isOnline]) => {
+    if (loggedIn && isOnline) open();
+    else close();
+  });
 
-  // doc.subscribeLocalUpdates(async (bytes) => {
-  //   await send(bytes);
-  // });
+  doc.subscribeLocalUpdates(async (bytes) => {
+    await send(bytes);
+  });
 
   doc.subscribe(async (event) => {
     if (event.by === "import") {
@@ -82,7 +85,7 @@ const useSync = createSharedComposable(() => {
   const url = new URL("/api/user-storage", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-  const { open, send } = useApiWebSocket(url, {
+  const { open, close, send } = useApiWebSocket(url, {
     immediate: false,
     async onMessage(_ws, event) {
       const text = await event.text();
@@ -108,7 +111,10 @@ const useSync = createSharedComposable(() => {
   });
 
   const { loggedIn } = useAuth();
-  whenever(loggedIn, open, { immediate: true });
+  watchImmediate([loggedIn, useOnline()], ([loggedIn, isOnline]) => {
+    if (loggedIn && isOnline) open();
+    else close();
+  });
 
   return {
     async updateItem(key: string, value: StorageValue, updatedAt: number) {
