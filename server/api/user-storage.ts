@@ -32,10 +32,7 @@ export default defineWebSocketHandler({
         : null,
     );
 
-    const user = await requireUser(peer.request.headers);
-    console.log("[open user]", JSON.stringify(user));
-
-    peer.subscribe(`users:${user.id}`);
+    peer.subscribe(peer.context.base as string);
   },
 
   async message(peer, message) {
@@ -47,14 +44,14 @@ export default defineWebSocketHandler({
         : null,
     );
 
-    const user = await requireUser(peer.request.headers);
-    console.log("[message user]", JSON.stringify(user));
-    const base = `users:${user.id}`;
+    // const user = await requireUser(peer.request.headers);
+    // console.log("[message user]", JSON.stringify(user));
+    // const base = `users:${user.id}`;
 
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    const userStorage = prefixStorage(hubKV(), base);
+    const userStorage = prefixStorage(hubKV(), peer.context.base as string);
 
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;
@@ -63,7 +60,7 @@ export default defineWebSocketHandler({
       await userStorage.setItem(key, value);
       await userStorage.setMeta(key, { updatedAt });
 
-      peer.publish(base, item);
+      peer.publish(peer.context.base as string, item);
     } else
       peer.send({
         key,
@@ -81,8 +78,8 @@ export default defineWebSocketHandler({
         : null,
     );
 
-    const user = await requireUser(peer.request.headers);
-    console.log("[close user]", JSON.stringify(user));
-    peer.unsubscribe(`users:${user.id}`);
+    // const user = await requireUser(peer.request.headers);
+    // console.log("[close user]", JSON.stringify(user));
+    peer.unsubscribe(peer.context.base as string);
   },
 });
