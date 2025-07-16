@@ -1,5 +1,5 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..5a4395a7748380c463d28aa713c530a4d4a88076 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..e819952e5bae786df3981fa011f460cfcc1d9365 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
 @@ -74,12 +74,13 @@ const cloudflareAdapter = (opts = {}) => {
@@ -48,8 +48,8 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..5a4395a7748380c463d28aa713c530a4
 -      const peer = CloudflareDurablePeer._restore(obj, ws);
 +      console.log(2, "object context", obj.context);
 +      console.log("getting context")
-+      const context = await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }) || {};
-+      console.log("got", context)
++      const context = await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }) ;
++      console.log("got", context, context ? JSON.stringify(context) : "nothing lol")
 +      console.log(await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }))
 +      const peer = CloudflareDurablePeer._restore(
 +        obj,
@@ -60,7 +60,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..5a4395a7748380c463d28aa713c530a4
      },
      handleDurableClose: async (obj, ws, code, reason, wasClean) => {
 -      const peer = CloudflareDurablePeer._restore(obj, ws);
-+      const context = await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }) || {};
++      const context = await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }) ;
 +      const peer = CloudflareDurablePeer._restore(
 +        obj,
 +        ws,
