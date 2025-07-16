@@ -1,5 +1,5 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..8f3e3454087915942247437be12c8fea3c7b42f4 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..5a4395a7748380c463d28aa713c530a4d4a88076 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
 @@ -74,12 +74,13 @@ const cloudflareAdapter = (opts = {}) => {
@@ -31,12 +31,12 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..8f3e3454087915942247437be12c8fea
        peers.add(peer);
        obj.ctx.acceptWebSocket(server);
 +      console.log(1, "object context", obj.context);
-+      console.log("setting context", context ? JSON.stringify(context) : "nothing lol")
++      console.log("setting context", context, context ? JSON.stringify(context) : "nothing lol")
 +      obj.context = context;
 +      await obj.ctx.storage.put("NOT_context", context, { allowConcurrency: false });
 +      console.log(
 +        "context after put",
-+        await obj.ctx.storage.get("NOT_context", { allowConcurrency: false }),
++        JSON.stringify(await obj.ctx.storage.get("NOT_context", { allowConcurrency: false })),
 +      );
        await hooks.callHook("open", peer);
        return new Response(null, {
