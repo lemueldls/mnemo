@@ -1,8 +1,8 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..b1ed5a04c9cf1e262017a4f6e87d09d267cb9ec8 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..1bf8e3a3231885a5ec7c05c61a7c532c5a824987 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
-@@ -74,15 +74,24 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -74,12 +74,13 @@ const cloudflareAdapter = (opts = {}) => {
          headers: upgradeHeaders
        });
      },
@@ -20,6 +20,16 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..b1ed5a04c9cf1e262017a4f6e87d09d2
        if (endResponse) {
          return endResponse;
        }
+@@ -90,11 +91,20 @@ const cloudflareAdapter = (opts = {}) => {
+       const peer = CloudflareDurablePeer._restore(
+         obj,
+         server,
++        context,
+         request,
+         namespace
+       );
+       peers.add(peer);
+       obj.ctx.acceptWebSocket(server);
 +      console.log(1, "object context", obj.context);
 +      console.log("setting context", context ? JSON.stringify(context) : "nothing lol")
 +      obj.context = context;
@@ -28,17 +38,9 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..b1ed5a04c9cf1e262017a4f6e87d09d2
 +        "context after put",
 +        await obj.ctx.storage.get("context", { allowConcurrency: false }),
 +      );
-       const peers = getPeers(globalPeers, namespace);
-       const pair = new WebSocketPair();
-       const client = pair[0];
-@@ -90,6 +99,7 @@ const cloudflareAdapter = (opts = {}) => {
-       const peer = CloudflareDurablePeer._restore(
-         obj,
-         server,
-+        context,
-         request,
-         namespace
-       );
+       await hooks.callHook("open", peer);
+       return new Response(null, {
+         status: 101,
 @@ -103,15 +113,31 @@ const cloudflareAdapter = (opts = {}) => {
        });
      },
