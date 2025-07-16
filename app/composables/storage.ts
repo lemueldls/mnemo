@@ -23,25 +23,25 @@ export const useCrdt = createSharedComposable(async () => {
   const bytes = await localDb.getItemRaw("crdt");
   if (bytes) doc.import(bytes);
 
-  const url = new URL("/api/crdt", useApiBaseUrl());
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  // const url = new URL("/api/crdt", useApiBaseUrl());
+  // url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-  const { open, send } = useApiWebSocket(url, {
-    immediate: false,
-    async onMessage(_ws, event) {
-      const bytes = await event.bytes();
-      doc.import(bytes);
+  // const { open, send } = useApiWebSocket(url, {
+  //   immediate: false,
+  //   async onMessage(_ws, event) {
+  //     const bytes = await event.bytes();
+  //     doc.import(bytes);
 
-      await localDb.setItemRaw("crdt", bytes);
-    },
-  });
+  //     await localDb.setItemRaw("crdt", bytes);
+  //   },
+  // });
 
-  const { loggedIn } = useAuth();
-  whenever(loggedIn, open, { immediate: true });
+  // const { loggedIn } = useAuth();
+  // whenever(loggedIn, open, { immediate: true });
 
-  doc.subscribeLocalUpdates(async (bytes) => {
-    // await send(bytes);
-  });
+  // doc.subscribeLocalUpdates(async (bytes) => {
+  //   await send(bytes);
+  // });
 
   doc.subscribe(async (event) => {
     if (event.by === "import") {
