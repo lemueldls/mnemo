@@ -1,6 +1,6 @@
 import indexedDbDriver from "unstorage/drivers/indexedb";
 import type { Container } from "loro-crdt";
-import { createStorage, type StorageValue } from "unstorage";
+import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
@@ -183,7 +183,7 @@ export async function useStorageText(key: string, initialValue?: string) {
   const item = await useStorageItem(key, initialValue || "");
 
   const doc = await useCrdt();
-  const text = doc.getText(key);
+  const text = doc.getText(normalizeKey(key));
 
   const computedRef = computed({
     get: () => item.value,
@@ -205,7 +205,7 @@ export async function useStorageMap<T extends object>(
   const item = await useStorageItem<T>(key, initialValue || ({} as T));
 
   const doc = await useCrdt();
-  const map = doc.getMap(key);
+  const map = doc.getMap(normalizeKey(key));
 
   const computedRef = computed({
     get: () => item.value,

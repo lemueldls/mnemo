@@ -1,8 +1,6 @@
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
-import alias from "@rollup/plugin-alias";
-
 const defaultLocale = "en";
 const locales = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
