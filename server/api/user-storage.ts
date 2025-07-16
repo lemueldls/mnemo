@@ -9,45 +9,16 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    console.log("[upgrade context]", JSON.stringify(request.context));
-    console.log(
-      "[upgrade headers]",
-      request.headers
-        ? JSON.stringify(Object.fromEntries(request.headers.entries()))
-        : null,
-    );
     const user = await requireUser(request.headers);
-
-    console.log("[upgrade user]", JSON.stringify(user));
 
     return { context: { base: `users:${user.id}` } };
   },
 
   async open(peer) {
-    console.log("[open context]", JSON.stringify(peer.context));
-    console.log(
-      "[open headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
     peer.subscribe(peer.context.base as string);
   },
 
   async message(peer, message) {
-    console.log("[message context]", JSON.stringify(peer.context));
-    console.log(
-      "[message headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
-    // const user = await requireUser(peer.request.headers);
-    // console.log("[message user]", JSON.stringify(user));
-    // const base = `users:${user.id}`;
-
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
@@ -70,16 +41,6 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    console.log("[close context]", JSON.stringify(peer.context));
-    console.log(
-      "[close headers]",
-      peer.request.headers
-        ? JSON.stringify(Object.fromEntries(peer.request.headers.entries()))
-        : null,
-    );
-
-    // const user = await requireUser(peer.request.headers);
-    // console.log("[close user]", JSON.stringify(user));
     peer.unsubscribe(peer.context.base as string);
   },
 });

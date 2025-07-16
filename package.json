@@ -42,6 +42,7 @@
     "@vueuse/router": "^13.5.0",
     "better-auth": "^1.2.12",
     "crossws": "^0.4.1",
+    "defu": "^6.1.4",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
     "loro-crdt": "^1.5.9",

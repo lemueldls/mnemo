@@ -1,3 +1,5 @@
+import { defu } from "defu";
+
 import { isTauri } from "@tauri-apps/api/core";
 import TauriWebSocket from "@tauri-apps/plugin-websocket";
 
@@ -64,15 +66,23 @@ export function useApiWebSocket(
   options: WebSocketOptions = {},
 ): WebSocketReturn {
   const {
-    immediate = true,
-    protocols = [],
+    immediate,
+    protocols,
     onOpen,
     onMessage,
     onError,
     onClose,
     heartbeat,
     autoReconnect,
-  } = options;
+  } = defu(options, {
+    immediate: true,
+    protocols: [],
+    autoReconnect: {
+      retries: 5,
+      delay: 1000,
+      onFailed() {},
+    },
+  });
 
   const urlRef = toRef(url);
   // const data = ref<string | ArrayBuffer | null>(null);
