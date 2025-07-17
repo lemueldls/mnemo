@@ -10,6 +10,41 @@ const itemRefs: { [key: string]: Ref<unknown> | undefined } = {};
 
 const syncQueue = new Set<string>();
 
+declare global {
+  interface Uint8Array {
+    toBase64(): string;
+  }
+
+  interface Uint8ArrayConstructor {
+    fromBase64(this: this, base64: string): Uint8Array;
+  }
+}
+
+if (!Uint8Array.prototype.toBase64) {
+  Uint8Array.prototype.toBase64 = function () {
+    let binaryString = "";
+    for (let i = 0; i < this.length; i++) {
+      binaryString += String.fromCharCode(this[i]!);
+    }
+
+    return btoa(binaryString);
+  };
+}
+
+if (!Uint8Array.fromBase64) {
+  Uint8Array.fromBase64 = function (base64String) {
+    // Decode the Base64 string to a string of binary data
+    const binaryString = atob(base64String);
+    // Create a Uint8Array from the binary string
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  };
+}
+
 export const useCrdt = createSharedComposable(async () => {
   const { LoroDoc } = await import("loro-crdt");
 
@@ -20,8 +55,8 @@ export const useCrdt = createSharedComposable(async () => {
   //   mergeInterval: 1000,
   // });
 
-  const bytes = await localDb.getItemRaw("crdt");
-  if (bytes) doc.import(bytes);
+  const bytes = await localDb.getItem<string>("crdt");
+  if (bytes) doc.import(Uint8Array.fromBase64(bytes));
 
   const url = new URL("/api/crdt", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
@@ -32,7 +67,7 @@ export const useCrdt = createSharedComposable(async () => {
       const bytes = await event.bytes();
       doc.import(bytes);
 
-      await localDb.setItemRaw("crdt", bytes);
+      await localDb.setItem("crdt", bytes.toBase64());
     },
   });
 
@@ -240,7 +275,7 @@ const commit = useThrottleFn(
   async () => {
     const doc = await useCrdt();
     const bytes = doc.export({ mode: "snapshot" });
-    await localDb.setItemRaw("crdt", bytes);
+    await localDb.setItem("crdt", bytes.toBase64());
   },
   1000,
   true,

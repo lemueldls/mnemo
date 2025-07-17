@@ -20,7 +20,7 @@ if (platform === "true") {
   const redirectUrl = new URL(redirect);
 
   if (redirectUrl.origin === useRequestURL().origin)
-    await navigateTo(redirectUrl.pathname);
+    await navigateTo(redirectUrl.href.replace(redirectUrl.origin, ""));
   else {
     redirectUrl.searchParams.set("token", activeToken);
 

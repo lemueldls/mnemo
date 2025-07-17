@@ -13,7 +13,12 @@ watchImmediate(spaceId, async (spaceId) => {
 });
 
 const spaces = await useSpaces();
-const space = computed(() => spaces.value[spaceId.value!]!);
+const space = computed({
+  get: () => spaces.value[spaceId.value!]!,
+  set(space) {
+    spaces.set(spaceId.value, space);
+  },
+});
 
 watchImmediate(space, (space) => {
   if (!space) throw createError({ status: 404 });
@@ -42,10 +47,6 @@ function deleteSpace() {
 
   void router.push("/");
   infoOpen.value = false;
-}
-
-function updateSpace() {
-  spaces.set(spaceId.value, space.value);
 }
 
 const screenshotBlob = ref<Blob>();
