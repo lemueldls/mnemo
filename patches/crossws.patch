@@ -1,5 +1,5 @@
 diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
-index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..87bf31f90f561753fb3a9472a594fea7ce7dc0bc 100644
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..7889feba6f6d8baf93cd3b79e24f1c17c77f3745 100644
 --- a/dist/adapters/cloudflare.mjs
 +++ b/dist/adapters/cloudflare.mjs
 @@ -74,12 +74,10 @@ const cloudflareAdapter = (opts = {}) => {
@@ -28,17 +28,16 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..87bf31f90f561753fb3a9472a594fea7
        await hooks.callHook("open", peer);
        return new Response(null, {
          status: 101,
-@@ -112,6 +114,9 @@ const cloudflareAdapter = (opts = {}) => {
+@@ -112,6 +114,8 @@ const cloudflareAdapter = (opts = {}) => {
        peers.delete(peer);
        const details = { code, reason, wasClean };
        await hooks.callHook("close", peer, details);
-+      await obj.ctx.storage.delete(`_context:${peer.id}`);
 +      await obj.ctx.storage.deleteAlarm();
 +      await obj.ctx.storage.deleteAll();
      },
      handleDurablePublish: async (_obj, topic, data, opts2) => {
        return durablePublish(topic, data, opts2);
-@@ -138,9 +143,20 @@ class CloudflareDurablePeer extends Peer {
+@@ -138,9 +142,20 @@ class CloudflareDurablePeer extends Peer {
        )
      );
    }
@@ -59,7 +58,7 @@ index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..87bf31f90f561753fb3a9472a594fea7
    send(data) {
      return this._internal.ws.send(toBufferLike(data));
    }
-@@ -191,7 +207,9 @@ class CloudflareDurablePeer extends Peer {
+@@ -191,7 +206,9 @@ class CloudflareDurablePeer extends Peer {
        state.u = request.url;
      }
      state.i = peer.id;
