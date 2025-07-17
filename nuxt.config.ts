@@ -69,6 +69,10 @@ export default defineNuxtConfig({
         redirectURL: "",
       },
     },
+    polar: {
+      accessToken: "",
+      webhookSecret: "",
+    },
   },
   future: { compatibilityVersion: 4 },
   experimental: {
