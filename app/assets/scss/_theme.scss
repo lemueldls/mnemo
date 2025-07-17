@@ -1,0 +1,35 @@
+@use "sass:map";
+
+@use "@material/web/tokens";
+
+:root {
+  --font-sans:
+    "Source Sans", "Source Han Sans CN", ui-sans-serif, system-ui, sans-serif,
+    var(--font-emoji);
+  --font-serif:
+    "Source Serif", "Source Han Serif CN", ui-serif, serif, var(--font-emoji);
+  --font-mono: "Maple Mono", "Maple Mono CN", ui-monospace, monospace;
+  --font-emoji: "Noto Color Emoji", emoji;
+  // --font-math: "New CM Math", math;
+
+  --md-ref-typeface-brand: var(--font-sans);
+  --md-ref-typeface-plain: var(--font-sans);
+
+  $shapes: tokens.md-sys-shape-values();
+  $corner-small: map.get($shapes, "corner-small");
+  $corner-medium: map.get($shapes, "corner-medium");
+
+  --md-icon-font: "Material Symbols Rounded";
+  --md-nav-drawer-item-container-shape: #{$corner-medium};
+  --md-switch-track-shape: #{$corner-medium};
+  --md-switch-handle-shape: #{$corner-small};
+  --md-outlined-text-field-container-shape: #{$corner-medium};
+  --md-text-button-container-shape: #{$corner-medium};
+  --md-filled-button-container-shape: #{$corner-medium};
+  --md-filled-tonal-button-container-shape: #{$corner-medium};
+  --md-outlined-button-container-shape: #{$corner-medium};
+  --md-outlined-select-text-field-container-shape: #{$corner-medium};
+  --md-linear-progress-track-height: 0.5rem;
+  --md-linear-progress-active-indicator-height: 0.5rem;
+  --md-linear-progress-track-shape: 0.125rem;
+}

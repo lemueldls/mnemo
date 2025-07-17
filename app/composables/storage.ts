@@ -101,7 +101,8 @@ export const useCrdt = createSharedComposable(async () => {
             const item = localItem || {};
 
             for (const [key, value] of Object.entries(diff.updated))
-              item[key] = value;
+              if (value === null) delete item[key];
+              else item[key] = value;
 
             await localDb.setItem(key, item);
             await localDb.setMeta(key, { updatedAt: Date.now() });
@@ -296,7 +297,7 @@ export async function getStorageItem<T extends StorageValue>(
 
   if (!localItem) {
     await localDb.setItem(key, initialValue);
-    await localDb.setMeta(key, { updatedAt: Date.now() });
+    await localDb.setMeta(key, { updatedAt: 0 });
   }
 
   const value = localItem || initialValue;
@@ -306,7 +307,8 @@ export async function getStorageItem<T extends StorageValue>(
   >;
 
   localMeta.then(async (meta) => {
-    await useSync().updateItem(key, value, meta?.updatedAt || Date.now());
+    console.log({ update: meta?.updatedAt });
+    await useSync().updateItem(key, value, meta?.updatedAt || 0);
   });
 
   return value;
