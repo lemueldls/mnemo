@@ -35,6 +35,10 @@ import type { Rgba } from "~~/modules/mx/types";
 import { typstLanguage } from "~/lib/editor/language";
 import { typst } from "~/lib/editor/widget";
 
+import { EphemeralStore } from "loro-crdt";
+import { LoroExtensions } from "loro-codemirror";
+import { normalizeKey } from "unstorage";
+
 const props = defineProps<{
   spaceId: string;
   kind: NoteKind;
@@ -190,6 +194,11 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
   },
 );
 
+const doc = await useCrdt();
+const undoManager = await useCrdtUndoManager();
+
+const name = await useStorageText("name", "");
+
 function createStateConfig(
   typstState: TypstState,
   fileId: FileId,
@@ -221,6 +230,21 @@ function createStateConfig(
       highlightSelectionMatches(),
       addSpaceBeforeClosingBracket,
       keymap.of(vscodeKeymap),
+
+      LoroExtensions(
+        doc,
+        {
+          ephemeral: new EphemeralStore(),
+          user: { name: name.value, colorClassName: "user1" },
+        },
+        undoManager,
+        (doc) => {
+          const item = doc.getText(normalizeKey(fullPath.value));
+          if (!item.length) item.update(text.value);
+
+          return item;
+        },
+      ),
     ],
   };
 }

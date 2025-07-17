@@ -45,20 +45,17 @@ if (!Uint8Array.fromBase64) {
   };
 }
 
+export const useLoro = createSharedComposable(() => import("loro-crdt"));
+
 export const useCrdt = createSharedComposable(async () => {
-  const { LoroDoc } = await import("loro-crdt");
+  const { LoroDoc } = await useLoro();
 
   const doc = new LoroDoc();
-
-  // const undoManager = new UndoManager(doc, {
-  //   maxUndoSteps: 100,
-  //   mergeInterval: 1000,
-  // });
 
   const bytes = await localDb.getItem<string>("crdt");
   if (bytes) {
     try {
-      doc.import(Uint8Array.fromBase64(bytes));
+      const status = doc.import(Uint8Array.fromBase64(bytes));
     } catch {
       await localDb.removeItem("crdt");
     }
@@ -90,11 +87,26 @@ export const useCrdt = createSharedComposable(async () => {
   doc.subscribe(async (event) => {
     if (event.by === "import") {
       for (const { path, diff } of event.events) {
-        console.log({ path, diff });
+        // console.log("[CRDT]", path, diff);
 
         const [key] = path as [string];
 
         switch (diff.type) {
+          case "text": {
+            const text = doc.getText(normalizeKey(key)).toString();
+
+            await localDb.setItem(key, text);
+            await localDb.setMeta(key, { updatedAt: Date.now() });
+
+            const itemRef = itemRefs[key];
+            if (itemRef && itemRef.value !== text) {
+              syncQueue.add(key);
+              itemRef.value = text;
+            }
+
+            break;
+          }
+
           case "map": {
             const localItem =
               await localDb.getItem<Record<string, unknown>>(key);
@@ -121,6 +133,18 @@ export const useCrdt = createSharedComposable(async () => {
   });
 
   return doc;
+});
+
+export const useCrdtUndoManager = createSharedComposable(async () => {
+  const { UndoManager } = await useLoro();
+  const doc = await useCrdt();
+
+  const undoManager = new UndoManager(doc, {
+    maxUndoSteps: 100,
+    mergeInterval: 1000,
+  });
+
+  return undoManager;
 });
 
 const useSync = createSharedComposable(() => {
@@ -295,7 +319,7 @@ export async function getStorageItem<T extends StorageValue>(
 ) {
   const localItem = await localDb.getItem<T>(key);
 
-  if (!localItem) {
+  if (localItem === null) {
     await localDb.setItem(key, initialValue);
     await localDb.setMeta(key, { updatedAt: 0 });
   }
@@ -306,10 +330,9 @@ export async function getStorageItem<T extends StorageValue>(
     { updatedAt?: number } | undefined
   >;
 
-  localMeta.then(async (meta) => {
-    console.log({ update: meta?.updatedAt });
-    await useSync().updateItem(key, value, meta?.updatedAt || 0);
-  });
+  localMeta.then((meta) =>
+    useSync().updateItem(key, value, meta?.updatedAt || 0),
+  );
 
   return value;
 }

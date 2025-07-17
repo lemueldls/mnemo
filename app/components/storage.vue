@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { UseOnline } from "@vueuse/components";
+
 import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
@@ -47,7 +49,7 @@ function formatBytes(bytes: number) {
 }
 
 // const doc = await useCrdt();
-// const undoManager = await useCrdtUndoManager();
+const undoManager = await useCrdtUndoManager();
 
 // const changes = ref(doc.getAllChanges());
 
@@ -58,8 +60,6 @@ function formatBytes(bytes: number) {
 
 <template>
   <div class="flex h-full flex-col gap-4">
-    <div class="text-error p-4">TODO</div>
-
     <md-outlined-card v-if="usage && quota" class="flex flex-col gap-2 p-4">
       <div class="label-large flex justify-between">
         <strong>{{ $t("components.sync.local-quota") }}</strong>
@@ -70,14 +70,35 @@ function formatBytes(bytes: number) {
       <md-linear-progress :value="usage / quota" />
     </md-outlined-card>
 
-    <md-filled-tonal-button v-if="user" @click="logout">
-      {{ $t("components.sync.logout") }}
-    </md-filled-tonal-button>
-    <md-filled-button v-else @click="login">
-      {{ $t("components.sync.continue-with-github") }}
-    </md-filled-button>
+    <md-outlined-card class="flex-1 p-3">
+      <div class="flex items-center justify-between">
+        <h4 class="headline-small">Local History</h4>
 
-    <!-- <md-filled-card class="flex flex-1 flex-col gap-3 p-3">
+        <div class="flex gap-2">
+          <md-icon-button
+            title="Undo"
+            @click="undoManager.undo()"
+            :disabled="!undoManager.canUndo()"
+          >
+            <md-icon>undo</md-icon>
+          </md-icon-button>
+
+          <md-icon-button
+            title="Redo"
+            @click="undoManager.redo()"
+            :disabled="!undoManager.canRedo()"
+          >
+            <md-icon>redo</md-icon>
+          </md-icon-button>
+        </div>
+      </div>
+
+      <md-divider class="my-2" />
+
+      <div class="text-error p-3">TODO</div>
+    </md-outlined-card>
+
+    <!-- <div class="flex flex-1 flex-col gap-3 p-3">
       <div v-for="([peer, peerChanges], i) of changes.entries()" :key="i">
         <md-elevated-card
           v-for="(change, i) of peerChanges"
@@ -110,6 +131,34 @@ function formatBytes(bytes: number) {
           </span>
         </md-elevated-card>
       </div>
-    </md-filled-card> -->
+    </div> -->
+
+    <md-elevated-card class="flex flex-col gap-3 p-3">
+      <div class="flex justify-between">
+        <h4 class="title-large">Sync</h4>
+
+        <div
+          class="bg-surface-container flex items-center gap-2 rounded-full px-2"
+        >
+          <UseOnline v-slot="{ isOnline }">
+            <template v-if="isOnline">
+              <div class="bg-lime size-2 rounded-full" />
+              <span>Online</span>
+            </template>
+            <template v-else>
+              <div class="bg-error size-2 rounded-full" />
+              <span>Offline</span>
+            </template>
+          </UseOnline>
+        </div>
+      </div>
+
+      <md-filled-tonal-button v-if="user" @click="logout">
+        {{ $t("components.sync.logout") }}
+      </md-filled-tonal-button>
+      <md-filled-button v-else @click="login">
+        {{ $t("components.sync.continue-with-github") }}
+      </md-filled-button>
+    </md-elevated-card>
   </div>
 </template>

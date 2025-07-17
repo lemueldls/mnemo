@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import Chat from "./chat.vue";
 import Study from "./study.vue";
-import Sync from "./sync.vue";
+import Storage from "./storage.vue";
 import Tasks from "./tasks.vue";
 import Today from "./today.vue";
 
@@ -29,12 +29,16 @@ const items: { [key: string]: Item } = {
     icon: "pinboard",
     component: Tasks,
   },
-  study: {
-    name: t("components.side-bar.study"),
-    icon: "school",
-    component: Study,
+  // study: {
+  //   name: t("components.side-bar.study"),
+  //   icon: "school",
+  //   component: Study,
+  // },
+  storage: {
+    name: t("components.side-bar.storage"),
+    icon: "home_storage",
+    component: Storage,
   },
-  sync: { name: t("components.side-bar.sync"), icon: "sync", component: Sync },
 };
 
 const route = useRoute();

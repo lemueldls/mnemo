@@ -57,6 +57,14 @@ const modal = computed(() =>
     @apply bg-surface;
   }
 
+  &--standard#{&}--left {
+    @apply pr-0;
+  }
+
+  &--standard#{&}--right {
+    @apply pl-0;
+  }
+
   &--modal {
     @apply bg-surface-container-low z-1 absolute;
   }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ title: "Home" });
 
-const name = await useStorageItem("name", "");
+const name = await useStorageText("name", "");
 
 const { t, d } = useI18n();
 const date = useNow({ interval: 1000 * 60 * 15 });
