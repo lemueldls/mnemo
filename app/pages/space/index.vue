@@ -24,10 +24,7 @@ watchImmediate(
   { deep: true },
 );
 
-useSeoMeta({
-  title: () => space.name,
-  ogTitle: () => space.name,
-});
+useHead({ title: () => space.name });
 
 const { medium } = useBreakpoints(breakpointsM3);
 

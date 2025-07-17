@@ -1,0 +1,103 @@
+{
+  "app": {
+    "name": "Mnemo",
+    "description": "A local-first, cross-platform note-taking app leveraging the Typst ecosystem, designed to minimize distractions and enhance the retention of information.",
+    "locales": {
+      "en": "English",
+      "es": "Spanish",
+      "de": "German",
+      "he": "Hebrew",
+      "zh": "Chinese",
+      "ja": "Japanese"
+    }
+  },
+  "layouts": {
+    "default": {
+      "spaces": "Spaces",
+      "nav": {
+        "home": "Home",
+        "calendar": "Calendar"
+      }
+    }
+  },
+  "pages": {
+    "index": {
+      "greeting": {
+        "morning": "Good morning.",
+        "afternoon": "Good afternoon.",
+        "evening": "Good evening.",
+        "night": "Good night.",
+        "with-name": {
+          "morning": "Good morning, {name}.",
+          "afternoon": "Good afternoon, {name}.",
+          "evening": "Good evening, {name}.",
+          "night": "Good night, {name}."
+        }
+      },
+      "date": "Today is {date}"
+    }
+  },
+  "components": {
+    "editor": {
+      "loading": "Loading..."
+    },
+    "new-space": {
+      "title": "New Space",
+      "form": {
+        "create": "Create"
+      }
+    },
+    "edit-space": {
+      "form": {
+        "name": "Name",
+        "color": "Color",
+        "icon": "Icon",
+        "preview": "Preview"
+      }
+    },
+    "package-card": {
+      "version": "Version",
+      "installed": "(Installed)",
+      "install": "Install",
+      "uninstall": "Uninstall",
+      "repository": "Repository"
+    },
+    "packages": {
+      "title": "Packages",
+      "form": {
+        "search": "Search packages",
+        "no-results": "No packages found."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "form": {
+        "dark-theme": "Dark Theme",
+        "name": "Name",
+        "language": "Language"
+      }
+    },
+    "side-bar": {
+      "chat": "Chat",
+      "today": "Today",
+      "tasks": "Tasks",
+      "study": "Study",
+      "storage": "Storage"
+    },
+    "splashscreen": {
+      "loading": "Loading..."
+    },
+    "study": {
+      "title": "Study"
+    },
+    "sync": {
+      "title": "Sync",
+      "local-quota": "Local Quota",
+      "logout": "Logout",
+      "continue-with-github": "Continue with GitHub"
+    },
+    "tasks": {
+      "title": "Tasks"
+    }
+  }
+}

@@ -2,7 +2,7 @@ export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
 
-    return { namespace: `/users/${user.id}/crdt` };
+    return { namespace: `users/${user.id}/crdt` };
   },
 
   async open(peer) {
