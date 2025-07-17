@@ -12,7 +12,7 @@
   --font-emoji: "Noto Color Emoji", emoji;
   // --font-math: "New CM Math", math;
 
-  --md-ref-typeface-brand: var(--font-mono);
+  --md-ref-typeface-brand: var(--font-sans);
   --md-ref-typeface-plain: var(--font-sans);
 
   $shapes: tokens.md-sys-shape-values();

@@ -13,20 +13,20 @@ watchImmediate(spaceId, async (spaceId) => {
 });
 
 const spaces = await useSpaces();
-const space = computed({
-  get: () => spaces.value[spaceId.value!]!,
-  set(space) {
+const space = reactiveComputed(() => spaces.value[spaceId.value!]!);
+
+watchImmediate(
+  space,
+  (space) => {
+    if (!space) throw createError({ status: 404 });
     spaces.set(spaceId.value, space);
   },
-});
-
-watchImmediate(space, (space) => {
-  if (!space) throw createError({ status: 404 });
-});
+  { deep: true },
+);
 
 useSeoMeta({
-  title: () => space.value.name,
-  ogTitle: () => space.value.name,
+  title: () => space.name,
+  ogTitle: () => space.name,
 });
 
 const { medium } = useBreakpoints(breakpointsM3);
@@ -342,7 +342,9 @@ async function createStickyNote() {
       </div>
 
       <md-dialog :open="infoOpen" @closed="infoOpen = false">
-        <span slot="headline" class="flex items-center justify-between">
+        <span slot="headline" class="flex items-center gap-2">
+          <md-icon>{{ space.icon }}</md-icon>
+
           {{ space.name }}
         </span>
 
@@ -354,12 +356,7 @@ async function createStickyNote() {
             </pre>
         </span> -->
 
-        <form
-          slot="content"
-          method="dialog"
-          class="flex flex-col gap-8"
-          @submit.prevent="updateSpace"
-        >
+        <form slot="content" method="dialog" class="flex flex-col gap-8">
           <edit-space v-model="space">
             <template #actions>
               <md-text-button class="text-error" @click.prevent="deleteSpace">
