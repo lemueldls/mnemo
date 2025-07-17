@@ -3,7 +3,15 @@ import { betterAuth } from "better-auth";
 import { D1Dialect } from "@atinux/kysely-d1";
 import { D1Database } from "@cloudflare/workers-types";
 
+import { polar, checkout, portal, usage } from "@polar-sh/better-auth";
+import { Polar } from "@polar-sh/sdk";
+
 const runtimeConfig = useRuntimeConfig();
+
+const polarClient = new Polar({
+  accessToken: runtimeConfig.polar.accessToken,
+  server: import.meta.dev ? "sandbox" : "production",
+});
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
@@ -68,6 +76,25 @@ export function serverAuth() {
         ? { sameSite: "lax", secure: false, httpOnly: false }
         : { sameSite: "none", secure: true, httpOnly: false },
     },
+    plugins: [
+      polar({
+        client: polarClient,
+        createCustomerOnSignUp: true,
+        use: [
+          checkout({
+            products: [
+              {
+                productId: "ccd6d053-8c91-464f-be19-1644ac837e14",
+                slug: "sync",
+              },
+            ],
+            authenticatedUsersOnly: true,
+          }),
+          portal(),
+          usage(),
+        ],
+      }),
+    ],
   });
 
   return _auth;

@@ -77,6 +77,12 @@ importers:
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.2.2
+      '@polar-sh/better-auth':
+        specifier: ^1.0.7
+        version: 1.0.7(@polar-sh/sdk@0.34.5(zod@3.25.76))(better-auth@1.2.12)
+      '@polar-sh/sdk':
+        specifier: ^0.34.5
+        version: 0.34.5(zod@3.25.76)
       '@replit/codemirror-vscode-keymap':
         specifier: ^6.0.2
         version: 6.0.2(@codemirror/autocomplete@6.18.6)(@codemirror/commands@6.8.1)(@codemirror/language@6.11.2)(@codemirror/lint@6.8.5)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.0)
@@ -122,6 +128,9 @@ importers:
       interactjs:
         specifier: ^1.10.27
         version: 1.10.27
+      loro-codemirror:
+        specifier: ^0.2.0
+        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.0)(loro-crdt@1.5.9)
       loro-crdt:
         specifier: ^1.5.9
         version: 1.5.9
@@ -239,7 +248,7 @@ importers:
         version: 59.0.1(eslint@9.31.0(jiti@2.4.2))
       nitropack:
         specifier: npm:nitropack-nightly@latest
-        version: nitropack-nightly@2.12.0-20250715-130505.f0183731(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
+        version: nitropack-nightly@2.12.3-20250717-065208.e11a7435(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nuxt:
         specifier: ^3.17.7
         version: 3.17.7(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@24.0.13)(@vue/compiler-sfc@3.5.17)(db0@0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2)))(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(eslint@9.31.0(jiti@2.4.2))(idb-keyval@6.2.2)(ioredis@5.6.1)(magicast@0.3.5)(meow@13.2.0)(optionator@0.9.4)(rollup@4.45.0)(sass@1.89.2)(srvx@0.8.2)(stylelint@16.21.1(typescript@5.8.3))(terser@5.43.1)(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.13)(jiti@2.4.2)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0))(yaml@2.8.0)
@@ -2096,6 +2105,23 @@ packages:
     resolution: {integrity: sha512-YLT9Zo3oNPJoBjBc4q8G2mjU4tqIbf5CEOORbUUr48dCD9q3umJ3IPlVqOqDakPfd2HuwccBaqlGhN4Gmr5OWg==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
+  '@polar-sh/better-auth@1.0.7':
+    resolution: {integrity: sha512-YXXn9pVWpYyIgWNaRLxFJpUKWEVGu+ghEh1pFq3hr40CH68deduYO09C4kQXS8Ao0GqdMmzqyJf56a/uTd5TCQ==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@polar-sh/sdk': ^0.34.5
+      better-auth: ^1.2.7
+
+  '@polar-sh/sdk@0.34.5':
+    resolution: {integrity: sha512-9dDw5QSsl9NT/GB77cibRLjAT+qNkdavxCL7YOjBTuwThJb7qrzhV2EzAQ+uM8UvY3ZGptu2tGCODnRLRRvVCQ==}
+    hasBin: true
+    peerDependencies:
+      '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
+      zod: ^3
+    peerDependenciesMeta:
+      '@modelcontextprotocol/sdk':
+        optional: true
+
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
@@ -2351,6 +2377,9 @@ packages:
 
   '@speed-highlight/core@1.2.7':
     resolution: {integrity: sha512-0dxmVj4gxg3Jg879kvFS/msl4s9F3T9UXC1InxgOf7t5NvcPD97u/WTA5vL/IxWHMn7qSxBozqrnnE2wvl1m8g==}
+
+  '@stablelib/base64@1.0.1':
+    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
 
   '@stylistic/eslint-plugin@5.1.0':
     resolution: {integrity: sha512-TJRJul4u/lmry5N/kyCU+7RWWOk0wyXN+BncRlDYBqpLFnzXkd7QGVfN7KewarFIXv0IX0jSF/Ksu7aHWEDeuw==}
@@ -4342,6 +4371,9 @@ packages:
   fast-npm-meta@0.4.4:
     resolution: {integrity: sha512-cq8EVW3jpX1U3dO1AYanz2BJ6n9ITQgCwE1xjNwI5jO2a9erE369OZNO8Wt/Wbw8YHhCD/dimH9BxRsY+6DinA==}
 
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
+
   fast-uri@3.0.6:
     resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
 
@@ -5160,6 +5192,13 @@ packages:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
 
+  loro-codemirror@0.2.0:
+    resolution: {integrity: sha512-ImLH1ILn035wR//KgyunJZffXn+caPj7u0b3J3U35C29IA31/5DErVREmK9KiclDFB4frQVtAY3GqBGP56UoBg==}
+    peerDependencies:
+      '@codemirror/state': ^6.0.0
+      '@codemirror/view': ^6.7.0
+      loro-crdt: ^1.5.5
+
   loro-crdt@1.5.9:
     resolution: {integrity: sha512-edkfCYh5W42O7EmNVCx6iPrI0yTAhn0DRbEAk6tmiKaL42IpUoqyDREvtFDmdVVgofxKNgceDBQx8fIIjMdr2Q==}
 
@@ -5374,8 +5413,8 @@ packages:
   nitro-cloudflare-dev@0.2.2:
     resolution: {integrity: sha512-aZfNTVdgXPQeAmXW0Tw8hm3usAHr4qVG4Bg3WhHBGeZYuXr9OyT04Ztb+STkMzhyaXvfMHViAaPUPg06iAYqag==}
 
-  nitropack-nightly@2.12.0-20250715-130505.f0183731:
-    resolution: {integrity: sha512-Beof9FFvvZC3H8ChW4w3U8xfBQR9AkEAtFjJJxGiQza+NN79P6r9aQzHVDVNKnshAx5s1GkkUVdxmujkO+Zn3Q==}
+  nitropack-nightly@2.12.3-20250717-065208.e11a7435:
+    resolution: {integrity: sha512-98JJ8vb41XYxJz+NxGrHBWQMBpdZs32oFEByG7UbsvHS2e6XfPDdoEMbaJEYhgey4P6e3e8eSCzSn1zhw+J8EA==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -6457,6 +6496,9 @@ packages:
 
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
+
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
 
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
@@ -9325,6 +9367,17 @@ snapshots:
 
   '@pkgr/core@0.2.7': {}
 
+  '@polar-sh/better-auth@1.0.7(@polar-sh/sdk@0.34.5(zod@3.25.76))(better-auth@1.2.12)':
+    dependencies:
+      '@polar-sh/sdk': 0.34.5(zod@3.25.76)
+      better-auth: 1.2.12
+      zod: 3.25.76
+
+  '@polar-sh/sdk@0.34.5(zod@3.25.76)':
+    dependencies:
+      standardwebhooks: 1.0.0
+      zod: 3.25.76
+
   '@polka/url@1.0.0-next.29': {}
 
   '@poppinss/colors@4.1.5':
@@ -9535,6 +9588,8 @@ snapshots:
   '@sindresorhus/merge-streams@2.3.0': {}
 
   '@speed-highlight/core@1.2.7': {}
+
+  '@stablelib/base64@1.0.1': {}
 
   '@stylistic/eslint-plugin@5.1.0(eslint@9.31.0(jiti@2.4.2))':
     dependencies:
@@ -11822,6 +11877,8 @@ snapshots:
 
   fast-npm-meta@0.4.4: {}
 
+  fast-sha256@1.3.0: {}
+
   fast-uri@3.0.6: {}
 
   fastest-levenshtein@1.0.16: {}
@@ -12645,6 +12702,12 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
+  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.0)(loro-crdt@1.5.9):
+    dependencies:
+      '@codemirror/state': 6.5.2
+      '@codemirror/view': 6.38.0
+      loro-crdt: 1.5.9
+
   loro-crdt@1.5.9: {}
 
   lru-cache@10.4.3: {}
@@ -12836,7 +12899,7 @@ snapshots:
       mlly: 1.7.4
       pkg-types: 2.2.0
 
-  nitropack-nightly@2.12.0-20250715-130505.f0183731(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
+  nitropack-nightly@2.12.3-20250717-065208.e11a7435(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -14278,6 +14341,11 @@ snapshots:
   stack-trace@0.0.10: {}
 
   standard-as-callback@2.1.0: {}
+
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
 
   statuses@2.0.1: {}
 
