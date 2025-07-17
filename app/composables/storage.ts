@@ -56,7 +56,13 @@ export const useCrdt = createSharedComposable(async () => {
   // });
 
   const bytes = await localDb.getItem<string>("crdt");
-  if (bytes) doc.import(Uint8Array.fromBase64(bytes));
+  if (bytes) {
+    try {
+      doc.import(Uint8Array.fromBase64(bytes));
+    } catch {
+      await localDb.removeItem("crdt");
+    }
+  }
 
   const url = new URL("/api/crdt", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
