@@ -2,14 +2,14 @@ export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
 
-    return { context: { key: `users:${user.id}:crdt` } };
+    return { namespace: `users:${user.id}:crdt` };
   },
 
   async open(peer) {
-    peer.subscribe(peer.context.key as string);
+    peer.subscribe(peer.namespace);
 
-    if (await hubKV().hasItem(peer.context.key as string)) {
-      const bytes = await hubKV().getItemRaw(peer.context.key as string);
+    if (await hubKV().hasItem(peer.namespace)) {
+      const bytes = await hubKV().getItemRaw(peer.namespace);
       peer.send(bytes);
     }
   },
@@ -17,11 +17,11 @@ export default defineWebSocketHandler({
   async message(peer, message) {
     const bytes = message.uint8Array();
 
-    peer.publish(peer.context.key as string, bytes);
-    await hubKV().setItemRaw(peer.context.key as string, bytes);
+    peer.publish(peer.namespace, bytes);
+    await hubKV().setItemRaw(peer.namespace, bytes);
   },
 
   async close(peer) {
-    peer.unsubscribe(peer.context.key as string);
+    peer.unsubscribe(peer.namespace);
   },
 });
