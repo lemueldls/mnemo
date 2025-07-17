@@ -112,7 +112,6 @@
       "crossws": "^0.4.1"
     },
     "patchedDependencies": {
-      "crossws": "patches/crossws.patch",
       "nitropack": "patches/nitropack.patch"
     }
   }
