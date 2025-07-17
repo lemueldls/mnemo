@@ -187,9 +187,7 @@ export function useApiWebSocket(
               cleanup();
               onClose?.(ws.value as WS, new CloseEvent("close"));
 
-              if (!explicitlyClosed) {
-                attemptReconnect();
-              }
+              attemptReconnect();
 
               break;
             }
@@ -234,17 +232,14 @@ export function useApiWebSocket(
           cleanup();
           onClose?.(ws.value as WS, event);
 
-          if (!explicitlyClosed) {
-            attemptReconnect();
-          }
+          attemptReconnect();
         });
       }
     } catch (error) {
       status.value = "CLOSED";
       console.error("WebSocket connection failed:", error);
-      if (!explicitlyClosed) {
-        attemptReconnect();
-      }
+
+      attemptReconnect();
     }
   };
 
@@ -260,15 +255,15 @@ export function useApiWebSocket(
         (ws.value as WebSocket).close(code, reason);
       }
     }
+
     status.value = "CLOSED";
   };
 
   const send = async (
     messageData: string | ArrayBuffer | Uint8Array,
   ): Promise<boolean> => {
-    if (!ws.value || status.value !== "OPEN") {
-      return false;
-    }
+    await until(ws).toBeTruthy();
+    await until(status).toBe("OPEN");
 
     try {
       if (isTauri()) {
@@ -290,6 +285,9 @@ export function useApiWebSocket(
       return true;
     } catch (error) {
       console.error("Failed to send WebSocket message:", error);
+
+      attemptReconnect();
+
       return false;
     }
   };

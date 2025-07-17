@@ -2,23 +2,21 @@ export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
 
-    return { namespace: `users:${user.id}:crdt` };
+    return { namespace: `/users/${user.id}/crdt` };
   },
 
   async open(peer) {
     peer.subscribe(peer.namespace);
 
-    if (await hubKV().hasItem(peer.namespace)) {
-      const bytes = await hubKV().getItemRaw(peer.namespace);
-      peer.send(bytes);
-    }
+    const bytes = await hubBlob().get(peer.namespace);
+    if (bytes?.size) peer.send(bytes);
   },
 
   async message(peer, message) {
-    const bytes = message.uint8Array();
+    const bytes = message.blob();
 
     peer.publish(peer.namespace, bytes);
-    await hubKV().setItemRaw(peer.namespace, bytes);
+    await hubBlob().put(peer.namespace, bytes);
   },
 
   async close(peer) {

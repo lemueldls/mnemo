@@ -89,6 +89,7 @@ export default defineNuxtConfig({
     cache: true,
     database: true,
     kv: true,
+    blob: true,
   },
   vite: {
     plugins: [wasm(), topLevelAwait()],
