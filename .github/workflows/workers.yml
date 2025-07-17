@@ -27,4 +27,4 @@ jobs:
       - name: Deploy to NuxtHub
         uses: nuxt-hub/action@v2
         with:
-          project-key: notes-rep6
+          project-key: notes-i4gj

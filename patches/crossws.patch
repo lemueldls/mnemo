@@ -1,0 +1,74 @@
+diff --git a/dist/adapters/cloudflare.mjs b/dist/adapters/cloudflare.mjs
+index 402eb25cbe1a5f23af06a89ec2b78579278f1c7a..055cd43da6cc1061a25df16547b2cd2f567b6524 100644
+--- a/dist/adapters/cloudflare.mjs
++++ b/dist/adapters/cloudflare.mjs
+@@ -77,9 +77,7 @@ const cloudflareAdapter = (opts = {}) => {
+     handleDurableInit: async (obj, state, env) => {
+     },
+     handleDurableUpgrade: async (obj, request) => {
+-      const { upgradeHeaders, endResponse, namespace } = await hooks.upgrade(
+-        request
+-      );
++      const { upgradeHeaders, endResponse, context, namespace } = await hooks.upgrade(request);
+       if (endResponse) {
+         return endResponse;
+       }
+@@ -95,6 +93,14 @@ const cloudflareAdapter = (opts = {}) => {
+       );
+       peers.add(peer);
+       obj.ctx.acceptWebSocket(server);
++      await obj.ctx.storage.put(
++        `_context:${peer.id}`,
++        context
++      );
++      await obj.ctx.storage.put(
++        `_namespace:${peer.id}`,
++        namespace
++      );
+       await hooks.callHook("open", peer);
+       return new Response(null, {
+         status: 101,
+@@ -104,14 +110,18 @@ const cloudflareAdapter = (opts = {}) => {
+     },
+     handleDurableMessage: async (obj, ws, message) => {
+       const peer = CloudflareDurablePeer._restore(obj, ws);
++      await peer._loadStorage();
+       await hooks.callHook("message", peer, new Message(message, peer));
+     },
+     handleDurableClose: async (obj, ws, code, reason, wasClean) => {
+       const peer = CloudflareDurablePeer._restore(obj, ws);
++      await peer._loadStorage();
+       const peers = getPeers(globalPeers, peer.namespace);
+       peers.delete(peer);
+       const details = { code, reason, wasClean };
+       await hooks.callHook("close", peer, details);
++      await obj.ctx.storage.deleteAlarm();
++      await obj.ctx.storage.deleteAll();
+     },
+     handleDurablePublish: async (_obj, topic, data, opts2) => {
+       return durablePublish(topic, data, opts2);
+@@ -141,6 +151,16 @@ class CloudflareDurablePeer extends Peer {
+   #getwebsockets() {
+     return this._internal.durable.ctx.getWebSockets();
+   }
++  async _loadStorage() {
++    const context = await this._internal.durable.ctx.storage.get(
++      `_context:${this.id}`
++    );
++    if (context) this._internal.context = context;
++    const namespace = await this._internal.durable.ctx.storage.get(
++      `_namespace:${this.id}`
++    );
++    if (namespace) this._internal.namespace = namespace;
++  }
+   send(data) {
+     return this._internal.ws.send(toBufferLike(data));
+   }
+@@ -191,6 +211,7 @@ class CloudflareDurablePeer extends Peer {
+       state.u = request.url;
+     }
+     state.i = peer.id;
++    state.n = peer.namespace;
+     setAttachedState(ws, state);
+     return peer;
+   }
