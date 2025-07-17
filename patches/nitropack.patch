@@ -1,37 +1,12 @@
 diff --git a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-index daaf8185b9a086dfd0eb0edf17768cce45392582..1dc90b079a312d2e06020541ab3c6670f86de675 100644
+index daaf8185b9a086dfd0eb0edf17768cce45392582..593d75e21ab578aaa953e1245d4298cd1ec28273 100644
 --- a/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
 +++ b/dist/presets/cloudflare/runtime/cloudflare-durable.mjs
-@@ -1,7 +1,7 @@
+@@ -1,6 +1,6 @@
  import "#nitro-internal-pollyfills";
  import { DurableObject } from "cloudflare:workers";
 -import wsAdapter from "crossws/adapters/cloudflare-durable";
--import { useNitroApp } from "nitropack/runtime";
 +import wsAdapter from "crossws/adapters/cloudflare";
-+import { useNitroApp } from "nitro/runtime";
+ import { useNitroApp } from "nitropack/runtime";
  import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
  import { createHandler, fetchHandler } from "./_module-handler.mjs";
- const DURABLE_BINDING = "$DurableObject";
-@@ -18,7 +18,8 @@ const getDurableStub = (env) => {
-   return binding.get(id);
- };
- const ws = import.meta._websocket ? wsAdapter({
--  ...nitroApp.h3App.websocket,
-+  // TODO!
-+  // ...nitroApp.h3App.websocket,
-   instanceName: DURABLE_INSTANCE,
-   bindingName: DURABLE_BINDING
- }) : void 0;
-@@ -55,12 +56,6 @@ export class $DurableObject extends DurableObject {
-       durable: this
-     });
-   }
--  publish(topic, data, opts) {
--    if (!ws) {
--      throw new Error("WebSocket not available");
--    }
--    return ws.publish(topic, data, opts);
--  }
-   alarm() {
-     this.ctx.waitUntil(
-       nitroApp.hooks.callHook("cloudflare:durable:alarm", this)

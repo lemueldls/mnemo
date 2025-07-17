@@ -10,10 +10,10 @@ overrides:
 
 patchedDependencies:
   crossws:
-    hash: fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24
+    hash: aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c
     path: patches/crossws.patch
   nitropack:
-    hash: 6fc96f063ce0f33cd09eece37eca4c3383911687f0230b76c58749ebbd15360f
+    hash: 260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c
     path: patches/nitropack.patch
 
 importers:
@@ -112,7 +112,7 @@ importers:
         version: 1.2.12
       crossws:
         specifier: ^0.4.1
-        version: 0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2)
+        version: 0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -10996,7 +10996,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  crossws@0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2):
+  crossws@0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2):
     optionalDependencies:
       srvx: 0.8.2
 
@@ -12116,7 +12116,7 @@ snapshots:
   h3-nightly@1.15.2-20250418-133010-0c9b276(srvx@0.8.2):
     dependencies:
       cookie-es: 1.2.2
-      crossws: 0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2)
       defu: 6.1.4
       destr: 2.0.5
       iron-webcrypto: 1.2.1
@@ -12568,7 +12568,7 @@ snapshots:
       citty: 0.1.6
       clipboardy: 4.0.0
       consola: 3.4.2
-      crossws: 0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2)
       defu: 6.1.4
       get-port-please: 3.2.0
       h3: h3-nightly@1.15.2-20250418-133010-0c9b276(srvx@0.8.2)
@@ -12857,7 +12857,7 @@ snapshots:
       consola: 3.4.2
       cookie-es: 2.0.0
       croner: 9.1.0
-      crossws: 0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2)
       db0: 0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))
       defu: 6.1.4
       destr: 2.0.5
@@ -12937,7 +12937,7 @@ snapshots:
       - supports-color
       - uploadthing
 
-  nitropack@2.11.13(patch_hash=6fc96f063ce0f33cd09eece37eca4c3383911687f0230b76c58749ebbd15360f)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
+  nitropack@2.11.13(patch_hash=260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -12958,7 +12958,7 @@ snapshots:
       consola: 3.4.2
       cookie-es: 2.0.0
       croner: 9.1.0
-      crossws: 0.4.1(patch_hash=fc4d427bb3b5cb385b9b3c9418127c8c196fd35ce4875bb5c4bd97eecdfc6b24)(srvx@0.8.2)
+      crossws: 0.4.1(patch_hash=aae9cea07623280d5c79eda422b2e2b144c939f5d533aab75a9e4b7197c2b88c)(srvx@0.8.2)
       db0: 0.3.2(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))
       defu: 6.1.4
       destr: 2.0.5
@@ -13163,7 +13163,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       nanotar: 0.2.0
-      nitropack: 2.11.13(patch_hash=6fc96f063ce0f33cd09eece37eca4c3383911687f0230b76c58749ebbd15360f)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
+      nitropack: 2.11.13(patch_hash=260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c)(@netlify/blobs@9.1.2)(drizzle-orm@0.44.3(@cloudflare/workers-types@4.20250712.0)(kysely@0.28.2))(idb-keyval@6.2.2)(srvx@0.8.2)
       nypm: 0.6.0
       ofetch: 1.4.1
       ohash: 2.0.11
