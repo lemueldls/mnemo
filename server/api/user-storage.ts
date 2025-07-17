@@ -11,18 +11,18 @@ export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
 
-    return { context: { base: `users:${user.id}` } };
+    return { context: { key: `users:${user.id}` } };
   },
 
   async open(peer) {
-    peer.subscribe(peer.context.base as string);
+    peer.subscribe(peer.context.key as string);
   },
 
   async message(peer, message) {
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    const userStorage = prefixStorage(hubKV(), peer.context.base as string);
+    const userStorage = prefixStorage(hubKV(), peer.context.key as string);
 
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;
@@ -31,7 +31,7 @@ export default defineWebSocketHandler({
       await userStorage.setItem(key, value);
       await userStorage.setMeta(key, { updatedAt });
 
-      peer.publish(peer.context.base as string, item);
+      peer.publish(peer.context.key as string, item);
     } else
       peer.send({
         key,
@@ -41,6 +41,6 @@ export default defineWebSocketHandler({
   },
 
   async close(peer) {
-    peer.unsubscribe(peer.context.base as string);
+    peer.unsubscribe(peer.context.key as string);
   },
 });
