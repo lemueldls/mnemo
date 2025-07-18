@@ -194,10 +194,10 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
   },
 );
 
-const doc = await useCrdt();
-const undoManager = await useCrdtUndoManager();
+// const doc = await useCrdt();
+// const undoManager = await useCrdtUndoManager();
 
-const name = await useStorageText("name", "");
+// const name = await useStorageText("name", "");
 
 function createStateConfig(
   typstState: TypstState,
@@ -231,20 +231,20 @@ function createStateConfig(
       addSpaceBeforeClosingBracket,
       keymap.of(vscodeKeymap),
 
-      LoroExtensions(
-        doc,
-        {
-          ephemeral: new EphemeralStore(),
-          user: { name: name.value, colorClassName: "user1" },
-        },
-        undoManager,
-        (doc) => {
-          const item = doc.getText(normalizeKey(fullPath.value));
-          if (!item.length) item.update(text.value);
+      // LoroExtensions(
+      //   doc,
+      //   {
+      //     ephemeral: new EphemeralStore(),
+      //     user: { name: name.value, colorClassName: "user1" },
+      //   },
+      //   undoManager,
+      //   (doc) => {
+      //     const item = doc.getText(normalizeKey(fullPath.value));
+      //     if (!item.length) item.update(text.value);
 
-          return item;
-        },
-      ),
+      //     return item;
+      //   },
+      // ),
     ],
   };
 }
