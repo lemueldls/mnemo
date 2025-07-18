@@ -80,7 +80,7 @@ export default defineNuxtConfig({
     viewTransition: true,
     asyncContext: true,
   },
-  compatibilityDate: "2025-06-03",
+  compatibilityDate: "2025-07-17",
   nitro: {
     prerender: {
       routes: ["/", "/calendar", "/space"],
