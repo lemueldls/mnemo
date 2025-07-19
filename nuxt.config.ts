@@ -90,7 +90,7 @@ export default defineNuxtConfig({
   },
   hub: {
     workers: isWorkers,
-    cache: true,
+    cache: !isDev,
     database: true,
     kv: true,
     blob: true,

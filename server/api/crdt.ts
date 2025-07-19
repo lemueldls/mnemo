@@ -9,7 +9,7 @@ export default defineWebSocketHandler({
     peer.subscribe(peer.namespace);
 
     const bytes = await hubBlob().get(peer.namespace);
-    if (bytes?.size) peer.send(bytes);
+    if (bytes?.size) peer.send(await bytes.arrayBuffer());
   },
 
   async message(peer, message) {
