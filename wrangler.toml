@@ -16,9 +16,13 @@ directory = "./dist/public/"
 class_name = "$DurableObject"
 name = "$DurableObject"
 
+# [[migrations]]
+# new_classes = ["$DurableObject"]
+# tag = "v1"
+
 [[migrations]]
-new_classes = ["$DurableObject"]
-tag = "v1"
+new_sqlite_classes = ["$DurableObject"]
+tag = "v2"
 
 [[r2_buckets]]
 binding = "BLOB"
