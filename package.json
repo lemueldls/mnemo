@@ -92,6 +92,7 @@
     "nuxt": "^4.0.0",
     "nuxt-auth-utils": "^0.5.20",
     "nuxt-ssr-lit": "^1.6.30",
+    "nuxthub": "^0.9.3",
     "postcss-html": "^1.8.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",
