@@ -3,6 +3,9 @@ compatibility_flags = ["nodejs_compat"]
 main = "dist/server/index.mjs"
 name = "notes"
 
+[observability]
+enabled = true
+
 [assets]
 binding = "ASSETS"
 directory = "./dist/public/"
