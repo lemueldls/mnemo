@@ -13,8 +13,10 @@ export default defineWebSocketHandler({
   },
 
   async message(peer, message) {
-    peer.publish(peer.namespace, message.uint8Array());
-    await hubBlob().put(peer.namespace, message.blob());
+    const buffer = message.arrayBuffer() as ArrayBuffer;
+
+    peer.publish(peer.namespace, buffer);
+    await hubBlob().put(peer.namespace, buffer);
   },
 
   async close(peer) {
