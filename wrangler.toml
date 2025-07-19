@@ -14,7 +14,7 @@ directory = "./dist/public/"
 
 [[durable_objects.bindings]]
 class_name = "$DurableObject"
-name = "notes_$DurableObject"
+name = "$DurableObject"
 
 [[migrations]]
 new_classes = ["$DurableObject"]
