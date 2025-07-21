@@ -1,12 +1,20 @@
-import indexedDbDriver from "unstorage/drivers/indexedb";
-import type { Container } from "loro-crdt";
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
+import indexedDbDriver from "unstorage/drivers/indexedb";
+
+import type { Container, Value } from "loro-crdt";
+
+import type {
+  DebuggerOptions,
+  WatchStopHandle,
+  WritableComputedOptions,
+} from "vue";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-const itemRefs: { [key: string]: Ref<unknown> | undefined } = {};
+const itemRefs: { [key: string]: Promise<Ref<unknown>> | undefined } = {};
+const itemRefCount: { [key: string]: number } = {};
 
 const syncQueue = new Set<string>();
 
@@ -55,7 +63,7 @@ export const useCrdt = createSharedComposable(async () => {
   const bytes = await localDb.getItem<string>("crdt");
   if (bytes) {
     try {
-      const status = doc.import(Uint8Array.fromBase64(bytes));
+      doc.import(Uint8Array.fromBase64(bytes));
     } catch {
       await localDb.removeItem("crdt");
     }
@@ -93,12 +101,12 @@ export const useCrdt = createSharedComposable(async () => {
 
         switch (diff.type) {
           case "text": {
-            const text = doc.getText(normalizeKey(key)).toString();
+            const text = doc.getText(key).getShallowValue();
 
             await localDb.setItem(key, text);
             await localDb.setMeta(key, { updatedAt: Date.now() });
 
-            const itemRef = itemRefs[key];
+            const itemRef = await itemRefs[key];
             if (itemRef && itemRef.value !== text) {
               syncQueue.add(key);
               itemRef.value = text;
@@ -108,21 +116,21 @@ export const useCrdt = createSharedComposable(async () => {
           }
 
           case "map": {
-            const localItem =
-              await localDb.getItem<Record<string, unknown>>(key);
-            const item = localItem || {};
+            const map = doc.getMap(key).getShallowValue();
 
             for (const [key, value] of Object.entries(diff.updated))
-              if (value === null) delete item[key];
-              else item[key] = value;
+              if (value === null)
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete map[key];
+              else map[key] = value as Value;
 
-            await localDb.setItem(key, item);
+            await localDb.setItem(key, map);
             await localDb.setMeta(key, { updatedAt: Date.now() });
 
-            const itemRef = itemRefs[key];
-            if (itemRef && itemRef.value !== item) {
+            const itemRef = await itemRefs[key];
+            if (itemRef && itemRef.value !== map) {
               syncQueue.add(key);
-              itemRef.value = item;
+              itemRef.value = map;
             }
 
             break;
@@ -167,7 +175,7 @@ const useSync = createSharedComposable(() => {
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt });
 
-        const itemRef = itemRefs[key];
+        const itemRef = await itemRefs[key];
         if (itemRef && itemRef.value !== value) {
           syncQueue.add(key);
           itemRef.value = value;
@@ -189,60 +197,100 @@ const useSync = createSharedComposable(() => {
   };
 });
 
-export async function useStorageItem<T extends StorageValue>(
-  key: MaybeRefOrGetter<string>,
-  initialValue: T,
-) {
-  const keyRef = toRef(key);
-
-  const { error, data, pending } = await useAsyncData(key, async () => {
-    const key = keyRef.value;
-
-    const storageItem = await getStorageItem<T>(key, initialValue);
-    const item = ref(storageItem);
-
-    itemRefs[key] = item;
-
-    watchThrottled(
-      item,
-      async (value) => {
-        if (!syncQueue.delete(key)) {
-          const updatedAt = Date.now();
-
-          await localDb.setItem(key, value);
-          await localDb.setMeta(key, { updatedAt });
-
-          await useSync().updateItem(key, value, updatedAt);
-        }
-      },
-      { throttle: 1000, deep: true },
-    );
-
-    return item as Ref<T>;
-  });
-
-  watchImmediate(error, (error) => {
-    if (error) throw createError(error);
-  });
-
-  const root = computed<T>({
-    get: (oldValue) => (pending.value ? oldValue! : data.value!.value),
-    set: (value) => {
-      data.value!.value = value;
-    },
-  });
-
+function shallowComputed<T, S = T>(
+  options: WritableComputedOptions<T, S>,
+  debugOptions?: DebuggerOptions,
+): WritableComputedRef<T, S> {
+  const root = computed(options, debugOptions);
   Object.defineProperty(root, "__v_isShallow", {
     configurable: true,
     enumerable: false,
     value: true,
   });
 
-  whenever(logicNot(pending), () => {
-    triggerRef(root);
+  return root;
+}
+
+async function asyncComputedRef<T>(
+  key: MaybeRefOrGetter<string>,
+  handler: (key: string) => Promise<Ref<T>>,
+) {
+  let item: Ref<T>;
+  const data = shallowRef<T>();
+
+  const root = shallowComputed({
+    get: () => data.value!,
+    set(value) {
+      item.value = value;
+    },
   });
 
+  let stopSync: WatchStopHandle;
+  await new Promise<void>((resolve) =>
+    watchImmediate(toRef(key), async (key) => {
+      itemRefCount[key] ??= 0;
+      itemRefCount[key]++;
+
+      const syncScope = effectScope();
+
+      onWatcherCleanup(() => {
+        // syncScope.stop();
+        stopSync?.();
+
+        if (!itemRefCount[key] || itemRefCount[key] <= 1) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete itemRefs[key];
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete itemRefCount[key];
+        } else itemRefCount[key]--;
+      });
+
+      itemRefs[key] ??= handler(key);
+      item = (await itemRefs[key]) as Ref<T>;
+
+      syncScope.run(() => {
+        stopSync = watchImmediate(item, (item) => {
+          data.value = item;
+        });
+
+        resolve();
+        triggerRef(root);
+      });
+    }),
+  );
+
   return root;
+}
+
+export function useStorageItem<T extends StorageValue>(
+  key: MaybeRefOrGetter<string>,
+  initialValue: T,
+) {
+  return asyncComputedRef(toRef(key), async (key) => {
+    const scope = effectScope();
+
+    const storageItem = await getStorageItem<T>(key, initialValue);
+    const item = ref(storageItem);
+
+    scope.run(() => {
+      watchThrottled(
+        item,
+        async (value) => {
+          if (!syncQueue.delete(key)) {
+            const updatedAt = Date.now();
+
+            await localDb.setItem(key, value);
+            await localDb.setMeta(key, { updatedAt });
+
+            useSync().updateItem(key, value, updatedAt);
+          }
+        },
+        { throttle: 1000, deep: true },
+      );
+    });
+
+    return item as Ref<T>;
+  });
 }
 
 export async function useStorageText(key: string, initialValue?: string) {
@@ -253,9 +301,9 @@ export async function useStorageText(key: string, initialValue?: string) {
 
   const computedRef = computed({
     get: () => item.value,
-    set(newValue) {
-      item.value = newValue;
-      text.update(newValue);
+    set: (newText) => {
+      item.value = newText;
+      text.update(newText);
 
       commit();
     },
@@ -275,11 +323,9 @@ export async function useStorageMap<T extends object>(
 
   const computedRef = computed({
     get: () => item.value,
-    set(newValue) {
-      item.value = newValue;
-      for (const [key, value] of Object.entries(newValue)) {
-        map.set(key, value);
-      }
+    set: (newMap) => {
+      item.value = newMap;
+      for (const [key, value] of Object.entries(newMap)) map.set(key, value);
 
       commit();
     },
@@ -319,7 +365,7 @@ export async function getStorageItem<T extends StorageValue>(
 ) {
   const localItem = await localDb.getItem<T>(key);
 
-  if (localItem === null) {
+  if (!localItem) {
     await localDb.setItem(key, initialValue);
     await localDb.setMeta(key, { updatedAt: 0 });
   }
@@ -330,20 +376,9 @@ export async function getStorageItem<T extends StorageValue>(
     { updatedAt?: number } | undefined
   >;
 
-  localMeta.then((meta) =>
-    useSync().updateItem(key, value, meta?.updatedAt || 0),
-  );
+  localMeta.then((meta) => {
+    useSync().updateItem(key, value, meta?.updatedAt || 0);
+  });
 
   return value;
 }
-
-// const updateRemoteItem = useThrottleFn(async (key, value) => {
-//   const { $sync } = useNuxtApp();
-//   await $sync.setItem(key, value!);
-// }, 500);
-
-// export async function useStorageKeys(base: string) {
-//   const { $sync } = useNuxtApp();
-
-//   return await $sync.getKeys(base);
-// }
