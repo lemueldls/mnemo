@@ -31,7 +31,7 @@
     "@material/web": "^2.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@polar-sh/better-auth": "^1.0.7",
-    "@polar-sh/sdk": "^0.34.5",
+    "@polar-sh/sdk": "^0.34.6",
     "@replit/codemirror-vscode-keymap": "^6.0.2",
     "@tauri-apps/api": "^2.6.0",
     "@tauri-apps/plugin-cli": "^2.4.0",
