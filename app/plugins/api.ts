@@ -1,6 +1,5 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-
 import { ofetch, type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin({

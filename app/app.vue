@@ -3,7 +3,6 @@ import "@material/web/all";
 import "@material/web/labs/card/elevated-card";
 import "@material/web/labs/card/filled-card";
 import "@material/web/labs/card/outlined-card";
-
 import { isTauri } from "@tauri-apps/api/core";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 

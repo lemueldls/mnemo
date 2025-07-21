@@ -1,14 +1,14 @@
+import { isTauri } from "@tauri-apps/api/core";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { createAuthClient } from "better-auth/client";
 
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-
 import type {
+  ClientOptions,
   InferSessionFromClient,
   InferUserFromClient,
-  ClientOptions,
 } from "better-auth/client";
+
 import type { RouteLocationRaw } from "vue-router";
-import { isTauri } from "@tauri-apps/api/core";
 
 export const useAuth = createSharedComposable(() => {
   const headers = new Headers();

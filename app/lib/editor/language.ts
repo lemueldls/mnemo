@@ -60,7 +60,7 @@ async function autocomplete(
 
       if (completion.apply?.includes("$")) {
         const tt =
-            completion.apply.match(/\${\w*}/)?.at(0) == "${}" &&
+            completion.apply.match(/\$\{\w*\}/)?.at(0) == "${}" &&
             (completion.type !== "syntax" || completion.label != "linebreak"),
           applySnippet = snippet(completion.apply);
 

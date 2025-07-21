@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import Chat from "./chat.vue";
-import Study from "./study.vue";
 import Storage from "./storage.vue";
+import Study from "./study.vue";
 import Tasks from "./tasks.vue";
 import Today from "./today.vue";
 

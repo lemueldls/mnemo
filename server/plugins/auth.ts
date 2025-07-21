@@ -1,5 +1,5 @@
-import { consola } from "consola";
 import { getMigrations } from "better-auth/db";
+import { consola } from "consola";
 
 export default defineNitroPlugin(() => {
   if (!import.meta.dev) return;
