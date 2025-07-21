@@ -1,10 +1,10 @@
-import { betterAuth } from "better-auth";
 
 import { D1Dialect } from "@atinux/kysely-d1";
-import { D1Database } from "@cloudflare/workers-types";
-
-import { polar, checkout, portal, usage } from "@polar-sh/better-auth";
+import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
+import { betterAuth } from "better-auth";
+
+import type { D1Database } from "@cloudflare/workers-types";
 
 const runtimeConfig = useRuntimeConfig();
 

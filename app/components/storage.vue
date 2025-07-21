@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { UseOnline } from "@vueuse/components";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { UseOnline } from "@vueuse/components";
 
 const auth = useAuth();
 const { user } = auth;
@@ -77,16 +77,16 @@ const undoManager = await useCrdtUndoManager();
         <div class="flex gap-2">
           <md-icon-button
             title="Undo"
-            @click="undoManager.undo()"
             :disabled="!undoManager.canUndo()"
+            @click="undoManager.undo()"
           >
             <md-icon>undo</md-icon>
           </md-icon-button>
 
           <md-icon-button
             title="Redo"
-            @click="undoManager.redo()"
             :disabled="!undoManager.canRedo()"
+            @click="undoManager.redo()"
           >
             <md-icon>redo</md-icon>
           </md-icon-button>

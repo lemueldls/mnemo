@@ -1,5 +1,4 @@
 import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
 
 const defaultLocale = "en";
 const locales = [
@@ -39,6 +38,7 @@ export default defineNuxtConfig({
     "reka-ui/nuxt",
   ],
   devtools: { enabled: !platform },
+
   app: {
     // pageTransition: { name: "conjure" },
     layoutTransition: { name: "conjure" },
@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     },
   },
   css: ["@unocss/reset/tailwind.css", "@/assets/scss/main.scss"],
+  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   runtimeConfig: {
     public: {
       platform,
@@ -74,6 +75,7 @@ export default defineNuxtConfig({
       webhookSecret: "",
     },
   },
+  sourcemap: true,
   future: { compatibilityVersion: 4 },
   experimental: {
     typedPages: true,
@@ -96,7 +98,16 @@ export default defineNuxtConfig({
     blob: true,
   },
   vite: {
-    plugins: [wasm(), topLevelAwait()],
+    plugins: [wasm()],
+  },
+  eslint: {
+    config: {
+      nuxt: { sortConfigKeys: true },
+      import: false,
+      typescript: true,
+      tooling: true,
+      stylistic: false,
+    },
   },
   fonts: {
     families: [
@@ -118,5 +129,4 @@ export default defineNuxtConfig({
     strategy: "no_prefix",
     baseUrl: siteUrl,
   },
-  vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
 });

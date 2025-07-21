@@ -25,8 +25,12 @@ import {
 } from "@codemirror/view";
 
 import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
+import { LoroExtensions } from "loro-codemirror";
+import { EphemeralStore } from "loro-crdt";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId, type TypstState } from "mnemo-wasm";
+import { normalizeKey } from "unstorage";
+
 
 import type { EditorStateConfig } from "@codemirror/state";
 import type { NoteKind } from "~/composables/notes";
@@ -34,10 +38,6 @@ import type { Rgba } from "~~/modules/mx/types";
 
 import { typstLanguage } from "~/lib/editor/language";
 import { typst } from "~/lib/editor/widget";
-
-import { EphemeralStore } from "loro-crdt";
-import { LoroExtensions } from "loro-codemirror";
-import { normalizeKey } from "unstorage";
 
 const props = defineProps<{
   spaceId: string;
@@ -146,7 +146,7 @@ onMounted(() => {
           });
 
         const cache = stateCache[fullPath];
-        const stateConfig = createStateConfig(typstState, fileId);
+        const stateConfig = createStateConfig(fileId);
 
         if (cache)
           view.setState(
@@ -199,10 +199,7 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
 
 // const name = await useStorageText("name", "");
 
-function createStateConfig(
-  typstState: TypstState,
-  fileId: FileId,
-): EditorStateConfig {
+function createStateConfig(fileId: FileId): EditorStateConfig {
   return {
     extensions: [
       typst(typstState, fullPath, fileId, text, prelude),

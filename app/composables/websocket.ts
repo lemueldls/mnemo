@@ -1,7 +1,7 @@
-import { defu } from "defu";
 
 import { isTauri } from "@tauri-apps/api/core";
 import TauriWebSocket from "@tauri-apps/plugin-websocket";
+import { defu } from "defu";
 
 type WS = TauriWebSocket | WebSocket;
 
