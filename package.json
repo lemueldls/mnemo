@@ -60,7 +60,7 @@
     "vue-pdf-embed": "^2.1.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250715.0",
+    "@cloudflare/workers-types": "^4.20250719.0",
     "@lemueldls/eslint-config": "^1.2.2",
     "@nuxt/devtools": "^2.6.2",
     "@nuxt/eslint": "1.5.2",
