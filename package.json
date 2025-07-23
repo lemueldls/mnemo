@@ -33,7 +33,7 @@
     "@polar-sh/better-auth": "^1.0.7",
     "@polar-sh/sdk": "^0.34.6",
     "@replit/codemirror-vscode-keymap": "^6.0.2",
-    "@tauri-apps/api": "^2.6.0",
+    "@tauri-apps/api": "^2.7.0",
     "@tauri-apps/plugin-cli": "^2.4.0",
     "@tauri-apps/plugin-deep-link": "^2.4.0",
     "@tauri-apps/plugin-http": "^2.5.0",
