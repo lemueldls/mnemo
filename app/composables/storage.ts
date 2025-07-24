@@ -1,4 +1,10 @@
-import { LoroDoc, UndoManager, type Container, type Value } from "loro-crdt";
+import {
+  LoroDoc,
+  UndoManager,
+  type Container,
+  type Value,
+} from "loro-crdt/bundler";
+
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
