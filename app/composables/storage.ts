@@ -1,10 +1,4 @@
-import {
-  LoroDoc,
-  UndoManager,
-  type Container,
-  type Value,
-} from "loro-crdt/bundler";
-
+import { LoroDoc, UndoManager, type Container, type Value } from "loro-crdt";
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
@@ -59,8 +53,6 @@ if (!Uint8Array.fromBase64) {
 }
 
 export const useCrdt = createSharedComposable(async () => {
-  const { $api } = useNuxtApp();
-
   let doc;
   const bytes = await localDb.getItem<string>("crdt");
   if (bytes) {
