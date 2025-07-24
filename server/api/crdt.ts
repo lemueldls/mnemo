@@ -1,4 +1,4 @@
-import { LoroDoc } from "loro-crdt/nodejs";
+import { LoroDoc } from "loro-crdt";
 
 export default defineWebSocketHandler({
   async upgrade(request) {
@@ -24,8 +24,7 @@ export default defineWebSocketHandler({
       ? LoroDoc.fromSnapshot(await blob.bytes())
       : new LoroDoc();
 
-    const status = doc.import(bytes);
-    console.log("[SERVER] import status:", status);
+    doc.import(bytes);
 
     const snapshot = doc.export({ mode: "snapshot" });
     await hubBlob().put(peer.namespace, snapshot);
