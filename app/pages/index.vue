@@ -36,11 +36,11 @@ const newSpaceOpen = useNewSpaceOpen();
 
 <template>
   <div class="flex h-full flex-1">
-    <div class="flex h-full flex-1 flex-col gap-4">
+    <div class="flex size-full flex-1 flex-col gap-4">
       <mx-outlined-card
         class="medium:border-1! medium:p-4! p-0! border-0! medium:overflow-auto flex h-full flex-1 flex-col gap-4"
       >
-        <div>
+        <div class="w-full overflow-hidden">
           <h1 class="display-medium">
             {{ greeting }}
           </h1>

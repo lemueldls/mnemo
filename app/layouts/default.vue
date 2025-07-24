@@ -113,7 +113,7 @@ const pages: Page[] = [
         </template> -->
       </mx-nav-drawer>
 
-      <div class="flex flex-1 flex-col">
+      <div class="flex flex-1 flex-col overflow-hidden">
         <mx-top-app-bar>
           <template v-if="!extraLarge" #leading>
             <md-icon-button @click="drawerOpen = !drawerOpen">

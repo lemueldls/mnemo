@@ -85,9 +85,11 @@ function decorate(
   update: ViewUpdate,
   path: string,
   fileId: FileId,
-  text: string,
+
   prelude: string,
 ) {
+  const text = update.state.doc.toString();
+
   let compileResult: CompileResult;
   if (update.docChanged || !cache.has(path)) {
     compileResult = typstState.compile(fileId, text, prelude);
@@ -185,9 +187,8 @@ const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
 export const viewPlugin = (
   typstState: TypstState,
-  path: Ref<string>,
+  path: string,
   fileId: FileId,
-  textItem: Ref<string>,
   prelude: Ref<string>,
 ) =>
   ViewPlugin.define((_view) => {
@@ -202,15 +203,12 @@ export const viewPlugin = (
             update.view.contentDOM.clientWidth - 2 * window.devicePixelRatio,
           );
 
-          const text = update.state.doc.toString();
-          if (update.docChanged) textItem.value = text;
-
           const decorations = decorate(
             typstState,
             update,
-            path.value,
+            path,
             fileId,
-            text,
+
             prelude.value,
           );
 
@@ -223,9 +221,8 @@ export const viewPlugin = (
 
 export const typst = (
   typstState: TypstState,
-  path: Ref<string>,
+  path: string,
   fileId: FileId,
-  textItem: Ref<string>,
   prelude: Ref<string>,
 ) =>
   StateField.define({
@@ -255,6 +252,6 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, path, fileId, textItem, prelude),
+      viewPlugin(typstState, path, fileId, prelude),
     ],
   });

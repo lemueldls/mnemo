@@ -1,7 +1,6 @@
+import { LoroDoc, UndoManager, type Container, type Value } from "loro-crdt";
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
-
-import type { Container, Value } from "loro-crdt";
 
 import type {
   DebuggerOptions,
@@ -13,10 +12,10 @@ const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-const itemRefs: { [key: string]: Promise<Ref<unknown>> | undefined } = {};
-const itemRefCount: { [key: string]: number } = {};
+type CustomRef<T> = Ref<T> & { setLocal(value: T): Promise<void> };
 
-const syncQueue = new Set<string>();
+const itemRefs: { [key: string]: Promise<CustomRef<unknown>> | undefined } = {};
+const itemRefCount: { [key: string]: number } = {};
 
 declare global {
   interface Uint8Array {
@@ -53,32 +52,111 @@ if (!Uint8Array.fromBase64) {
   };
 }
 
-export const useLoro = createSharedComposable(() => import("loro-crdt"));
-
 export const useCrdt = createSharedComposable(async () => {
-  const { LoroDoc } = await useLoro();
+  const { $api } = useNuxtApp();
 
-  const doc = new LoroDoc();
-
+  let doc;
   const bytes = await localDb.getItem<string>("crdt");
   if (bytes) {
     try {
-      doc.import(Uint8Array.fromBase64(bytes));
-    } catch {
+      doc = LoroDoc.fromSnapshot(Uint8Array.fromBase64(bytes));
+    } catch (error) {
+      console.error("Failed to load CRDT from local storage:", error);
       await localDb.removeItem("crdt");
+      doc = new LoroDoc();
     }
-  }
+  } else doc = new LoroDoc();
+
+  doc.subscribeLocalUpdates(async (bytes) => {
+    await send(bytes);
+  });
+
+  doc.subscribe(async (event) => {
+    console.log("event by", event.by);
+
+    for (const { path, diff } of event.events) {
+      console.log("[CRDT]", path, diff);
+
+      const key = normalizeKey(path[0] as string);
+
+      switch (diff.type) {
+        case "text": {
+          const text = doc.getText(key).getShallowValue();
+
+          // let cursor = 0;
+          // for (const delta of diff.diff)
+          //   if (delta.insert)
+          //     text = text.slice(0, cursor) + delta.insert + text.slice(cursor);
+          //   else if (delta.delete)
+          //     text = text.slice(0, cursor) + text.slice(cursor + delta.delete);
+          //   else if (delta.retain) cursor += delta.retain;
+
+          await localDb.setItem(key, text);
+          await localDb.setMeta(key, { updatedAt: Date.now() });
+
+          const itemRef = await itemRefs[key];
+          if (itemRef) await itemRef.setLocal(text);
+
+          break;
+        }
+
+        case "map": {
+          const item =
+            (await localDb.getItem<Record<string, unknown>>(key)) ?? {};
+          const itemClone = structuredClone(item);
+
+          for (const [key, value] of Object.entries(diff.updated))
+            if (value === null)
+              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+              delete item[key];
+            else item[key] = value as Value;
+
+          console.log("[MAP] item from", itemClone, "to", item);
+
+          await localDb.setItem(key, item);
+          await localDb.setMeta(key, { updatedAt: Date.now() });
+
+          const itemRef = await itemRefs[key];
+          if (itemRef) await itemRef.setLocal(item);
+
+          break;
+        }
+
+        case "list": {
+          const item = (await localDb.getItem<unknown[]>(key)) ?? [];
+
+          for (const delta of diff.diff)
+            if (delta.insert)
+              for (let i = 0; i < delta.insert.length; i++)
+                item[i] = delta.insert[i];
+            else if (delta.delete) item.splice(delta.delete, item.length);
+
+          await localDb.setItem(key, item);
+          await localDb.setMeta(key, { updatedAt: Date.now() });
+
+          const itemRef = await itemRefs[key];
+          if (itemRef) await itemRef.setLocal(item);
+
+          break;
+        }
+      }
+    }
+  });
 
   const url = new URL("/api/crdt", useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
   const { open, close, send } = useApiWebSocket(url, {
     immediate: false,
+    async onOpen() {
+      console.log("WebSocket connection opened");
+
+      const snapshot = doc.export({ mode: "snapshot" });
+      await send(snapshot);
+    },
     async onMessage(_ws, event) {
       const bytes = await event.bytes();
       doc.import(bytes);
-
-      await localDb.setItem("crdt", bytes.toBase64());
     },
   });
 
@@ -88,63 +166,10 @@ export const useCrdt = createSharedComposable(async () => {
     else close();
   });
 
-  doc.subscribeLocalUpdates(async (bytes) => {
-    await send(bytes);
-  });
-
-  doc.subscribe(async (event) => {
-    if (event.by === "import") {
-      for (const { path, diff } of event.events) {
-        // console.log("[CRDT]", path, diff);
-
-        const [key] = path as [string];
-
-        switch (diff.type) {
-          case "text": {
-            const text = doc.getText(key).getShallowValue();
-
-            await localDb.setItem(key, text);
-            await localDb.setMeta(key, { updatedAt: Date.now() });
-
-            const itemRef = await itemRefs[key];
-            if (itemRef && itemRef.value !== text) {
-              syncQueue.add(key);
-              itemRef.value = text;
-            }
-
-            break;
-          }
-
-          case "map": {
-            const map = doc.getMap(key).getShallowValue();
-
-            for (const [key, value] of Object.entries(diff.updated))
-              if (value === null)
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete map[key];
-              else map[key] = value as Value;
-
-            await localDb.setItem(key, map);
-            await localDb.setMeta(key, { updatedAt: Date.now() });
-
-            const itemRef = await itemRefs[key];
-            if (itemRef && itemRef.value !== map) {
-              syncQueue.add(key);
-              itemRef.value = map;
-            }
-
-            break;
-          }
-        }
-      }
-    }
-  });
-
   return doc;
 });
 
 export const useCrdtUndoManager = createSharedComposable(async () => {
-  const { UndoManager } = await useLoro();
   const doc = await useCrdt();
 
   const undoManager = new UndoManager(doc, {
@@ -176,10 +201,7 @@ const useSync = createSharedComposable(() => {
         await localDb.setMeta(key, { updatedAt });
 
         const itemRef = await itemRefs[key];
-        if (itemRef && itemRef.value !== value) {
-          syncQueue.add(key);
-          itemRef.value = value;
-        }
+        if (itemRef) await itemRef.setLocal(value);
       }
     },
   });
@@ -213,7 +235,7 @@ function shallowComputed<T, S = T>(
 
 async function asyncComputedRef<T>(
   key: MaybeRefOrGetter<string>,
-  handler: (key: string) => Promise<Ref<T>>,
+  handler: (key: string) => Promise<CustomRef<T>>,
 ) {
   let item: Ref<T>;
   const data = shallowRef<T>();
@@ -225,16 +247,17 @@ async function asyncComputedRef<T>(
     },
   });
 
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+
   let stopSync: WatchStopHandle;
   await new Promise<void>((resolve) =>
-    watchImmediate(toRef(key), async (key) => {
+    watchImmediate(keyRef, async (key) => {
       itemRefCount[key] ??= 0;
       itemRefCount[key]++;
 
-      const syncScope = effectScope();
+      const scope = effectScope();
 
       onWatcherCleanup(() => {
-        // syncScope.stop();
         stopSync?.();
 
         if (!itemRefCount[key] || itemRefCount[key] <= 1) {
@@ -246,9 +269,9 @@ async function asyncComputedRef<T>(
       });
 
       itemRefs[key] ??= handler(key);
-      item = (await itemRefs[key]) as Ref<T>;
+      item = (await itemRefs[key]) as CustomRef<T>;
 
-      syncScope.run(() => {
+      scope.run(() => {
         stopSync = watchImmediate(item, (item) => {
           data.value = item;
         });
@@ -266,83 +289,184 @@ export function useStorageItem<T extends StorageValue>(
   key: MaybeRefOrGetter<string>,
   initialValue: T,
 ) {
-  return asyncComputedRef(toRef(key), async (key) => {
+  return asyncComputedRef(key, async (key) => {
     const scope = effectScope();
 
     const storageItem = await getStorageItem<T>(key, initialValue);
-    const item = ref(storageItem);
+    const item = ref(storageItem) as Ref<T>;
 
-    scope.run(() => {
+    const customRef = scope.run(() => {
+      let runNextSync = true;
+
       watchThrottled(
         item,
-        async (value) => {
-          if (!syncQueue.delete(key)) {
-            const updatedAt = Date.now();
+        async (value: T) => {
+          const updatedAt = Date.now();
 
-            await localDb.setItem(key, value);
-            await localDb.setMeta(key, { updatedAt });
+          await localDb.setItem(key, value);
+          await localDb.setMeta(key, { updatedAt });
 
-            useSync().updateItem(key, value, updatedAt);
-          }
+          if (runNextSync) useSync().updateItem(key, value, updatedAt);
+          else runNextSync = true;
         },
         { throttle: 1000, deep: true },
       );
+
+      return extendRef(item, {
+        async setLocal(value: T) {
+          console.log("local setting", key, "to", value);
+
+          runNextSync = false;
+          item.value = value;
+        },
+      });
     });
 
-    return item as Ref<T>;
+    return customRef!;
   });
 }
 
-export async function useStorageText(key: string, initialValue?: string) {
-  const item = await useStorageItem(key, initialValue || "");
-
-  const doc = await useCrdt();
-  const text = doc.getText(normalizeKey(key));
-
-  const computedRef = computed({
-    get: () => item.value,
-    set: (newText) => {
-      item.value = newText;
-      text.update(newText);
-
-      commit();
-    },
-  });
-
-  return extendRef(computedRef, {});
-}
-
-export async function useStorageMap<T extends object>(
-  key: string,
+export async function useStorageText<T extends string>(
+  key: MaybeRefOrGetter<string>,
   initialValue?: T,
 ) {
-  const item = await useStorageItem<T>(key, initialValue || ({} as T));
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+  const item = await useStorageItem(keyRef, initialValue ?? ("" as T));
 
   const doc = await useCrdt();
-  const map = doc.getMap(normalizeKey(key));
+  const text = computedWithControl(item, () => doc.getText(keyRef.value));
 
-  const computedRef = computed({
-    get: () => item.value,
-    set: (newMap) => {
-      item.value = newMap;
-      for (const [key, value] of Object.entries(newMap)) map.set(key, value);
-
-      commit();
-    },
+  watchImmediate(item, (itemText) => {
+    text.value.update(itemText);
+    commit();
   });
 
-  return extendRef(computedRef, {
-    set(key: string, value: Exclude<T[keyof T], Container>) {
-      item.value[key as keyof T] = value;
-      map.set(key, value);
+  return extendRef(item, {});
+}
 
+export type MapRef<T extends Record<string, unknown>> = Awaited<
+  ReturnType<typeof useStorageMap<T>>
+>;
+export async function useStorageMap<T extends Record<string, unknown>>(
+  key: MaybeRefOrGetter<string>,
+  initialValue?: T,
+) {
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+  const item = await useStorageItem<T>(keyRef, initialValue ?? ({} as T));
+
+  const doc = await useCrdt();
+  const map = computedWithControl(item, () => doc.getMap(keyRef.value));
+
+  watchImmediate(item, (itemMap) => {
+    console.log("[MAP] immediate", keyRef.value, "is", toRaw(itemMap));
+    for (const [key, value] of Object.entries(itemMap))
+      map.value.set(key, value);
+    commit();
+  });
+
+  return extendRef(item, {
+    set(key: string, value: Exclude<T[keyof T], Container>) {
+      // item.value[key as keyof T] = value;
+      map.value.set(key, value);
       commit();
     },
     delete(key: string) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete item.value[key as keyof T];
-      map.delete(key);
+      delete item.value[key];
+      map.value.delete(key);
+      commit();
+    },
+  });
+}
 
+export async function useStorageList<T extends unknown[]>(
+  key: MaybeRefOrGetter<string>,
+  initialValue?: T,
+) {
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+  const item = await useStorageItem<T>(
+    keyRef,
+    initialValue ?? ([] as unknown as T),
+  );
+
+  const doc = await useCrdt();
+  const list = computedWithControl(item, () => doc.getList(keyRef.value));
+
+  watchImmediate(item, (itemList) => {
+    const syncList = list.value.getShallowValue();
+    const maxLength = Math.max(itemList.length, syncList.length);
+    for (let i = 0; i < maxLength; i++)
+      if (i < itemList.length && i < syncList.length) {
+        if (!deepEqual(itemList[i], syncList[i])) {
+          list.value.delete(i, 1);
+          list.value.insert(i, itemList[i]);
+        }
+      } else if (i < itemList.length) list.value.push(itemList[i]);
+      else list.value.delete(i, 1);
+    commit();
+  });
+
+  return extendRef(item, {
+    push(value: Exclude<T[keyof T], Container>) {
+      list.value.push(value);
+      commit();
+    },
+    insert(position: number, value: Exclude<T[keyof T], Container>) {
+      list.value.insert(position, value);
+      commit();
+    },
+    delete(position: number, length: number) {
+      list.value.delete(position, length);
+      commit();
+    },
+  });
+}
+
+export type MovableListRef<T extends unknown[]> = Awaited<
+  ReturnType<typeof useStorageMovableList<T>>
+>;
+export async function useStorageMovableList<T extends unknown[]>(
+  key: MaybeRefOrGetter<string>,
+  initialValue?: T,
+) {
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+  const item = await useStorageItem<T>(
+    keyRef,
+    initialValue ?? ([] as unknown as T),
+  );
+
+  const doc = await useCrdt();
+  const list = computedWithControl(item, () =>
+    doc.getMovableList(keyRef.value),
+  );
+
+  watchImmediate(item, (itemList) => {
+    const syncList = list.value.getShallowValue();
+    const maxLength = Math.max(itemList.length, syncList.length);
+    for (let i = 0; i < maxLength; i++)
+      if (i < itemList.length && i < syncList.length) {
+        if (!deepEqual(itemList[i], syncList[i]))
+          list.value.set(i, itemList[i]);
+      } else if (i < itemList.length) list.value.push(itemList[i]);
+      else list.value.delete(i, 1);
+    commit();
+  });
+
+  return extendRef(item, {
+    push(value: Exclude<T[keyof T], Container>) {
+      list.value.push(value);
+      commit();
+    },
+    insert(position: number, value: Exclude<T[keyof T], Container>) {
+      list.value.insert(position, value);
+      commit();
+    },
+    set(position: number, value: Exclude<T[keyof T], Container>) {
+      list.value.set(position, value);
+      commit();
+    },
+    delete(position: number, length: number) {
+      list.value.delete(position, length);
       commit();
     },
   });
@@ -370,15 +494,53 @@ export async function getStorageItem<T extends StorageValue>(
     await localDb.setMeta(key, { updatedAt: 0 });
   }
 
-  const value = localItem || initialValue;
+  const value = localItem ?? initialValue;
 
   const localMeta = localDb.getMeta(key) as Promise<
     { updatedAt?: number } | undefined
   >;
 
   localMeta.then((meta) => {
-    useSync().updateItem(key, value, meta?.updatedAt || 0);
+    useSync().updateItem(key, value, meta?.updatedAt ?? 0);
   });
 
   return value;
+}
+
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+
+  if (a === null || b === null) return false;
+  if (typeof a !== typeof b) return false;
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false;
+    }
+
+    return true;
+  }
+
+  if (typeof a === "object" && typeof b === "object") {
+    const keysA = Object.keys(a as Record<string, unknown>);
+    const keysB = Object.keys(b as Record<string, unknown>);
+
+    if (keysA.length !== keysB.length) return false;
+
+    for (const key of keysA) {
+      if (
+        !deepEqual(
+          (a as Record<string, unknown>)[key],
+          (b as Record<string, unknown>)[key],
+        )
+      )
+        return false;
+    }
+
+    return true;
+  }
+
+  return false;
 }

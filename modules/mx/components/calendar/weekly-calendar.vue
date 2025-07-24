@@ -3,18 +3,20 @@ const { d } = useI18n();
 
 const activeDay = ref(new Date());
 
-const containerRef = useTemplateRef("container");
+// const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
 
-const scrollHeight = ref(0);
+const scrollHeight = ref(1152);
 const newSpaceDialogOpen = ref(false);
 const editSpaceDialogOpen = ref(false);
 
 onMounted(() => {
-  const container = containerRef.value!;
+  // const container = containerRef.value!;
   const caret = caretRef.value!;
 
-  scrollHeight.value = container.scrollHeight;
+  // useIntervalFn(() => {
+  //   scrollHeight.value = container.scrollHeight;
+  // }, 200);
 
   useIntervalFn(
     () => {
@@ -47,10 +49,10 @@ const days = [1, 2, 3, 4, 5].map((day) =>
 
 const newSpaceOpen = useNewSpaceOpen();
 
-const newSpaceId = ref();
+const newSpaceId = ref<string>();
 const newSpaceDays = reactive(new Set<number>());
-const newSpaceFrom = ref();
-const newSpaceTo = ref();
+const newSpaceFrom = ref<string>();
+const newSpaceTo = ref<string>();
 
 function openDialog(day: number, hour: number) {
   newSpaceDays.clear();
@@ -61,11 +63,11 @@ function openDialog(day: number, hour: number) {
   newSpaceDialogOpen.value = true;
 }
 
-const editScheduleDay = ref();
-const editScheduleIndex = ref();
+const editScheduleDay = ref<number>();
+const editScheduleIndex = ref<number>();
 const editingScheduleRef = ref<ScheduleItem>();
-const editingScheduleFrom = ref();
-const editingScheduleTo = ref();
+const editingScheduleFrom = ref<string>();
+const editingScheduleTo = ref<string>();
 
 function openEditDialog(day: number, index: number) {
   editScheduleDay.value = day;
@@ -92,8 +94,6 @@ function minutesToTime(minutes: number) {
 const spaces = await useSpaces();
 const schedule = await useSchedule();
 
-// console.log({ schedule: schedule.value });
-
 function createScheduleItem(event: SubmitEvent) {
   // const formData = new FormData(event.target as HTMLFormElement);
 
@@ -109,13 +109,13 @@ function createScheduleItem(event: SubmitEvent) {
   // });
 
   for (const day of newSpaceDays) {
-    const spaceId = newSpaceId.value;
+    const spaceId = newSpaceId.value!;
     if (!spaceId) throw createError("space required");
 
     schedule.value[day]!.push({
       spaceId,
-      from: timeToMinutes(newSpaceFrom.value),
-      to: timeToMinutes(newSpaceTo.value),
+      from: timeToMinutes(newSpaceFrom.value!),
+      to: timeToMinutes(newSpaceTo.value!),
     });
   }
 }

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { UseOnline } from "@vueuse/components";
@@ -72,7 +71,7 @@ const undoManager = await useCrdtUndoManager();
 
     <md-outlined-card class="flex-1 p-3">
       <div class="flex items-center justify-between">
-        <h4 class="headline-small">Local History</h4>
+        <h4 class="headline-small">Recent History</h4>
 
         <div class="flex gap-2">
           <md-icon-button

@@ -5,15 +5,10 @@ export interface ScheduleItem {
 }
 
 export async function useSchedule() {
-  const schedule = useStorageItem<ScheduleItem[][]>("schedule.json", [
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-  ]);
+  const schedule = await useStorageMap<{ [day: number]: ScheduleItem[] }>(
+    "schedule.json",
+    { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] },
+  );
 
   return schedule;
 }

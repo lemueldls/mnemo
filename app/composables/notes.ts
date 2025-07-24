@@ -9,9 +9,8 @@ export interface Note {
 export type NoteKind = "daily" | "sticky" | "prelude";
 
 export async function useSpaceNotes(spaceId: MaybeRefOrGetter<string>) {
-  return await useStorageItem<Note[]>(
+  return await useStorageList<Note[]>(
     () => `spaces/${toValue(spaceId)}/daily/notes.json`,
-    [],
   );
 }
 
@@ -32,7 +31,7 @@ export function addDailyNote(notes: Ref<Note[]>) {
 
 export async function loadDailyNotes(
   spaceId: string,
-  notes: Ref<Note[]>,
+  notes: MovableListRef<Note[]>,
   archived: boolean,
 ) {
   const today = new Date();
@@ -54,13 +53,13 @@ export async function loadDailyNotes(
       !archived
     )
       addToday = false;
-    else {
-      const item = await getStorageItem<string>(
-        `spaces/${spaceId}/daily/${note.id}.typ`,
-        "",
-      );
-      if (!item) notes.value.splice(i, 1);
-    }
+    // else {
+    //   const item = await getStorageItem<string>(
+    //     `spaces/${spaceId}/daily/${note.id}.typ`,
+    //     "",
+    //   );
+    //   if (!item) notes.delete(i, 1);
+    // }
   }
 
   if (addToday) {
