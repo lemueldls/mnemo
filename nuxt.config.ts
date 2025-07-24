@@ -1,4 +1,4 @@
-import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 
 const defaultLocale = "en";
 const locales = [
@@ -98,7 +98,7 @@ export default defineNuxtConfig({
     blob: true,
   },
   vite: {
-    plugins: [topLevelAwait()],
+    plugins: [wasm()],
   },
   eslint: {
     config: {

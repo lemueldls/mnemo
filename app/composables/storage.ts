@@ -3,7 +3,7 @@ import {
   UndoManager,
   type Container,
   type Value,
-} from "loro-crdt/web";
+} from "loro-crdt/bundler";
 
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
