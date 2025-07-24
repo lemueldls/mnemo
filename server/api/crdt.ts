@@ -1,3 +1,5 @@
+import { LoroDoc } from "loro-crdt";
+
 export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
@@ -8,15 +10,25 @@ export default defineWebSocketHandler({
   async open(peer) {
     peer.subscribe(peer.namespace);
 
-    const bytes = await hubBlob().get(peer.namespace);
-    if (bytes?.size) peer.send(await bytes.arrayBuffer());
+    const blob = await hubBlob().get(peer.namespace);
+    if (blob?.size) peer.send(await blob.bytes());
   },
 
   async message(peer, message) {
-    const buffer = message.arrayBuffer() as ArrayBuffer;
+    const bytes = message.uint8Array();
 
-    peer.publish(peer.namespace, buffer);
-    await hubBlob().put(peer.namespace, buffer);
+    peer.publish(peer.namespace, import.meta.dev ? message.blob() : bytes);
+
+    const blob = await hubBlob().get(peer.namespace);
+    const doc = blob?.size
+      ? LoroDoc.fromSnapshot(await blob.bytes())
+      : new LoroDoc();
+
+    const status = doc.import(bytes);
+    console.log("[SERVER] import status:", status);
+
+    const snapshot = doc.export({ mode: "snapshot" });
+    await hubBlob().put(peer.namespace, snapshot);
   },
 
   async close(peer) {

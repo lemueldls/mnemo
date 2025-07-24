@@ -305,6 +305,8 @@ async function createStickyNote() {
 
                   <span class="label-large">
                     {{ currentNote?.date }}
+
+                    {{ currentNote.id }}
                   </span>
 
                   <div class="h-1px bg-outline-variant flex-1" />

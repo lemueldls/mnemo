@@ -2,7 +2,7 @@
 const open = defineModel<boolean>();
 
 const dark = useDark();
-const name = await useStorageText("name", "");
+const name = await useStorageText("name");
 
 const { t, locale, locales, setLocale } = useI18n();
 </script>

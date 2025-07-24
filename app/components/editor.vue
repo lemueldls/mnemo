@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
-import { history, historyField } from "@codemirror/commands";
 
 import {
   bracketMatching,
@@ -28,11 +27,9 @@ import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
 import { LoroExtensions } from "loro-codemirror";
 import { EphemeralStore } from "loro-crdt";
 import { Rgb } from "mnemo-wasm";
-import { ThemeColors, type FileId, type TypstState } from "mnemo-wasm";
+import { ThemeColors, type FileId } from "mnemo-wasm";
 import { normalizeKey } from "unstorage";
 
-
-import type { EditorStateConfig } from "@codemirror/state";
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
@@ -98,11 +95,8 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
 
 const containerRef = useTemplateRef("container");
 
-const stateCache: { [key: string]: unknown } = {};
-
-const preludeItem = await useStorageItem(
+const preludeItem = await useStorageText(
   () => `spaces/${props.spaceId}/prelude/main.typ`,
-  "",
 );
 const prelude = computed(() =>
   props.kind === "prelude" ? "" : preludeItem.value,
@@ -117,7 +111,7 @@ const { t } = useI18n();
 
 const typstState = await useTypst();
 
-const text = await useStorageItem(fullPath, "");
+const text = await useStorageText(fullPath);
 
 onMounted(() => {
   const container = containerRef.value!;
@@ -134,30 +128,13 @@ onMounted(() => {
 
   let ready = false;
 
-  watchImmediate(fullPath, (fullPath, oldFullPath) =>
+  watchImmediate(fullPath, (fullPath) =>
     watch(
       text,
       (text) => {
         const fileId = typstState.insertFile(fullPath, text);
-
-        if (oldFullPath)
-          stateCache[oldFullPath] = view.state.toJSON({
-            history: historyField,
-          });
-
-        const cache = stateCache[fullPath];
-        const stateConfig = createStateConfig(fileId);
-
-        if (cache)
-          view.setState(
-            EditorState.fromJSON(cache, stateConfig, {
-              history: historyField,
-            }),
-          );
-        else {
-          stateConfig.doc = text;
-          view.setState(EditorState.create(stateConfig));
-        }
+        const state = createEditorState(fileId);
+        view.setState(state);
       },
       { once: true, immediate: !ready },
     ),
@@ -194,25 +171,22 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
   },
 );
 
-// const doc = await useCrdt();
-// const undoManager = await useCrdtUndoManager();
+const doc = await useCrdt();
+const undoManager = await useCrdtUndoManager();
 
-// const name = await useStorageText("name", "");
+function createEditorState(fileId: FileId): EditorState {
+  const path = normalizeKey(fullPath.value);
 
-function createStateConfig(fileId: FileId): EditorStateConfig {
-  return {
+  return EditorState.create({
     extensions: [
-      typst(typstState, fullPath, fileId, text, prelude),
+      typst(typstState, path, fileId, prelude),
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
-      // updateListenerExtension,
-
       EditorState.readOnly.of(props.readonly),
 
       placeholder("write."),
       highlightSpecialChars(),
-      history(),
       // foldGutter(),
       drawSelection(),
       dropCursor(),
@@ -228,22 +202,17 @@ function createStateConfig(fileId: FileId): EditorStateConfig {
       addSpaceBeforeClosingBracket,
       keymap.of(vscodeKeymap),
 
-      // LoroExtensions(
-      //   doc,
-      //   {
-      //     ephemeral: new EphemeralStore(),
-      //     user: { name: name.value, colorClassName: "user1" },
-      //   },
-      //   undoManager,
-      //   (doc) => {
-      //     const item = doc.getText(normalizeKey(fullPath.value));
-      //     if (!item.length) item.update(text.value);
-
-      //     return item;
-      //   },
-      // ),
+      LoroExtensions(
+        doc,
+        {
+          ephemeral: new EphemeralStore(),
+          user: { name: "You", colorClassName: "you" },
+        },
+        undoManager,
+        (doc) => doc.getText(path),
+      ),
     ],
-  };
+  });
 }
 
 const selectionBackground = computed(() => {
