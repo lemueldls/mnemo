@@ -1,7 +1,6 @@
+import { LoroDoc, UndoManager, type Container, type Value } from "loro-crdt";
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
-
-import type { Container, Value } from "loro-crdt";
 
 import type {
   DebuggerOptions,
@@ -53,11 +52,7 @@ if (!Uint8Array.fromBase64) {
   };
 }
 
-export const useLoro = createSharedComposable(() => import("loro-crdt"));
-
 export const useCrdt = createSharedComposable(async () => {
-  const { LoroDoc } = await useLoro();
-
   let doc;
   const bytes = await localDb.getItem<string>("crdt");
   if (bytes) {
@@ -173,7 +168,6 @@ export const useCrdt = createSharedComposable(async () => {
 });
 
 export const useCrdtUndoManager = createSharedComposable(async () => {
-  const { UndoManager } = await useLoro();
   const doc = await useCrdt();
 
   const undoManager = new UndoManager(doc, {
