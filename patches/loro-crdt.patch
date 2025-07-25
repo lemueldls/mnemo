@@ -1,18 +1,18 @@
-diff --git a/nodejs/loro_wasm.js b/nodejs/loro_wasm.js
-index 3d22132c9b694a7b377ac06bd13cc80dcc86fbc2..15c2396c21dacdd28376a8618baf1aa95eb461ef 100644
---- a/nodejs/loro_wasm.js
-+++ b/nodejs/loro_wasm.js
-@@ -7088,10 +7088,9 @@ module.exports.__wbindgen_typeof = function(arg0) {
-     return addHeapObject(ret);
- };
- 
--const path = require('path').join(__dirname, 'loro_wasm_bg.wasm');
--const bytes = require('fs').readFileSync(path);
--
--const wasmModule = new WebAssembly.Module(bytes);
-+const wasmModule = globalThis.__dirname
-+    ? new WebAssembly.Module(require('fs').readFileSync(require('path').join(__dirname, 'loro_wasm_bg.wasm')))
-+    : require("./loro_wasm_bg.wasm?module");
- const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
- wasm = wasmInstance.exports;
- module.exports.__wasm = wasm;
+diff --git a/package.json b/package.json
+index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..88eb79aa6c96382f2bbe3b3f418279d41e9d13cf 100644
+--- a/package.json
++++ b/package.json
+@@ -10,11 +10,12 @@
+     "sync",
+     "p2p"
+   ],
++  "sideEffects": ["./bundler"],
+   "repository": {
+     "type": "git",
+     "url": "git+https://github.com/loro-dev/loro.git"
+   },
+-  "main": "nodejs/index.js",
++  "main": "bundler/index.js",
+   "module": "bundler/index.js",
+   "types": "bundler/index.d.ts",
+   "files": [
