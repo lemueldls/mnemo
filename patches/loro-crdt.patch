@@ -1,5 +1,5 @@
 diff --git a/nodejs/loro_wasm.js b/nodejs/loro_wasm.js
-index 3d22132c9b694a7b377ac06bd13cc80dcc86fbc2..d944b95833f0d12cb28c0172348c502f71e1040b 100644
+index 3d22132c9b694a7b377ac06bd13cc80dcc86fbc2..15c2396c21dacdd28376a8618baf1aa95eb461ef 100644
 --- a/nodejs/loro_wasm.js
 +++ b/nodejs/loro_wasm.js
 @@ -7088,10 +7088,9 @@ module.exports.__wbindgen_typeof = function(arg0) {
@@ -10,7 +10,7 @@ index 3d22132c9b694a7b377ac06bd13cc80dcc86fbc2..d944b95833f0d12cb28c0172348c502f
 -const bytes = require('fs').readFileSync(path);
 -
 -const wasmModule = new WebAssembly.Module(bytes);
-+const wasmModule = process.env.NODE_ENV === "development"
++const wasmModule = globalThis.__dirname
 +    ? new WebAssembly.Module(require('fs').readFileSync(require('path').join(__dirname, 'loro_wasm_bg.wasm')))
 +    : require("./loro_wasm_bg.wasm?module");
  const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
