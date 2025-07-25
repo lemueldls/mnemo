@@ -112,13 +112,13 @@
   },
   "pnpm": {
     "overrides": {
-      "h3": "npm:h3-nightly@latest",
-      "crossws": "^0.4.1"
+      "crossws": "^0.4.1",
+      "h3": "npm:h3-nightly@latest"
     },
     "patchedDependencies": {
-      "nitropack": "patches/nitropack.patch",
       "crossws": "patches/crossws.patch",
-      "loro-crdt": "patches/loro-crdt.patch"
+      "loro-crdt": "patches/loro-crdt.patch",
+      "nitropack": "patches/nitropack.patch"
     }
   }
 }
