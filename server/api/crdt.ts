@@ -1,4 +1,4 @@
-import { LoroDoc } from "loro-crdt/base64";
+import { LoroDoc } from "loro-crdt";
 
 export default defineWebSocketHandler({
   async upgrade(request) {
