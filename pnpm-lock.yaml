@@ -13,7 +13,7 @@ patchedDependencies:
     hash: 4f48c2afea0493987d22246a195bb8798abb3f804a36bd6250365923b3bc7b84
     path: patches/crossws.patch
   loro-crdt:
-    hash: b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37
+    hash: 5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c
     path: patches/loro-crdt.patch
   nitropack:
     hash: 260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c
@@ -133,10 +133,10 @@ importers:
         version: 1.10.27
       loro-codemirror:
         specifier: ^0.2.0
-        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37))
+        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c))
       loro-crdt:
         specifier: ^1.5.9
-        version: 1.5.9(patch_hash=b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37)
+        version: 1.5.9(patch_hash=5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c)
       lru-cache:
         specifier: ^11.1.0
         version: 11.1.0
@@ -13446,13 +13446,13 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
-  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37)):
+  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c)):
     dependencies:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
-      loro-crdt: 1.5.9(patch_hash=b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37)
+      loro-crdt: 1.5.9(patch_hash=5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c)
 
-  loro-crdt@1.5.9(patch_hash=b083d09d0fd857aab09a6757c8a9f208c75135bfc83dbed9fa7e6316d3755f37): {}
+  loro-crdt@1.5.9(patch_hash=5ee42b9cf46ef3aa1547edea6928004532ce441f2719023da3579225ba540a0c): {}
 
   lru-cache@10.4.3: {}
 
