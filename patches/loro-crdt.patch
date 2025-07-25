@@ -1,13 +1,8 @@
 diff --git a/package.json b/package.json
-index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..88eb79aa6c96382f2bbe3b3f418279d41e9d13cf 100644
+index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..8d2c91eb381bf999c91e30f812d1083623ba7e7a 100644
 --- a/package.json
 +++ b/package.json
-@@ -10,11 +10,12 @@
-     "sync",
-     "p2p"
-   ],
-+  "sideEffects": ["./bundler"],
-   "repository": {
+@@ -14,7 +14,7 @@
      "type": "git",
      "url": "git+https://github.com/loro-dev/loro.git"
    },
@@ -16,3 +11,11 @@ index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..88eb79aa6c96382f2bbe3b3f418279d4
    "module": "bundler/index.js",
    "types": "bundler/index.d.ts",
    "files": [
+@@ -27,6 +27,7 @@
+     "LICENSE",
+     "package.json"
+   ],
++  "sideEffects": ["./bundler"],
+   "scripts": {
+     "build-dev": "deno run -A ./scripts/build.ts dev && rollup -c && deno run -A ./scripts/post-rollup.ts && npm run test",
+     "build-release": "deno run -A ./scripts/build.ts release && rollup -c && deno run -A ./scripts/post-rollup.ts && npm run test",
