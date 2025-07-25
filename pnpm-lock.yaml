@@ -5,15 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  h3: npm:h3-nightly@latest
   crossws: ^0.4.1
+  h3: npm:h3-nightly@latest
 
 patchedDependencies:
   crossws:
     hash: 4f48c2afea0493987d22246a195bb8798abb3f804a36bd6250365923b3bc7b84
     path: patches/crossws.patch
   loro-crdt:
-    hash: 13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d
+    hash: 977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63
     path: patches/loro-crdt.patch
   nitropack:
     hash: 260ee0b818ccf0d3b9b8d633f20ca58c3bf9d4ebce597d28e2fee3effc518a6c
@@ -133,10 +133,10 @@ importers:
         version: 1.10.27
       loro-codemirror:
         specifier: ^0.2.0
-        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d))
+        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63))
       loro-crdt:
         specifier: ^1.5.9
-        version: 1.5.9(patch_hash=13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d)
+        version: 1.5.9(patch_hash=977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63)
       lru-cache:
         specifier: ^11.1.0
         version: 11.1.0
@@ -13418,13 +13418,13 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
-  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d)):
+  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.9(patch_hash=977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63)):
     dependencies:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
-      loro-crdt: 1.5.9(patch_hash=13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d)
+      loro-crdt: 1.5.9(patch_hash=977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63)
 
-  loro-crdt@1.5.9(patch_hash=13841483ac5fb8c3d12d09dd1a375c975bc2febb9e44f5fd9b201a9efb9fab7d): {}
+  loro-crdt@1.5.9(patch_hash=977c454712103ac0d1944c977eb287217b6818255ca2ae559e4248b704dbde63): {}
 
   lru-cache@10.4.3: {}
 

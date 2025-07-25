@@ -92,7 +92,7 @@ export default defineNuxtConfig({
     },
     experimental: { websocket: isWorkers },
     rollupConfig: {
-      plugins: [unwasm({ esmImport: true })],
+      plugins: [unwasm({ esmImport: !isDev })],
     },
   },
   hub: {

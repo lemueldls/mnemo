@@ -1,21 +1,27 @@
+diff --git a/bundler/loro_wasm.js b/bundler/loro_wasm.js
+index 28325996840d131337112fb694aa17b7c3d69d95..98b0998d2898012ea4a7b6fcd341ea7bdbef3525 100644
+--- a/bundler/loro_wasm.js
++++ b/bundler/loro_wasm.js
+@@ -7,7 +7,7 @@ if (wasm.__wbindgen_start) {
+     imports.__wbg_set_wasm(wasm);
+     wasm.__wbindgen_start();
+ } else {
+-    const wkmod = await import("./loro_wasm_bg.wasm");
++    const wkmod = await import("./loro_wasm_bg.wasm?module");
+     const instance = new WebAssembly.Instance(wkmod.default, {
+         "./loro_wasm_bg.js": imports,
+     });
 diff --git a/package.json b/package.json
-index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..8d2c91eb381bf999c91e30f812d1083623ba7e7a 100644
+index 60cdd125d04eaea10419e0ca707a5c54ff2673a3..76d03cd7c6fef05358350d6cc281aa280b31d0fe 100644
 --- a/package.json
 +++ b/package.json
-@@ -14,7 +14,7 @@
+@@ -14,7 +14,8 @@
      "type": "git",
      "url": "git+https://github.com/loro-dev/loro.git"
    },
 -  "main": "nodejs/index.js",
++  "sideEffects": true,
 +  "main": "bundler/index.js",
    "module": "bundler/index.js",
    "types": "bundler/index.d.ts",
    "files": [
-@@ -27,6 +27,7 @@
-     "LICENSE",
-     "package.json"
-   ],
-+  "sideEffects": ["./bundler"],
-   "scripts": {
-     "build-dev": "deno run -A ./scripts/build.ts dev && rollup -c && deno run -A ./scripts/post-rollup.ts && npm run test",
-     "build-release": "deno run -A ./scripts/build.ts release && rollup -c && deno run -A ./scripts/post-rollup.ts && npm run test",
