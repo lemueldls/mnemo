@@ -118,7 +118,6 @@
     },
     "patchedDependencies": {
       "crossws": "patches/crossws.patch",
-      "loro-crdt": "patches/loro-crdt.patch",
       "nitropack": "patches/nitropack.patch"
     }
   }

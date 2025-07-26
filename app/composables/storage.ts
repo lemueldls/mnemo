@@ -70,15 +70,9 @@ export const useCrdt = createSharedComposable(async () => {
     }
   } else doc = new LoroDoc();
 
-  doc.subscribeLocalUpdates(async (bytes) => {
-    await send(bytes);
-  });
-
   doc.subscribe(async (event) => {
-    console.log("event by", event.by);
-
     for (const { path, diff } of event.events) {
-      console.log("[CRDT]", path, diff);
+      // console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -114,8 +108,6 @@ export const useCrdt = createSharedComposable(async () => {
               delete item[key];
             else item[key] = value as Value;
 
-          console.log("[MAP] item from", itemClone, "to", item);
-
           await localDb.setItem(key, item);
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
@@ -144,6 +136,12 @@ export const useCrdt = createSharedComposable(async () => {
         }
       }
     }
+
+    console.log("sending local update by", event.by);
+    const bytes = doc.export({ mode: "snapshot" });
+    await localDb.setItem("crdt", bytes.toBase64());
+
+    await send(bytes);
   });
 
   const url = new URL("/api/crdt", useApiBaseUrl());
@@ -318,8 +316,6 @@ export function useStorageItem<T extends StorageValue>(
 
       return extendRef(item, {
         async setLocal(value: T) {
-          console.log("local setting", key, "to", value);
-
           runNextSync = false;
           item.value = value;
         },
@@ -362,7 +358,6 @@ export async function useStorageMap<T extends Record<string, unknown>>(
   const map = computedWithControl(item, () => doc.getMap(keyRef.value));
 
   watchImmediate(item, (itemMap) => {
-    console.log("[MAP] immediate", keyRef.value, "is", toRaw(itemMap));
     for (const [key, value] of Object.entries(itemMap))
       map.value.set(key, value);
     commit();
@@ -479,8 +474,7 @@ export async function useStorageMovableList<T extends unknown[]>(
 const commit = useThrottleFn(
   async () => {
     const doc = await useCrdt();
-    const bytes = doc.export({ mode: "snapshot" });
-    await localDb.setItem("crdt", bytes.toBase64());
+    doc.commit();
   },
   1000,
   true,
