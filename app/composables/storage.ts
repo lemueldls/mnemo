@@ -72,7 +72,7 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      // console.log("[CRDT]", path, diff);
+      console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -100,7 +100,6 @@ export const useCrdt = createSharedComposable(async () => {
         case "map": {
           const item =
             (await localDb.getItem<Record<string, unknown>>(key)) ?? {};
-          const itemClone = structuredClone(item);
 
           for (const [key, value] of Object.entries(diff.updated))
             if (value === null)
@@ -120,11 +119,14 @@ export const useCrdt = createSharedComposable(async () => {
         case "list": {
           const item = (await localDb.getItem<unknown[]>(key)) ?? [];
 
+          let cursor = 0;
           for (const delta of diff.diff)
             if (delta.insert)
               for (let i = 0; i < delta.insert.length; i++)
                 item[i] = delta.insert[i];
-            else if (delta.delete) item.splice(delta.delete, item.length);
+            else if (delta.delete)
+              item.splice(cursor + delta.delete, item.length);
+            else if (delta.retain) cursor += delta.retain;
 
           await localDb.setItem(key, item);
           await localDb.setMeta(key, { updatedAt: Date.now() });
@@ -300,6 +302,8 @@ export function useStorageItem<T extends StorageValue>(
       watchThrottled(
         item,
         async (value: T) => {
+          console.log("setting local", key, "to", toRaw(value));
+
           const updatedAt = Date.now();
 
           await localDb.setItem(key, value);
