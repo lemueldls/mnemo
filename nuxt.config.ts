@@ -1,4 +1,3 @@
-import { rollup as unwasm } from "unwasm/plugin";
 import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 
@@ -86,14 +85,12 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-07-17",
   nitro: {
+    esbuild: { options: { target: "esnext" } },
     prerender: {
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
     experimental: { websocket: isWorkers },
-    rollupConfig: {
-      plugins: [unwasm({ esmImport: !isDev })],
-    },
   },
   hub: {
     workers: isWorkers,
