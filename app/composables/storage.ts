@@ -72,7 +72,7 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      console.log("[CRDT]", path, diff);
+      // console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -123,10 +123,9 @@ export const useCrdt = createSharedComposable(async () => {
           for (const delta of diff.diff)
             if (delta.insert)
               for (let i = 0; i < delta.insert.length; i++)
-                item[i] = delta.insert[i];
-            else if (delta.delete)
-              item.splice(cursor + delta.delete, item.length);
-            else if (delta.retain) cursor += delta.retain;
+                item.splice(cursor + i, 0, delta.insert[i]);
+            else if (delta.delete) item.splice(cursor, delta.delete);
+            else if (delta.retain) cursor = delta.retain;
 
           await localDb.setItem(key, item);
           await localDb.setMeta(key, { updatedAt: Date.now() });
@@ -302,8 +301,6 @@ export function useStorageItem<T extends StorageValue>(
       watchThrottled(
         item,
         async (value: T) => {
-          console.log("setting local", key, "to", toRaw(value));
-
           const updatedAt = Date.now();
 
           await localDb.setItem(key, value);
@@ -379,6 +376,9 @@ export async function useStorageMap<T extends Record<string, unknown>>(
   });
 }
 
+export type ListRef<T extends unknown[]> = Awaited<
+  ReturnType<typeof useStorageList<T>>
+>;
 export async function useStorageList<T extends unknown[]>(
   key: MaybeRefOrGetter<string>,
   initialValue?: T,
@@ -488,7 +488,7 @@ export async function getStorageItem<T extends StorageValue>(
 ) {
   const localItem = await localDb.getItem<T>(key);
 
-  if (!localItem) {
+  if (localItem === null || localItem === undefined) {
     await localDb.setItem(key, initialValue);
     await localDb.setMeta(key, { updatedAt: 0 });
   }
