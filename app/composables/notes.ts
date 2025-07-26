@@ -14,7 +14,7 @@ export async function useSpaceNotes(spaceId: MaybeRefOrGetter<string>) {
   );
 }
 
-export function addDailyNote(notes: Ref<Note[]>) {
+export function addDailyNote(notes: ListRef<Note[]>) {
   const id = ulid();
 
   const date = new Date(decodeTime(id));
@@ -26,12 +26,12 @@ export function addDailyNote(notes: Ref<Note[]>) {
     date.getMinutes(),
   ];
 
-  notes.value.unshift({ id, datetime });
+  notes.insert(0, { id, datetime });
 }
 
 export async function loadDailyNotes(
   spaceId: string,
-  notes: MovableListRef<Note[]>,
+  notes: ListRef<Note[]>,
   archived: boolean,
 ) {
   const today = new Date();
@@ -53,13 +53,13 @@ export async function loadDailyNotes(
       !archived
     )
       addToday = false;
-    // else {
-    //   const item = await getStorageItem<string>(
-    //     `spaces/${spaceId}/daily/${note.id}.typ`,
-    //     "",
-    //   );
-    //   if (!item) notes.delete(i, 1);
-    // }
+    else {
+      const item = await getStorageItem<string>(
+        `spaces/${spaceId}/daily/${note.id}.typ`,
+        "",
+      );
+      if (!item) notes.delete(i, 1);
+    }
   }
 
   if (addToday) {
