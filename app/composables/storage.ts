@@ -138,10 +138,9 @@ export const useCrdt = createSharedComposable(async () => {
     }
 
     console.log("sending local update by", event.by);
-    const bytes = doc.export({ mode: "snapshot" });
-    await localDb.setItem("crdt", bytes.toBase64());
-
-    await send(bytes);
+    const snapshot = doc.export({ mode: "snapshot" });
+    await localDb.setItem("crdt", snapshot.toBase64());
+    await send(snapshot);
   });
 
   const url = new URL("/api/crdt", useApiBaseUrl());
@@ -150,8 +149,6 @@ export const useCrdt = createSharedComposable(async () => {
   const { open, close, send } = useApiWebSocket(url, {
     immediate: false,
     async onOpen() {
-      console.log("WebSocket connection opened");
-
       const snapshot = doc.export({ mode: "snapshot" });
       await send(snapshot);
     },

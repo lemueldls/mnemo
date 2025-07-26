@@ -17,15 +17,7 @@ export default defineWebSocketHandler({
 
     peer.publish(peer.namespace, import.meta.dev ? message.blob() : bytes);
 
-    // const blob = await hubBlob().get(peer.namespace);
-    // const doc = blob?.size
-    //   ? LoroDoc.fromSnapshot(await blob.bytes())
-    //   : new LoroDoc();
-
-    // doc.import(bytes);
-
-    // const snapshot = doc.export({ mode: "snapshot" });
-    // await hubBlob().put(peer.namespace, snapshot);
+    await hubBlob().put(peer.namespace, bytes);
   },
 
   async close(peer) {
