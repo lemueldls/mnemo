@@ -72,7 +72,7 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      console.log("[CRDT]", path, diff);
+      // console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -130,7 +130,7 @@ export const useCrdt = createSharedComposable(async () => {
       }
     }
 
-    console.log("sending local update by", event.by);
+    // console.log("sending local update by", event.by);
     const snapshot = doc.export({ mode: "snapshot" });
     await localDb.setItem("crdt", snapshot.toBase64());
     await send(snapshot);
