@@ -13,7 +13,7 @@ const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-type CustomRef<T> = Ref<T> & { setLocal(value: T): Promise<void> };
+type CustomRef<T> = Ref<T> & { setLocal(value: T): void };
 
 const itemRefs: { [key: string]: Promise<CustomRef<unknown>> | undefined } = {};
 const itemRefCount: { [key: string]: number } = {};
@@ -72,7 +72,7 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      // console.log("[CRDT]", path, diff);
+      console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -80,19 +80,11 @@ export const useCrdt = createSharedComposable(async () => {
         case "text": {
           const text = doc.getText(key).getShallowValue();
 
-          // let cursor = 0;
-          // for (const delta of diff.diff)
-          //   if (delta.insert)
-          //     text = text.slice(0, cursor) + delta.insert + text.slice(cursor);
-          //   else if (delta.delete)
-          //     text = text.slice(0, cursor) + text.slice(cursor + delta.delete);
-          //   else if (delta.retain) cursor += delta.retain;
-
           await localDb.setItem(key, text);
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
           const itemRef = await itemRefs[key];
-          if (itemRef) await itemRef.setLocal(text);
+          if (itemRef) itemRef.setLocal(text);
 
           break;
         }
@@ -111,7 +103,7 @@ export const useCrdt = createSharedComposable(async () => {
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
           const itemRef = await itemRefs[key];
-          if (itemRef) await itemRef.setLocal(item);
+          if (itemRef) itemRef.setLocal(item);
 
           break;
         }
@@ -121,17 +113,17 @@ export const useCrdt = createSharedComposable(async () => {
 
           let cursor = 0;
           for (const delta of diff.diff)
-            if (delta.insert)
-              for (let i = 0; i < delta.insert.length; i++)
-                item.splice(cursor + i, 0, delta.insert[i]);
-            else if (delta.delete) item.splice(cursor, delta.delete);
+            if (delta.insert) {
+              for (const insert of delta.insert)
+                item.splice(cursor++, 0, insert);
+            } else if (delta.delete) item.splice(cursor, delta.delete);
             else if (delta.retain) cursor = delta.retain;
 
           await localDb.setItem(key, item);
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
           const itemRef = await itemRefs[key];
-          if (itemRef) await itemRef.setLocal(item);
+          if (itemRef) itemRef.setLocal(item);
 
           break;
         }
@@ -201,7 +193,7 @@ const useSync = createSharedComposable(() => {
         await localDb.setMeta(key, { updatedAt });
 
         const itemRef = await itemRefs[key];
-        if (itemRef) await itemRef.setLocal(value);
+        if (itemRef) itemRef.setLocal(value);
       }
     },
   });
@@ -313,7 +305,7 @@ export function useStorageItem<T extends StorageValue>(
       );
 
       return extendRef(item, {
-        async setLocal(value: T) {
+        setLocal(value: T) {
           runNextSync = false;
           item.value = value;
         },
@@ -334,10 +326,19 @@ export async function useStorageText<T extends string>(
   const doc = await useCrdt();
   const text = computedWithControl(item, () => doc.getText(keyRef.value));
 
-  watchImmediate(item, (itemText) => {
-    text.value.update(itemText);
-    commit();
-  });
+  // watchImmediate(item, (itemText) => {
+  //   console.log(
+  //     "setting sync text from",
+  //     text.value.getShallowValue(),
+  //     "to",
+  //     toRaw(itemText),
+  //   );
+  //   text.value.update(itemText);
+  //   commit();
+  // });
+
+  text.value.update(item.value);
+  commit();
 
   return extendRef(item, {});
 }
@@ -393,6 +394,8 @@ export async function useStorageList<T extends unknown[]>(
   const list = computedWithControl(item, () => doc.getList(keyRef.value));
 
   watchImmediate(item, (itemList) => {
+    itemList = toRaw(itemList);
+
     const syncList = list.value.getShallowValue();
     const maxLength = Math.max(itemList.length, syncList.length);
     for (let i = 0; i < maxLength; i++)
@@ -401,8 +404,11 @@ export async function useStorageList<T extends unknown[]>(
           list.value.delete(i, 1);
           list.value.insert(i, itemList[i]);
         }
-      } else if (i < itemList.length) list.value.push(itemList[i]);
-      else list.value.delete(i, 1);
+      } else if (i < itemList.length) {
+        list.value.push(itemList[i]);
+      } else if (i < syncList.length) {
+        list.value.delete(i, 1);
+      }
     commit();
   });
 
@@ -422,55 +428,55 @@ export async function useStorageList<T extends unknown[]>(
   });
 }
 
-export type MovableListRef<T extends unknown[]> = Awaited<
-  ReturnType<typeof useStorageMovableList<T>>
->;
-export async function useStorageMovableList<T extends unknown[]>(
-  key: MaybeRefOrGetter<string>,
-  initialValue?: T,
-) {
-  const keyRef = computed(() => normalizeKey(toValue(key)));
-  const item = await useStorageItem<T>(
-    keyRef,
-    initialValue ?? ([] as unknown as T),
-  );
+// export type MovableListRef<T extends unknown[]> = Awaited<
+//   ReturnType<typeof useStorageMovableList<T>>
+// >;
+// export async function useStorageMovableList<T extends unknown[]>(
+//   key: MaybeRefOrGetter<string>,
+//   initialValue?: T,
+// ) {
+//   const keyRef = computed(() => normalizeKey(toValue(key)));
+//   const item = await useStorageItem<T>(
+//     keyRef,
+//     initialValue ?? ([] as unknown as T),
+//   );
 
-  const doc = await useCrdt();
-  const list = computedWithControl(item, () =>
-    doc.getMovableList(keyRef.value),
-  );
+//   const doc = await useCrdt();
+//   const list = computedWithControl(item, () =>
+//     doc.getMovableList(keyRef.value),
+//   );
 
-  watchImmediate(item, (itemList) => {
-    const syncList = list.value.getShallowValue();
-    const maxLength = Math.max(itemList.length, syncList.length);
-    for (let i = 0; i < maxLength; i++)
-      if (i < itemList.length && i < syncList.length) {
-        if (!deepEqual(itemList[i], syncList[i]))
-          list.value.set(i, itemList[i]);
-      } else if (i < itemList.length) list.value.push(itemList[i]);
-      else list.value.delete(i, 1);
-    commit();
-  });
+//   watchImmediate(item, (itemList) => {
+//     const syncList = list.value.getShallowValue();
+//     const maxLength = Math.max(itemList.length, syncList.length);
+//     for (let i = 0; i < maxLength; i++)
+//       if (i < itemList.length && i < syncList.length) {
+//         if (!deepEqual(itemList[i], syncList[i]))
+//           list.value.set(i, itemList[i]);
+//       } else if (i < itemList.length) list.value.push(itemList[i]);
+//       else list.value.delete(i, 1);
+//     commit();
+//   });
 
-  return extendRef(item, {
-    push(value: Exclude<T[keyof T], Container>) {
-      list.value.push(value);
-      commit();
-    },
-    insert(position: number, value: Exclude<T[keyof T], Container>) {
-      list.value.insert(position, value);
-      commit();
-    },
-    set(position: number, value: Exclude<T[keyof T], Container>) {
-      list.value.set(position, value);
-      commit();
-    },
-    delete(position: number, length: number) {
-      list.value.delete(position, length);
-      commit();
-    },
-  });
-}
+//   return extendRef(item, {
+//     push(value: Exclude<T[keyof T], Container>) {
+//       list.value.push(value);
+//       commit();
+//     },
+//     insert(position: number, value: Exclude<T[keyof T], Container>) {
+//       list.value.insert(position, value);
+//       commit();
+//     },
+//     set(position: number, value: Exclude<T[keyof T], Container>) {
+//       list.value.set(position, value);
+//       commit();
+//     },
+//     delete(position: number, length: number) {
+//       list.value.delete(position, length);
+//       commit();
+//     },
+//   });
+// }
 
 const commit = useThrottleFn(
   async () => {
