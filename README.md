@@ -10,14 +10,16 @@
 
 ## TODO
 
-- Static assets manager.
-- Publishing service.
-- Better daily calendar.
-- Better local search.
-- Global search system.
-- Flash cards and quiz generator.
-- Reference study sheet generator.
-- Handwritten notes and drawings.
+- Better daily calendar
+- Better local search
+- Global search system
+- Task manager
+- External and internal links
+- Static assets manager
+- Handwritten notes and drawings
+- Publishing service
+- Reference study sheet generator
+- Flash cards and quiz generator
 
 ## License
 
