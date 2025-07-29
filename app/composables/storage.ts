@@ -72,7 +72,7 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      // console.log("[CRDT]", path, diff);
+      console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
@@ -90,47 +90,32 @@ export const useCrdt = createSharedComposable(async () => {
         }
 
         case "map": {
-          const item =
-            (await localDb.getItem<Record<string, unknown>>(key)) ?? {};
+          const map = doc.getMap(key).getShallowValue();
 
-          for (const [key, value] of Object.entries(diff.updated))
-            if (value === null)
-              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-              delete item[key];
-            else item[key] = value as Value;
-
-          await localDb.setItem(key, item);
+          await localDb.setItem(key, map);
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
           const itemRef = await itemRefs[key];
-          if (itemRef) itemRef.setLocal(item);
+          if (itemRef) itemRef.setLocal(map);
 
           break;
         }
 
         case "list": {
-          const item = (await localDb.getItem<unknown[]>(key)) ?? [];
+          const list = doc.getList(key).getShallowValue();
 
-          let cursor = 0;
-          for (const delta of diff.diff)
-            if (delta.insert) {
-              for (const insert of delta.insert)
-                item.splice(cursor++, 0, insert);
-            } else if (delta.delete) item.splice(cursor, delta.delete);
-            else if (delta.retain) cursor = delta.retain;
-
-          await localDb.setItem(key, item);
+          await localDb.setItem(key, list);
           await localDb.setMeta(key, { updatedAt: Date.now() });
 
           const itemRef = await itemRefs[key];
-          if (itemRef) itemRef.setLocal(item);
+          if (itemRef) itemRef.setLocal(list);
 
           break;
         }
       }
     }
 
-    // console.log("sending local update by", event.by);
+    console.log("sending snapshot by", event.by);
     const snapshot = doc.export({ mode: "snapshot" });
     await localDb.setItem("crdt", snapshot.toBase64());
     await send(snapshot);
@@ -293,6 +278,8 @@ export function useStorageItem<T extends StorageValue>(
       watchThrottled(
         item,
         async (value: T) => {
+          console.log("local setting", key, "to", toRaw(value));
+
           const updatedAt = Date.now();
 
           await localDb.setItem(key, value);
@@ -404,11 +391,8 @@ export async function useStorageList<T extends unknown[]>(
           list.value.delete(i, 1);
           list.value.insert(i, itemList[i]);
         }
-      } else if (i < itemList.length) {
-        list.value.push(itemList[i]);
-      } else if (i < syncList.length) {
-        list.value.delete(i, 1);
-      }
+      } else if (i < itemList.length) list.value.push(itemList[i]);
+      else list.value.delete(i, 1);
     commit();
   });
 
