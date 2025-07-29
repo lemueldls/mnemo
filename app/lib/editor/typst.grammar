@@ -28,9 +28,9 @@ Array { "(" list<Code> ")" }
   "{"[closedBy="}"] "}"[openedBy="{"]
   "("[closedBy=")"] ")"[openedBy="("]
 
-  "$"[openedBy="$", closedBy="$"]
-  "_"[openedBy="_", closedBy="_"]
-  "*"[openedBy="*", closedBy="*"]
+  // "$"[openedBy="$", closedBy="$"]
+  // "_"[openedBy="_", closedBy="_"]
+  // "*"[openedBy="*", closedBy="*"]
 }
 
 
