@@ -70,7 +70,7 @@ function previousDay() {
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex">
       <span
-        class="text-primary display-small grow-3 flex flex-1 items-center gap-2"
+        class="text-primary display-small flex flex-1 grow-3 items-center gap-2"
       >
         {{ title }}
 
@@ -79,7 +79,7 @@ function previousDay() {
         </md-icon-button>
       </span>
 
-      <div class="grow-2 flex flex-1">
+      <div class="flex flex-1 grow-2">
         <md-icon-button @click="previousDay">
           <md-icon>chevron_left</md-icon>
         </md-icon-button>

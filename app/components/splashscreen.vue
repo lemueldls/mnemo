@@ -37,13 +37,13 @@ whenever(ready, () => emit("ready", true));
 
 <style>
 #splashscreen {
-  @apply text-on-background bg-background z-12 animate-fade-in animate-duration-150 absolute inset-0 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden opacity-100 transition-opacity duration-150;
+  @apply text-on-background bg-background animate-fade-in animate-duration-150 absolute inset-0 z-12 flex h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto opacity-100 transition-opacity duration-150;
 
   background-color: #4c4d72;
   color: #cecefa;
 
   &.ready {
-    @apply pointer-events-none select-none opacity-0;
+    @apply pointer-events-none opacity-0 select-none;
   }
 }
 </style>

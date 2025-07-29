@@ -55,7 +55,7 @@ const basic = computed(() =>
   // &--fullscreen {}
 
   &--basic &__inner {
-    @apply min-w-70 max-w-140 bg-surface-container-high flex flex-col rounded-xl p-6 opacity-100;
+    @apply bg-surface-container-high flex max-w-140 min-w-70 flex-col rounded-xl p-6 opacity-100;
 
     transform-origin: center -1rem;
     transform: scaleY(1) translateY(0);

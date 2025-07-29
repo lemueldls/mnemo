@@ -127,7 +127,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__state-layer {
-    @apply bg-on-surface rounded-inherit absolute inset-0 overflow-hidden bg-opacity-0;
+    @apply bg-on-surface rounded-inherit bg-opacity-0 absolute inset-0 overflow-hidden;
 
     transition-duration: 50ms;
     transition-property: background-color;
@@ -138,7 +138,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__ripple {
-    @apply opacity-12 bg-on-surface absolute inset-0;
+    @apply bg-on-surface absolute inset-0 opacity-12;
 
     transition-property: opacity;
   }

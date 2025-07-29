@@ -2,7 +2,6 @@
 import { Rgb, ThemeColors } from "mnemo-wasm";
 import { decodeTime } from "ulid";
 
-
 import type { Note } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
@@ -127,7 +126,7 @@ const errors = diagnostics.filter(
 
     <md-outlined-card
       v-if="pdf"
-      class="max-w-180 m-4 h-full w-full overflow-hidden bg-white"
+      class="m-4 h-full w-full max-w-180 overflow-hidden bg-white"
     >
       <LazyEmbededPdf v-model="pdf" :filename="space.name" />
     </md-outlined-card>

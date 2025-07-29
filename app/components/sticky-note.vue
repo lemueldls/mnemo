@@ -185,7 +185,7 @@ function encodeColor({ r, g, b, a }: Rgba) {
 
 <style lang="scss">
 .sticky-note {
-  @apply rounded-3 z-1 absolute flex transition-shadow;
+  @apply rounded-3 absolute z-1 flex transition-shadow;
 
   --md-elevation-level: 1;
 

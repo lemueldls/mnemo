@@ -73,7 +73,7 @@ watchEffect(() => {
   transition-property: transform, translate;
 
   &__inner {
-    @apply w-90 flex h-full flex-col p-3;
+    @apply flex h-full w-90 flex-col p-3;
   }
 
   &__content {

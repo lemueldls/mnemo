@@ -12,6 +12,6 @@ defineProps<CardProperties>();
 
 <style>
 .outlined-card {
-  @apply border-1 border-outline-variant border-solid;
+  @apply border-outline-variant border-1 border-solid;
 }
 </style>

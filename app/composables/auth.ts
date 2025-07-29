@@ -1,3 +1,4 @@
+import { polarClient } from "@polar-sh/better-auth";
 import { isTauri } from "@tauri-apps/api/core";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { createAuthClient } from "better-auth/client";
@@ -22,6 +23,7 @@ export const useAuth = createSharedComposable(() => {
       headers,
       customFetchImpl: isTauri() ? tauriFetch : undefined,
     },
+    plugins: [polarClient()],
   });
 
   const session = ref<InferSessionFromClient<ClientOptions> | null>(null);
