@@ -228,14 +228,14 @@ async function createStickyNote() {
           </mx-top-app-bar>
 
           <div
-            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
+            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pr-3 pb-3 pl-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="article2.pdf" monochrome />
             </md-outlined-card> -->
 
-            <div class="max-w-180 medium:ml-3 relative size-full">
-              <div class="absolute left--6 pb-8 pt-16">
+            <div class="medium:ml-3 relative size-full max-w-180">
+              <div class="left--6 absolute pt-16 pb-8">
                 <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
                     <div

@@ -5,7 +5,6 @@ import type { Space } from "~/composables/spaces";
 
 import symbols from "~/assets/symbols.json";
 
-
 // import type { MaterialSymbol } from "material-symbols";
 
 const space = defineModel<Space>({ required: true });

@@ -45,7 +45,7 @@ export const literalTokens = new ExternalTokenizer((input, stack) => {
         } while (isNum_(input.next));
       } else if (
         input.next == Dot ||
-        input.next > 0x7F ||
+        input.next > 0x7f ||
         /\w/.test(String.fromCharCode(input.next))
       ) {
         return;
