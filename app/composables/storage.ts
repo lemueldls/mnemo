@@ -262,9 +262,14 @@ async function asyncComputedRef<T>(
   return root;
 }
 
-export function useStorageItem<T extends StorageValue>(
+function createStorageItem<T extends StorageValue>(
   key: MaybeRefOrGetter<string>,
   initialValue: T,
+  itemHook?: (
+    key: string,
+    item: CustomRef<T>,
+    runNextSync: Ref<boolean>,
+  ) => void,
 ) {
   return asyncComputedRef(key, async (key) => {
     const scope = effectScope();
@@ -273,7 +278,7 @@ export function useStorageItem<T extends StorageValue>(
     const item = ref(storageItem) as Ref<T>;
 
     const customRef = scope.run(() => {
-      let runNextSync = true;
+      const runNextSync = ref(true);
 
       watchThrottled(
         item,
@@ -286,21 +291,32 @@ export function useStorageItem<T extends StorageValue>(
           await localDb.setMeta(key, { updatedAt });
 
           if (runNextSync) useSync().updateItem(key, value, updatedAt);
-          else runNextSync = true;
+          else runNextSync.value = true;
         },
         { throttle: 1000, deep: true },
       );
 
-      return extendRef(item, {
+      const customRef = extendRef(item, {
         setLocal(value: T) {
-          runNextSync = false;
+          runNextSync.value = false;
           item.value = value;
         },
       });
+
+      itemHook?.(key, customRef, runNextSync);
+
+      return customRef;
     });
 
     return customRef!;
   });
+}
+
+export function useStorageItem<T extends StorageValue>(
+  key: MaybeRefOrGetter<string>,
+  initialValue: T,
+) {
+  return createStorageItem(key, initialValue);
 }
 
 export async function useStorageText<T extends string>(
@@ -308,24 +324,23 @@ export async function useStorageText<T extends string>(
   initialValue?: T,
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
-  const item = await useStorageItem(keyRef, initialValue ?? ("" as T));
 
   const doc = await useCrdt();
-  const text = computedWithControl(item, () => doc.getText(keyRef.value));
 
-  // watchImmediate(item, (itemText) => {
-  //   console.log(
-  //     "setting sync text from",
-  //     text.value.getShallowValue(),
-  //     "to",
-  //     toRaw(itemText),
-  //   );
-  //   text.value.update(itemText);
-  //   commit();
-  // });
+  const item = await createStorageItem(
+    keyRef,
+    initialValue ?? ("" as T),
+    (key, item, runNextSync) => {
+      const text = doc.getText(key);
 
-  text.value.update(item.value);
-  commit();
+      watchImmediate(item, (itemText) => {
+        if (!runNextSync.value) return;
+
+        text.update(itemText);
+        commit();
+      });
+    },
+  );
 
   return extendRef(item, {});
 }
@@ -338,16 +353,27 @@ export async function useStorageMap<T extends Record<string, unknown>>(
   initialValue?: T,
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
-  const item = await useStorageItem<T>(keyRef, initialValue ?? ({} as T));
 
   const doc = await useCrdt();
-  const map = computedWithControl(item, () => doc.getMap(keyRef.value));
 
-  watchImmediate(item, (itemMap) => {
-    for (const [key, value] of Object.entries(itemMap))
-      map.value.set(key, value);
-    commit();
-  });
+  const item = await createStorageItem(
+    keyRef,
+    initialValue ?? ({} as T),
+    (key, item, runNextSync) => {
+      const map = doc.getMap(key);
+
+      watchImmediate(item, (itemMap) => {
+        if (!runNextSync.value) return;
+
+        for (const [key, value] of Object.entries(itemMap)) map.set(key, value);
+        commit();
+      });
+
+      return item;
+    },
+  );
+
+  const map = computedWithControl(item, () => doc.getMap(keyRef.value));
 
   return extendRef(item, {
     set(key: string, value: Exclude<T[keyof T], Container>) {
@@ -372,29 +398,34 @@ export async function useStorageList<T extends unknown[]>(
   initialValue?: T,
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
-  const item = await useStorageItem<T>(
-    keyRef,
-    initialValue ?? ([] as unknown as T),
-  );
 
   const doc = await useCrdt();
+
+  const item = await createStorageItem(
+    keyRef,
+    initialValue ?? ([] as unknown as T),
+    (key, item, runNextSync) => {
+      const list = doc.getList(key);
+
+      watchImmediate(item, (itemList) => {
+        if (!runNextSync.value) return;
+
+        const syncList = list.getShallowValue();
+        const maxLength = Math.max(itemList.length, syncList.length);
+        for (let i = 0; i < maxLength; i++)
+          if (i < itemList.length && i < syncList.length) {
+            if (!deepEqual(itemList[i], syncList[i])) {
+              list.delete(i, 1);
+              list.insert(i, itemList[i]);
+            }
+          } else if (i < itemList.length) list.push(itemList[i]);
+          else list.delete(i, 1);
+        commit();
+      });
+    },
+  );
+
   const list = computedWithControl(item, () => doc.getList(keyRef.value));
-
-  watchImmediate(item, (itemList) => {
-    itemList = toRaw(itemList);
-
-    const syncList = list.value.getShallowValue();
-    const maxLength = Math.max(itemList.length, syncList.length);
-    for (let i = 0; i < maxLength; i++)
-      if (i < itemList.length && i < syncList.length) {
-        if (!deepEqual(itemList[i], syncList[i])) {
-          list.value.delete(i, 1);
-          list.value.insert(i, itemList[i]);
-        }
-      } else if (i < itemList.length) list.value.push(itemList[i]);
-      else list.value.delete(i, 1);
-    commit();
-  });
 
   return extendRef(item, {
     push(value: Exclude<T[keyof T], Container>) {
@@ -411,56 +442,6 @@ export async function useStorageList<T extends unknown[]>(
     },
   });
 }
-
-// export type MovableListRef<T extends unknown[]> = Awaited<
-//   ReturnType<typeof useStorageMovableList<T>>
-// >;
-// export async function useStorageMovableList<T extends unknown[]>(
-//   key: MaybeRefOrGetter<string>,
-//   initialValue?: T,
-// ) {
-//   const keyRef = computed(() => normalizeKey(toValue(key)));
-//   const item = await useStorageItem<T>(
-//     keyRef,
-//     initialValue ?? ([] as unknown as T),
-//   );
-
-//   const doc = await useCrdt();
-//   const list = computedWithControl(item, () =>
-//     doc.getMovableList(keyRef.value),
-//   );
-
-//   watchImmediate(item, (itemList) => {
-//     const syncList = list.value.getShallowValue();
-//     const maxLength = Math.max(itemList.length, syncList.length);
-//     for (let i = 0; i < maxLength; i++)
-//       if (i < itemList.length && i < syncList.length) {
-//         if (!deepEqual(itemList[i], syncList[i]))
-//           list.value.set(i, itemList[i]);
-//       } else if (i < itemList.length) list.value.push(itemList[i]);
-//       else list.value.delete(i, 1);
-//     commit();
-//   });
-
-//   return extendRef(item, {
-//     push(value: Exclude<T[keyof T], Container>) {
-//       list.value.push(value);
-//       commit();
-//     },
-//     insert(position: number, value: Exclude<T[keyof T], Container>) {
-//       list.value.insert(position, value);
-//       commit();
-//     },
-//     set(position: number, value: Exclude<T[keyof T], Container>) {
-//       list.value.set(position, value);
-//       commit();
-//     },
-//     delete(position: number, length: number) {
-//       list.value.delete(position, length);
-//       commit();
-//     },
-//   });
-// }
 
 const commit = useThrottleFn(
   async () => {
