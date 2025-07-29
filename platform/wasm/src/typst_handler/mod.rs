@@ -176,7 +176,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
-        let mut ir = self.prelude(RenderingMode::Png) + prelude;
+        let mut ir = self.prelude(RenderingMode::Png) + prelude + "\n\n";
 
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
