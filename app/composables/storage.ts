@@ -1,7 +1,8 @@
+import { match } from "ts-pattern";
 import { createStorage, normalizeKey, type StorageValue } from "unstorage";
 import indexedDbDriver from "unstorage/drivers/indexedb";
 
-import type { Container, Value } from "loro-crdt";
+import type { Container } from "loro-crdt";
 
 import type {
   DebuggerOptions,
@@ -72,50 +73,27 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      console.log("[CRDT]", path, diff);
+      // console.log("[CRDT]", path, diff);
 
       const key = normalizeKey(path[0] as string);
 
-      switch (diff.type) {
-        case "text": {
-          const text = doc.getText(key).getShallowValue();
+      const item = match(diff.type)
+        .with("text", () => doc.getText(key))
+        .with("map", () => doc.getMap(key))
+        .with("list", () => doc.getList(key))
+        .with("counter", () => doc.getCounter(key))
+        .with("tree", () => doc.getTree(key))
+        .exhaustive()
+        .getShallowValue();
 
-          await localDb.setItem(key, text);
-          await localDb.setMeta(key, { updatedAt: Date.now() });
+      await localDb.setItem(key, item);
+      await localDb.setMeta(key, { updatedAt: Date.now() });
 
-          const itemRef = await itemRefs[key];
-          if (itemRef) itemRef.setLocal(text);
-
-          break;
-        }
-
-        case "map": {
-          const map = doc.getMap(key).getShallowValue();
-
-          await localDb.setItem(key, map);
-          await localDb.setMeta(key, { updatedAt: Date.now() });
-
-          const itemRef = await itemRefs[key];
-          if (itemRef) itemRef.setLocal(map);
-
-          break;
-        }
-
-        case "list": {
-          const list = doc.getList(key).getShallowValue();
-
-          await localDb.setItem(key, list);
-          await localDb.setMeta(key, { updatedAt: Date.now() });
-
-          const itemRef = await itemRefs[key];
-          if (itemRef) itemRef.setLocal(list);
-
-          break;
-        }
-      }
+      const itemRef = await itemRefs[key];
+      if (itemRef) itemRef.setLocal(item);
     }
 
-    console.log("sending snapshot by", event.by);
+    // console.log("sending snapshot by", event.by);
     const snapshot = doc.export({ mode: "snapshot" });
     await localDb.setItem("crdt", snapshot.toBase64());
     await send(snapshot);
@@ -283,14 +261,14 @@ function createStorageItem<T extends StorageValue>(
       watchThrottled(
         item,
         async (value: T) => {
-          console.log("local setting", key, "to", toRaw(value));
+          // console.log("local setting", key, "to", toRaw(value));
 
           const updatedAt = Date.now();
 
           await localDb.setItem(key, value);
           await localDb.setMeta(key, { updatedAt });
 
-          if (runNextSync) useSync().updateItem(key, value, updatedAt);
+          if (runNextSync.value) useSync().updateItem(key, value, updatedAt);
           else runNextSync.value = true;
         },
         { throttle: 1000, deep: true },
