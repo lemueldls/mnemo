@@ -3,21 +3,21 @@ import { LRParser } from "@lezer/lr";
 export const parser = LRParser.deserialize({
   version: 14,
   states:
-    "$tOQOPOOO]OQO'#C`OOOO'#C_'#C_ObOSO'#C_OOOO'#Cl'#ClOpOPO'#C^QOOOOOO!ROPO,58zOQOPO'#CcO!WOSO'#CfObOSO'#CiOOOO'#Cb'#CbOOOO,58y,58yOOOO-E6j-E6jOOOO1G.f1G.fO!iOPO,58}OOOO'#Cm'#CmO!nOSO,59QOOOO,59Q,59QO#POSO'#CsO#XOSO,59TOOOO1G.i1G.iOOOO-E6k-E6kOOOO1G.l1G.lObOSO'#CnO#^OSO,59_OOOO1G.o1G.oOOOO,59Y,59YOOOO-E6l-E6l",
+    "$tOQOPOOO]OQO'#C`OOOO'#C_'#C_ObOSO'#C_OOOO'#Ck'#CkOpOPO'#C^QOOOOOO!ROPO,58zOQOPO'#CbO!WOSO'#CeObOSO'#ChOOOO'#Ca'#CaOOOO,58y,58yOOOO-E6i-E6iOOOO1G.f1G.fO!iOPO,58|OOOO'#Cl'#ClO!nOSO,59POOOO,59P,59PO#POSO'#CsO#XOSO,59SOOOO1G.h1G.hOOOO-E6j-E6jOOOO1G.k1G.kObOSO'#CmO#^OSO,59_OOOO1G.n1G.nOOOO,59X,59XOOOO-E6k-E6k",
   stateData:
-    "#f~OTPOdQOfRO~OeVO~OTPOWWOZXO^YO~OTPOdQOfROcQXXQX~OT^O~OTPOWWOZXO[bO^YO~OXeO~OTPOWWOZXO[gO^YO~OhhO_gX~O_jO~OhhO_ga~O",
-  goto: "!uhPPiotP!QyPPyPPyPP!_!f!lPPPP!rQUOR_WVSOTWUQOTWZZRXYahQ[RS`XaQcYRkhSTOWR]TQaXRfaQicRliRdY",
+    "#f~OcQOdPOfRO~OeVO~OVWOYXO]YOdPO~OcQOdPOfRObQXWQX~Od^O~OVWOYXOZbO]YOdPO~OWeO~OVWOYXOZgO]YOdPO~OhhO^gX~O^jO~OhhO^ga~O",
+  goto: "!uhPPiot!QyPPyPPyPP!_!f!lPPPPP!rQUOR_WVSOTWUQOTWZZRXYahQ[RS`XaQcYRkhSTOWR]TQaXRfaQicRliRdY",
   nodeNames:
-    "⚠ Document Markup MarkupContent Math $ Code Content [ ] Scope { } Array ( )",
+    "⚠ Document Markup MarkupContent Math Code Content [ ] Scope { } Array ( )",
   maxTerm: 24,
   nodeProps: [
-    ["openedBy", 5, "$", 9, "[", 12, "{", 15, "("],
-    ["closedBy", 5, "$", 8, "]", 11, "}", 14, ")"],
+    ["closedBy", 7, "]", 10, "}", 13, ")"],
+    ["openedBy", 8, "[", 11, "{", 14, "("],
   ],
   skippedNodes: [0],
   repeatNodeCount: 3,
   tokenData:
-    "$W~RcOs!^st!etu!lux!^xy!qyz!zz|!^|}#T}!}!^!}#O#^#O#P!^#P#Q#g#Q#o!^#o#p#n#p#q!^#q#r#w#r;'S!^;'S;=`$Q<%lO!^R!eOdPeQR!lOfPeQ~!qOT~V!zO^SdPeQV#TO_SdPeQV#^OhSdPeQV#gOWSdPeQR#nOXPeQV#wOZSdPeQV$QO[SdPeQR$TP;=`<%l!^",
+    "$W~RcOs!^st!etu!lux!^xy!qyz!zz|!^|}#T}!}!^!}#O#^#O#P!^#P#Q#g#Q#o!^#o#p#n#p#q!^#q#r#w#r;'S!^;'S;=`$Q<%lO!^R!eOcPeQR!lOfPeQ~!qOd~V!zO]ScPeQV#TO^ScPeQV#^OhScPeQV#gOVScPeQR#nOWPeQV#wOYScPeQV$QOZScPeQR$TP;=`<%l!^",
   tokenizers: [0, 1, 2],
   topRules: { Document: [0, 1] },
   tokenPrec: 0,
