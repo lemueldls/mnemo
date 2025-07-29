@@ -17,7 +17,7 @@ export const useApiToken = createSharedComposable(() => {
   return useCookie(
     "mnemo.session_token",
     import.meta.dev
-      ? { sameSite: "lax", secure: false, httpOnly: true, maxAge }
-      : { sameSite: "none", secure: true, httpOnly: true, maxAge },
+      ? { sameSite: "lax", secure: false, httpOnly: false, maxAge }
+      : { sameSite: "none", secure: true, httpOnly: false, maxAge },
   );
 });

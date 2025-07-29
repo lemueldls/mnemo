@@ -72,8 +72,8 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
       defaultCookieAttributes: import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: true }
-        : { sameSite: "none", secure: true, httpOnly: true },
+        ? { sameSite: "lax", secure: false, httpOnly: false }
+        : { sameSite: "none", secure: true, httpOnly: false },
     },
     plugins: [
       polar({
