@@ -1,4 +1,3 @@
-
 import { D1Dialect } from "@atinux/kysely-d1";
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
@@ -73,8 +72,8 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
       defaultCookieAttributes: import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
+        ? { sameSite: "lax", secure: false, httpOnly: true }
+        : { sameSite: "none", secure: true, httpOnly: true },
     },
     plugins: [
       polar({
