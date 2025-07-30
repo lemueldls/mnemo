@@ -15,6 +15,9 @@ export default withNuxt([
       "vue/singleline-html-element-content-newline": "off",
       "vue/no-deprecated-slot-attribute": "off",
 
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/unified-signatures": "off",
+
       "import/order": [
         "warn",
         {
