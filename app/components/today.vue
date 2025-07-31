@@ -7,12 +7,20 @@ import {
 } from "@internationalized/date";
 
 const timeZone = getLocalTimeZone();
-const calendarDate = shallowRef<CalendarDate>(today(timeZone));
+const calendarDate = useState<CalendarDate>("today:calendar-date", () =>
+  today(timeZone),
+);
 
 const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
 
 const scrollHeight = ref(0);
+const scroll = useScroll(containerRef);
+
+const scrollX = useState("today:scroll-x", () => 0);
+watch(scroll.x, (x) => (scrollX.value = x));
+const scrollY = useState("today:scroll-y", () => 0);
+watch(scroll.y, (y) => (scrollY.value = y));
 
 const datePickerOpen = ref(false);
 
@@ -32,6 +40,9 @@ const todaysSchedule = computed(
 onMounted(() => {
   const container = containerRef.value!;
   const caret = caretRef.value!;
+
+  scroll.x.value = scrollX.value;
+  scroll.y.value = scrollY.value;
 
   scrollHeight.value = container.scrollHeight;
 
