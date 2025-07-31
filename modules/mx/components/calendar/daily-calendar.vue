@@ -1,30 +1,33 @@
 <script setup lang="ts">
-import { getDayOfWeek, getLocalTimeZone, today } from "@internationalized/date";
+import {
+  getDayOfWeek,
+  getLocalTimeZone,
+  today,
+  type CalendarDate,
+} from "@internationalized/date";
 
 const timeZone = getLocalTimeZone();
-const day = ref(today(timeZone));
+const calendarDate = shallowRef<CalendarDate>(today(timeZone));
 
 const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
 
 const scrollHeight = ref(0);
 
-const datePicker = ref(false);
+const datePickerOpen = ref(false);
 
 const { d, locale } = useI18n();
 
 const title = computed(() =>
-  d(day.value.toDate(timeZone), { month: "short", day: "numeric" }),
+  d(calendarDate.value.toDate(timeZone), { month: "short", day: "numeric" }),
 );
 
 const spaces = await useSpaces();
 const schedule = await useSchedule();
 
 const todaysSchedule = computed(
-  () => schedule.value[getDayOfWeek(day.value, locale.value)],
+  () => schedule.value[getDayOfWeek(calendarDate.value, locale.value)],
 );
-
-// useConsole.log({ todaysSchedule });
 
 onMounted(() => {
   const container = containerRef.value!;
@@ -46,11 +49,11 @@ onMounted(() => {
 });
 
 function nextDay() {
-  day.value = day.value.add({ days: 1 });
+  calendarDate.value = calendarDate.value.add({ days: 1 });
 }
 
 function previousDay() {
-  day.value = day.value.subtract({ days: 1 });
+  calendarDate.value = calendarDate.value.subtract({ days: 1 });
 }
 
 // const events = computed<CalendarEvent[]>(() =>
@@ -70,16 +73,16 @@ function previousDay() {
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex">
       <span
-        class="text-primary display-small flex flex-1 grow-3 items-center gap-2"
+        class="text-primary display-small grow-3 flex flex-1 items-center gap-2"
       >
         {{ title }}
 
-        <md-icon-button @click="datePicker = true">
+        <md-icon-button @click="datePickerOpen = true">
           <md-icon>expand_more</md-icon>
         </md-icon-button>
       </span>
 
-      <div class="flex flex-1 grow-2">
+      <div class="grow-2 flex flex-1">
         <md-icon-button @click="previousDay">
           <md-icon>chevron_left</md-icon>
         </md-icon-button>
@@ -96,7 +99,7 @@ function previousDay() {
           :key="hour"
           class="label-medium flex h-12 items-start justify-end pr-2"
         >
-          {{ $d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
+          {{ d(Date.UTC(0, 0, 0, hour - 20), { hour: "numeric" }) }}
         </span>
       </div>
 
@@ -127,14 +130,14 @@ function previousDay() {
 
               <span class="w-full truncate">
                 {{
-                  $d(new Date(0, 0, 0, 0, from), {
+                  d(new Date(0, 0, 0, 0, from), {
                     hour: "numeric",
                     minute: "numeric",
                   })
                 }}
                 -
                 {{
-                  $d(new Date(0, 0, 0, 0, to), {
+                  d(new Date(0, 0, 0, 0, to), {
                     hour: "numeric",
                     minute: "numeric",
                   })
@@ -151,6 +154,9 @@ function previousDay() {
       </div>
     </div>
 
-    <mx-modal-date-picker v-model="datePicker" />
+    <mx-modal-date-picker
+      v-model="datePickerOpen"
+      v-model:date="calendarDate"
+    />
   </div>
 </template>

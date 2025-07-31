@@ -10,7 +10,6 @@
 
 ## TODO
 
-- Better daily calendar
 - Better local search
 - Global search system
 - Task manager
