@@ -40,21 +40,30 @@ export const useAuth = createSharedComposable(() => {
     const token = useApiToken().value;
     headers.append("Cookie", `mnemo.session_token=${token || ""};`);
 
-    const { error, data } = await client.getSession({
-      fetchOptions: { headers },
-    });
+    let sessionData;
+    try {
+      const { error, data } = await client.getSession({
+        fetchOptions: { headers },
+      });
 
-    if (error) {
-      console.error("Error fetching session:", error);
+      if (error) {
+        console.error("Error fetching session:", error);
+
+        return;
+      }
+
+      sessionData = data;
+    } catch (error) {
+      console.error("Even bigger error fetching session:", error);
 
       return;
     }
 
-    session.value = data?.session || null;
-    user.value = data?.user || null;
+    session.value = sessionData?.session || null;
+    user.value = sessionData?.user || null;
     sessionFetching.value = false;
 
-    return data;
+    return sessionData;
   };
 
   if (import.meta.client) {
