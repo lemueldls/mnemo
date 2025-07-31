@@ -32,7 +32,7 @@ class TypstWidget extends WidgetType {
     super();
 
     this.#container.classList.add("typst-render");
-    this.#container.style.height = `${frame.render.height / window.devicePixelRatio}px`;
+    this.#container.style.height = `${frame.render.height}px`;
 
     this.#image.draggable = false;
     this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
@@ -54,6 +54,7 @@ class TypstWidget extends WidgetType {
     const jump = typstState.click(x, y + frame.render.offsetHeight);
     const position = jump ? jump.position : frame.range.end;
 
+    view.focus();
     view.dispatch({ selection: { anchor: position } });
   }
 
@@ -69,7 +70,7 @@ class TypstWidget extends WidgetType {
   }
 
   public override get estimatedHeight() {
-    return this.frame.render.height / window.devicePixelRatio;
+    return this.frame.render.height;
   }
 
   public override destroy() {
