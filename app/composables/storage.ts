@@ -71,6 +71,18 @@ export const useCrdt = createSharedComposable(async () => {
     }
   } else doc = new LoroDoc();
 
+  const sendSnapshot = useThrottleFn(
+    async () => {
+      // console.log("sending snapshot by", event.by);
+      const snapshot = doc.export({ mode: "snapshot" });
+      await localDb.setItem("crdt", snapshot.toBase64());
+      await send(snapshot);
+    },
+    1000,
+    true,
+    true,
+  );
+
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
       // console.log("[CRDT]", path, diff);
@@ -93,10 +105,7 @@ export const useCrdt = createSharedComposable(async () => {
       if (itemRef) itemRef.setLocal(item);
     }
 
-    // console.log("sending snapshot by", event.by);
-    const snapshot = doc.export({ mode: "snapshot" });
-    await localDb.setItem("crdt", snapshot.toBase64());
-    await send(snapshot);
+    sendSnapshot();
   });
 
   const url = new URL("/api/crdt", useApiBaseUrl());
