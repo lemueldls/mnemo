@@ -36,20 +36,32 @@ class TypstWidget extends WidgetType {
 
     this.#image.draggable = false;
     this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
-    this.#image.addEventListener("click", this.handleJump.bind(this));
-    this.#image.addEventListener("mousedown", this.handleJump.bind(this));
+    this.#image.addEventListener("click", (event) => {
+      event.preventDefault();
+      const { clientX, clientY } = event;
+      this.handleJump(clientX, clientY);
+    });
+    this.#image.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      const { clientX, clientY } = event;
+      this.handleJump(clientX, clientY);
+    });
+    this.#image.addEventListener("touchstart", (event) => {
+      event.preventDefault();
+      const [touch] = event.touches;
+      const { clientX, clientY } = touch!;
+      this.handleJump(clientX, clientY);
+    });
 
     this.#container.append(this.#image);
   }
 
-  private async handleJump(event: MouseEvent) {
-    event.preventDefault();
-
+  private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
     const { top, left } = this.#image.getBoundingClientRect();
 
-    const x = event.clientX - left;
-    const y = event.clientY - top;
+    const x = clientX - left;
+    const y = clientY - top;
 
     const jump = typstState.click(x, y + frame.render.offsetHeight);
     const position = jump ? jump.position : frame.range.end;
