@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Package } from "~~/server/api/list-packages";
+import type { Package } from "~~/server/api/list-packages.get";
 
 const { spaceId, versionedPackage } = defineProps<{
   spaceId: string;

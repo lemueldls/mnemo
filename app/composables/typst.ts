@@ -1,6 +1,6 @@
 import init, { PackageFile, TypstState } from "mnemo-wasm";
 
-import type { Package } from "~~/server/api/list-packages";
+import type { Package } from "~~/server/api/list-packages.get";
 
 export const useTypst = createSharedComposable(
   async () =>

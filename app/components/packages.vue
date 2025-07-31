@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UseVirtualList } from "@vueuse/components";
 
-import type { Package } from "~~/server/api/list-packages";
+import type { Package } from "~~/server/api/list-packages.get";
 
 const props = defineProps<{ spaceId: string }>();
 
@@ -20,11 +20,25 @@ watch(search, () => {
 });
 
 const namespace = "preview" as const;
-const packages = await $api("/api/list-packages", {
-  query: { namespace },
-});
+
+const packages = ref<{ [name: string]: Package[] }>();
+
+async function loadPackages() {
+  try {
+    packages.value = await $api("/api/list-packages", {
+      query: { namespace },
+    });
+  } catch (error) {
+    console.log("Error loading package list:", error);
+  }
+}
+
+loadPackages();
 
 const filteredPackages = computed(() => {
+  const packageList = packages.value;
+  if (!packageList) return;
+
   if (search.value === "") {
     return packages;
   }
@@ -32,7 +46,7 @@ const filteredPackages = computed(() => {
   const searchLower = search.value.toLowerCase();
 
   return Object.fromEntries(
-    Object.entries(packages).filter(
+    Object.entries(packageList).filter(
       ([name, [pkg]]) =>
         name.toLowerCase().includes(searchLower) ||
         pkg!.description.toLowerCase().includes(searchLower),
@@ -77,7 +91,7 @@ async function uninstallPackage(pkg: Package) {
 
     <form slot="content" method="dialog" class="px-0">
       <UseVirtualList
-        v-if="Object.keys(filteredPackages).length > 0"
+        v-if="filteredPackages && Object.keys(filteredPackages).length > 0"
         ref="container"
         :list="Object.values(filteredPackages)"
         :options="{ itemHeight: medium ? 220 : 264 }"
@@ -95,8 +109,16 @@ async function uninstallPackage(pkg: Package) {
         </template>
       </UseVirtualList>
 
-      <md-filled-card v-else class="label-large mx-4 p-4">
-        {{ $t("components.packages.form.no-results") }}
+      <md-filled-card v-else class="label-large mx-4 p-2">
+        <div class="flex items-center justify-between">
+          <span>
+            {{ $t("components.packages.form.no-results") }}
+          </span>
+
+          <md-filled-tonal-button @click.prevent="loadPackages">
+            {{ $t("components.packages.form.reload") }}
+          </md-filled-tonal-button>
+        </div>
       </md-filled-card>
     </form>
   </md-dialog>
