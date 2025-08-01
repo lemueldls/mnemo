@@ -113,12 +113,12 @@ export default defineNuxtConfig({
   },
   fonts: {
     families: [
-      { name: "Source Sans", provider: "local", global: true },
-      { name: "Source Han Sans CN", provider: "local", global: true },
-      // { name: "Source Han Sans JP", provider: "local", global: true },
-      // { name: "Source Serif", provider: "local", global: true },
-      // { name: "Source Han Serif CN", provider: "local", global: true },
-      // { name: "Source Han Serif JP", provider: "local", global: true },
+      { name: "Source Sans" },
+      // { name: "Source Han Sans CN" },
+      // { name: "Source Han Sans JP" },
+      // { name: "Source Serif" },
+      // { name: "Source Han Serif CN" },
+      // { name: "Source Han Serif JP" },
       { name: "Maple Mono", provider: "local", global: true },
       { name: "Maple Mono CN", provider: "local", global: true },
     ],
