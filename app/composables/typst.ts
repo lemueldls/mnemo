@@ -21,17 +21,6 @@ export const useTypst = createSharedComposable(
           import("~~/public/fonts/maple/cn/MapleMono-CN-BoldItalic.ttf?url"),
         ],
         [
-          import(
-            "~~/public/fonts/source-han-sans/cn/SourceHanSansCN-Medium.otf?url"
-          ),
-          import(
-            "~~/public/fonts/source-han-sans/cn/SourceHanSansCN-Normal.otf?url"
-          ),
-          import(
-            "~~/public/fonts/source-han-sans/cn/SourceHanSansCN-Regular.otf?url"
-          ),
-        ],
-        [
           import("~~/public/fonts/NewCMMath-Book.otf?url"),
           import("~~/public/fonts/NewCMMath-Regular.otf?url"),
         ],
