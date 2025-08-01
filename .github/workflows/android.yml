@@ -99,14 +99,11 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > platform/tauri/gen/android/app/key.jks
           echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
 
-      - run: mkdir /home/runner/work/perm
-
       - name: 🔨 Build app bundle
         run: |
           pnpm tauri android init
           pnpm tauri android build
         env:
-          TMPDIR: /home/runner/work/perm
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
