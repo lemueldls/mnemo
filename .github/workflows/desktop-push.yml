@@ -1,4 +1,4 @@
-name: "🖥️"
+name: "🖥️ Desktop (push)"
 
 on:
   push:
@@ -13,10 +13,5 @@ jobs:
   push:
     permissions:
       contents: write
-    uses: ./.github/workflows/desktop-tauri.yml
-    with:
-      tagName: mnemo-v__VERSION__
-      releaseName: "Mnemo Draft v__VERSION__"
-      releaseDraft: true
-      prerelease: true
+    uses: ./.github/workflows/desktop.yml
     secrets: inherit

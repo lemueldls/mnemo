@@ -1,4 +1,4 @@
-name: "🖥️"
+name: "🖥️ Desktop (publish)"
 
 on:
   release:
@@ -12,7 +12,7 @@ jobs:
       attestations: write
       contents: write
       actions: read
-    uses: ./.github/workflows/desktop-tauri.yml
+    uses: ./.github/workflows/desktop.yml
     secrets: inherit
     with:
       tagName: mnemo-v__VERSION__

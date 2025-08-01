@@ -1,4 +1,4 @@
-name: "📱"
+name: "📱 Android (pr)"
 
 on:
   pull_request:
@@ -8,6 +8,7 @@ on:
 concurrency:
   group: ${{ format('android-{0}', github.ref) }}
   cancel-in-progress: true
+
 jobs:
   pr:
     permissions:

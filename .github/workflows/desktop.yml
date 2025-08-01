@@ -3,16 +3,7 @@ name: "Reusable desktop tauri build workflow"
 on:
   workflow_call:
     inputs:
-      tagName:
-        required: false
-        type: string
-      releaseName:
-        required: false
-        type: string
-      releaseDraft:
-        required: false
-        type: boolean
-      prerelease:
+      publish:
         required: false
         type: boolean
     secrets:
@@ -57,23 +48,21 @@ jobs:
               choco install wget -y
             platform: Windows
 
-    name: ${{matrix.symbol}}
+    name: ${{ matrix.symbol }} ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      - name: 🛡️ Verify tag matches version in tauri config (publish only)
-        if: inputs.tagName != '' && !inputs.releaseDraft
-        shell: bash
+      - name: 📝 Resolve tag
+        id: resolve-tag
         run: |
-          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
-          TAG=${GITHUB_REF#refs/tags/}
-          if [[ "$TAG" != *"$CURRENT_VERSION" ]]
-          then
-            echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
-            exit 1
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          else
+            CURRENT_TAG=${GITHUB_REF#refs/heads/}
           fi
+          echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
       - name: 🦀 Install rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -91,30 +80,30 @@ jobs:
           #   platform/wasm/render -> ./target
 
       - name: 🛠️ Setup | Install dependencies
-        if: matrix.install != ''
+        if: ${{ matrix.install != '' }}
         run: ${{ matrix.install }}
 
       # - name: 📝 Check spelling using typos-action
       #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
 
       # - name: 📐 Run rustfmt and fail if any warnings (ubuntu only)
-      #   if: contains(matrix.os, 'ubuntu')
+      #   if: ${{ contains(matrix.os, 'ubuntu') }}
       #   run: |
       #     cd platform
       #     cargo fmt -- --check
 
       - name: 📦 Run sccache (not windows)
-        if: "inputs.tagName == '' && !contains(matrix.os, 'windows')"
+        if: ${{ !inputs.publish && !contains(matrix.os, 'windows') }}
         uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: 📦 Set Rust caching env vars only on non-release runs (not windows)
-        if: "inputs.tagName == '' && !contains(matrix.os, 'windows')"
+        if: ${{ !inputs.publish && !contains(matrix.os, 'windows') }}
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
       # - name: 📎 Run clippy and fail if any warnings (ubuntu only)
-      #   if: contains(matrix.os, 'ubuntu')
+      #   if: ${{ contains(matrix.os, 'ubuntu') }}
       #   run: |
       #     cd platform
       #     cargo clippy -- -D warnings
@@ -125,7 +114,7 @@ jobs:
       #     cargo --locked test --package=models
 
       # - name: 🔑 Import windows signing certificate
-      #   if: contains(matrix.os, 'windows')
+      #   if: ${{ contains(matrix.os, 'windows') }}
       #   env:
       #     WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
       #     WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
@@ -161,15 +150,13 @@ jobs:
           NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
           NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
         with:
-          tagName: ${{ inputs.tagName }}
-          releaseName: ${{ inputs.releaseName }}
-          releaseDraft: ${{ inputs.releaseDraft }}
-          prerelease: ${{ inputs.prerelease }}
+          releaseDraft: ${{ !inputs.publish }}
+          tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           args: ${{ matrix.args }}
           retryAttempts: 1
 
       - name: 📤 Upload build artifacts (push or pr builds only)
-        if: inputs.tagName == ''
+        if: ${{ !inputs.publish }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "bundles-${{matrix.os}}${{matrix.args}}"
@@ -178,7 +165,7 @@ jobs:
             platform/target/**/release/mnemo*
 
       # - name: 📤 Upload debug symbols (windows only)
-      #   if: contains(matrix.os, 'windows')
+      #   if: ${{ contains(matrix.os, 'windows') }}
       #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       #   with:
       #     name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
@@ -186,7 +173,7 @@ jobs:
       #       platform/target/release/mnemo.pdb
 
       # - name: 📤 Publish debug symbols to release (windows only)
-      #   if: contains(matrix.os, 'windows') && (inputs.tagName != '')
+      #   if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
       #   uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
       #   with:
       #     files: platform/target/release/mnemo.pdb
@@ -194,7 +181,7 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: 🛡️ Attest build provenance (publish release only)
-      #   if: inputs.tagName != ''
+      #   if: ${{ inputs.publish }}
       #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
       #   with:
       #     subject-path: |
@@ -215,7 +202,7 @@ jobs:
       #     artifact-name: "sbom.${{ matrix.platform }}.spdx.json"
 
       # - name: 🛡️ Attest SBOM
-      #   if: inputs.tagName != ''
+      #   if: ${{ inputs.publish }}
       #   uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
       #   with:
       #     subject-path: ${{
