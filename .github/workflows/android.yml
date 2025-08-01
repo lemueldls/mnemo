@@ -1,0 +1,154 @@
+name: "Reusable android workflow"
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        required: false
+        type: boolean
+    secrets:
+      ANDROID_RELEASE_KEYSTORE:
+        required: false
+      ANDROID_RELEASE_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_RELEASE_KEY:
+        required: false
+      ANDROID_RELEASE_KEY_PASSWORD:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: "📦"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        name: 🔄 Checkout
+
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: false
+
+      # - name: 🛡️ Verify tag matches version in tauri config (publish only)
+      #   if: inputs.publish
+      #   shell: bash
+      #   run: |
+      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
+      #     TAG=${GITHUB_REF#refs/tags/}
+      #     if [[ "$TAG" != *"$CURRENT_VERSION" ]]
+      #     then
+      #       echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
+      #       exit 1
+      #     fi
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+
+      - name: 🛠️ Install NDK
+        run: sdkmanager "ndk;27.0.11902837"
+
+      - name: 🦀 Install rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      # - name: 📦 Rust cache
+      #   uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
+      #   with:
+      #     save-if: ${{ github.ref == 'refs/heads/main' }}
+      #     # workspaces: |
+      #     #   platform/tauri -> ./target
+      #     #   platform/wasm -> ./target
+      #     #   platform/wasm/render -> ./target
+
+      # - name: 📝 Check spelling using typos-action
+      #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
+
+      # - name: 📦 Run sccache
+      #   if: ${{ !inputs.publish }}
+      #   uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
+      # - name: 📦 Set Rust caching env vars only on non-release runs
+      #   if: ${{ !inputs.publish }}
+      #   shell: bash
+      #   run: |
+      #     echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+      #     echo "RUSTC_WRAPPER=${SCCACHE_PATH}" >> $GITHUB_ENV
+
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📥 Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: 📥 Install frontend dependencies
+        run: pnpm install
+
+      - name: 🔑 Extract android signing key
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > platform/tauri/gen/android/app/key.jks
+          echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
+
+      - name: 🔨 Build app bundle
+        run: |
+          pnpm tauri android init
+          pnpm tauri android build
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
+          NODE_OPTIONS: --max-old-space-size=8192
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
+          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
+          NUXT_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
+          NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
+          NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
+
+      - name: 📤 Upload build artifacts (push or pr builds only)
+        if: (!inputs.publish)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "signed-apk"
+          path: |
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk
+
+      # - name: 📝 Extract version from tauri.android.conf.json (publish only)
+      #   if: inputs.publish
+      #   id: get-version
+      #   run: |
+      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
+      #     echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: ✏️ Rename APK file (publish only)
+        if: inputs.publish
+        run: |
+          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+
+      - name: 🚀 Publish (publish only)
+        if: inputs.publish
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
+        with:
+          name: Mnemo Release v${{ steps.get-version.outputs.current-version }}
+          append_body: true
+          make_latest: false
+          generate_release_notes: false
+          files: |
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+
+      # - name: 🛡️ Attest build provenance (publish only)
+      #   if: inputs.publish
+      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      #   with:
+      #     subject-path: |
+      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
