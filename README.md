@@ -15,8 +15,10 @@
 - Task manager
 - External and internal links
 - Static assets manager
-- Handwritten notes and drawings
 - Publishing service
+- Document collaboration
+- Better icon search
+- Handwritten notes and drawings
 - Reference study sheet generator
 - Flash cards and quiz generator
 
