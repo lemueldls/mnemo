@@ -119,6 +119,7 @@ jobs:
       - name: 🚀 Publish
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
+          name: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           draft: ${{ !inputs.publish }}
           tag_name: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           make_latest: false
