@@ -63,10 +63,7 @@ jobs:
         uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
-          # workspaces: |
-          #   platform/tauri -> ./target
-          #   platform/wasm -> ./target
-          #   platform/wasm/render -> ./target
+          workspaces: platform
 
       - name: 📦 Run sccache
         if: ${{ !inputs.publish }}
@@ -74,6 +71,7 @@ jobs:
 
       - name: 📦 Set Rust caching env vars only on non-release runs
         if: ${{ !inputs.publish }}
+        shell: bash
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
