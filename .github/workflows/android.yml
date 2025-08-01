@@ -24,23 +24,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         name: 🔄 Checkout
 
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: false
-
-      # - name: 🛡️ Verify tag matches version in tauri config (publish only)
-      #   if: inputs.publish
-      #   shell: bash
-      #   run: |
-      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
-      #     TAG=${GITHUB_REF#refs/tags/}
-      #     if [[ "$TAG" != *"$CURRENT_VERSION" ]]
-      #     then
-      #       echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
-      #       exit 1
-      #     fi
+      - name: 📝 Resolve tag
+        id: resolve-tag
+        run: |
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          else
+            CURRENT_TAG=${GITHUB_REF#refs/heads/}
+          fi
+          echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
       - name: ☕ Setup Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
@@ -59,28 +51,24 @@ jobs:
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-      # - name: 📦 Rust cache
-      #   uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
-      #   with:
-      #     save-if: ${{ github.ref == 'refs/heads/main' }}
-      #     # workspaces: |
-      #     #   platform/tauri -> ./target
-      #     #   platform/wasm -> ./target
-      #     #   platform/wasm/render -> ./target
+      - name: 📦 Rust cache
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # workspaces: |
+          #   platform/tauri -> ./target
+          #   platform/wasm -> ./target
+          #   platform/wasm/render -> ./target
 
-      # - name: 📝 Check spelling using typos-action
-      #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
+      - name: 📦 Run sccache
+        if: ${{ !inputs.publish }}
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
-      # - name: 📦 Run sccache
-      #   if: ${{ !inputs.publish }}
-      #   uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
-
-      # - name: 📦 Set Rust caching env vars only on non-release runs
-      #   if: ${{ !inputs.publish }}
-      #   shell: bash
-      #   run: |
-      #     echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-      #     echo "RUSTC_WRAPPER=${SCCACHE_PATH}" >> $GITHUB_ENV
+      - name: 📦 Set Rust caching env vars only on non-release runs
+        if: ${{ !inputs.publish }}
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
       - name: 📥 Install pnpm
         uses: pnpm/action-setup@v4
@@ -116,39 +104,31 @@ jobs:
           NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
 
       - name: 📤 Upload build artifacts (push or pr builds only)
-        if: (!inputs.publish)
+        if: ${{ !inputs.publish }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "signed-apk"
           path: |
-            platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
 
-      # - name: 📝 Extract version from tauri.android.conf.json (publish only)
-      #   if: inputs.publish
-      #   id: get-version
-      #   run: |
-      #     CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.android.conf.json)
-      #     echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: ✏️ Rename APK file (publish only)
-        if: inputs.publish
+      - name: ✏️ Rename APK file
+        if: ${{ inputs.publish }}
         run: |
-          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk
 
-      - name: 🚀 Publish (publish only)
-        if: inputs.publish
+      - name: 🚀 Publish
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
-          name: Mnemo Release v${{ steps.get-version.outputs.current-version }}
-          append_body: true
+          draft: ${{ !inputs.publish }}
+          tag_name: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           make_latest: false
           generate_release_notes: false
           files: |
-            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk
 
       # - name: 🛡️ Attest build provenance (publish only)
-      #   if: inputs.publish
+      #   if: ${{ inputs.publish }}
       #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
       #   with:
       #     subject-path: |
-      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk

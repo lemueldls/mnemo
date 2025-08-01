@@ -1,0 +1,19 @@
+name: "🖥️ Desktop (publish)"
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
+      actions: read
+    uses: ./.github/workflows/desktop.yml
+    secrets: inherit
+    with:
+      tagName: mnemo-v__VERSION__
+      releaseName: "Mnemo Release v__VERSION__"

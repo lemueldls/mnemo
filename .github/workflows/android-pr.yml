@@ -1,0 +1,17 @@
+name: "📱 Android (pr)"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ format('android-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  pr:
+    permissions:
+      contents: write
+    uses: ./.github/workflows/android.yml
+    secrets: inherit

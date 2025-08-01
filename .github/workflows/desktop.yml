@@ -1,0 +1,213 @@
+name: "Reusable desktop tauri build workflow"
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        required: false
+        type: boolean
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY:
+        required: true
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
+        required: true
+      NUXT_PUBLIC_API_BASE_URL:
+        required: true
+      NUXT_SESSION_PASSWORD:
+        required: true
+      NUXT_OAUTH_GITHUB_CLIENT_ID:
+        required: true
+      NUXT_OAUTH_GITHUB_CLIENT_SECRET:
+        required: true
+      NUXT_OAUTH_GITHUB_REDIRECT_URL:
+        required: true
+      # WINDOWS_CERTIFICATE:
+      #   required: true
+      # WINDOWS_CERTIFICATE_PASSWORD:
+      #   required: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: "macos-latest"
+            args: "--target universal-apple-darwin"
+            symbol: 🍏
+            platform: macOS
+          - os: "ubuntu-22.04"
+            symbol: 🐧
+            install: |
+              sudo apt-get update
+              sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+            platform: Linux
+          - os: "windows-latest"
+            symbol: 🪟
+            install: |
+              choco install wget -y
+            platform: Windows
+
+    name: ${{ matrix.symbol }} ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: 📝 Resolve tag
+        id: resolve-tag
+        run: |
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          else
+            CURRENT_TAG=${GITHUB_REF#refs/heads/}
+          fi
+          echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: 🦀 Install rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin,wasm32-unknown-unknown' || 'wasm32-unknown-unknown' }}
+
+      - name: 📦 Rust cache
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # workspaces: |
+          #   platform/tauri -> ./target
+          #   platform/wasm -> ./target
+          #   platform/wasm/render -> ./target
+
+      - name: 🛠️ Setup | Install dependencies
+        if: ${{ matrix.install != '' }}
+        run: ${{ matrix.install }}
+
+      # - name: 📝 Check spelling using typos-action
+      #   uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
+
+      # - name: 📐 Run rustfmt and fail if any warnings (ubuntu only)
+      #   if: ${{ contains(matrix.os, 'ubuntu') }}
+      #   run: |
+      #     cd platform
+      #     cargo fmt -- --check
+
+      - name: 📦 Run sccache (not windows)
+        if: ${{ !inputs.publish && !contains(matrix.os, 'windows') }}
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
+      - name: 📦 Set Rust caching env vars only on non-release runs (not windows)
+        if: ${{ !inputs.publish && !contains(matrix.os, 'windows') }}
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+
+      # - name: 📎 Run clippy and fail if any warnings (ubuntu only)
+      #   if: ${{ contains(matrix.os, 'ubuntu') }}
+      #   run: |
+      #     cd platform
+      #     cargo clippy -- -D warnings
+
+      # - name: ✅ Run tests
+      #   run: |
+      #     cd platform
+      #     cargo --locked test --package=models
+
+      # - name: 🔑 Import windows signing certificate
+      #   if: ${{ contains(matrix.os, 'windows') }}
+      #   env:
+      #     WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      #     WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      #   run: |
+      #     New-Item -ItemType directory -Path certificate
+      #     Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
+      #     certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+      #     Remove-Item -path certificate -include tempCert.txt
+      #     Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
+
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📥 Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: 📥 Install frontend dependencies
+        run: pnpm install
+
+      - name: 🔨 Build using tauri action (publish artifacts on release)
+        uses: tauri-apps/tauri-action@42e9df6c59070d114bf90dcd3943a1b8f138b113 # v0.5.20
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
+          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
+          NUXT_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
+          NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
+          NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
+        with:
+          releaseDraft: ${{ !inputs.publish }}
+          tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
+          args: ${{ matrix.args }}
+          retryAttempts: 1
+
+      - name: 📤 Upload build artifacts (push or pr builds only)
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "bundles-${{matrix.os}}${{matrix.args}}"
+          path: |
+            platform/target/**/release/bundle
+            platform/target/**/release/mnemo*
+
+      # - name: 📤 Upload debug symbols (windows only)
+      #   if: ${{ contains(matrix.os, 'windows') }}
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      #   with:
+      #     name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
+      #     path: |
+      #       platform/target/release/mnemo.pdb
+
+      # - name: 📤 Publish debug symbols to release (windows only)
+      #   if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
+      #   uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
+      #   with:
+      #     files: platform/target/release/mnemo.pdb
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: 🛡️ Attest build provenance (publish release only)
+      #   if: ${{ inputs.publish }}
+      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      #   with:
+      #     subject-path: |
+      #       platform/target/release/bundle/nsis/*
+      #       platform/target/**/release/bundle/macos/*.tar.gz*
+      #       platform/target/**/release/bundle/dmg/*.dmg
+      #       platform/target/release/bundle/deb/*.deb
+      #       platform/target/release/bundle/rpm/*.rpm
+      #       platform/target/**/release/mnemo
+      #       platform/target/release/mnemo.exe
+      #       platform/target/release/mnemo.pdb
+
+      # - name: 📜 Create SBOM
+      #   uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0
+      #   with:
+      #     format: "spdx-json"
+      #     output-file: "sbom.spdx.json"
+      #     artifact-name: "sbom.${{ matrix.platform }}.spdx.json"
+
+      # - name: 🛡️ Attest SBOM
+      #   if: ${{ inputs.publish }}
+      #   uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
+      #   with:
+      #     subject-path: ${{
+      #       contains(matrix.os, 'ubuntu') && 'platform/target/release/mnemo' ||
+      #       contains(matrix.os, 'windows') && 'platform/target/release/mnemo.exe' ||
+      #       contains(matrix.os, 'macos') && 'platform/target/universal-apple-darwin/release/mnemo'
+      #       }}
+      #     sbom-path: "sbom.spdx.json"
