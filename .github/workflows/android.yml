@@ -118,7 +118,6 @@ jobs:
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
 
       - name: ✏️ Rename APK file
-        if: ${{ inputs.publish }}
         run: |
           mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
 
