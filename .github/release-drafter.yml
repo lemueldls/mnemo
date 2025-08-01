@@ -1,7 +1,7 @@
-name-template: "Mnemo v$RESOLVED_VERSION"
-tag-template: "mnemo-v$RESOLVED_VERSION"
 change-template: "- #$NUMBER $TITLE @$AUTHOR"
 sort-direction: ascending
+exclude-contributors:
+  - dependabot
 
 category-template: "### $TITLE"
 categories:
