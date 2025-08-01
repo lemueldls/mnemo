@@ -54,14 +54,21 @@ jobs:
       - name: 🔄 Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
+      - name: 📝 Extract version from tauri.conf.json
+        id: get-version
+        shell: bash
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: 📝 Resolve tag
         id: resolve-tag
         shell: bash
         run: |
           if [ "${{ inputs.publish }}" = "true" ]; then
-            CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
+            CURRENT_TAG=v${{ steps.get-version.outputs.current-version }}
           else
-            CURRENT_TAG=${GITHUB_REF#refs/heads/}
+            CURRENT_TAG=$GITHUB_REF_NAME
           fi
           echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 

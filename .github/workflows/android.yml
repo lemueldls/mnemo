@@ -24,13 +24,21 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         name: 🔄 Checkout
 
+      - name: 📝 Extract version from tauri.conf.json
+        id: get-version
+        shell: bash
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: 📝 Resolve tag
         id: resolve-tag
+        shell: bash
         run: |
           if [ "${{ inputs.publish }}" = "true" ]; then
-            CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
+            CURRENT_TAG=v${{ steps.get-version.outputs.current-version }}
           else
-            CURRENT_TAG=${GITHUB_REF#refs/heads/}
+            CURRENT_TAG=$GITHUB_REF_NAME
           fi
           echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
@@ -114,7 +122,7 @@ jobs:
       - name: ✏️ Rename APK file
         if: ${{ inputs.publish }}
         run: |
-          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk
+          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
 
       - name: 🚀 Publish
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
@@ -125,7 +133,7 @@ jobs:
           make_latest: false
           generate_release_notes: false
           files: |
-            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
 
       # - name: 🛡️ Attest build provenance (publish only)
       #   if: ${{ inputs.publish }}
