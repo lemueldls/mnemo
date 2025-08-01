@@ -56,6 +56,7 @@ jobs:
 
       - name: 📝 Resolve tag
         id: resolve-tag
+        shell: bash
         run: |
           if [ "${{ inputs.publish }}" = "true" ]; then
             CURRENT_TAG=$(jq -r '.version' platform/tauri/tauri.conf.json)
