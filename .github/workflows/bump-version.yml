@@ -36,26 +36,26 @@ jobs:
       - name: Set up SSH signing key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_SIGNING_KEY }}" > ~/.ssh/id_ed25519_signing
-          chmod 600 ~/.ssh/id_ed25519_signing
+          echo "${{ secrets.SSH_SIGNING_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           git config --global gpg.format ssh
-          git config --global user.signingKey ~/.ssh/id_ed25519_signing
-          git config --global user.name "lemueldls"
-          git config --global user.email "lemueldls@users.noreply.github.com"
+          git config --global user.signingKey ~/.ssh/id_ed25519
+          git config --global user.name "Lemuel DLS"
+          git config --global user.email "26912197+lemueldls@users.noreply.github.com"
 
       - name: Update cargo and tauri versions
         run: |
           sudo apt install jq
-          sed -i '0,/\(version *= *\).*/s//\1"${{ steps.semver.outputs.semantic-version }}"/' platform/tauri/Cargo.toml
-          sed -i '0,/\(version *= *\).*/s//\1"${{ steps.semver.outputs.semantic-version }}"/' platform/wasm/Cargo.toml
+          sed -i '0,/\(version *= *\).*/s//\1"${{ steps.semver.outputs.semantic-version }}"/' platform/Cargo.toml
           jq --indent 4 '.version="${{ steps.semver.outputs.semantic-version }}"' platform/tauri/tauri.conf.json > tauri.config.json.new && mv tauri.config.json.new platform/tauri/tauri.conf.json
           sed -i '/name = "mnemo"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
           sed -i '/name = "mnemo-wasm"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
+          sed -i '/name = "mnemo-render"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
 
       - name: Commit, tag and push
         run: |
           git add -A
-          git commit -S -m "Bump version to ${{ steps.semver.outputs.semantic-version }}"
+          git commit -S -m "chore: bump version to ${{ steps.semver.outputs.semantic-version }}"
           git push
           git tag -s -a mnemo-v${{ steps.semver.outputs.semantic-version }} -m "Mnemo Release v${{ steps.semver.outputs.semantic-version}}"
           git push --tags
