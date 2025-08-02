@@ -119,7 +119,7 @@ jobs:
 
       - name: ✏️ Rename APK file
         run: |
-          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+          mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk
 
       - name: 🚀 Publish
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
@@ -130,11 +130,11 @@ jobs:
           make_latest: false
           generate_release_notes: false
           files: |
-            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}.apk
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk
 
       # - name: 🛡️ Attest build provenance (publish only)
       #   if: ${{ inputs.publish }}
       #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
       #   with:
       #     subject-path: |
-      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}.apk
+      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}_universal.apk
