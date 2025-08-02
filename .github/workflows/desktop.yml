@@ -156,7 +156,7 @@ jobs:
           NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
           NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
         with:
-          releaseName: Mnemo (${{ steps.get-version.outputs.current-version }})
+          releaseName: Mnemo (${{ steps.resolve-tag.outputs.current-tag }})
           releaseDraft: ${{ !inputs.publish }}
           tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           args: ${{ matrix.args }}
