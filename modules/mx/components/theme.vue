@@ -34,7 +34,7 @@ function parse(color: Rgba) {
 }
 
 const selectionBackground = computed(() => {
-  const { r, g, b } = palette.value.onTertiary;
+  const { r, g, b } = palette.value.tertiaryContainer;
   return `rgba(${r},${g},${b},0.5)`;
 });
 </script>

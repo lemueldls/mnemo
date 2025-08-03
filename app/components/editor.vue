@@ -219,19 +219,19 @@ function createEditorState(fileId: FileId): EditorState {
 }
 
 const selectionBackground = computed(() => {
+  const { r, g, b } = palette.value.tertiaryContainer;
+
+  return `rgba(${r},${g},${b},0.25)`;
+});
+const selectionMatchBackground = computed(() => {
   const { r, g, b } = palette.value.onTertiary;
 
   return `rgba(${r},${g},${b},0.5)`;
 });
-const selectionMatch = computed(() => {
-  const { r, g, b } = palette.value.tertiaryContainer;
-
-  return `rgba(${r},${g},${b},0.5)`;
-});
 const activeLineBackground = computed(() => {
-  const { primaryContainer } = palette.value;
+  const { secondaryContainer } = palette.value;
 
-  return `rgba(${primaryContainer.r},${primaryContainer.g},${primaryContainer.b},0.25)`;
+  return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.75)`;
 });
 const renderHoverBackground = computed(() => {
   const { secondaryContainer } = palette.value;
@@ -303,9 +303,9 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-selectionMatch {
-    @apply bg-on-tertiary-container;
+    @apply text-tertiary;
 
-    color: v-bind(selectionMatch) !important;
+    background-color: v-bind(selectionMatchBackground) !important;
   }
 
   .cm-cursor {
