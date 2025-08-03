@@ -29,7 +29,7 @@ async function loadPackages() {
       query: { namespace },
     });
   } catch (error) {
-    console.log("Error loading package list:", error);
+    console.error("Error loading package list:", error);
   }
 }
 
@@ -40,7 +40,7 @@ const filteredPackages = computed(() => {
   if (!packageList) return;
 
   if (search.value === "") {
-    return packages;
+    return packageList;
   }
 
   const searchLower = search.value.toLowerCase();
