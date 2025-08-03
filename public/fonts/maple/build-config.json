@@ -1,5 +1,5 @@
 {
-    "version": "v7.4-dev",
+    "version": "v7.5",
     "family_name": "Maple Mono",
     "use_hinted": false,
     "ligature": true,
@@ -48,6 +48,7 @@
     "nerd_font": {
         "version": "3.4.0",
         "mono": false,
+        "propo": false,
         "use_font_patcher": false,
         "glyphs": [
             "--complete"
