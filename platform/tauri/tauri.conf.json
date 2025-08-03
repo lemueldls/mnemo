@@ -38,10 +38,7 @@
     },
     "deep-link": {
       "mobile": [
-        { "host": "mnemo.nuxt.dev" },
-        { "host": "mnemo.pages.dev" },
-        { "host": "notes.lemueldls.dev" },
-        { "host": "notes.lemueldls.workers.dev" }
+        { "host": "notes.lemueldls.workers.dev", "pathPrefix": ["/auth/confirm"] }
       ],
       "desktop": {
         "schemes": ["mnemo"]
