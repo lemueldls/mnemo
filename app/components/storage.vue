@@ -44,93 +44,35 @@ function formatBytes(bytes: number) {
 
   return `${bytes.toFixed(2)} ${units[i]}`;
 }
-
-// const doc = await useCrdt();
-const undoManager = await useCrdtUndoManager();
-
-// const changes = ref(doc.getAllChanges());
-
-// doc.subscribe(() => {
-//   changes.value = doc.getAllChanges();
-// });
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-4">
-    <md-outlined-card v-if="usage && quota" class="flex flex-col gap-2 p-4">
-      <div class="label-large flex justify-between">
-        <strong>{{ $t("components.sync.local-quota") }}</strong>
-
-        <span>{{ formatBytes(usage) }} / {{ formatBytes(quota) }}</span>
-      </div>
-
-      <md-linear-progress :value="usage / quota" />
-    </md-outlined-card>
-
+  <div class="flex h-full flex-col gap-3">
     <md-outlined-card class="flex-1 p-3">
-      <div class="flex items-center justify-between">
-        <h4 class="headline-small">Recent History</h4>
-
-        <div class="flex gap-2">
-          <md-icon-button
-            title="Undo"
-            :disabled="!undoManager.canUndo()"
-            @click="undoManager.undo()"
-          >
-            <md-icon>undo</md-icon>
-          </md-icon-button>
-
-          <md-icon-button
-            title="Redo"
-            :disabled="!undoManager.canRedo()"
-            @click="undoManager.redo()"
-          >
-            <md-icon>redo</md-icon>
-          </md-icon-button>
-        </div>
-      </div>
+      <h4 class="headline-small">Local Storage</h4>
 
       <md-divider class="my-2" />
 
-      <div class="text-error p-3">TODO</div>
+      <div class="flex-1">
+        <div class="text-error p-3">TODO</div>
+      </div>
+
+      <template v-if="usage && quota">
+        <md-divider class="my-2" />
+
+        <div class="flex flex-col gap-2 p-1">
+          <div class="label-large flex justify-between">
+            <strong>{{ $t("components.sync.local-quota") }}</strong>
+
+            <span>{{ formatBytes(usage) }} / {{ formatBytes(quota) }}</span>
+          </div>
+
+          <md-linear-progress :value="usage / quota" />
+        </div>
+      </template>
     </md-outlined-card>
 
-    <!-- <div class="flex flex-1 flex-col gap-3 p-3">
-      <div v-for="([peer, peerChanges], i) of changes.entries()" :key="i">
-        <md-elevated-card
-          v-for="(change, i) of peerChanges"
-          :key="i"
-          class="flex flex-col gap-3 p-3"
-        >
-          <span v-if="change.peer" class="flex items-center gap-2">
-            <mx-icon name="p2p" />
-            <strong>Peer:</strong> {{ change.peer }}
-          </span>
-
-          <span v-if="change.counter" class="flex items-center gap-2">
-            <mx-icon name="scoreboard" />
-            <strong>Counter:</strong> {{ change.counter }}
-          </span>
-
-          <span v-if="change.lamport" class="flex items-center gap-2">
-            <mx-icon name="circles_ext" />
-            <strong>Lamport:</strong> {{ change.lamport }}
-          </span>
-
-          <span v-if="change.timestamp" class="flex items-center gap-2">
-            <mx-icon name="save_clock" />
-            <strong>Timestamp:</strong> {{ $d(change.timestamp) }}
-          </span>
-
-          <span v-if="change.message" class="flex items-center gap-2">
-            <mx-icon name="short_text" />
-            <strong>Message:</strong> {{ change.message }}
-          </span>
-        </md-elevated-card>
-      </div>
-    </div> -->
-
-    <md-elevated-card class="flex flex-col gap-3 p-3">
+    <md-outlined-card class="flex flex-col gap-3 p-3">
       <div class="flex justify-between">
         <h4 class="title-large">Sync</h4>
 
@@ -156,6 +98,6 @@ const undoManager = await useCrdtUndoManager();
       <md-filled-button v-else @click="login">
         {{ $t("components.sync.continue-with-github") }}
       </md-filled-button>
-    </md-elevated-card>
+    </md-outlined-card>
   </div>
 </template>
