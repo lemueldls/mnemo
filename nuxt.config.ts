@@ -112,7 +112,7 @@ export default defineNuxtConfig({
     },
   },
   fonts: {
-    processCSSVariables: false,
+    // processCSSVariables: false,
     families: [
       // { name: "Source Sans 3" },
       { name: "Maple Mono", provider: "local", global: true },
