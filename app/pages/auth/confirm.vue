@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { match } from "ts-pattern";
+
 definePageMeta({ layout: "empty" });
 
 const token = useRouteQuery("token").value as string;
@@ -14,8 +16,12 @@ if (token) {
 
 const activeToken = useApiToken().value!;
 
-if (platform === "true") {
-  window.location.href = `mnemo:///auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+if (platform) {
+  const scheme = match(platform)
+    .with("android", () => "https://dev.lemueldls.mnemo")
+    .otherwise(() => "mnemo://");
+
+  window.location.href = `${scheme}/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
 } else {
   const redirectUrl = new URL(redirect);
 

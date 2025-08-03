@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { UseOnline } from "@vueuse/components";
 
@@ -7,17 +6,16 @@ const auth = useAuth();
 const { user } = auth;
 
 async function login() {
-  const isPlatform = isTauri();
+  const { platform } = useRuntimeConfig().public;
 
   const { error, data } = await auth.signIn.social({
     provider: "github",
-    callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.href)}&platform=${isPlatform}`,
-    disableRedirect: isPlatform,
+    callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.href)}&platform=${platform}`,
+    disableRedirect: !!platform,
   });
-
   if (error) throw createError(error);
 
-  if (isPlatform) await openUrl(data.url!);
+  if (platform) await openUrl(data.url!);
 }
 
 async function logout() {
