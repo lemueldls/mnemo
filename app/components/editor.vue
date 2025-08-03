@@ -35,6 +35,7 @@ import type { Rgba } from "~~/modules/mx/types";
 
 import { typstLanguage } from "~/lib/editor/language";
 import { typst } from "~/lib/editor/widget";
+import { match } from "ts-pattern";
 
 const props = defineProps<{
   spaceId: string;
@@ -99,7 +100,9 @@ const preludeItem = await useStorageText(
   () => `spaces/${props.spaceId}/prelude/main.typ`,
 );
 const prelude = computed(() =>
-  props.kind === "prelude" ? "" : preludeItem.value,
+  match(props.kind)
+    .with("prelude", "task", () => "")
+    .otherwise(() => preludeItem.value),
 );
 
 const packages = await useInstalledPackages(() => props.spaceId);
@@ -148,6 +151,7 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
     if (text === " ") {
       const state = view.state;
       const pos = from;
+      const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
       const before = state.doc.sliceString(
         pos - 1,
         pos,
@@ -156,7 +160,6 @@ const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
         pos,
         pos + 1,
       ) as keyof typeof bracketPairs;
-      const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
 
       if (bracketPairs[before] && after === bracketPairs[before]) {
         // Insert a space before the closing bracket
@@ -274,6 +277,31 @@ const renderHoverBackground = computed(() => {
     background-color: v-bind(selectionBackground) !important;
   }
 
+  .cm-panels {
+    @apply bg-surface-variant text-on-surface-variant border-outline-variant;
+  }
+
+  .cm-textfield {
+    @apply text-on-surface-variant border-outline rounded-lg bg-transparent;
+  }
+
+  button,
+  .cm-button {
+    @apply bg-surface-container-high hover:bg-surface-container-highest border-outline text-on-surface rounded-lg bg-none;
+  }
+
+  label {
+    @apply inline-flex items-center;
+  }
+
+  input[type="checkbox"] {
+    @apply bg-primary! bg-primary! border-outline text-on-surface rounded-lg bg-none;
+  }
+
+  button[name="close"] {
+    @apply size-5;
+  }
+
   .cm-selectionMatch {
     @apply bg-on-tertiary-container;
 
@@ -329,7 +357,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-tooltip-autocomplete {
-    @apply flex flex-col gap-1 p-1 text-sm;
+    @apply z-10 flex flex-col gap-1 p-1 text-sm;
 
     li {
       @apply rounded;
