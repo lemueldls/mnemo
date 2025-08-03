@@ -36,24 +36,27 @@ class TypstWidget extends WidgetType {
 
     this.#image.draggable = false;
     this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
-    this.#image.addEventListener("click", (event) => {
-      event.preventDefault();
-      const { clientX, clientY } = event;
-      this.handleJump(clientX, clientY);
-    });
-    this.#image.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-      const { clientX, clientY } = event;
-      this.handleJump(clientX, clientY);
-    });
-    this.#image.addEventListener("touchstart", (event) => {
-      event.preventDefault();
-      const [touch] = event.touches;
-      const { clientX, clientY } = touch!;
-      this.handleJump(clientX, clientY);
-    });
+    this.#image.addEventListener("click", this.handleMouseEvent.bind(this));
+    this.#image.addEventListener("mousedown", this.handleMouseEvent.bind(this));
+    this.#image.addEventListener(
+      "touchstart",
+      this.handleTouchEvent.bind(this),
+    );
 
     this.#container.append(this.#image);
+  }
+
+  private handleMouseEvent(event: MouseEvent) {
+    event.preventDefault();
+    const { clientX, clientY } = event;
+    this.handleJump(clientX, clientY);
+  }
+
+  private handleTouchEvent(event: TouchEvent) {
+    event.preventDefault();
+    const [touch] = event.touches;
+    const { clientX, clientY } = touch!;
+    this.handleJump(clientX, clientY);
   }
 
   private async handleJump(clientX: number, clientY: number) {
@@ -86,8 +89,15 @@ class TypstWidget extends WidgetType {
   }
 
   public override destroy() {
-    this.#image.removeEventListener("click", this.handleJump);
-    this.#image.removeEventListener("mousedown", this.handleJump);
+    this.#image.removeEventListener("click", this.handleMouseEvent.bind(this));
+    this.#image.removeEventListener(
+      "mousedown",
+      this.handleMouseEvent.bind(this),
+    );
+    this.#image.removeEventListener(
+      "touchstart",
+      this.handleTouchEvent.bind(this),
+    );
   }
 }
 
@@ -210,7 +220,8 @@ export const viewPlugin = (
         if (
           update.docChanged ||
           update.geometryChanged ||
-          update.selectionSet
+          update.selectionSet ||
+          update.focusChanged
         ) {
           typstState.resize(
             update.view.contentDOM.clientWidth - 2 * window.devicePixelRatio,
