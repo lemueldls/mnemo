@@ -16,26 +16,27 @@ if (token) {
 
 const activeToken = useApiToken().value!;
 
-if (platform) {
-  const scheme = match(platform)
-    .with("android", () => "https://dev.lemueldls.mnemo")
-    .otherwise(() => "mnemo://");
+match(platform)
+  .with("windows", "darwin", "linux", () => {
+    window.location.href = `mnemo://auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+  })
+  .with("android", "ios", () => {
+    window.location.href = `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+  })
+  .otherwise(async () => {
+    const redirectUrl = new URL(redirect);
 
-  window.location.href = `${scheme}/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
-} else {
-  const redirectUrl = new URL(redirect);
+    if (redirectUrl.origin === useRequestURL().origin)
+      await navigateTo(redirectUrl.href.replace(redirectUrl.origin, ""));
+    else {
+      redirectUrl.searchParams.set("token", activeToken);
 
-  if (redirectUrl.origin === useRequestURL().origin)
-    await navigateTo(redirectUrl.href.replace(redirectUrl.origin, ""));
-  else {
-    redirectUrl.searchParams.set("token", activeToken);
-
-    window.location.href = new URL(
-      `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`,
-      redirectUrl,
-    ).href;
-  }
-}
+      window.location.href = new URL(
+        `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`,
+        redirectUrl,
+      ).href;
+    }
+  });
 </script>
 
 <template>

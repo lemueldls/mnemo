@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.lemueldls.mnemo",
+      "sha256_cert_fingerprints": [
+        "21:57:06:52:77:48:A2:CE:82:F7:66:18:2B:62:3A:90:5B:63:46:C3:7F:BF:0A:32:25:CB:98:B8:FD:62:68:A9"
+      ]
+    }
+  }
+]
