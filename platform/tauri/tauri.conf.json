@@ -38,7 +38,7 @@
     },
     "deep-link": {
       "mobile": [
-        { "host": "notes.lemueldls.workers.dev", "pathPrefix": ["/auth/confirm"] }
+        { "host": "notes.lemueldls.workers.dev" }
       ],
       "desktop": {
         "schemes": ["mnemo"]
