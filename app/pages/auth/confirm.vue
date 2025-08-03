@@ -20,9 +20,9 @@ match(platform)
   .with("windows", "darwin", "linux", () => {
     window.location.href = `mnemo://auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
   })
-  .with("android", "ios", () => {
-    window.location.href = `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
-  })
+  // .with("android", "ios", () => {
+  //   window.location.href = `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+  // })
   .otherwise(async () => {
     const redirectUrl = new URL(redirect);
 
