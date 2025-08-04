@@ -222,6 +222,8 @@ async function asyncComputedRef<T>(
       const scope = effectScope();
 
       onWatcherCleanup(() => {
+        console.log("cleanup on aisle::", key);
+
         stopSync?.();
 
         if (!itemRefCount[key] || itemRefCount[key] <= 1) {
@@ -242,6 +244,10 @@ async function asyncComputedRef<T>(
 
         resolve();
         triggerRef(root);
+
+        onScopeDispose(() => {
+          console.log(key, "scoped disposed!!");
+        });
       });
     }),
   );
@@ -312,12 +318,11 @@ export async function useStorageText<T extends string>(
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
 
-  const doc = await useCrdt();
-
   const item = await createStorageItem(
     keyRef,
     initialValue ?? ("" as T),
-    (key, item, runNextSync) => {
+    async (key, item, runNextSync) => {
+      const doc = await useCrdt();
       const text = doc.getText(key);
 
       watchImmediate(item, (itemText) => {
@@ -341,12 +346,11 @@ export async function useStorageMap<T extends Record<string, unknown>>(
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
 
-  const doc = await useCrdt();
-
   const item = await createStorageItem(
     keyRef,
     initialValue ?? ({} as T),
-    (key, item, runNextSync) => {
+    async (key, item, runNextSync) => {
+      const doc = await useCrdt();
       const map = doc.getMap(key);
 
       watchImmediate(item, (itemMap) => {
@@ -360,6 +364,7 @@ export async function useStorageMap<T extends Record<string, unknown>>(
     },
   );
 
+  const doc = await useCrdt();
   const map = computedWithControl(item, () => doc.getMap(keyRef.value));
 
   return extendRef(item, {
@@ -386,12 +391,11 @@ export async function useStorageList<T extends unknown[]>(
 ) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
 
-  const doc = await useCrdt();
-
   const item = await createStorageItem(
     keyRef,
     initialValue ?? ([] as unknown as T),
-    (key, item, runNextSync) => {
+    async (key, item, runNextSync) => {
+      const doc = await useCrdt();
       const list = doc.getList(key);
 
       watchImmediate(item, (itemList) => {
@@ -412,6 +416,7 @@ export async function useStorageList<T extends unknown[]>(
     },
   );
 
+  const doc = await useCrdt();
   const list = computedWithControl(item, () => doc.getList(keyRef.value));
 
   return extendRef(item, {
