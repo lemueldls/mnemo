@@ -58,6 +58,8 @@ function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
+let view: EditorView;
+
 watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
   const typstState = await useTypst();
 
@@ -92,6 +94,14 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
       parseColor(palette.onErrorContainer),
     ),
   );
+
+  view?.dispatch({
+    changes: {
+      from: 0,
+      to: view.state.doc.length,
+      insert: view.state.doc.toString(),
+    },
+  });
 });
 
 const containerRef = useTemplateRef("container");
@@ -118,11 +128,12 @@ const text = await useStorageText(fullPath);
 
 onMounted(() => {
   const container = containerRef.value!;
-  const view = new EditorView({
+  view = new EditorView({
     parent: container,
     root: document,
     state: EditorState.create({
       extensions: [
+        EditorView.editable.of(false),
         EditorState.readOnly.of(true),
         placeholder(t("components.editor.loading")),
       ],
@@ -186,6 +197,7 @@ function createEditorState(fileId: FileId): EditorState {
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
+      EditorView.editable.of(!props.readonly),
       EditorState.readOnly.of(props.readonly),
 
       placeholder("write."),
@@ -439,13 +451,19 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-render {
-    @apply inline-block cursor-text align-top transition-colors hover:rounded;
+    @apply inline-block align-top;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
+  }
 
-    &:hover {
-      background-color: v-bind(renderHoverBackground);
+  .cm-content[contenteditable="true"] {
+    .typst-render {
+      @apply cursor-text transition-colors hover:rounded;
+
+      &:hover {
+        background-color: v-bind(renderHoverBackground);
+      }
     }
   }
 }

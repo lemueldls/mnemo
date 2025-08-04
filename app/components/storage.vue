@@ -49,10 +49,6 @@ function formatBytes(bytes: number) {
 <template>
   <div class="flex h-full flex-col gap-3">
     <md-outlined-card class="flex-1 p-3">
-      <h4 class="headline-small">Local Storage</h4>
-
-      <md-divider class="my-2" />
-
       <div class="flex-1">
         <div class="text-error p-3">TODO</div>
       </div>
