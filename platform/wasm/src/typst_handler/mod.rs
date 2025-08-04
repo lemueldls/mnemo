@@ -181,7 +181,7 @@ impl TypstState {
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
 
-        let aux_id = id.inner().with_extension("aux.typ");
+        let aux_id = id.inner().with_extension("$.typ");
         self.world
             .files
             .entry(aux_id)
@@ -261,7 +261,7 @@ impl TypstState {
 
         // crate::log!(
         //     "[SOURCE]: {:?}",
-        //     &ir[(self.prelude(RenderingMode::Png) + prelude).len()..]
+        //     &ir[(self.prelude(RenderingMode::Png) + prelude + "\n\n").len()..]
         // );
 
         self.world.index_mapper = index_mapper;
@@ -334,7 +334,7 @@ impl TypstState {
 
                         partial_ir.to_mut().replace_range(
                             start_range..end_byte,
-                            &(" ".repeat(end_byte - start_range - 1) + "\\"),
+                            &(" ".repeat(end_byte - start_range - 2) + "\\ "),
                         );
 
                         None
