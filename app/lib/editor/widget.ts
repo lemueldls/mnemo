@@ -108,13 +108,12 @@ function decorate(
   update: ViewUpdate,
   path: string,
   fileId: FileId,
-
   prelude: string,
 ) {
   const text = update.state.doc.toString();
 
   let compileResult: CompileResult;
-  if (update.docChanged || !cache.has(path)) {
+  if (update.docChanged || update.geometryChanged || !cache.has(path)) {
     compileResult = typstState.compile(fileId, text, prelude);
     cache.set(path, compileResult);
   } else compileResult = cache.get(path)!;

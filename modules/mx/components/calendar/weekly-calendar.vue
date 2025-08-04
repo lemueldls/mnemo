@@ -235,7 +235,7 @@ function timeToMinutes(time: string) {
     @closed="newSpaceDialogOpen = false"
     @submit.prevent="createScheduleItem"
   >
-    <span slot="headline">New Space</span>
+    <span slot="headline">New Calendar Space</span>
 
     <form
       id="weekly-calendar-new-form"
@@ -252,8 +252,8 @@ function timeToMinutes(time: string) {
           :color="space.color"
           harmonize
         >
-          <md-elevated-card
-            class="flex flex-col gap-2 p-4"
+          <md-outlined-card
+            class="flex flex-col gap-2 p-3"
             @click="newSpaceId = id"
           >
             <md-ripple />
@@ -272,10 +272,10 @@ function timeToMinutes(time: string) {
                 required
               />
             </div>
-            <span class="title-medium line-clamp-1 flex-1" :title="space.name">
+            <span class="title-large line-clamp-1 flex-1" :title="space.name">
               {{ space.name }}
             </span>
-          </md-elevated-card>
+          </md-outlined-card>
         </mx-theme>
 
         <md-elevated-card
@@ -288,7 +288,7 @@ function timeToMinutes(time: string) {
           <div class="flex flex-row items-center justify-between gap-2">
             <md-icon class="text-primary">add</md-icon>
           </div>
-          <span class="title-medium flex-1">Create a New Space</span>
+          <span class="title-large flex-1">Create a New Space</span>
         </md-elevated-card>
       </div>
 
@@ -350,7 +350,7 @@ function timeToMinutes(time: string) {
     <form
       id="weekly-calendar-edit-form"
       slot="content"
-      class="flex min-w-lg flex-col gap-4 p-4"
+      class="min-w-lg flex flex-col gap-4 p-4"
       method="dialog"
       @submit.prevent="editScheduleItem"
     >

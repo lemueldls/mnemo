@@ -80,21 +80,8 @@ const spaceNotes = await useSpaceNotes(spaceId);
 const preludePath = ref("main");
 
 const { data: notes } = await useAsyncData(
-  "get_daily_notes",
+  `daily-notes:${spaceId.value}`,
   async () => {
-    // const notes = await invoke<Note[]>("get_daily_notes", {
-    //   spaceId: spaceId.value,
-    // });
-
-    // const item = await useStorageItem<Note[]>(
-    //   `spaces/${spaceId.value}/daily/notes.json`,
-    //   [],
-    // );
-    // item.value = notes;
-
-    // const item = await useStorageItem<Note[]>(`spaces/${spaceId.value}/daily/notes.json`, []);
-    // const notes = item.value!;
-
     const notes = await loadDailyNotes(spaceId.value, spaceNotes, false);
 
     return notes.map((note) => {
@@ -102,7 +89,7 @@ const { data: notes } = await useAsyncData(
         id,
         datetime: [year, month, day, hour, minute],
       } = note;
-      const date = d(new Date(Date.UTC(year, month, day, hour, minute)), {
+      const date = d(Date.UTC(year, month, day, hour, minute), {
         weekday: "long",
         month: "long",
         day: "numeric",
@@ -111,11 +98,21 @@ const { data: notes } = await useAsyncData(
       return { id, date };
     });
   },
-  { watch: [spaceNotes], default: () => [] },
+  { default: () => [] },
 );
 
-const currentNoteIndex = ref(0);
+const currentNoteId = useRouteQuery("note");
+
+const currentNoteIndex = ref(
+  currentNoteId.value
+    ? notes.value.findIndex((note) => note.id === currentNoteId.value)
+    : 0,
+);
 const currentNote = computed(() => notes.value[currentNoteIndex.value]);
+
+watchImmediate(currentNoteIndex, (index) => {
+  currentNoteId.value = notes.value[index]!.id;
+});
 
 const nextDayIndex = computed(() => {
   const index = notes.value.findIndex(
@@ -228,14 +225,14 @@ async function createStickyNote() {
           </mx-top-app-bar>
 
           <div
-            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pr-3 pb-3 pl-3"
+            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="article2.pdf" monochrome />
             </md-outlined-card> -->
 
-            <div class="medium:ml-3 relative size-full max-w-180">
-              <div class="left--6 absolute pt-16 pb-8">
+            <div class="medium:ml-3 max-w-180 relative size-full">
+              <div class="absolute left--6 pb-8 pt-16">
                 <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
                     <div
@@ -300,14 +297,14 @@ async function createStickyNote() {
               </div>
 
               <md-elevated-card id="editor">
-                <div id="editor-title" class="items-center gap-2">
-                  <div class="h-1px bg-outline-variant w-2" />
+                <div id="editor-title">
+                  <md-divider class="w-2" />
 
                   <span class="label-large">
                     {{ currentNote?.date }}
                   </span>
 
-                  <div class="h-1px bg-outline-variant flex-1" />
+                  <md-divider class="flex-1" />
 
                   <md-icon-button
                     :disabled="previousDayIndex === -1"
@@ -466,9 +463,7 @@ async function createStickyNote() {
 }
 
 #editor-title {
-  @apply text-on-primary-container headline-large flex w-full justify-between bg-transparent outline-none;
-
-  font-family: var(--font-mono);
+  @apply text-on-primary-container headline-large flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none;
 }
 
 .sidebar-button {

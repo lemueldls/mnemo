@@ -10,14 +10,14 @@
 
 ## TODO
 
-- Better local search
 - Global search system
-- Task manager
+- Task managment
 - Prompt to install missing packages
 - Local storage explorer (and search?)
 - External and internal links
 - Static assets manager
 - Publishing service
+- Pull to refresh
 - Document collaboration
 - Better icon search
 - Handwritten notes and drawings

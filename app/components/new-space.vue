@@ -24,7 +24,7 @@ function createSpace() {
 
 <template>
   <mx-theme :color="space.color" harmonize>
-    <md-dialog :open="open" @closed="open = false">
+    <md-dialog :open @closed="open = false">
       <span slot="headline">{{ $t("components.new-space.title") }}</span>
 
       <form
