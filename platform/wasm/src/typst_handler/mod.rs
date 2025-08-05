@@ -330,11 +330,14 @@ impl TypstState {
 
                         // crate::error!("[ERRORS]: {diagnostics:?}");
 
-                        let start_range = self.world.map_aux_to_main(aux_range.start);
+                        let start_byte = self.world.map_aux_to_main(aux_range.start);
+
+                        let range_delta = end_byte - start_byte;
+                        let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
                         partial_ir.to_mut().replace_range(
-                            start_range..end_byte,
-                            &(" ".repeat(end_byte - start_range - 2) + "\\ "),
+                            start_byte..end_byte,
+                            &(" ".repeat(repeat_range) + "\\ "),
                         );
 
                         None
