@@ -222,8 +222,6 @@ async function asyncComputedRef<T>(
       const scope = effectScope();
 
       onWatcherCleanup(() => {
-        console.log("cleanup on aisle::", key);
-
         stopSync?.();
 
         if (!itemRefCount[key] || itemRefCount[key] <= 1) {
@@ -244,10 +242,6 @@ async function asyncComputedRef<T>(
 
         resolve();
         triggerRef(root);
-
-        onScopeDispose(() => {
-          console.log(key, "scoped disposed!!");
-        });
       });
     }),
   );
