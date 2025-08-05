@@ -102,12 +102,11 @@ const { data: notes } = await useAsyncData(
 );
 
 const currentNoteId = useRouteQuery("note");
+const noteIndexById = currentNoteId.value
+  ? notes.value.findIndex((note) => note.id === currentNoteId.value)
+  : 0;
 
-const currentNoteIndex = ref(
-  currentNoteId.value
-    ? notes.value.findIndex((note) => note.id === currentNoteId.value)
-    : 0,
-);
+const currentNoteIndex = ref(noteIndexById === -1 ? 0 : noteIndexById);
 const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
 watchImmediate(currentNoteIndex, (index) => {
@@ -463,7 +462,7 @@ async function createStickyNote() {
 }
 
 #editor-title {
-  @apply text-on-primary-container headline-large flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none;
+  @apply text-on-primary-container flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none;
 }
 
 .sidebar-button {
