@@ -1,0 +1,92 @@
+name: Publish Void Linux XBPS Package
+
+on:
+  release:
+    types:
+      - published
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  XBPS_ALLOW_RESTRICTED: yes
+  XBPS_CHROOT_CMD: ethereal
+  XBPS_ALLOW_CHROOT_BREAKOUT: yes
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lemueldls/mnemo-void-package-builder:latest
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: 🔄 Clone Void Packages and Bootstrap
+        shell: bash
+        run: |
+          git clone --depth=1 https://github.com/void-linux/void-packages.git ~/void-packages
+          cd ~/void-packages
+          ln -s / masterdir
+          mkdir -p hostdir
+          ./xbps-src binary-bootstrap
+          mv /root/.cargo hostdir/
+          mv /root/.rustup hostdir/
+
+      - name: 📝 Extract version from tauri.conf.json
+        id: get-version
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: 🔢 Get Source Tarball Checksum
+        id: get-checksum
+        run: |
+          URL="https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ steps.get-version.outputs.current-version }}.tar.gz"
+          SHA256SUM=$(curl -LfsS "$URL" | sha256sum | cut -d ' ' -f1)
+          echo "checksum=$SHA256SUM" >> $GITHUB_OUTPUT
+
+      - name: 💉 Inject Version and checksum into template
+        run: |
+          sed -i "s/^version=.*/version=${{ steps.get-version.outputs.current-version }}/" xbps-template/srcpkgs/template
+          sed -i "s/^checksum=.*/checksum=${{ steps.get-checksum.outputs.checksum }}/" xbps-template/srcpkgs/template
+
+      - name: ➕ Add Custom Template to Void Packages
+        run: |
+          cd ~/void-packages
+          mkdir -p srcpkgs/mnemo
+          cp -r $GITHUB_WORKSPACE/xbps-template/common/build-style/tauri.sh common/build-style/
+          cp -r $GITHUB_WORKSPACE/xbps-template/srcpkgs/template srcpkgs/mnemo/
+
+      - name: 🔨 Build Package
+        run: |
+          cd ~/void-packages
+          ./xbps-src pkg mnemo
+
+      - name: 🔑 Sign repository and package
+        run: |
+          cd ~/void-packages
+          echo "${{ secrets.XBPS_REPOSITORY_SIGNING_KEY }}" > private.pem
+          xbps-rindex --privkey private.pem --sign --signedby "26912197+lemueldls@users.noreply.github.com" hostdir/binpkgs
+          xbps-rindex --privkey private.pem --sign-pkg hostdir/binpkgs/*.xbps
+
+      # - name: 🛡️ Attest build provenance (publish release only)
+      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      #   with:
+      #     subject-path: |
+      #       ~/void-packages/hostdir/binpkgs/*
+
+      - name: 🚀 Publish
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: Mnemo Release v${{ steps.get-version.outputs.current-version }}
+          append_body: true
+          make_latest: false
+          generate_release_notes: false
+          files: |
+            /github/home/void-packages/hostdir/binpkgs/mnemo-${{ steps.get-version.outputs.current-version }}_1.x86_64.xbps
+            /github/home/void-packages/hostdir/binpkgs/mnemo-${{ steps.get-version.outputs.current-version }}_1.x86_64.xbps.sig2
+            /github/home/void-packages/hostdir/binpkgs/x86_64-repodata
