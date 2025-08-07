@@ -27,7 +27,7 @@ jobs:
       - id: semver
         uses: SOLIDSoftworks/semver-tags@fa8963220fb4913aea2b20cc190004de1b79f395 # v1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag-prefix: "mnemo-v"
           incremented-value: ${{ inputs.version }}
           create-release: false
