@@ -104,9 +104,11 @@ const { data: notes } = await useAsyncData(
 const currentNoteId = useRouteQuery("note");
 const noteIndexById = currentNoteId.value
   ? notes.value.findIndex((note) => note.id === currentNoteId.value)
-  : 0;
+  : -1;
 
-const currentNoteIndex = ref(noteIndexById === -1 ? 0 : noteIndexById);
+const currentNoteIndex = ref(
+  noteIndexById === -1 ? notes.value.length - 1 : noteIndexById,
+);
 const currentNote = computed(() => notes.value[currentNoteIndex.value]);
 
 watchImmediate(currentNoteIndex, (index) => {
@@ -118,14 +120,14 @@ const nextDayIndex = computed(() => {
     (note) => note.id === currentNote.value!.id,
   );
 
-  return index === 0 ? -1 : index - 1;
+  return index === notes.value.length - 1 ? -1 : index + 1;
 });
 const previousDayIndex = computed(() => {
   const index = notes.value.findIndex(
     (note) => note.id === currentNote.value!.id,
   );
 
-  return index === notes.value.length - 1 ? -1 : index + 1;
+  return index === 0 ? -1 : index - 1;
 });
 
 watch(spaceId, () => {
