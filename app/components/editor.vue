@@ -28,6 +28,7 @@ import { LoroExtensions } from "loro-codemirror";
 import { EphemeralStore } from "loro-crdt";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId } from "mnemo-wasm";
+import { match } from "ts-pattern";
 import { normalizeKey } from "unstorage";
 
 import type { NoteKind } from "~/composables/notes";
@@ -35,12 +36,12 @@ import type { Rgba } from "~~/modules/mx/types";
 
 import { typstLanguage } from "~/lib/editor/language";
 import { typst } from "~/lib/editor/widget";
-import { match } from "ts-pattern";
 
 const props = defineProps<{
   spaceId: string;
   kind: NoteKind;
   readonly?: boolean;
+  locked?: boolean;
 }>();
 
 const pathId = defineModel<string>({ required: true });
@@ -48,61 +49,12 @@ const fullPath = computed(
   () => `spaces/${props.spaceId}/${props.kind}/${pathId.value}.typ`,
 );
 
-const pixelPerPoint = ref(window.devicePixelRatio);
-// const pxToPt = (px: number) => px * window.devicePixelRatio * (72 / 96);
-
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
 
 function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
-
-let view: EditorView;
-
-watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
-  const typstState = await useTypst();
-
-  typstState.setPt(pixelPerPoint);
-  typstState.setSize(16);
-  typstState.setTheme(
-    new ThemeColors(
-      parseColor(palette.background),
-      parseColor(palette.onBackground),
-
-      parseColor(palette.outline),
-      parseColor(palette.outlineVariant),
-
-      parseColor(palette.primary),
-      parseColor(palette.onPrimary),
-      parseColor(palette.primaryContainer),
-      parseColor(palette.onPrimaryContainer),
-
-      parseColor(palette.secondary),
-      parseColor(palette.onSecondary),
-      parseColor(palette.secondaryContainer),
-      parseColor(palette.onSecondaryContainer),
-
-      parseColor(palette.tertiary),
-      parseColor(palette.onTertiary),
-      parseColor(palette.tertiaryContainer),
-      parseColor(palette.onTertiaryContainer),
-
-      parseColor(palette.error),
-      parseColor(palette.onError),
-      parseColor(palette.errorContainer),
-      parseColor(palette.onErrorContainer),
-    ),
-  );
-
-  view?.dispatch({
-    changes: {
-      from: 0,
-      to: view.state.doc.length,
-      insert: view.state.doc.toString(),
-    },
-  });
-});
 
 const containerRef = useTemplateRef("container");
 
@@ -115,20 +67,15 @@ const prelude = computed(() =>
     .otherwise(() => preludeItem.value),
 );
 
-const packages = await useInstalledPackages(() => props.spaceId);
-watchImmediate(packages, async (packages) => {
-  await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
-});
-
 const { t } = useI18n();
 
 const typstState = await useTypst();
 
 const text = await useStorageText(fullPath);
 
-onMounted(() => {
+onMounted(async () => {
   const container = containerRef.value!;
-  view = new EditorView({
+  const view = new EditorView({
     parent: container,
     root: document,
     state: EditorState.create({
@@ -140,19 +87,72 @@ onMounted(() => {
     }),
   });
 
+  const packages = await useInstalledPackages(() => props.spaceId);
+  await watchImmediateAsync(packages, async (packages) => {
+    await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
+  });
+
   let ready = false;
 
-  watchImmediate(fullPath, (fullPath) =>
+  await watchImmediateAsync(fullPath, async (fullPath) => {
+    const fileId = typstState.createFileId(fullPath);
+
+    typstState.setPt(fileId, window.devicePixelRatio);
+    typstState.setSize(fileId, 16);
+
+    await watchImmediateAsync(palette, async (palette) => {
+      typstState.setTheme(
+        fileId,
+        new ThemeColors(
+          parseColor(palette.background),
+          parseColor(palette.onBackground),
+
+          parseColor(palette.outline),
+          parseColor(palette.outlineVariant),
+
+          parseColor(palette.primary),
+          parseColor(palette.onPrimary),
+          parseColor(palette.primaryContainer),
+          parseColor(palette.onPrimaryContainer),
+
+          parseColor(palette.secondary),
+          parseColor(palette.onSecondary),
+          parseColor(palette.secondaryContainer),
+          parseColor(palette.onSecondaryContainer),
+
+          parseColor(palette.tertiary),
+          parseColor(palette.onTertiary),
+          parseColor(palette.tertiaryContainer),
+          parseColor(palette.onTertiaryContainer),
+
+          parseColor(palette.error),
+          parseColor(palette.onError),
+          parseColor(palette.errorContainer),
+          parseColor(palette.onErrorContainer),
+        ),
+      );
+
+      if (ready) {
+        const { doc } = view.state;
+        const from = 0;
+        const to = doc.length ? 1 : 0;
+
+        view?.dispatch({
+          changes: { from, to, insert: doc.sliceString(from, to) },
+        });
+      }
+    });
+
     watch(
       text,
-      (text) => {
-        const fileId = typstState.insertFile(fullPath, text);
+      async (text) => {
+        typstState.insertFile(fileId, text);
         const state = createEditorState(fileId);
         view.setState(state);
       },
       { once: true, immediate: !ready },
-    ),
-  );
+    );
+  });
 
   ready = true;
 });
@@ -193,7 +193,7 @@ function createEditorState(fileId: FileId): EditorState {
 
   return EditorState.create({
     extensions: [
-      typst(typstState, path, fileId, prelude),
+      typst(typstState, path, fileId, prelude, props.locked),
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
@@ -254,7 +254,7 @@ const renderHoverBackground = computed(() => {
 
 <template>
   <div class="size-full overflow-hidden">
-    <div ref="container" class="editor" />
+    <div ref="container" :class="['editor', { editor__locked: locked }]" />
   </div>
 </template>
 
@@ -268,6 +268,14 @@ const renderHoverBackground = computed(() => {
 
   .cm-scroller {
     @apply overflow-x-hidden overflow-y-scroll;
+  }
+
+  &__locked {
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+
+    .cm-scroller {
+      @apply overflow-hidden!;
+    }
   }
 
   .cm-line {

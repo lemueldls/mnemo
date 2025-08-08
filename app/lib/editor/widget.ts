@@ -28,6 +28,7 @@ class TypstWidget extends WidgetType {
     private readonly typstState: TypstState,
     private readonly view: EditorView,
     private readonly frame: RangedFrame,
+    private readonly locked: boolean,
   ) {
     super();
 
@@ -36,12 +37,17 @@ class TypstWidget extends WidgetType {
 
     this.#image.draggable = false;
     this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
-    this.#image.addEventListener("click", this.handleMouseEvent.bind(this));
-    this.#image.addEventListener("mousedown", this.handleMouseEvent.bind(this));
-    this.#image.addEventListener(
-      "touchstart",
-      this.handleTouchEvent.bind(this),
-    );
+    if (!locked) {
+      this.#image.addEventListener("click", this.handleMouseEvent.bind(this));
+      this.#image.addEventListener(
+        "mousedown",
+        this.handleMouseEvent.bind(this),
+      );
+      this.#image.addEventListener(
+        "touchstart",
+        this.handleTouchEvent.bind(this),
+      );
+    }
 
     this.#container.append(this.#image);
   }
@@ -89,6 +95,8 @@ class TypstWidget extends WidgetType {
   }
 
   public override destroy() {
+    if (this.locked) return;
+
     this.#image.removeEventListener("click", this.handleMouseEvent.bind(this));
     this.#image.removeEventListener(
       "mousedown",
@@ -109,6 +117,7 @@ function decorate(
   path: string,
   fileId: FileId,
   prelude: string,
+  locked: boolean,
 ) {
   const text = update.state.doc.toString();
 
@@ -169,7 +178,7 @@ function decorate(
       if (inactive)
         widgets.push(
           Decoration.replace({
-            widget: new TypstWidget(typstState, view, frame),
+            widget: new TypstWidget(typstState, view, frame, locked),
             // inclusive: true,
           }).range(start, end),
         );
@@ -212,6 +221,7 @@ export const viewPlugin = (
   path: string,
   fileId: FileId,
   prelude: Ref<string>,
+  locked: boolean,
 ) =>
   ViewPlugin.define((_view) => {
     return {
@@ -222,8 +232,11 @@ export const viewPlugin = (
           update.selectionSet ||
           update.focusChanged
         ) {
+          const { scrollDOM } = update.view;
           typstState.resize(
-            update.view.contentDOM.clientWidth - 2 * window.devicePixelRatio,
+            fileId,
+            scrollDOM.clientWidth - 2 * window.devicePixelRatio,
+            locked ? scrollDOM.clientHeight : undefined,
           );
 
           const decorations = decorate(
@@ -231,8 +244,8 @@ export const viewPlugin = (
             update,
             path,
             fileId,
-
             prelude.value,
+            locked,
           );
 
           const effects = stateEffect.of({ decorations });
@@ -247,6 +260,7 @@ export const typst = (
   path: string,
   fileId: FileId,
   prelude: Ref<string>,
+  locked: boolean,
 ) =>
   StateField.define({
     create() {
@@ -275,6 +289,6 @@ export const typst = (
     },
     provide: (field) => [
       EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, path, fileId, prelude),
+      viewPlugin(typstState, path, fileId, prelude, locked),
     ],
   });
