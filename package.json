@@ -110,7 +110,7 @@
     "vite-plugin-wasm": "^3.5.0",
     "vue": "^3.5.17",
     "wasm-pack": "^0.13.1",
-    "wrangler": "^4.25.0"
+    "wrangler": "^4.26.0"
   },
   "pnpm": {
     "overrides": {
