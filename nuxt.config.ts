@@ -38,8 +38,10 @@ export default defineNuxtConfig({
     "@unocss/nuxt",
     "reka-ui/nuxt",
   ],
-  devtools: { enabled: !platform },
-
+  devtools: {
+    enabled: !platform,
+    timeline: { enabled: true },
+  },
   app: {
     // pageTransition: { name: "conjure" },
     layoutTransition: { name: "conjure" },
