@@ -50,7 +50,7 @@
     "loro-codemirror": "^0.2.0",
     "loro-crdt": "^1.5.10",
     "lru-cache": "^11.1.0",
-    "material-symbols": "^0.33.0",
+    "material-symbols": "^0.34.1",
     "mnemo-wasm": "workspace:*",
     "nanotar": "^0.2.0",
     "pdfjs-dist": "^5.4.54",
