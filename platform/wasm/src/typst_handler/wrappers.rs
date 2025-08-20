@@ -12,8 +12,8 @@ use wasm_bindgen::prelude::*;
 
 use crate::typst_handler::world::MnemoWorld;
 
-#[derive(Debug, Clone)]
 #[wasm_bindgen(js_name = "FileId")]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct TypstFileId(pub(crate) FileId);
 
 impl TypstFileId {
@@ -61,7 +61,10 @@ impl TypstDiagnostic {
             .flat_map(|mut diagnostic| {
                 if diagnostic.message == "failed to load file" {
                     let source = world.source(diagnostic.span.id().unwrap()).unwrap();
-                    let text = source.get(world.range(diagnostic.span).unwrap()).unwrap();
+                    let text = source
+                        .text()
+                        .get(world.range(diagnostic.span).unwrap())
+                        .unwrap();
 
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
@@ -126,8 +129,9 @@ fn map_span(
         0..aux_source.text().len()
     };
 
-    let aux_start_utf16 = aux_source.byte_to_utf16(aux_range.start)?;
-    let aux_end_utf16 = aux_source.byte_to_utf16(aux_range.end)?;
+    let aux_lines = aux_source.lines();
+    let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start)?;
+    let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end)?;
     let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
     Some(aux_range_utf16)
@@ -170,7 +174,7 @@ impl TypstJump {
             typst_ide::Jump::File(_id, main_position) => {
                 let aux_source = world.aux_source();
                 let aux_position = world.map_main_to_aux(main_position);
-                let aux_position_utf16 = aux_source.byte_to_utf16(aux_position).unwrap();
+                let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position).unwrap();
 
                 Self::File {
                     // id: state.finish(),

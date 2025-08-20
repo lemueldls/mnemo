@@ -35,7 +35,7 @@ import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
 import { typstLanguage } from "~/lib/editor/language";
-import { typst } from "~/lib/editor/widget";
+import { typstPlugin } from "~/lib/editor/widget";
 
 const props = defineProps<{
   spaceId: string;
@@ -193,7 +193,7 @@ function createEditorState(fileId: FileId): EditorState {
 
   return EditorState.create({
     extensions: [
-      typst(typstState, path, fileId, prelude, props.locked),
+      typstPlugin(typstState, path, fileId, prelude, props.locked),
       typstLanguage(typstState),
 
       EditorView.lineWrapping,
@@ -353,7 +353,7 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest rounded-bl-0 m-0 max-w-xl rounded-lg border-none p-0 shadow;
+    @apply bg-surface-container-lowest rounded-bl-0 max-w-1/3 m-0 rounded-lg border-none p-0 shadow;
 
     font-family: var(--font-mono);
 

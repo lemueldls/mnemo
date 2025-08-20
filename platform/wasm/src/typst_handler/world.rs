@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use time::{OffsetDateTime, UtcOffset};
 use typst::{
-    Feature, Library, World,
+    Feature, Library, LibraryExt, World,
     diag::{FileError, FileResult},
     foundations::{Bytes, Datetime},
     syntax::{FileId, Source},
@@ -13,7 +13,6 @@ use typst_ide::IdeWorld;
 
 use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
 
-#[derive(Default)]
 pub struct MnemoWorld {
     pub main: Option<FileId>,
     pub aux: Option<FileId>,
@@ -23,8 +22,8 @@ pub struct MnemoWorld {
     font_loader: FontLoader,
 }
 
-impl MnemoWorld {
-    pub fn new() -> Self {
+impl Default for MnemoWorld {
+    fn default() -> Self {
         let mut font_loader = FontLoader::new();
         font_loader.load();
 
@@ -34,13 +33,15 @@ impl MnemoWorld {
         Self {
             main: None,
             aux: None,
-            index_mapper: IndexMapper::default(),
             files: HashMap::new(),
+            index_mapper: IndexMapper::default(),
             library: LazyHash::new(library),
             font_loader,
         }
     }
+}
 
+impl MnemoWorld {
     pub fn main_source(&self) -> &Source {
         self.files
             .get(self.main.as_ref().unwrap())

@@ -11,19 +11,22 @@ version.workspace = true
 
 [dependencies]
 bytemuck = { version = "1" }
-comemo = { version = "0.4" }
+comemo = { version = "0.5.0" }
 image = { version = "0.25.5", default-features = false, features = [
   "gif",
   "jpeg",
   "png",
+  "webp"
 ] }
-pixglyph = { version = "0.5.1" }
-resvg = { version = "0.43.0", default-features = false, features = [
+pixglyph = { version = "0.6" }
+resvg = { version = "0.45", default-features = false, features = [
   "raster-images",
 ] }
+hayro = { git = "https://github.com/LaurenzV/hayro", rev = "e701f95" }
 tiny-skia = { version = "0.11" }
-ttf-parser = { version = "0.24.1" }
-typst-ide = { version = "0.13.1" }
-typst-library = { version = "0.13.1" }
-typst-macros = { version = "0.13.1" }
-typst-timing = { version = "0.13.1" }
+ttf-parser = { version = "0.25.0" }
+typst-ide = { git = "https://github.com/typst/typst" }
+typst-library = { git = "https://github.com/typst/typst" }
+typst-macros = { git = "https://github.com/typst/typst" }
+typst-timing = { git = "https://github.com/typst/typst" }
+typst-assets = { git = "https://github.com/typst/typst-assets", rev = "fbf00f9" }

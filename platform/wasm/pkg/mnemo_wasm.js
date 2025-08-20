@@ -244,14 +244,6 @@ const ThemeColorsFinalization = (typeof FinalizationRegistry === 'undefined')
 
 export class ThemeColors {
 
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(ThemeColors.prototype);
-        obj.__wbg_ptr = ptr;
-        ThemeColorsFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
@@ -357,58 +349,50 @@ export class TypstState {
         return this;
     }
     /**
-     * @returns {number}
-     */
-    pt() {
-        const ret = wasm.typststate_pt(this.__wbg_ptr);
-        return ret;
-    }
-    /**
+     * @param {FileId} id
      * @param {number} pt
      */
-    setPt(pt) {
-        wasm.typststate_setPt(this.__wbg_ptr, pt);
+    setPt(id, pt) {
+        _assertClass(id, FileId);
+        wasm.typststate_setPt(this.__wbg_ptr, id.__wbg_ptr, pt);
     }
     /**
-     * @returns {number}
-     */
-    size() {
-        const ret = wasm.typststate_size(this.__wbg_ptr);
-        return ret;
-    }
-    /**
+     * @param {FileId} id
      * @param {number} size
      */
-    setSize(size) {
-        wasm.typststate_setSize(this.__wbg_ptr, size);
+    setSize(id, size) {
+        _assertClass(id, FileId);
+        wasm.typststate_setSize(this.__wbg_ptr, id.__wbg_ptr, size);
     }
     /**
-     * @returns {ThemeColors}
-     */
-    theme() {
-        const ret = wasm.typststate_theme(this.__wbg_ptr);
-        return ThemeColors.__wrap(ret);
-    }
-    /**
+     * @param {FileId} id
      * @param {ThemeColors} theme
      */
-    setTheme(theme) {
+    setTheme(id, theme) {
+        _assertClass(id, FileId);
         _assertClass(theme, ThemeColors);
         var ptr0 = theme.__destroy_into_raw();
-        wasm.typststate_setTheme(this.__wbg_ptr, ptr0);
+        wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
     }
     /**
      * @param {string} path
-     * @param {string} text
      * @returns {FileId}
      */
-    insertFile(path, text) {
+    createFileId(path) {
         const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_insertFile(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.typststate_createFileId(this.__wbg_ptr, ptr0, len0);
         return FileId.__wrap(ret);
+    }
+    /**
+     * @param {FileId} id
+     * @param {string} text
+     */
+    insertFile(id, text) {
+        _assertClass(id, FileId);
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_insertFile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
     }
     /**
      * @param {string} spec
@@ -466,11 +450,13 @@ export class TypstState {
         return ret;
     }
     /**
+     * @param {FileId} id
      * @param {number | null} [width]
      * @param {number | null} [height]
      */
-    resize(width, height) {
-        wasm.typststate_resize(this.__wbg_ptr, !isLikeNone(width), isLikeNone(width) ? 0 : width, !isLikeNone(height), isLikeNone(height) ? 0 : height);
+    resize(id, width, height) {
+        _assertClass(id, FileId);
+        wasm.typststate_resize(this.__wbg_ptr, id.__wbg_ptr, !isLikeNone(width), isLikeNone(width) ? 0 : width, !isLikeNone(height), isLikeNone(height) ? 0 : height);
     }
     /**
      * @param {FileId} id
@@ -524,6 +510,10 @@ function __wbg_get_imports() {
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
+    imports.wbg.__wbg_buffer_609cc3eee51ed158 = function(arg0) {
+        const ret = arg0.buffer;
+        return ret;
+    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -538,6 +528,10 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_error_7e97ac6aa2a9e682 = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
+    imports.wbg.__wbg_from_2a5d3e218e67aa85 = function(arg0) {
+        const ret = Array.from(arg0);
+        return ret;
+    };
     imports.wbg.__wbg_new_405e22f390576ce2 = function() {
         const ret = new Object();
         return ret;
@@ -548,6 +542,14 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
         const ret = new Error();
+        return ret;
+    };
+    imports.wbg.__wbg_new_a12002a7f91c75be = function(arg0) {
+        const ret = new Uint8Array(arg0);
+        return ret;
+    };
+    imports.wbg.__wbg_newwithbyteoffsetandlength_d97e637ebe145a9a = function(arg0, arg1, arg2) {
+        const ret = new Uint8Array(arg0, arg1 >>> 0, arg2 >>> 0);
         return ret;
     };
     imports.wbg.__wbg_packagefile_unwrap = function(arg0) {
@@ -584,6 +586,10 @@ function __wbg_get_imports() {
         table.set(offset + 2, true);
         table.set(offset + 3, false);
         ;
+    };
+    imports.wbg.__wbindgen_memory = function() {
+        const ret = wasm.memory;
+        return ret;
     };
     imports.wbg.__wbindgen_number_new = function(arg0) {
         const ret = arg0;

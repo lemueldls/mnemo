@@ -49,7 +49,7 @@ export interface RangedFrame {
 }
 
 export interface FrameRender {
-    encoding: string;
+    encoding: Uint8Array;
     height: number;
     offsetHeight: number;
 }
@@ -74,19 +74,17 @@ export class ThemeColors {
 export class TypstState {
   free(): void;
   constructor();
-  pt(): number;
-  setPt(pt: number): void;
-  size(): number;
-  setSize(size: number): void;
-  theme(): ThemeColors;
-  setTheme(theme: ThemeColors): void;
-  insertFile(path: string, text: string): FileId;
+  setPt(id: FileId, pt: number): void;
+  setSize(id: FileId, size: number): void;
+  setTheme(id: FileId, theme: ThemeColors): void;
+  createFileId(path: string): FileId;
+  insertFile(id: FileId, text: string): void;
   installPackage(spec: string, files: PackageFile[]): void;
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
   click(x: number, y: number): TypstJump | undefined;
   autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
-  resize(width?: number | null, height?: number | null): void;
+  resize(id: FileId, width?: number | null, height?: number | null): void;
   renderPdf(id: FileId): RenderPdfResult;
 }
 
@@ -97,19 +95,17 @@ export interface InitOutput {
   readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly __wbg_typststate_free: (a: number, b: number) => void;
   readonly typststate_new: () => number;
-  readonly typststate_pt: (a: number) => number;
-  readonly typststate_setPt: (a: number, b: number) => void;
-  readonly typststate_size: (a: number) => number;
-  readonly typststate_setSize: (a: number, b: number) => void;
-  readonly typststate_theme: (a: number) => number;
-  readonly typststate_setTheme: (a: number, b: number) => void;
-  readonly typststate_insertFile: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly typststate_setPt: (a: number, b: number, c: number) => void;
+  readonly typststate_setSize: (a: number, b: number, c: number) => void;
+  readonly typststate_setTheme: (a: number, b: number, c: number) => void;
+  readonly typststate_createFileId: (a: number, b: number, c: number) => number;
+  readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
   readonly typststate_click: (a: number, b: number, c: number) => any;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
-  readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly typststate_renderPdf: (a: number, b: number) => any;
   readonly __wbg_packagefile_free: (a: number, b: number) => void;
   readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
