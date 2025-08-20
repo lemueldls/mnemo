@@ -1,0 +1,46 @@
+[package]
+name = "mnemo-wasm"
+
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook", "lol_alloc"]
+
+console_error_panic_hook = ["dep:console_error_panic_hook"]
+lol_alloc = ["dep:lol_alloc"]
+
+[dependencies]
+comemo = "0.4.0"
+console_error_panic_hook = { version = "0.1.7", optional = true }
+data-encoding = "2.9.0"
+js-sys = { version = "0.3.77", default-features = false}
+lol_alloc = { version = "0.4.1", optional = true }
+mnemo-render = { path = "./render" }
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+serde_bytes = "0.11"
+time = { version = "0.3", features = ["serde"] }
+tsify = { version = "0.5.5", features = ["js"] }
+typst = { git = "https://github.com/typst/typst" }
+typst-ide = { git = "https://github.com/typst/typst" }
+typst-render = { git = "https://github.com/typst/typst" }
+# typst-svg = { git = "https://github.com/typst/typst" }
+typst-pdf = { git = "https://github.com/typst/typst" }
+# typst-html = { git = "https://github.com/typst/typst" }
+wasm-bindgen = "0.2.100"
+# web-sys = "0.3.69"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.50"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4"]

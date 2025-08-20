@@ -4,17 +4,16 @@ mod world;
 mod wrappers;
 
 use core::fmt;
-use std::{borrow::Cow, ops::Range, str::FromStr};
+use std::{borrow::Cow, collections::HashMap, ops::Range, str::FromStr};
 
-use data_encoding::BASE64;
 use index_mapper::IndexMapper;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
     WorldExt, compile,
-    ecow::EcoString,
+    ecow::{EcoString, EcoVec},
     foundations::Bytes,
-    layout::{Abs, PagedDocument, Point},
+    layout::{Abs, Frame, PagedDocument, Point},
     syntax::{FileId, Source, SyntaxKind, VirtualPath, package::PackageSpec},
 };
 // use typst_html::html;
@@ -25,29 +24,32 @@ use world::{FileSlot, MnemoWorld};
 pub use wrappers::TypstFileId;
 use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
 
-#[wasm_bindgen]
-pub struct TypstState {
-    world: MnemoWorld,
-    document: Option<PagedDocument>,
-    width: String,
-    height: String,
-    pt: f32,
-    size: f32,
-    theme: ThemeColors,
+struct FileContext {
+    pub width: String,
+    pub height: Option<f64>,
+    pub pt: f32,
+    pub size: f32,
+    pub theme: ThemeColors,
 }
 
-impl Default for TypstState {
+impl Default for FileContext {
     fn default() -> Self {
         Self {
-            world: MnemoWorld::new(),
-            document: None,
             width: String::from("auto"),
-            height: String::from("auto"),
-            pt: 0_f32,
-            size: 0_f32,
+            height: None,
+            pt: 14_f32,
+            size: 1_f32,
             theme: ThemeColors::default(),
         }
     }
+}
+
+#[wasm_bindgen]
+#[derive(Default)]
+pub struct TypstState {
+    world: MnemoWorld,
+    document: Option<PagedDocument>,
+    file_contexts: HashMap<TypstFileId, FileContext>,
 }
 
 #[wasm_bindgen]
@@ -57,42 +59,38 @@ impl TypstState {
         Self::default()
     }
 
-    pub fn pt(&self) -> f32 {
-        self.pt
-    }
-
     #[wasm_bindgen(js_name = "setPt")]
-    pub fn set_pt(&mut self, pt: f32) {
-        self.pt = pt;
-    }
-
-    pub fn size(&self) -> f32 {
-        self.size
+    pub fn set_pt(&mut self, id: &TypstFileId, pt: f32) {
+        self.file_contexts.get_mut(id).unwrap().pt = pt;
     }
 
     #[wasm_bindgen(js_name = "setSize")]
-    pub fn set_size(&mut self, size: f32) {
-        self.size = size;
-    }
-
-    pub fn theme(&self) -> ThemeColors {
-        self.theme
+    pub fn set_size(&mut self, id: &TypstFileId, size: f32) {
+        self.file_contexts.get_mut(id).unwrap().size = size;
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
-    pub fn set_theme(&mut self, theme: ThemeColors) {
-        self.theme = theme;
+    pub fn set_theme(&mut self, id: &TypstFileId, theme: ThemeColors) {
+        self.file_contexts.get_mut(id).unwrap().theme = theme;
     }
 
-    #[wasm_bindgen(js_name = insertFile)]
-    pub fn insert_file(&mut self, path: String, text: String) -> TypstFileId {
+    #[wasm_bindgen(js_name = "createFileId")]
+    pub fn create_file_id(&mut self, path: String) -> TypstFileId {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
-        self.world.insert_source(id, text);
+        let id_wrapper = TypstFileId::new(id);
 
-        TypstFileId::new(id)
+        self.file_contexts
+            .insert(id_wrapper.clone(), FileContext::default());
+
+        id_wrapper
     }
 
-    #[wasm_bindgen(js_name = installPackage)]
+    #[wasm_bindgen(js_name = "insertFile")]
+    pub fn insert_file(&mut self, id: &TypstFileId, text: String) {
+        self.world.insert_source(id.inner(), text);
+    }
+
+    #[wasm_bindgen(js_name = "installPackage")]
     pub fn install_package(
         &mut self,
         spec: &str,
@@ -112,17 +110,19 @@ impl TypstState {
         Ok(())
     }
 
-    #[wasm_bindgen(js_name = installFont)]
+    #[wasm_bindgen(js_name = "installFont")]
     pub fn install_font(&mut self, bytes: Vec<u8>) {
         self.world.install_font(bytes);
     }
 
-    fn prelude(&self, rendering_mode: RenderingMode) -> String {
+    fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
+        let context = self.file_contexts.get(id).unwrap();
+
         let page_config = match rendering_mode {
             RenderingMode::Png => {
                 format!(
                     r#"
-                        #set page(fill:rgb(0,0,0,0),width:{width},height:{height},margin:0pt)
+                        #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
 
                         #set text(top-edge:"ascender",bottom-edge:"descender")
                         #set par(leading:0em,linebreaks:"simple")
@@ -133,19 +133,18 @@ impl TypstState {
                         #show list:set block(above:0em,below:0em)
                         #show enum:set block(above:0em,below:0em)
                     "#,
-                    width = self.width,
-                    height = self.height,
+                    width = context.width,
                 )
             }
             RenderingMode::Pdf => {
                 format!(
                     r#"
-                        #set page(width:{width},height:{height},margin:16pt)
+                        #set page(width:{width},height:auto,margin:16pt)
                     "#,
-                    width = self.width,
-                    height = self.height,
+                    width = context.width,
                 )
-            } // RenderingMode::Html => format!(""),
+            }
+            RenderingMode::Html => format!(""),
         };
 
         format!(
@@ -169,14 +168,14 @@ impl TypstState {
 
                 {page_config}
             "#,
-            theme = self.theme,
-            size = self.size,
+            theme = context.theme,
+            size = context.size,
         )
     }
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
-        let mut ir = self.prelude(RenderingMode::Png) + prelude + "\n\n";
+        let mut ir = self.prelude(id, RenderingMode::Png) + prelude + "\n";
 
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
@@ -261,7 +260,7 @@ impl TypstState {
 
         // crate::log!(
         //     "[SOURCE]: {:?}",
-        //     &ir[(self.prelude(RenderingMode::Png) + prelude + "\n\n").len()..]
+        //     &ir[(self.prelude(id, RenderingMode::Png) + prelude + "\n").len()..]
         // );
 
         self.world.index_mapper = index_mapper;
@@ -274,14 +273,22 @@ impl TypstState {
         let mut diagnostics = Vec::new();
         let mut compiled_warnings = None;
 
+        let context = self.file_contexts.get(id).unwrap();
+
         let ranged_heights = block_ranges
             .into_iter()
             .filter_map(|block| {
+                match context.height {
+                    Some(height) if offset_height >= height => return None,
+                    _ => {}
+                }
+
                 let aux_source = self.world.aux_source();
 
                 let aux_range = block.range;
-                let aux_start_utf16 = aux_source.byte_to_utf16(aux_range.start).unwrap();
-                let aux_end_utf16 = aux_source.byte_to_utf16(aux_range.end).unwrap();
+                let aux_lines = aux_source.lines();
+                let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
+                let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                 let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
                 let mut end_byte = self.world.map_aux_to_main(aux_range.end);
@@ -350,8 +357,8 @@ impl TypstState {
             ranged_heights
                 .into_iter()
                 .map(|(range, height, offset_height)| {
-                    let canvas = mnemo_render::render(document, height, offset_height, self.pt);
-                    let encoding = BASE64.encode(&canvas.encode_png().unwrap());
+                    let canvas = mnemo_render::render(document, height, offset_height, context.pt);
+                    let encoding = canvas.encode_png().unwrap();
 
                     let height = height.ceil() as u32;
 
@@ -414,7 +421,8 @@ impl TypstState {
         let main_source = self.world.main_source();
         let aux_source = self.world.aux_source();
 
-        let aux_cursor = aux_source.utf16_to_byte(aux_cursor_utf16)?;
+        let aux_lines = aux_source.lines();
+        let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
         let main_cursor = self.world.map_aux_to_main(aux_cursor);
 
         let (main_offset, completions) = typst_ide::autocomplete(
@@ -426,7 +434,7 @@ impl TypstState {
         )?;
 
         let aux_offset = self.world.map_main_to_aux(main_offset);
-        let aux_offset_utf16 = aux_source.byte_to_utf16(aux_offset)?;
+        let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
 
         Some(Autocomplete {
             offset: aux_offset_utf16,
@@ -438,21 +446,20 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn resize(&mut self, width: Option<f64>, height: Option<f64>) {
-        self.width = width
+    pub fn resize(&mut self, id: &TypstFileId, width: Option<f64>, height: Option<f64>) {
+        let context = self.file_contexts.get_mut(id).unwrap();
+
+        context.width = width
             .map(|width| width.to_string() + "pt")
             .unwrap_or_else(|| String::from("auto"));
-
-        self.height = height
-            .map(|height| height.to_string() + "pt")
-            .unwrap_or_else(|| String::from("auto"));
+        context.height = height;
     }
 
     #[wasm_bindgen(js_name = renderPdf)]
     pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
         self.world.main = Some(id.inner());
 
-        let mut ir = self.prelude(RenderingMode::Pdf);
+        let mut ir = self.prelude(id, RenderingMode::Pdf);
         let main_source = self.world.main_source_mut();
         let text = main_source.text().to_string();
         ir += &text;
@@ -509,7 +516,7 @@ impl PackageFile {
 }
 
 #[wasm_bindgen]
-#[derive(Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ThemeColors {
     background: Rgb,
     on_background: Rgb,
@@ -536,6 +543,38 @@ pub struct ThemeColors {
     on_error: Rgb,
     error_container: Rgb,
     on_error_container: Rgb,
+}
+
+impl Default for ThemeColors {
+    fn default() -> Self {
+        Self {
+            background: Rgb::WHITE,
+            on_background: Rgb::BLACK,
+
+            outline: Rgb::BLACK,
+            outline_variant: Rgb::BLACK,
+
+            primary: Rgb::BLACK,
+            on_primary: Rgb::WHITE,
+            primary_container: Rgb::BLACK,
+            on_primary_container: Rgb::WHITE,
+
+            secondary: Rgb::BLACK,
+            on_secondary: Rgb::WHITE,
+            secondary_container: Rgb::BLACK,
+            on_secondary_container: Rgb::WHITE,
+
+            tertiary: Rgb::BLACK,
+            on_tertiary: Rgb::WHITE,
+            tertiary_container: Rgb::BLACK,
+            on_tertiary_container: Rgb::WHITE,
+
+            error: Rgb::BLACK,
+            on_error: Rgb::WHITE,
+            error_container: Rgb::BLACK,
+            on_error_container: Rgb::WHITE,
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -631,6 +670,11 @@ impl fmt::Display for ThemeColors {
 #[derive(Default, Clone, Copy, Serialize, Deserialize)]
 pub struct Rgb(u8, u8, u8);
 
+impl Rgb {
+    pub const BLACK: Self = Self(0, 0, 0);
+    pub const WHITE: Self = Self(255, 255, 255);
+}
+
 #[wasm_bindgen]
 impl Rgb {
     #[wasm_bindgen(constructor)]
@@ -701,10 +745,12 @@ impl RangedFrame {
     }
 }
 
-#[derive(Debug, Tsify, Serialize, Deserialize)]
+#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct FrameRender {
-    encoding: String,
+    #[tsify(type = "Uint8Array")]
+    #[serde(with = "serde_bytes")]
+    encoding: Vec<u8>,
     height: u32,
     #[serde(rename = "offsetHeight")]
     offset_height: f64,
@@ -713,5 +759,5 @@ pub struct FrameRender {
 enum RenderingMode {
     Png,
     Pdf,
-    // Html,
+    Html,
 }
