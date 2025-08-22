@@ -11,7 +11,7 @@
 ## TODO
 
 - Global search system
-- Task managment
+- Task management
 - Prompt to install missing packages
 - Local storage explorer (and search?)
 - External and internal links
