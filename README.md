@@ -16,6 +16,7 @@
 - Local storage explorer (and search?)
 - External and internal links
 - Static assets manager
+- Custom font loader
 - Publishing service
 - Pull to refresh
 - Document collaboration
