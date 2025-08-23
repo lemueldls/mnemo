@@ -9,7 +9,7 @@ const spaceId = isSpace ? usePageRouteQuery("id") : undefined;
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex h-full flex-col gap-3 overflow-y-auto">
     <md-filled-tonal-button @click="newTaskOpen = true">
       <md-icon slot="icon">add</md-icon>
       New Task
