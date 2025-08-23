@@ -29,7 +29,7 @@ useHead({ title: () => space.name });
 const { medium } = useBreakpoints(breakpointsM3);
 
 const infoOpen = ref(false);
-// const settingsOpen = ref(false);
+const settingsOpen = ref(false);
 
 const preludeOpen = ref(false);
 // const focusOpen = ref(false);
@@ -80,11 +80,16 @@ const spaceNotes = await useSpaceNotes(spaceId);
 const preludePath = ref("main");
 
 const { data: notes } = await useAsyncData(
-  `daily-notes:${spaceId.value}`,
+  () => `daily-notes:${spaceId.value}`,
   async () => {
-    const notes = await loadDailyNotes(spaceId.value, spaceNotes, false);
+    const dailyNotes = await loadDailyNotes(
+      spaceId.value,
+      spaceNotes.value,
+      false,
+    );
+    spaceNotes.value = dailyNotes;
 
-    return notes.map((note) => {
+    return dailyNotes.map((note) => {
       const {
         id,
         datetime: [year, month, day, hour, minute],
@@ -131,7 +136,7 @@ const previousDayIndex = computed(() => {
 });
 
 watch(spaceId, () => {
-  currentNoteIndex.value = 0;
+  currentNoteIndex.value = notes.value.length - 1;
 });
 
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
@@ -221,6 +226,10 @@ async function createStickyNote() {
             <template #trailing>
               <md-icon-button @click="infoOpen = true">
                 <md-icon>info</md-icon>
+              </md-icon-button>
+
+              <md-icon-button @click="settingsOpen = true">
+                <md-icon>settings</md-icon>
               </md-icon-button>
             </template>
           </mx-top-app-bar>
@@ -336,31 +345,36 @@ async function createStickyNote() {
         </div>
       </div>
 
-      <md-dialog :open="infoOpen" @closed="infoOpen = false">
+      <md-dialog
+        :open="infoOpen"
+        class="w-full max-w-xl"
+        @closed="infoOpen = false"
+      >
         <span slot="headline" class="flex items-center gap-2">
           <md-icon>{{ space.icon }}</md-icon>
 
           {{ space.name }}
         </span>
 
-        <!-- <span slot="content">
-          <pre>
-                <code>
-                {{ spaceId }}
-                </code>
-            </pre>
-        </span> -->
-
-        <form slot="content" method="dialog" class="flex flex-col gap-8">
-          <edit-space v-model="space">
-            <template #actions>
-              <md-text-button class="text-error" @click.prevent="deleteSpace">
-                Delete
-              </md-text-button>
-              <md-text-button>Confirm</md-text-button>
-            </template>
-          </edit-space>
+        <form
+          id="edit-space-form"
+          slot="content"
+          method="dialog"
+          class="flex flex-col gap-8"
+        >
+          <edit-space v-model="space" />
         </form>
+
+        <div slot="actions">
+          <md-text-button
+            class="text-error"
+            form="edit-space-form"
+            @click.prevent="deleteSpace"
+          >
+            Delete
+          </md-text-button>
+          <md-text-button>Confirm</md-text-button>
+        </div>
       </md-dialog>
 
       <md-dialog
@@ -443,7 +457,8 @@ async function createStickyNote() {
         </div>
       </md-dialog>
 
-      <!-- <settings v-model="settingsOpen" /> -->
+      <settings v-model="settingsOpen" />
+      <edit-task />
 
       <side-bar v-if="medium" direction="vertical" />
     </mx-page>

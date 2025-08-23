@@ -1,5 +1,4 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import { StateEffect, StateField } from "@codemirror/state";
 
 import {
   Decoration,
@@ -10,8 +9,8 @@ import {
 
 import { LRUCache } from "lru-cache";
 
-import type { Range } from "@codemirror/state";
-import type { DecorationSet, ViewUpdate } from "@codemirror/view";
+import { StateEffect, StateField, type Range } from "@codemirror/state";
+import type { DecorationSet, PluginValue, ViewUpdate } from "@codemirror/view";
 
 import type {
   CompileResult,
@@ -36,7 +35,9 @@ class TypstWidget extends WidgetType {
     this.#container.style.height = `${frame.render.height}px`;
 
     this.#image.draggable = false;
-    this.#image.src = `data:image/png;base64,${this.frame.render.encoding}`;
+    this.#image.src = `data:image/png;base64,${this.frame.render.encoding.toBase64()}`;
+    this.#image.height = frame.render.height;
+
     if (!locked) {
       this.#image.addEventListener("click", this.handleMouseEvent.bind(this));
       this.#image.addEventListener(
@@ -80,10 +81,7 @@ class TypstWidget extends WidgetType {
   }
 
   public override eq(other: TypstWidget) {
-    return (
-      other.frame.render.height === this.frame.render.height &&
-      other.frame.render.encoding === this.frame.render.encoding
-    );
+    return other.#image.src === this.#image.src;
   }
 
   public toDOM() {
@@ -117,12 +115,13 @@ function decorate(
   path: string,
   fileId: FileId,
   prelude: string,
+  widthChanged: boolean,
   locked: boolean,
 ) {
   const text = update.state.doc.toString();
 
   let compileResult: CompileResult;
-  if (update.docChanged || update.geometryChanged || !cache.has(path)) {
+  if (update.docChanged || widthChanged || !cache.has(path)) {
     compileResult = typstState.compile(fileId, text, prelude);
     cache.set(path, compileResult);
   } else compileResult = cache.get(path)!;
@@ -180,6 +179,7 @@ function decorate(
           Decoration.replace({
             widget: new TypstWidget(typstState, view, frame, locked),
             // inclusive: true,
+            // block: true,
           }).range(start, end),
         );
       else {
@@ -216,7 +216,7 @@ function decorate(
 
 const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
-export const viewPlugin = (
+export const typstViewPlugin = (
   typstState: TypstState,
   path: string,
   fileId: FileId,
@@ -232,12 +232,16 @@ export const viewPlugin = (
           update.selectionSet ||
           update.focusChanged
         ) {
-          const { scrollDOM } = update.view;
-          typstState.resize(
-            fileId,
-            scrollDOM.clientWidth - 2 * window.devicePixelRatio,
-            locked ? scrollDOM.clientHeight : undefined,
-          );
+          let widthChanged = false;
+          if (update.geometryChanged) {
+            const { scrollDOM } = update.view;
+
+            widthChanged = typstState.resize(
+              fileId,
+              scrollDOM.clientWidth - 2 * window.devicePixelRatio,
+              locked ? scrollDOM.clientHeight : undefined,
+            );
+          }
 
           const decorations = decorate(
             typstState,
@@ -245,6 +249,7 @@ export const viewPlugin = (
             path,
             fileId,
             prelude.value,
+            widthChanged,
             locked,
           );
 
@@ -255,7 +260,7 @@ export const viewPlugin = (
     };
   });
 
-export const typst = (
+export const typstPlugin = (
   typstState: TypstState,
   path: string,
   fileId: FileId,
@@ -271,24 +276,13 @@ export const typst = (
         effect.is(stateEffect),
       );
 
-      if (effect?.value.decorations) {
-        if (effect.value.decorations.size > 0) return effect.value.decorations;
-
-        const max = Math.max(
-          ...transaction.state.selection.ranges.map(({ to }) => to),
-        );
-
-        return decorations.update({
-          filter(from) {
-            return from < max;
-          },
-        });
-      }
+      if (effect?.value.decorations && effect.value.decorations.size > 0)
+        return effect.value.decorations;
 
       return decorations;
     },
     provide: (field) => [
-      EditorView.decorations.from(field, (decorations) => decorations),
-      viewPlugin(typstState, path, fileId, prelude, locked),
+      EditorView.decorations.from(field),
+      typstViewPlugin(typstState, path, fileId, prelude, locked),
     ],
   });

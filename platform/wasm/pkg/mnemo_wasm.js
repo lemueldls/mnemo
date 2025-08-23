@@ -350,19 +350,11 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
-     * @param {number} pt
-     */
-    setPt(id, pt) {
-        _assertClass(id, FileId);
-        wasm.typststate_setPt(this.__wbg_ptr, id.__wbg_ptr, pt);
-    }
-    /**
-     * @param {FileId} id
      * @param {number} size
      */
-    setSize(id, size) {
+    setPixelPerPt(id, size) {
         _assertClass(id, FileId);
-        wasm.typststate_setSize(this.__wbg_ptr, id.__wbg_ptr, size);
+        wasm.typststate_setPixelPerPt(this.__wbg_ptr, id.__wbg_ptr, size);
     }
     /**
      * @param {FileId} id
@@ -453,10 +445,12 @@ export class TypstState {
      * @param {FileId} id
      * @param {number | null} [width]
      * @param {number | null} [height]
+     * @returns {boolean}
      */
     resize(id, width, height) {
         _assertClass(id, FileId);
-        wasm.typststate_resize(this.__wbg_ptr, id.__wbg_ptr, !isLikeNone(width), isLikeNone(width) ? 0 : width, !isLikeNone(height), isLikeNone(height) ? 0 : height);
+        const ret = wasm.typststate_resize(this.__wbg_ptr, id.__wbg_ptr, !isLikeNone(width), isLikeNone(width) ? 0 : width, !isLikeNone(height), isLikeNone(height) ? 0 : height);
+        return ret !== 0;
     }
     /**
      * @param {FileId} id

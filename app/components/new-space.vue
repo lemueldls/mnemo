@@ -24,23 +24,24 @@ function createSpace() {
 
 <template>
   <mx-theme :color="space.color" harmonize>
-    <md-dialog :open @closed="open = false">
+    <md-dialog :open class="w-full max-w-xl" @closed="open = false">
       <span slot="headline">{{ $t("components.new-space.title") }}</span>
 
       <form
+        id="new-space-form"
         slot="content"
         method="dialog"
         class="flex flex-col gap-8"
         @submit.prevent="createSpace"
       >
-        <edit-space v-model="space">
-          <template #actions>
-            <md-text-button>
-              {{ $t("components.new-space.form.create") }}
-            </md-text-button>
-          </template>
-        </edit-space>
+        <edit-space v-model="space" />
       </form>
+
+      <div slot="actions">
+        <md-text-button form="new-space-form">
+          {{ $t("components.new-space.form.create") }}
+        </md-text-button>
+      </div>
     </md-dialog>
   </mx-theme>
 </template>
