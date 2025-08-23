@@ -30,8 +30,8 @@ const greeting = computed(() => {
 useHead({ title: greeting });
 
 const spaces = await useSpaces();
-const review = [];
-const tasks = [];
+const review = await useReview();
+const tasks = await useTasks();
 
 const newSpaceOpen = useNewSpaceOpen();
 </script>
@@ -60,20 +60,24 @@ const newSpaceOpen = useNewSpaceOpen();
               :to="`/space?id=${id}`"
             >
               <mx-theme :color="space.color" harmonize>
-                <md-outlined-card class="relative gap-2 p-3">
+                <md-outlined-card class="relative p-3">
                   <md-ripple />
 
-                  <div class="flex h-6 items-center gap-2">
-                    <mx-icon
-                      v-if="space.icon"
-                      :name="space.icon"
-                      class="text-primary"
-                    />
+                  <div class="flex h-12 justify-between">
+                    <md-icon v-if="space.icon" class="text-primary">
+                      {{ space.icon }}
+                    </md-icon>
+
+                    <md-icon-button disabled @click.prevent>
+                      <md-icon>more_vert</md-icon>
+                    </md-icon-button>
                   </div>
 
                   <h3 class="title-large line-clamp-1" :title="space.name">
                     {{ space.name }}
                   </h3>
+
+                  <!-- <span class="label-large"></span> -->
 
                   <md-linear-progress />
                 </md-outlined-card>
@@ -87,8 +91,8 @@ const newSpaceOpen = useNewSpaceOpen();
             >
               <md-ripple />
 
-              <div class="flex items-center gap-2">
-                <mx-icon name="add" class="text-primary" />
+              <div class="flex h-12 justify-between">
+                <mx-icon name="add" class="text-primary text-2xl!" />
               </div>
 
               <h3 class="title-large">Create a New Space</h3>
@@ -98,27 +102,16 @@ const newSpaceOpen = useNewSpaceOpen();
 
         <!-- <div class="flex flex-col gap-3 lg:flex-row" /> -->
 
-        <md-outlined-card class="flex flex-1 flex-col gap-3 p-3">
-          <h3 class="title-large text-on-surface-variant">Tasks</h3>
-
-          <div v-if="tasks.length > 0" id="tasks">
-            <task-item v-for="(task, i) in tasks" :key="i" :task="task" />
-          </div>
-          <span v-else class="text-on-surface-varient body-large">
-            Nothing yet..
-          </span>
-        </md-outlined-card>
-
         <md-elevated-card class="flex flex-1 flex-col gap-3 p-3">
           <h3 class="title-large text-on-surface-variant">Review</h3>
 
           <div v-if="review.length > 0" id="review">
             <nuxt-link
-              v-for="{ spaceId, date, note, lastReviewed } in review"
+              v-for="{ spaceId, date, note, lastReviewed, stage } in review"
               :key="note.id"
               :to="`/space?id=${spaceId}&note=${note.id}`"
             >
-              <mx-theme :color="spaces[spaceId]!.color" harmonize>
+              <mx-theme :color="spaces[spaceId]!.color">
                 <md-elevated-card class="relative flex flex-col p-2">
                   <md-ripple />
 
@@ -127,15 +120,23 @@ const newSpaceOpen = useNewSpaceOpen();
                   >
                     <md-divider class="w-2" />
 
+                    <!-- <span class="label-large">
+                      Reviewed {{ useRelativeTime(lastReviewed) }}
+                    </span> -->
+
                     <span class="label-large">
                       {{ date }}
                     </span>
 
+                    <!-- <md-icon class="text-primary text-2xl!">
+                      {{ spaces[spaceId]!.icon }}
+                    </md-icon> -->
+
                     <md-divider class="flex-1" />
 
-                    <!-- <span class="label-large">
-                      Reviewed {{ useRelativeTime(lastReviewed) }}
-                    </span> -->
+                    <md-icon v-if="spaces[spaceId]?.icon" class="text-primary">
+                      {{ spaces[spaceId].icon }}
+                    </md-icon>
                   </div>
 
                   <div class="p-2">
@@ -145,6 +146,8 @@ const newSpaceOpen = useNewSpaceOpen();
                       kind="daily"
                       :model-value="note.id"
                       readonly
+                      locked
+                      faded
                     />
                   </div>
                 </md-elevated-card>
@@ -155,6 +158,12 @@ const newSpaceOpen = useNewSpaceOpen();
             Nothing yet..
           </span>
         </md-elevated-card>
+
+        <md-outlined-card class="flex flex-1 flex-col gap-3 p-3">
+          <h3 class="title-large text-on-surface-variant">Tasks</h3>
+
+          <tasks-masonry />
+        </md-outlined-card>
       </mx-outlined-card>
     </div>
   </div>
@@ -171,11 +180,5 @@ const newSpaceOpen = useNewSpaceOpen();
   @apply grid gap-3;
 
   grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-}
-
-#tasks {
-  @apply grid gap-3;
-
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 }
 </style>
