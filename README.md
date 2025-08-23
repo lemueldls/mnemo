@@ -10,11 +10,12 @@
 
 ## TODO
 
+- Tasks sorting
+- Review algorithm
 - Global search system
-- Task management
 - Prompt to install missing packages
 - Local storage explorer (and search?)
-- External and internal links
+- Handle internal and external links
 - Static assets manager
 - Custom font loader
 - Publishing service
