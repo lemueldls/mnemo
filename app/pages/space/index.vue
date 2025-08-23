@@ -373,7 +373,7 @@ async function createStickyNote() {
           >
             Delete
           </md-text-button>
-          <md-text-button>Confirm</md-text-button>
+          <md-text-button form="edit-space-form">Confirm</md-text-button>
         </div>
       </md-dialog>
 
