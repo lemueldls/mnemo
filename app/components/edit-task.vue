@@ -1,10 +1,14 @@
 <script setup lang="ts">
 const task = useEditingTask();
+
+const tasks = await useTasks();
 const spaces = await useSpaces();
 
-watchEffect(() => {
-  console.log({ task: task.value });
-});
+function deleteTask() {
+  if (!task.value) return;
+  tasks.delete(task.value.id);
+  task.value = undefined;
+}
 </script>
 
 <template>
@@ -14,13 +18,16 @@ watchEffect(() => {
         {{ $t("components.edit-task.title") }}
       </span>
 
-      <div class="flex gap-2">
-        <md-icon-button toggle>
-          <md-icon>archive</md-icon>
+      <div v-if="task" class="flex gap-2">
+        <md-icon-button @click="deleteTask">
+          <md-icon>delete</md-icon>
         </md-icon-button>
-        <md-icon-button toggle>
+        <component
+          :is="task.pinned ? 'md-filled-tonal-icon-button' : 'md-icon-button'"
+          @click="task.pinned = !task.pinned"
+        >
           <md-icon>keep</md-icon>
-        </md-icon-button>
+        </component>
       </div>
     </div>
 
