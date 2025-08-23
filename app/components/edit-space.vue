@@ -130,8 +130,4 @@ const groupedSymbols = computed(() => {
       </template>
     </UseVirtualList>
   </md-outlined-card>
-
-  <div class="flex items-end justify-end">
-    <slot name="actions" />
-  </div>
 </template>

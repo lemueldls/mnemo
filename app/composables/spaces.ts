@@ -5,8 +5,9 @@ export interface Space {
   icon?: MaterialSymbol;
   color: string;
   order: number;
+  archived: boolean;
 }
 
-export async function useSpaces() {
+export async function useSpaces(archived?: boolean) {
   return await useStorageMap<{ [id: string]: Space }>("spaces.json");
 }

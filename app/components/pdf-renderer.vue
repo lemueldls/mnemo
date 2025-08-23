@@ -61,8 +61,7 @@ function parseColor(color: Rgba): Rgb {
 watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
   const typstState = await useTypst();
 
-  typstState.setPt(pixelPerPoint);
-  typstState.setSize(16);
+  typstState.setPixelPerPt(pixelPerPoint);
   typstState.setTheme(
     new ThemeColors(
       parseColor(palette.background),
@@ -126,7 +125,7 @@ const errors = diagnostics.filter(
 
     <md-outlined-card
       v-if="pdf"
-      class="m-4 h-full w-full max-w-180 overflow-hidden bg-white"
+      class="max-w-180 m-4 h-full w-full overflow-hidden bg-white"
     >
       <LazyEmbededPdf v-model="pdf" :filename="space.name" />
     </md-outlined-card>

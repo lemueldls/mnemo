@@ -2,7 +2,7 @@
 members = ["wasm", "tauri"]
 package.authors = ["Lemuel DLS"]
 package.categories = []
-package.edition = "2021"
+package.edition = "2024"
 package.keywords = [""]
 package.license = "Apache-2.0"
 package.repository = "https://github.com/lemueldls/mnemo"

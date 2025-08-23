@@ -16,7 +16,7 @@ export async function useSpaceNotes(spaceId: MaybeRefOrGetter<string>) {
 
 export async function loadDailyNotes(
   spaceId: string,
-  notes: ListRef<Note[]>,
+  notes: Note[],
   archived?: boolean,
 ) {
   const today = new Date();
@@ -24,23 +24,10 @@ export async function loadDailyNotes(
   const month = today.getMonth();
   const date = today.getDate();
 
-  const rawNotes = notes.value;
-
   let addToday = true;
 
-  // for (const note of rawNotes) {
-  //   if (
-  //     addToday &&
-  //     note.datetime[2] === date &&
-  //     note.datetime[1] === month &&
-  //     note.datetime[0] === year &&
-  //     !archived
-  //   )
-  //     addToday = false;
-  // }
-
   const maybeNotes = await Promise.all(
-    rawNotes.map(async (note, i) => {
+    notes.map(async (note) => {
       if (
         note.datetime[2] === date &&
         note.datetime[1] === month &&
@@ -48,34 +35,20 @@ export async function loadDailyNotes(
         !archived
       )
         addToday = false;
-      // else {
-      //   const item = await getStorageItem<string>(
-      //     `spaces/${spaceId}/daily/${note.id}.typ`,
-      //     "",
-      //   );
-      //   console.log({ item });
+      else {
+        const item = await getStorageItem<string>(
+          `spaces/${spaceId}/daily/${note.id}.typ`,
+          "",
+        );
 
-      //   if (!item) return;
-      // }
+        if (!item) return;
+      }
 
       return note;
     }),
   );
-  // const filteredNotes = maybeNotes.filter((note) => note);
 
-  // void (async () => {
-  //   const end = rawNotes.length - 1;
-  //   for (let i = end; i >= 0; i--) {
-  //     const note = rawNotes[i]!;
-
-  //     const item = await getStorageItem<string>(
-  //       `spaces/${spaceId}/daily/${note.id}.typ`,
-  //       "",
-  //     );
-  //     console.log({ item });
-  //     if (!item) notes.delete(i, 1);
-  //   }
-  // })();
+  const newNotes = maybeNotes.filter((note) => note) as Note[];
 
   if (addToday) {
     const id = ulid();
@@ -89,8 +62,8 @@ export async function loadDailyNotes(
       date.getMinutes(),
     ];
 
-    notes.push({ id, datetime });
+    newNotes.push({ id, datetime });
   }
 
-  return notes.value;
+  return newNotes;
 }

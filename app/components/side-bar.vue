@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import Chat from "./chat.vue";
 import Storage from "./storage.vue";
-import Study from "./study.vue";
+// import Study from "./study.vue";
 import Tasks from "./tasks.vue";
 import Today from "./today.vue";
 
@@ -33,6 +33,11 @@ const items: { [key: string]: Item } = {
   //   name: t("components.side-bar.study"),
   //   icon: "school",
   //   component: Study,
+  // },
+  // assets: {
+  //   name: t("components.side-bar.assets"),
+  //   icon: "perm_media",
+  //   component: Assets,
   // },
   storage: {
     name: t("components.side-bar.storage"),

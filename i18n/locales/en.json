@@ -55,6 +55,18 @@
         "preview": "Preview"
       }
     },
+    "new-task": {
+      "title": "New Task",
+      "form": {
+        "create": "Create"
+      }
+    },
+    "edit-task": {
+      "title": "Edit Task",
+      "form": {
+        "update": "Update"
+      }
+    },
     "package-card": {
       "version": "Version",
       "installed": "(Installed)",

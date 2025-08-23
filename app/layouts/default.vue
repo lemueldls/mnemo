@@ -77,7 +77,7 @@ const pages: Page[] = [
         <md-divider class="my-2 px-4" />
 
         <h3
-          class="text-on-surface-variant title-small flex items-center justify-between p-4 pt-0 pb-2"
+          class="text-on-surface-variant title-small flex items-center justify-between p-4 pb-2 pt-0"
         >
           {{ t("layouts.default.spaces") }}
 
@@ -142,6 +142,7 @@ const pages: Page[] = [
 
       <settings v-model="settingsOpen" />
       <new-space v-model="newSpaceOpen" />
+      <edit-task />
 
       <side-bar v-if="medium" direction="vertical" />
     </mx-page>
@@ -150,7 +151,7 @@ const pages: Page[] = [
 
 <style>
 #header {
-  @apply px-4 pt-2 pb-4;
+  @apply px-4 pb-4 pt-2;
 
   font-family: var(--font-mono);
 }

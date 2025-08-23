@@ -27,8 +27,7 @@ use wrappers::{TypstCompletion, TypstDiagnostic, TypstJump};
 struct FileContext {
     pub width: String,
     pub height: Option<f64>,
-    pub pt: f32,
-    pub size: f32,
+    pub pixel_per_pt: f32,
     pub theme: ThemeColors,
 }
 
@@ -37,8 +36,7 @@ impl Default for FileContext {
         Self {
             width: String::from("auto"),
             height: None,
-            pt: 14_f32,
-            size: 1_f32,
+            pixel_per_pt: 1_f32,
             theme: ThemeColors::default(),
         }
     }
@@ -59,14 +57,9 @@ impl TypstState {
         Self::default()
     }
 
-    #[wasm_bindgen(js_name = "setPt")]
-    pub fn set_pt(&mut self, id: &TypstFileId, pt: f32) {
-        self.file_contexts.get_mut(id).unwrap().pt = pt;
-    }
-
-    #[wasm_bindgen(js_name = "setSize")]
-    pub fn set_size(&mut self, id: &TypstFileId, size: f32) {
-        self.file_contexts.get_mut(id).unwrap().size = size;
+    #[wasm_bindgen(js_name = "setPixelPerPt")]
+    pub fn set_pixel_per_pt(&mut self, id: &TypstFileId, size: f32) {
+        self.file_contexts.get_mut(id).unwrap().pixel_per_pt = size;
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
@@ -150,12 +143,12 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:{size}pt)
+                #set text(fill:theme.on-background,size:16pt)
 
                 #context {{show math.equation:set text(size:text.size*2)}}
 
-                #show math.equation.where(block:true):set text(size:{size}pt*1.125)
-                #show math.equation.where(block:true):set par(leading:{size}pt*0.5625)
+                #show math.equation.where(block:true):set text(size:18pt)
+                #show math.equation.where(block:true):set par(leading:9pt)
 
                 #set table(stroke:theme.outline)
 
@@ -169,7 +162,6 @@ impl TypstState {
                 {page_config}
             "#,
             theme = context.theme,
-            size = context.size,
         )
     }
 
@@ -357,7 +349,8 @@ impl TypstState {
             ranged_heights
                 .into_iter()
                 .map(|(range, height, offset_height)| {
-                    let canvas = mnemo_render::render(document, height, offset_height, context.pt);
+                    let canvas =
+                        mnemo_render::render(document, height, offset_height, context.pixel_per_pt);
                     let encoding = canvas.encode_png().unwrap();
 
                     let height = height.ceil() as u32;
@@ -446,13 +439,18 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn resize(&mut self, id: &TypstFileId, width: Option<f64>, height: Option<f64>) {
+    pub fn resize(&mut self, id: &TypstFileId, width: Option<f64>, height: Option<f64>) -> bool {
         let context = self.file_contexts.get_mut(id).unwrap();
 
-        context.width = width
+        let width = width
             .map(|width| width.to_string() + "pt")
             .unwrap_or_else(|| String::from("auto"));
+        let width_changed = context.width != width;
+
+        context.width = width;
         context.height = height;
+
+        width_changed
     }
 
     #[wasm_bindgen(js_name = renderPdf)]

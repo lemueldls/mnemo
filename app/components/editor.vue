@@ -42,7 +42,10 @@ const props = defineProps<{
   kind: NoteKind;
   readonly?: boolean;
   locked?: boolean;
+  faded?: boolean;
 }>();
+
+const emit = defineEmits<{ (e: "ready"): void }>();
 
 const pathId = defineModel<string>({ required: true });
 const fullPath = computed(
@@ -97,8 +100,7 @@ onMounted(async () => {
   await watchImmediateAsync(fullPath, async (fullPath) => {
     const fileId = typstState.createFileId(fullPath);
 
-    typstState.setPt(fileId, window.devicePixelRatio);
-    typstState.setSize(fileId, 16);
+    typstState.setPixelPerPt(fileId, window.devicePixelRatio);
 
     await watchImmediateAsync(palette, async (palette) => {
       typstState.setTheme(
@@ -155,6 +157,7 @@ onMounted(async () => {
   });
 
   ready = true;
+  emit("ready");
 });
 
 const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
@@ -254,7 +257,10 @@ const renderHoverBackground = computed(() => {
 
 <template>
   <div class="size-full overflow-hidden">
-    <div ref="container" :class="['editor', { editor__locked: locked }]" />
+    <div
+      ref="container"
+      :class="['editor', { editor__locked: locked, editor__faded: faded }]"
+    />
   </div>
 </template>
 
@@ -270,12 +276,12 @@ const renderHoverBackground = computed(() => {
     @apply overflow-x-hidden overflow-y-scroll;
   }
 
-  &__locked {
-    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  &__locked .cm-scroller {
+    @apply overflow-hidden!;
+  }
 
-    .cm-scroller {
-      @apply overflow-hidden!;
-    }
+  &__faded {
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   }
 
   .cm-line {
@@ -459,7 +465,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-render {
-    @apply inline-block align-top;
+    @apply inline-block w-full align-top;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
