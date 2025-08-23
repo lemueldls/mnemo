@@ -1,26 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export interface TypstDiagnostic {
-    range: { start: number; end: number };
-    severity: TypstDiagnosticSeverity;
-    message: string;
-    hints: string[];
-}
-
-export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
-
-export type TypstJump = { type: "File"; position: number };
-
-export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
-
-export interface TypstCompletion {
-    type: TypstCompletionKind;
-    label: string;
-    apply: string | undefined;
-    detail: string | undefined;
-}
-
 export interface CompileResult {
     frames: RangedFrame[];
     diagnostics: TypstDiagnostic[];
@@ -52,6 +32,26 @@ export interface FrameRender {
     encoding: Uint8Array;
     height: number;
     offsetHeight: number;
+}
+
+export interface TypstDiagnostic {
+    range: { start: number; end: number };
+    severity: TypstDiagnosticSeverity;
+    message: string;
+    hints: string[];
+}
+
+export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
+
+export type TypstJump = { type: "File"; position: number };
+
+export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
+
+export interface TypstCompletion {
+    type: TypstCompletionKind;
+    label: string;
+    apply: string | undefined;
+    detail: string | undefined;
 }
 
 export class FileId {
@@ -91,7 +91,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly __wbg_typststate_free: (a: number, b: number) => void;
   readonly typststate_new: () => number;
   readonly typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
@@ -111,6 +110,7 @@ export interface InitOutput {
   readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number) => [number, number];
+  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly start: () => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
   readonly qcms_profile_is_bogus: (a: number) => number;

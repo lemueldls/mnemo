@@ -1,7 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const __wbg_fileid_free: (a: number, b: number) => void;
 export const __wbg_typststate_free: (a: number, b: number) => void;
 export const typststate_new: () => number;
 export const typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
@@ -21,6 +20,7 @@ export const __wbg_themecolors_free: (a: number, b: number) => void;
 export const themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
 export const rgb_new: (a: number, b: number, c: number) => number;
 export const rgb_toString: (a: number) => [number, number];
+export const __wbg_fileid_free: (a: number, b: number) => void;
 export const start: () => void;
 export const __wbg_rgb_free: (a: number, b: number) => void;
 export const qcms_profile_is_bogus: (a: number) => number;
