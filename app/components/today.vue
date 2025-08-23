@@ -17,8 +17,8 @@ const caretRef = useTemplateRef("caret");
 const scrollHeight = ref(0);
 const scroll = useScroll(containerRef);
 
-const scrollX = useState("today:scroll-x", () => 0);
-watch(scroll.x, (x) => (scrollX.value = x));
+// const scrollX = useState("today:scroll-x", () => 0);
+// watch(scroll.x, (x) => (scrollX.value = x));
 const scrollY = useState("today:scroll-y", () => 0);
 watch(scroll.y, (y) => (scrollY.value = y));
 
@@ -41,7 +41,7 @@ onMounted(() => {
   const container = containerRef.value!;
   const caret = caretRef.value!;
 
-  scroll.x.value = scrollX.value;
+  // scroll.x.value = scrollX.value;
   scroll.y.value = scrollY.value;
 
   scrollHeight.value = container.scrollHeight;

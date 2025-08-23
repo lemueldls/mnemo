@@ -6,10 +6,6 @@ const editingTask = useEditingTask();
 const container = useTemplateRef("container");
 const { width, height } = useElementSize(container);
 
-watchEffect(() => {
-  console.log({ ready: ready.value });
-});
-
 const containerWidth = ref(0);
 const containerHeight = ref(0);
 
