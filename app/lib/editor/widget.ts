@@ -1,4 +1,5 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
+import { StateEffect, StateField, type Range } from "@codemirror/state";
 
 import {
   Decoration,
@@ -9,7 +10,6 @@ import {
 
 import { LRUCache } from "lru-cache";
 
-import { StateEffect, StateField, type Range } from "@codemirror/state";
 import type { DecorationSet, PluginValue, ViewUpdate } from "@codemirror/view";
 
 import type {
