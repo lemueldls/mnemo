@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { createId } from "@paralleldrive/cuid2";
 
-const props = defineProps<{ spaceId?: string }>();
+const open = useNewTaskOpen();
 
-const open = defineModel<boolean>("open");
-const spaceId = ref(props.spaceId);
+const route = useRoute();
+const isSpace = route.name === "space";
+const selectedSpaceId = isSpace ? usePageRouteQuery("id") : ref<string>();
 
 const spaces = await useSpaces();
 
@@ -16,9 +17,10 @@ function createTask() {
   open.value = false;
 
   const id = createId();
+  const spaceId = selectedSpaceId!.value!;
   const task = {
     id,
-    spaceId: spaceId.value!,
+    spaceId,
     pinned: false,
     createdAt: Date.now(),
   };
@@ -46,7 +48,7 @@ function createTask() {
       >
         <md-outlined-card
           class="flex flex-col gap-2 p-3"
-          @click="spaceId = id as string"
+          @click="selectedSpaceId = id as string"
         >
           <md-ripple />
 
@@ -60,7 +62,7 @@ function createTask() {
             <md-radio
               name="space"
               :value="id"
-              :checked="id === spaceId"
+              :checked="id === selectedSpaceId"
               required
             />
           </div>

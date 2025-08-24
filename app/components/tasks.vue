@@ -1,11 +1,7 @@
 <script setup lang="ts">
 const tasks = await useTasks();
 
-const newTaskOpen = ref(false);
-
-const route = useRoute();
-const isSpace = route.name === "space";
-const spaceId = isSpace ? usePageRouteQuery("id") : undefined;
+const newTaskOpen = useNewTaskOpen();
 
 const containerRef = useTemplateRef("container");
 const scroll = useScroll(containerRef);
@@ -30,6 +26,4 @@ onMounted(() => {
 
     <task-item v-for="(task, i) in tasks" :key="i" v-model:task="tasks[i]!" />
   </div>
-
-  <new-task v-model:open="newTaskOpen" :space-id="spaceId" />
 </template>
