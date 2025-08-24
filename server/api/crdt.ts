@@ -1,3 +1,17 @@
+import { LoroDoc } from "loro-crdt/bundler";
+import * as imports from "loro-crdt/bundler";
+import wasm from "loro-crdt/bundler/loro_wasm_bg.wasm?module";
+
+const instance = new WebAssembly.Instance(wasm, {
+  "./loro_wasm_bg.js": imports,
+});
+
+(
+  imports as typeof imports & {
+    __wbg_set_wasm(wasm: WebAssembly.Exports): void;
+  }
+).__wbg_set_wasm(instance.exports);
+
 export default defineWebSocketHandler({
   async upgrade(request) {
     const user = await requireUser(request.headers);
@@ -17,7 +31,15 @@ export default defineWebSocketHandler({
 
     peer.publish(peer.namespace, import.meta.dev ? message.blob() : bytes);
 
-    await hubBlob().put(peer.namespace, bytes);
+    const blob = await hubBlob().get(peer.namespace);
+    const doc = blob?.size
+      ? LoroDoc.fromSnapshot(await blob.bytes())
+      : new LoroDoc();
+
+    doc.import(bytes);
+
+    const snapshot = doc.export({ mode: "snapshot" });
+    await hubBlob().put(peer.namespace, snapshot);
   },
 
   async close(peer) {
