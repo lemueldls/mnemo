@@ -458,6 +458,8 @@ async function createStickyNote() {
       </md-dialog>
 
       <settings v-model="settingsOpen" />
+
+      <new-task />
       <edit-task />
 
       <side-bar v-if="medium" direction="vertical" />

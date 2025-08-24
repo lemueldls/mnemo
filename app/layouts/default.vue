@@ -141,7 +141,10 @@ const pages: Page[] = [
       </div>
 
       <settings v-model="settingsOpen" />
+
       <new-space v-model="newSpaceOpen" />
+
+      <new-task />
       <edit-task />
 
       <side-bar v-if="medium" direction="vertical" />
