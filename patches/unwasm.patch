@@ -1,0 +1,21 @@
+diff --git a/dist/tools.mjs b/dist/tools.mjs
+index 8e8e78f3c183dfada70a90585e63c98173e6a9c6..06c424b552442e37a4be28c232fef11c787ed069 100644
+--- a/dist/tools.mjs
++++ b/dist/tools.mjs
+@@ -3332,6 +3332,16 @@ var require_lib6 = __commonJS({
+       64527: createSymbol("table.grow", 1),
+       64528: createSymbol("table.size", 1),
+       64529: createSymbol("table.fill", 1),
++      // https://webassembly.github.io/spec/core/binary/instructions.html#numeric-instructions
++      // saturating truncation instructions
++      64512: createSymbol("i32.trunc_sat_f32_s"),
++      64513: createSymbol("i32.trunc_sat_f32_u"),
++      64514: createSymbol("i32.trunc_sat_f64_s"),
++      64515: createSymbol("i32.trunc_sat_f64_u"),
++      64516: createSymbol("i64.trunc_sat_f32_s"),
++      64517: createSymbol("i64.trunc_sat_f32_u"),
++      64518: createSymbol("i64.trunc_sat_f64_s"),
++      64519: createSymbol("i64.trunc_sat_f64_u"),
+       // Atomic Memory Instructions
+       65024: createSymbol("memory.atomic.notify", 1),
+       65025: createSymbol("memory.atomic.wait32", 1),
