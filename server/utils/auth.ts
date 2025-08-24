@@ -7,10 +7,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 const runtimeConfig = useRuntimeConfig();
 
-const polarClient = new Polar({
-  accessToken: runtimeConfig.polar.accessToken,
-  server: import.meta.dev ? "sandbox" : "production",
-});
+const polarClient = new Polar({ accessToken: runtimeConfig.polar.accessToken });
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
