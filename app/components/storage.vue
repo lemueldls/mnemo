@@ -91,7 +91,7 @@ function formatBytes(bytes: number) {
       <md-filled-tonal-button v-if="user" @click="logout">
         {{ $t("components.sync.logout") }}
       </md-filled-tonal-button>
-      <md-filled-button v-else @click="login">
+      <md-filled-button v-else disabled @click="login">
         {{ $t("components.sync.continue-with-github") }}
       </md-filled-button>
     </md-outlined-card>
