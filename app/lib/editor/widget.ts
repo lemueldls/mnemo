@@ -10,7 +10,7 @@ import {
 
 import { LRUCache } from "lru-cache";
 
-import type { DecorationSet, PluginValue, ViewUpdate } from "@codemirror/view";
+import type { DecorationSet, ViewUpdate } from "@codemirror/view";
 
 import type {
   CompileResult,
@@ -95,15 +95,9 @@ class TypstWidget extends WidgetType {
   public override destroy() {
     if (this.locked) return;
 
-    this.#image.removeEventListener("click", this.handleMouseEvent.bind(this));
-    this.#image.removeEventListener(
-      "mousedown",
-      this.handleMouseEvent.bind(this),
-    );
-    this.#image.removeEventListener(
-      "touchstart",
-      this.handleTouchEvent.bind(this),
-    );
+    this.#image.removeEventListener("click", this.handleMouseEvent);
+    this.#image.removeEventListener("mousedown", this.handleMouseEvent);
+    this.#image.removeEventListener("touchstart", this.handleTouchEvent);
   }
 }
 

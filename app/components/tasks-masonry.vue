@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const tasks = await useTasks();
-const sortedTasks = tasks.getSorted();
+const sortedTasks = computed(() => tasks.sorted);
 
 interface TaskItemRef {
   width: number;
