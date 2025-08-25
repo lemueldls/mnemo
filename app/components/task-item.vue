@@ -27,7 +27,12 @@ defineExpose({
   height: readonly(containerHeight),
 });
 
-const showContent = computed(() => task.value.id !== editingTask.value?.id);
+const showContent = computed(
+  () =>
+    task.value.id !== editingTask.value?.id ||
+    !containerWidth.value ||
+    !containerHeight.value,
+);
 
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[task.value.spaceId]);
@@ -71,8 +76,12 @@ watchImmediate(space, (space) => {
     </div>
 
     <md-outlined-card
-      v-else-if="containerWidth && containerHeight"
-      :style="{ width: `${containerWidth}px`, height: `${containerHeight}px` }"
+      v-else
+      :style="
+        containerWidth && containerHeight
+          ? { width: `${containerWidth}px`, height: `${containerHeight}px` }
+          : undefined
+      "
     />
   </mx-theme>
 </template>
