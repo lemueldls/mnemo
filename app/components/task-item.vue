@@ -50,7 +50,7 @@ watchImmediate(space, (space) => {
       ref="container"
       class="size-full"
       :style="
-        ready || !containerWidth || !containerHeight
+        ready
           ? undefined
           : { width: `${containerWidth}px`, height: `${containerHeight}px` }
       "
