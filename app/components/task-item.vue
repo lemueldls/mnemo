@@ -46,7 +46,7 @@ const showContent = computed(() => task.value.id !== editingTask.value?.id);
     >
       <mx-filled-card
         :class="[
-          'relative size-full cursor-pointer p-3 transition-all duration-200',
+          'relative size-full cursor-pointer p-3',
           { 'border-primary border': task.pinned },
         ]"
         @click="editingTask = task"
