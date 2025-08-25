@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const tasks = await useTasks();
+const sortedTasks = tasks.getSorted();
 
 interface TaskItemRef {
   width: number;
@@ -23,18 +24,6 @@ watchEffect(() => {
   else if (containerWidth.value < 900) columnCount.value = 2;
   else if (containerWidth.value < 1200) columnCount.value = 3;
   else columnCount.value = 4;
-});
-
-// Sort tasks by pinned status and creation date
-const sortedTasks = computed(() => {
-  return Object.values(tasks.value).sort((a, b) => {
-    // Pinned tasks first
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-
-    // Then by creation date (newest first)
-    return b.createdAt - a.createdAt;
-  });
 });
 
 // Calculate positions for masonry layout

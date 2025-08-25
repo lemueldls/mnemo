@@ -37,15 +37,18 @@ const showContent = computed(() => task.value.id !== editingTask.value?.id);
     <div
       v-if="showContent"
       ref="container"
-      class="w-full"
+      class="size-full"
       :style="
         ready
           ? undefined
           : { width: `${containerWidth}px`, height: `${containerHeight}px` }
       "
     >
-      <md-filled-card
-        class="relative flex size-full cursor-pointer flex-col gap-3 p-2 transition-all duration-200 hover:shadow-md"
+      <mx-filled-card
+        :class="[
+          'relative size-full cursor-pointer p-3 transition-all duration-200',
+          { 'border-primary border': task.pinned },
+        ]"
         @click="editingTask = task"
       >
         <md-ripple />
@@ -58,7 +61,7 @@ const showContent = computed(() => task.value.id !== editingTask.value?.id);
           readonly
           @ready="ready = true"
         />
-      </md-filled-card>
+      </mx-filled-card>
     </div>
 
     <md-outlined-card

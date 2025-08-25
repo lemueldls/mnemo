@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const tasks = await useTasks();
+const sortedTasks = tasks.getSorted();
 
 const newTaskOpen = useNewTaskOpen();
 
@@ -24,6 +25,10 @@ onMounted(() => {
       New Task
     </md-filled-tonal-button>
 
-    <task-item v-for="(task, i) in tasks" :key="i" v-model:task="tasks[i]!" />
+    <task-item
+      v-for="(task, i) in sortedTasks"
+      :key="task.id"
+      v-model:task="sortedTasks[i]!"
+    />
   </div>
 </template>
