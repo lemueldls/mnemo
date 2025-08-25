@@ -6,47 +6,56 @@ interface TaskItemRef {
   height: number;
 }
 
-// Masonry layout configuration
-const containerRef = useTemplateRef<HTMLDivElement>("container");
 const taskRefs = ref<{ [id: string]: TaskItemRef }>({});
+
+// Masonry layout configuration
 const columnCount = ref(3);
 const columnGap = 12;
 const rowGap = 12;
 
-// Responsive column count based on container width
+const containerRef = useTemplateRef("container");
 const { width: containerWidth } = useElementSize(containerRef);
 
 watchEffect(() => {
   if (!containerWidth.value) return;
 
-  if (containerWidth.value < 600) {
-    columnCount.value = 1;
-  } else if (containerWidth.value < 900) {
-    columnCount.value = 2;
-  } else if (containerWidth.value < 1200) {
-    columnCount.value = 3;
-  } else {
-    columnCount.value = 4;
-  }
+  if (containerWidth.value < 600) columnCount.value = 1;
+  else if (containerWidth.value < 900) columnCount.value = 2;
+  else if (containerWidth.value < 1200) columnCount.value = 3;
+  else columnCount.value = 4;
 });
 
-const taskIds = computed(() => Object.keys(tasks.value));
+// Sort tasks by pinned status and creation date
+const sortedTasks = computed(() => {
+  return Object.values(tasks.value).sort((a, b) => {
+    // Pinned tasks first
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+
+    // Then by creation date (newest first)
+    return b.createdAt - a.createdAt;
+  });
+});
 
 // Calculate positions for masonry layout
 const taskPositions = computed(() => {
-  if (!taskIds.value.length || !columnCount.value) return {};
+  const taskIds = sortedTasks.value.map((task) => task.id);
+
+  const columns = columnCount.value;
+  if (!taskIds.length || !columns) return {};
 
   const positions: { [id: string]: { x: number; y: number; width: number } } =
     {};
-  const columnHeights = Array.from({ length: columnCount.value }, () => 0);
-  const columnWidth = containerWidth.value
-    ? (containerWidth.value - (columnCount.value - 1) * columnGap) /
-      columnCount.value
+  const columnHeights = Array.from({ length: columns }, () => 0);
+  const width = containerWidth.value;
+  const columnWidth = width
+    ? (width - (columns - 1) * columnGap) / columns
     : 300;
 
-  taskIds.value.forEach((id) => {
-    const taskRef = taskRefs.value[id];
-    if (!taskRef || columnHeights.length === 0) return;
+  const refs = taskRefs.value;
+  for (const id of taskIds) {
+    const taskRef = refs[id];
+    if (!taskRef || columnHeights.length === 0) continue;
 
     // Find the shortest column
     let shortestColumn = 0;
@@ -63,16 +72,12 @@ const taskPositions = computed(() => {
     const x = shortestColumn * (columnWidth + columnGap);
     const y = columnHeights[shortestColumn]!;
 
-    positions[id] = {
-      x,
-      y,
-      width: columnWidth,
-    };
+    positions[id] = { x, y, width: columnWidth };
 
     // Update column height
     columnHeights[shortestColumn] =
       columnHeights[shortestColumn]! + taskRef.height + rowGap;
-  });
+  }
 
   return positions;
 });
@@ -100,7 +105,6 @@ const containerHeight = computed(() => {
   return maxHeight;
 });
 
-// Handle task ref updates
 const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
   if (ref) {
     taskRefs.value[taskId] = ref;
@@ -109,18 +113,6 @@ const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
     taskRefs.value = newRefs;
   }
 };
-
-// Sort tasks by pinned status and creation date
-const sortedTasks = computed(() => {
-  return Object.values(tasks.value).sort((a, b) => {
-    // Pinned tasks first
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-
-    // Then by creation date (newest first)
-    return b.createdAt - a.createdAt;
-  });
-});
 </script>
 
 <template>
@@ -151,14 +143,14 @@ const sortedTasks = computed(() => {
 
     <!-- Loading placeholder when no tasks positioned yet -->
     <div
-      v-if="!Object.keys(taskPositions).length && taskIds.length"
+      v-if="!Object.keys(taskPositions).length && sortedTasks.length"
       class="flex min-h-40 items-center justify-center"
     >
       <div class="text-surface-variant animate-pulse">Loading tasks...</div>
     </div>
 
     <!-- Empty state -->
-    <span v-else-if="!taskIds.length" class="text-on-surface-variant">
+    <span v-else-if="!sortedTasks.length" class="text-on-surface-variant">
       No tasks yet.
     </span>
 
