@@ -26,7 +26,7 @@ jobs:
       matrix:
         package:
           - name: mnemo-bin
-            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/Mnemo_${{ inputs.semver }}_amd64.deb.sha256"
+            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}-amd64.deb.sha256"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
             checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}.tar.gz.sha256"
