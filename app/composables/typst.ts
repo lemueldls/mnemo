@@ -8,12 +8,12 @@ export const useTypst = createSharedComposable(
       const typstState = new TypstState();
 
       const fontSets = [
-        [
-          import("~~/public/fonts/maple/ttf/MapleMono-Regular.ttf?url"),
-          import("~~/public/fonts/maple/ttf/MapleMono-Italic.ttf?url"),
-          import("~~/public/fonts/maple/ttf/MapleMono-Bold.ttf?url"),
-          import("~~/public/fonts/maple/ttf/MapleMono-BoldItalic.ttf?url"),
-        ],
+        // [
+        //   import("~~/public/fonts/maple/ttf/MapleMono-Regular.ttf?url"),
+        //   import("~~/public/fonts/maple/ttf/MapleMono-Italic.ttf?url"),
+        //   import("~~/public/fonts/maple/ttf/MapleMono-Bold.ttf?url"),
+        //   import("~~/public/fonts/maple/ttf/MapleMono-BoldItalic.ttf?url"),
+        // ],
         [
           import("~~/public/fonts/maple/cn/MapleMono-CN-Regular.ttf?url"),
           import("~~/public/fonts/maple/cn/MapleMono-CN-Italic.ttf?url"),
@@ -21,7 +21,7 @@ export const useTypst = createSharedComposable(
           import("~~/public/fonts/maple/cn/MapleMono-CN-BoldItalic.ttf?url"),
         ],
         [
-          import("~~/public/fonts/NewCMMath-Book.otf?url"),
+          // import("~~/public/fonts/NewCMMath-Book.otf?url"),
           import("~~/public/fonts/NewCMMath-Regular.otf?url"),
         ],
       ];
