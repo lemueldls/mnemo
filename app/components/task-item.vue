@@ -27,13 +27,19 @@ defineExpose({
   height: readonly(containerHeight),
 });
 
-const spaces = await useSpaces();
-
 const showContent = computed(() => task.value.id !== editingTask.value?.id);
+
+const spaces = await useSpaces();
+const space = computed(() => spaces.value[task.value.spaceId]);
+
+const tasks = await useTasks();
+watchImmediate(space, (space) => {
+  if (!space) tasks.delete(task.value.id);
+});
 </script>
 
 <template>
-  <mx-theme :key="task.id" :color="spaces[task.spaceId]!.color" harmonize>
+  <mx-theme :key="task.id" :color="space!.color" harmonize>
     <div
       v-if="showContent"
       ref="container"
