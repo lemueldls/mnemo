@@ -7,12 +7,18 @@ interface TaskItemRef {
   height: number;
 }
 
+interface TaskPosition {
+  x: number;
+  y: number;
+  width: number;
+}
+
 const taskRefs = ref<{ [id: string]: TaskItemRef }>({});
 
 // Masonry layout configuration
-const columnCount = ref(3);
-const columnGap = 12;
-const rowGap = 12;
+const columns = ref(3);
+const columnGap = 12; // gap-3 (0.75rem)
+const rowGap = 12; // gap-3 (0.75rem)
 
 const containerRef = useTemplateRef("container");
 const { width: containerWidth } = useElementSize(containerRef);
@@ -20,26 +26,23 @@ const { width: containerWidth } = useElementSize(containerRef);
 watchEffect(() => {
   if (!containerWidth.value) return;
 
-  if (containerWidth.value < 600) columnCount.value = 1;
-  else if (containerWidth.value < 900) columnCount.value = 2;
-  else if (containerWidth.value < 1200) columnCount.value = 3;
-  else columnCount.value = 4;
+  if (containerWidth.value < 600) columns.value = 1;
+  else if (containerWidth.value < 900) columns.value = 2;
+  else if (containerWidth.value < 1200) columns.value = 3;
+  else columns.value = 4;
 });
 
 // Calculate positions for masonry layout
 const taskPositions = computed(() => {
   const taskIds = sortedTasks.value.map((task) => task.id);
 
-  const columns = columnCount.value;
-  if (!taskIds.length || !columns) return {};
+  const cols = columns.value;
+  if (!taskIds.length || !cols) return {};
 
-  const positions: { [id: string]: { x: number; y: number; width: number } } =
-    {};
-  const columnHeights = Array.from({ length: columns }, () => 0);
+  const positions: { [id: string]: TaskPosition } = {};
+  const columnHeights = Array.from({ length: cols }, () => 0);
   const width = containerWidth.value;
-  const columnWidth = width
-    ? (width - (columns - 1) * columnGap) / columns
-    : 300;
+  const columnWidth = width ? (width - (cols - 1) * columnGap) / cols : 300;
 
   const refs = taskRefs.value;
   for (const id of taskIds) {
@@ -73,23 +76,21 @@ const taskPositions = computed(() => {
 
 // Container height based on tallest column
 const containerHeight = computed(() => {
-  if (!Object.keys(taskPositions.value).length) return 0;
+  const positions = taskPositions.value;
+  const positionIds = Object.keys(positions);
+
+  if (!positionIds.length) return 0;
 
   let maxHeight = 0;
-  Object.values(taskPositions.value).forEach((pos) => {
+  for (const pos of Object.values(positions)) {
     const taskRef =
-      taskRefs.value[
-        Object.keys(taskPositions.value).find(
-          (key) => taskPositions.value[key] === pos,
-        )!
-      ];
+      taskRefs.value[positionIds.find((id) => positions[id] === pos)!];
+
     if (taskRef) {
       const totalHeight = pos.y + taskRef.height;
-      if (totalHeight > maxHeight) {
-        maxHeight = totalHeight;
-      }
+      if (totalHeight > maxHeight) maxHeight = totalHeight;
     }
-  });
+  }
 
   return maxHeight;
 });
@@ -142,7 +143,5 @@ const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
     <span v-else-if="!sortedTasks.length" class="text-on-surface-variant">
       No tasks yet.
     </span>
-
-    <span v-else class="text-on-surface-variant">Loading...</span>
   </div>
 </template>
