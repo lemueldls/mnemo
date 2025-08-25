@@ -27,6 +27,7 @@ function createTask() {
 
   tasks.set(id, task);
   editingTask.value = task;
+  selectedSpaceId.value = undefined;
 }
 </script>
 
@@ -39,6 +40,7 @@ function createTask() {
       slot="content"
       method="dialog"
       class="grid grid-cols-2 gap-3"
+      @submit="createTask"
     >
       <mx-theme
         v-for="(space, id) in spaces"
@@ -87,9 +89,7 @@ function createTask() {
     </form>
 
     <div slot="actions">
-      <md-text-button form="new-task-form" @click="createTask">
-        Create
-      </md-text-button>
+      <md-text-button form="new-task-form"> Create </md-text-button>
     </div>
   </md-dialog>
 </template>
