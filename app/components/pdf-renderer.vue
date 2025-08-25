@@ -58,11 +58,13 @@ function parseColor(color: Rgba): Rgb {
   return new Rgb(color.r, color.g, color.b);
 }
 
-watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
-  const typstState = await useTypst();
+const path = `spaces/${spaceId.value}/export.typ`;
+const fileId = typstState.createFileId(path);
 
-  typstState.setPixelPerPt(pixelPerPoint);
+watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
+  typstState.setPixelPerPt(fileId, pixelPerPoint);
   typstState.setTheme(
+    fileId,
     new ThemeColors(
       parseColor(palette.background),
       parseColor(palette.onBackground),
@@ -96,10 +98,9 @@ watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
 const packages = await useInstalledPackages(spaceId.value);
 await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
 
-typstState.resize(800);
+typstState.resize(fileId, 800);
 
-const path = `spaces/${spaceId.value}/export.typ`;
-const fileId = typstState.insertFile(path, dailyNotes.join("\n"));
+typstState.insertFile(fileId, dailyNotes.join("\n"));
 
 const { bytes, diagnostics } = typstState.renderPdf(fileId);
 const pdf = bytes ? new Uint8Array(bytes) : null;
