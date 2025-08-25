@@ -39,7 +39,7 @@ const showContent = computed(() => task.value.id !== editingTask.value?.id);
       ref="container"
       class="size-full"
       :style="
-        ready && containerWidth && containerHeight
+        ready || !containerWidth || !containerHeight
           ? undefined
           : { width: `${containerWidth}px`, height: `${containerHeight}px` }
       "
