@@ -147,7 +147,7 @@ onMounted(async () => {
 
     watch(
       text,
-      async (text) => {
+      (text) => {
         typstState.insertFile(fileId, text);
         const state = createEditorState(fileId);
         view.setState(state);
@@ -157,7 +157,7 @@ onMounted(async () => {
   });
 
   ready = true;
-  emit("ready");
+  queueMicrotask(() => emit("ready"));
 });
 
 const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(

@@ -3,41 +3,33 @@ const task = defineModel<Task>("task", { required: true });
 
 const ready = ref(true);
 const editingTask = useEditingTask();
+
 const container = useTemplateRef("container");
 const { width, height } = useElementSize(container);
 
 const containerWidth = ref(0);
 const containerHeight = ref(0);
 
-watch(
-  [width, ready],
-  ([newWidth, ready]) => {
-    if (newWidth && ready) containerWidth.value = newWidth;
-  },
-  { immediate: true },
-);
+watchImmediate([width, ready], ([width, ready]) => {
+  if (width && ready) containerWidth.value = width;
+});
 
-watch(
-  [height, ready],
-  ([newHeight, ready]) => {
-    if (newHeight && ready) containerHeight.value = newHeight;
-  },
-  { immediate: true },
-);
+watchImmediate([height, ready], ([height, ready]) => {
+  if (height && ready) containerHeight.value = height;
+});
+
+watchImmediate(editingTask, (editingTask) => {
+  if (editingTask && editingTask.id === task.value.id) ready.value = false;
+});
 
 defineExpose({
   width: readonly(containerWidth),
   height: readonly(containerHeight),
 });
 
-const showContent = computed(() => task.value.id !== editingTask.value?.id);
-
-function editTask() {
-  editingTask.value = task.value;
-  ready.value = false;
-}
-
 const spaces = await useSpaces();
+
+const showContent = computed(() => task.value.id !== editingTask.value?.id);
 </script>
 
 <template>
@@ -49,15 +41,12 @@ const spaces = await useSpaces();
       :style="
         ready
           ? undefined
-          : {
-              width: `${containerWidth}px`,
-              height: `${containerHeight}px`,
-            }
+          : { width: `${containerWidth}px`, height: `${containerHeight}px` }
       "
     >
       <md-filled-card
         class="relative flex size-full cursor-pointer flex-col gap-3 p-2 transition-all duration-200 hover:shadow-md"
-        @click="editTask"
+        @click="editingTask = task"
       >
         <md-ripple />
 
@@ -72,9 +61,8 @@ const spaces = await useSpaces();
       </md-filled-card>
     </div>
 
-    <div
+    <md-outlined-card
       v-else-if="containerWidth && containerHeight"
-      class="border-outline bg-surface-container-low flex items-center justify-center rounded-lg border-2 border-dashed p-4"
       :style="{ width: `${containerWidth}px`, height: `${containerHeight}px` }"
     />
   </mx-theme>
