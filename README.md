@@ -10,7 +10,6 @@
 
 ## TODO
 
-- Tasks sorting
 - Review algorithm
 - Global search system
 - Prompt to install missing packages
