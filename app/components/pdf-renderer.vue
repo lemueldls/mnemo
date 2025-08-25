@@ -61,7 +61,7 @@ function parseColor(color: Rgba): Rgb {
 const path = `spaces/${spaceId.value}/export.typ`;
 const fileId = typstState.createFileId(path);
 
-watchImmediate([pixelPerPoint, palette], async ([pixelPerPoint, palette]) => {
+watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
   typstState.setPixelPerPt(fileId, pixelPerPoint);
   typstState.setTheme(
     fileId,
