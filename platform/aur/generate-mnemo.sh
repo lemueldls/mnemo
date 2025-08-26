@@ -33,6 +33,7 @@ build() {
     # unfortunately LTOFLAGS -flto=auto set by /etc/makepkg.conf break linking as those are added to CFLAGS automatically
     # building will bail out with something like: undefined reference to 'ring_core_0_17_8_OPENSSL_ia32cap_P' when -flto=auto is set
     export CFLAGS="\${CFLAGS//-flto=auto//}"
+    pnpm install
     pnpm tauri build -b deb || true
 }
 check() {
