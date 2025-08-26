@@ -44,6 +44,6 @@ package() {
     install -Dm644 usr/share/icons/hicolor/128x128/apps/mnemo.png "\$pkgdir"/usr/share/icons/hicolor/128x128/apps/mnemo.png
     install -Dm644 usr/share/icons/hicolor/256x256@2/apps/mnemo.png "\$pkgdir"/usr/share/icons/hicolor/256x256@2/apps/mnemo.png
     install -Dm644 usr/share/icons/hicolor/32x32/apps/mnemo.png "\$pkgdir"/usr/share/icons/hicolor/32x32/apps/mnemo.png
-    # install -Dm644 usr/share/licenses/mnemo/LICENSE "\$pkgdir"/usr/share/licenses/mnemo/LICENSE
+    install -Dm644 usr/share/licenses/mnemo/LICENSE "\$pkgdir"/usr/share/licenses/mnemo/LICENSE
 }
 EOF
