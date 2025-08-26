@@ -2,8 +2,6 @@ name: "🖥️ Desktop (push)"
 
 on:
   push:
-    branches:
-      - main
 
 concurrency:
   # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
