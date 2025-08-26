@@ -1,25 +1,21 @@
-name: "Reusable desktop tauri build workflow"
+name: "🖥️ Desktop"
+
+concurrency:
+  # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
+  group: ${{ github.ref == 'refs/heads/main' && format('dekstop-main-{0}', github.sha) || format('dekstop-{0}', github.ref) }}
 
 on:
-  workflow_call:
-    inputs:
-      publish:
-        required: false
-        type: boolean
-    secrets:
-      TAURI_SIGNING_PRIVATE_KEY:
-        required: true
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
-        required: true
-      NUXT_PUBLIC_API_BASE_URL:
-        required: true
-      # WINDOWS_CERTIFICATE:
-      #   required: true
-      # WINDOWS_CERTIFICATE_PASSWORD:
-      #   required: true
+  push:
 
 jobs:
   build:
+    env:
+      PUBLISH: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +53,7 @@ jobs:
         id: resolve-tag
         shell: bash
         run: |
-          if [ "${{ inputs.publish }}" = "true" ]; then
+          if [ "${{ env.PUBLISH }}" = "true" ]; then
             CURRENT_TAG=v${{ steps.get-version.outputs.current-version }}
           else
             CURRENT_TAG=$GITHUB_REF_NAME
@@ -90,11 +86,11 @@ jobs:
       #     cargo fmt -- --check
 
       - name: 📦 Run sccache
-        if: ${{ !inputs.publish }}
+        if: ${{ !env.PUBLISH }}
         uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: 📦 Set Rust caching env vars only on non-release runs
-        if: ${{ !inputs.publish }}
+        if: ${{ !env.PUBLISH }}
         shell: bash
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
@@ -145,14 +141,14 @@ jobs:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
         with:
           releaseName: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
-          releaseDraft: ${{ !inputs.publish }}
+          releaseDraft: true
           assetNamePattern: "[name]_[version]_[arch][ext]"
           tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           args: ${{ matrix.args }}
           retryAttempts: 1
 
       - name: 📤 Upload build artifacts (push or pr builds only)
-        if: ${{ !inputs.publish }}
+        if: ${{ !env.PUBLISH }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "bundles-${{matrix.os}}${{matrix.args}}"
@@ -169,7 +165,7 @@ jobs:
             platform/target/release/mnemo.pdb
 
       - name: 📤 Publish debug symbols to release (windows only)
-        if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
+        if: ${{ contains(matrix.os, 'windows') && (env.PUBLISH) }}
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
           files: platform/target/release/mnemo.pdb
@@ -177,7 +173,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🛡️ Attest build provenance (publish release only)
-        if: ${{ inputs.publish }}
+        if: ${{ env.PUBLISH }}
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: |
@@ -198,7 +194,7 @@ jobs:
           artifact-name: "sbom.${{ matrix.platform }}.spdx.json"
 
       - name: 🛡️ Attest SBOM
-        if: ${{ inputs.publish }}
+        if: ${{ env.PUBLISH }}
         uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
         with:
           subject-path: ${{
