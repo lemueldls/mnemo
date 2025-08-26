@@ -29,13 +29,8 @@ export function serverAuth() {
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
-    trustedOrigins: [
-      "http://localhost:3000",
-      "http://tauri.localhost",
-      "https://mnemo.nuxt.dev",
-      "https://mnemo.pages.dev",
-      "https://notes.lemueldls.dev",
-      "https://notes.workers.lemueldls.dev",
+    trustedOrigins: (req) => [
+      req.headers.get("origin") || new URL(req.url).origin,
     ],
     database: {
       dialect: new D1Dialect({
