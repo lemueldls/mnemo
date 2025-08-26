@@ -3155,7 +3155,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "once_cell",
  "serde",
@@ -3178,7 +3178,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo-render"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bytemuck",
  "comemo 0.5.0",
@@ -3197,7 +3197,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo-wasm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "comemo 0.4.0",
  "console_error_panic_hook",
