@@ -1,11 +1,11 @@
-name: "📱 Android (push)"
+name: "🖥️ Desktop (push)"
 
 on:
   push:
 
 concurrency:
   # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
-  group: ${{ github.ref == 'refs/heads/main' && format('android-main-{0}', github.sha) || format('android-{0}', github.ref) }}
+  group: ${{ github.ref == 'refs/heads/main' && format('dekstop-main-{0}', github.sha) || format('dekstop-{0}', github.ref) }}
 
 jobs:
   push:
@@ -14,7 +14,7 @@ jobs:
       attestations: write
       contents: write
       actions: read
-    uses: ./.github/workflows/android.yml
+    uses: ./.github/workflows/desktop.yml
     secrets: inherit
     with:
       publish: ${{ github.ref == 'refs/heads/main' }}
