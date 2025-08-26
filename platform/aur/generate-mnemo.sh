@@ -34,7 +34,7 @@ build() {
     # building will bail out with something like: undefined reference to 'ring_core_0_17_8_OPENSSL_ia32cap_P' when -flto=auto is set
     export CFLAGS="\${CFLAGS//-flto=auto//}"
     pnpm install
-    pnpm tauri build -b deb || true
+    pnpm tauri build -b deb -c platform/tauri/tauri.package.conf.json || true
 }
 check() {
     cd "\$srcdir/\$_builddir" || exit 1
