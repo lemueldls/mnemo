@@ -13,14 +13,6 @@ on:
         required: true
       NUXT_PUBLIC_API_BASE_URL:
         required: true
-      NUXT_SESSION_PASSWORD:
-        required: true
-      NUXT_OAUTH_GITHUB_CLIENT_ID:
-        required: true
-      NUXT_OAUTH_GITHUB_CLIENT_SECRET:
-        required: true
-      NUXT_OAUTH_GITHUB_REDIRECT_URL:
-        required: true
       # WINDOWS_CERTIFICATE:
       #   required: true
       # WINDOWS_CERTIFICATE_PASSWORD:
@@ -151,10 +143,6 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
-          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
-          NUXT_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
-          NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
-          NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
         with:
           releaseName: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
           releaseDraft: ${{ !inputs.publish }}
