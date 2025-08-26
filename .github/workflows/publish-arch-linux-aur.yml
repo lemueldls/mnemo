@@ -26,10 +26,10 @@ jobs:
       matrix:
         package:
           - name: mnemo-bin
-            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}-amd64.deb.sha256"
+            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}-amd64.deb"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
-            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}.tar.gz.sha256"
+            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ inputs.semver }}.tar.gz"
             generate_script: "./platform/aur/generate-mnemo.sh"
     steps:
       - name: 🔄 Checkout
@@ -77,9 +77,9 @@ jobs:
         id: sha256sums
         shell: bash
         run: |
-          URL="${{ matrix.package.checksum_url }}"
+          URL="${{ matrix.package.download_url }}"
           echo "getting $URL"
-          SUM=$(curl -LfsS "$URL" | cut -f1 -d ' ')
+          SUM=$(curl -LfsS "$URL" | sha256sum | cut -f1 -d ' ')
           echo "sha256=$SUM" >> $GITHUB_OUTPUT
 
       - name: 🌀 Generate PKGBUILD and update
