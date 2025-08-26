@@ -50,7 +50,7 @@ importers:
         version: 6.38.1
       '@daveyplate/better-auth-tauri':
         specifier: ^0.0.24
-        version: 0.0.24(@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-deep-link@2.4.1)(@tauri-apps/plugin-http@2.5.1)(@tauri-apps/plugin-opener@2.4.0)(@tauri-apps/plugin-os@2.3.0)(better-auth@1.2.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 0.0.24(@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-deep-link@2.4.1)(@tauri-apps/plugin-http@2.5.2)(@tauri-apps/plugin-opener@2.4.0)(@tauri-apps/plugin-os@2.3.0)(better-auth@1.2.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@html2canvas/html2canvas':
         specifier: ^1.6.3
         version: 1.6.3
@@ -100,8 +100,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       '@tauri-apps/plugin-http':
-        specifier: ^2.5.1
-        version: 2.5.1
+        specifier: ^2.5.2
+        version: 2.5.2
       '@tauri-apps/plugin-opener':
         specifier: ^2.4.0
         version: 2.4.0
@@ -2948,6 +2948,9 @@ packages:
   '@tauri-apps/api@2.7.0':
     resolution: {integrity: sha512-v7fVE8jqBl8xJFOcBafDzXFc8FnicoH3j8o8DNNs0tHuEBmXUDqrCOAzMRX0UkfpwqZLqvrvK0GNQ45DfnoVDg==}
 
+  '@tauri-apps/api@2.8.0':
+    resolution: {integrity: sha512-ga7zdhbS2GXOMTIZRT0mYjKJtR9fivsXzsyq5U3vjDL0s6DTMwYRm0UHNjzTY5dh4+LSC68Sm/7WEiimbQNYlw==}
+
   '@tauri-apps/cli-darwin-arm64@2.7.1':
     resolution: {integrity: sha512-j2NXQN6+08G03xYiyKDKqbCV2Txt+hUKg0a8hYr92AmoCU8fgCjHyva/p16lGFGUG3P2Yu0xiNe1hXL9ZuRMzA==}
     engines: {node: '>= 10'}
@@ -3028,8 +3031,8 @@ packages:
   '@tauri-apps/plugin-dialog@2.3.2':
     resolution: {integrity: sha512-cNLo9YeQSC0MF4IgXnotHsqEgJk72MBZLXmQPrLA95qTaaWiiaFQ38hIMdZ6YbGUNkr3oni3EhU+AD5jLHcdUA==}
 
-  '@tauri-apps/plugin-http@2.5.1':
-    resolution: {integrity: sha512-SpQ1azXEdQI0UB2NZTIPljJTDEe0bIaKzHYR/k4UQp6yzRYGLC/ktmIgEfQ2RvKAWus8GcYgGr5K6LJPbo/NZw==}
+  '@tauri-apps/plugin-http@2.5.2':
+    resolution: {integrity: sha512-x1mQKHSLDk4mS2S938OTeyk8L7QyLpCrKZCZcjkljGsvTvRMojCvI9SeJ1kaxc7t8xSilkC7WdId8xER9TIGLg==}
 
   '@tauri-apps/plugin-opener@2.4.0':
     resolution: {integrity: sha512-43VyN8JJtvKWJY72WI/KNZszTpDpzHULFxQs0CJBIYUdCRowQ6Q1feWTDb979N7nldqSuDOaBupZ6wz2nvuWwQ==}
@@ -8843,22 +8846,22 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@daveyplate/better-auth-tauri@0.0.24(@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-deep-link@2.4.1)(@tauri-apps/plugin-http@2.5.1)(@tauri-apps/plugin-opener@2.4.0)(@tauri-apps/plugin-os@2.3.0)(better-auth@1.2.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@daveyplate/better-auth-tauri@0.0.24(@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-deep-link@2.4.1)(@tauri-apps/plugin-http@2.5.2)(@tauri-apps/plugin-opener@2.4.0)(@tauri-apps/plugin-os@2.3.0)(better-auth@1.2.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@daveyplate/tauri-fetch': 1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@daveyplate/tauri-fetch': 1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tauri-apps/api': 2.7.0
       '@tauri-apps/plugin-deep-link': 2.4.1
-      '@tauri-apps/plugin-http': 2.5.1
+      '@tauri-apps/plugin-http': 2.5.2
       '@tauri-apps/plugin-opener': 2.4.0
       '@tauri-apps/plugin-os': 2.3.0
       better-auth: 1.2.12
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@daveyplate/tauri-fetch@1.0.4(@tauri-apps/api@2.7.0)(@tauri-apps/plugin-http@2.5.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@tauri-apps/api': 2.7.0
-      '@tauri-apps/plugin-http': 2.5.1
+      '@tauri-apps/plugin-http': 2.5.2
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
@@ -11072,6 +11075,8 @@ snapshots:
 
   '@tauri-apps/api@2.7.0': {}
 
+  '@tauri-apps/api@2.8.0': {}
+
   '@tauri-apps/cli-darwin-arm64@2.7.1':
     optional: true
 
@@ -11131,9 +11136,9 @@ snapshots:
     dependencies:
       '@tauri-apps/api': 2.7.0
 
-  '@tauri-apps/plugin-http@2.5.1':
+  '@tauri-apps/plugin-http@2.5.2':
     dependencies:
-      '@tauri-apps/api': 2.7.0
+      '@tauri-apps/api': 2.8.0
 
   '@tauri-apps/plugin-opener@2.4.0':
     dependencies:
