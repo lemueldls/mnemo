@@ -18,7 +18,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": ["dmg", "nsis", "deb"],
+    "targets": ["dmg", "nsis", "deb", "appimage"],
     "createUpdaterArtifacts": true,
     "macOS": {
       "signingIdentity": "-"

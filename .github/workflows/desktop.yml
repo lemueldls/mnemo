@@ -158,7 +158,7 @@ jobs:
         with:
           releaseName: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
           releaseDraft: ${{ !inputs.publish }}
-          assetNamePattern: "mnemo-v[version]-[arch][ext]"
+          assetNamePattern: "[name]_[version]_[arch][ext]"
           tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           args: ${{ matrix.args }}
           retryAttempts: 1
