@@ -11,6 +11,8 @@
     },
     "bundle": {
         "active": true,
+        "license": "AGPL-3.0",
+        "licenseFile": "../../LICENSE",
         "icon": [
             "icons/32x32.png",
             "icons/128x128.png",
@@ -24,10 +26,17 @@
             "deb",
             "appimage"
         ],
-        "createUpdaterArtifacts": true,
+        "linux": {
+            "deb": {
+                "files": {
+                    "/usr/share/licenses/mnemo/LICENSE": "../../LICENSE"
+                }
+            }
+        },
         "macOS": {
             "signingIdentity": "-"
-        }
+        },
+        "createUpdaterArtifacts": true
     },
     "app": {
         "security": {
