@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           VERSION=${{ steps.latest_release.outputs.result }}
-          URL=https://github.com/lemueldls/mnemo/releases/download/{VERSION}/mnemo-v{VERSION}-x64-setup.exe
+          URL=https://github.com/lemueldls/mnemo/releases/download/{VERSION}/mnemo-v{VERSION}-x64.exe
           FINAL_URL=$(echo $URL | sed "s/{VERSION}/$VERSION/g" | sed "s/{SHORT_VERSION}/${SHORT_VERSION}/g")
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
           echo "SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV

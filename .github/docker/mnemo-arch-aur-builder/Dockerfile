@@ -3,6 +3,8 @@ RUN pacman -Syu --noconfirm \
     && pacman -S --noconfirm \
     appmenu-gtk-module \
     cargo \
+    nodejs \
+    pnpm \
     coreutils \
     desktop-file-utils \
     gdk-pixbuf2 \
