@@ -26,7 +26,7 @@ jobs:
       matrix:
         package:
           - name: mnemo-bin
-            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}-amd64.deb"
+            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/Mnemo_${{ inputs.semver }}_amd64.deb"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
             download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ inputs.semver }}.tar.gz"
