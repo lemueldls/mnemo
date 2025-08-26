@@ -73,7 +73,7 @@
     "@nuxtjs/color-mode": "3.5.2",
     "@nuxtjs/i18n": "^10.0.3",
     "@prettier/plugin-oxc": "^0.0.4",
-    "@tauri-apps/cli": "^2.7.1",
+    "@tauri-apps/cli": "^2.8.3",
     "@tauri-apps/plugin-dialog": "^2.3.2",
     "@tauri-apps/plugin-process": "^2.3.0",
     "@tauri-apps/plugin-updater": "^2.9.0",
