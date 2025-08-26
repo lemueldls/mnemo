@@ -168,13 +168,13 @@ jobs:
           path: |
             platform/target/release/mnemo.pdb
 
-      - name: 📤 Publish debug symbols to release (windows only)
-        if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
-        with:
-          files: platform/target/release/mnemo.pdb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: 📤 Publish debug symbols to release (windows only)
+      #   if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
+      #   uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
+      #   with:
+      #     files: platform/target/release/mnemo.pdb
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🛡️ Attest build provenance (publish release only)
         if: ${{ inputs.publish }}
