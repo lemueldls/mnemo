@@ -19,7 +19,7 @@ console_error_panic_hook = ["dep:console_error_panic_hook"]
 lol_alloc = ["dep:lol_alloc"]
 
 [dependencies]
-comemo = "0.4.0"
+comemo = "0.5.0"
 console_error_panic_hook = { version = "0.1.7", optional = true }
 data-encoding = "2.9.0"
 js-sys = { version = "0.3.77", default-features = false}
