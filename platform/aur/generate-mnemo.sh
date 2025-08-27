@@ -17,7 +17,7 @@ arch=('x86_64')
 url="https://github.com/lemueldls/mnemo"
 license=('AGPL-3.0')
 depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup' 'pango' 'webkit2gtk-4.1' 'openssl')
-makedepends=('cargo' 'nodejs' 'pnpm' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
+makedepends=('cargo' 'nodejs' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
 source=("mnemo-v\$pkgver.tar.gz::https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v\$pkgver.tar.gz")
 sha256sums=('$sha256sum')
 _builddir="mnemo-mnemo-v\$pkgver/platform"
@@ -33,6 +33,7 @@ build() {
     # unfortunately LTOFLAGS -flto=auto set by /etc/makepkg.conf break linking as those are added to CFLAGS automatically
     # building will bail out with something like: undefined reference to 'ring_core_0_17_8_OPENSSL_ia32cap_P' when -flto=auto is set
     export CFLAGS="\${CFLAGS//-flto=auto//}"
+    export NUXT_PUBLIC_API_BASE_URL="https://notes.lemueldls.workers.dev"
     pnpm install
     pnpm tauri build -b deb -c "\${srcdir}/\${_builddir}/tauri/tauri.package.conf.json" || true
 }
