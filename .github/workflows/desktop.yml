@@ -28,7 +28,7 @@ jobs:
             args: "--target universal-apple-darwin"
             symbol: 🍏
             platform: macOS
-          - os: "ubuntu-22.04"
+          - os: "ubuntu-latest"
             symbol: 🐧
             install: |
               sudo apt-get update
@@ -76,6 +76,10 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: platform
 
+      - name: 📦 Run sccache
+        if: ${{ !inputs.publish }}
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
       - name: 📦 Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
@@ -94,10 +98,6 @@ jobs:
       #   run: |
       #     cd platform
       #     cargo fmt -- --check
-
-      - name: 📦 Run sccache
-        if: ${{ !inputs.publish }}
-        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: 📦 Set Rust caching env vars only on non-release runs
         if: ${{ !inputs.publish }}

@@ -76,6 +76,12 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
+      - name: 📦 Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: 🔨 Build WebAssembly
+        run: wasm-pack build -t web platform/wasm --release
+
       - name: 📥 Install pnpm
         uses: pnpm/action-setup@v4
 
