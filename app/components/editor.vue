@@ -90,12 +90,14 @@ onMounted(async () => {
     }),
   });
 
+  let ready = false;
+
   const packages = await useInstalledPackages(() => props.spaceId);
   await watchImmediateAsync(packages, async (packages) => {
     await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
-  });
 
-  let ready = false;
+    reloadEditorWidgets(ready, view);
+  });
 
   await watchImmediateAsync(fullPath, async (fullPath) => {
     const fileId = typstState.createFileId(fullPath);
@@ -134,15 +136,7 @@ onMounted(async () => {
         ),
       );
 
-      if (ready) {
-        const { doc } = view.state;
-        const from = 0;
-        const to = doc.length ? 1 : 0;
-
-        view?.dispatch({
-          changes: { from, to, insert: doc.sliceString(from, to) },
-        });
-      }
+      reloadEditorWidgets(ready, view);
     });
 
     watch(
@@ -231,6 +225,18 @@ function createEditorState(fileId: FileId): EditorState {
       ),
     ],
   });
+}
+
+function reloadEditorWidgets(ready: boolean, view: EditorView) {
+  if (ready) {
+    const { doc } = view.state;
+    const from = 0;
+    const to = doc.length ? 1 : 0;
+
+    view?.dispatch({
+      changes: { from, to, insert: doc.sliceString(from, to) },
+    });
+  }
 }
 
 const selectionBackground = computed(() => {
