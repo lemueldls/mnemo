@@ -1,4 +1,4 @@
 fn main() {
-    // 2147000000 bytes = 2 GiB
-    println!("cargo:rustc-link-arg=-zstack-size=2147000000")
+    // 4194000 bytes = 4 MiB
+    println!("cargo:rustc-link-arg=-zstack-size=4194000")
 }
