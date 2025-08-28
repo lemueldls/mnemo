@@ -76,6 +76,12 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: platform
 
+      - name: 📦 Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: 🔨 Build WebAssembly
+        run: wasm-pack build -t web platform/wasm --release
+
       - name: 🛠️ Setup | Install dependencies
         if: ${{ matrix.install != '' }}
         run: ${{ matrix.install }}
