@@ -1,0 +1,26 @@
+{
+  "name": "mnemo-wasm",
+  "type": "module",
+  "collaborators": [
+    "Lemuel DLS"
+  ],
+  "version": "0.1.1",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lemueldls/mnemo"
+  },
+  "files": [
+    "mnemo_wasm_bg.wasm",
+    "mnemo_wasm.js",
+    "mnemo_wasm.d.ts"
+  ],
+  "main": "mnemo_wasm.js",
+  "types": "mnemo_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    ""
+  ]
+}

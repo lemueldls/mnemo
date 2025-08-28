@@ -30,6 +30,7 @@ export interface RangedFrame {
 
 export interface FrameRender {
     encoding: Uint8Array;
+    hash: number;
     height: number;
     offsetHeight: number;
 }
