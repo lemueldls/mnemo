@@ -1,0 +1,37 @@
+name: Bump Version
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  update_version:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up SSH signing key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_SIGNING_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          git config --global gpg.format ssh
+          git config --global user.signingKey ~/.ssh/id_ed25519
+          git config --global user.name "Lemuel DLS"
+          git config --global user.email "26912197+lemueldls@users.noreply.github.com"
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WebAssembly
+        run: wasm-pack build -t web platform/wasm --release
+
+      - name: Commit and push
+        run: |
+          git add -A
+          git commit -S -m "perf: optimize wasm"
+          git push
