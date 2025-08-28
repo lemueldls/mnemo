@@ -42,6 +42,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "allocator-api2"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -755,38 +761,15 @@ dependencies = [
 
 [[package]]
 name = "comemo"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df6916408a724339aa77b18214233355f3eb04c42eb895e5f8909215bd8a7a91"
-dependencies = [
- "comemo-macros 0.4.0",
- "once_cell",
- "parking_lot",
- "siphasher 1.0.1",
-]
-
-[[package]]
-name = "comemo"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "649d7b2d867b569729c03c0f6968db10bc95921182a1f2b2012b1b549492f39d"
 dependencies = [
- "comemo-macros 0.5.0",
+ "comemo-macros",
  "parking_lot",
  "rustc-hash",
  "siphasher 1.0.1",
  "slab",
-]
-
-[[package]]
-name = "comemo-macros"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8936e42f9b4f5bdfaf23700609ac1f11cb03ad4c1ec128a4ee4fd0903e228db"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.104",
 ]
 
 [[package]]
@@ -2090,6 +2073,8 @@ version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
+ "allocator-api2",
+ "equivalent",
  "foldhash",
 ]
 
@@ -2843,7 +2828,7 @@ source = "git+https://github.com/LaurenzV/krilla?rev=abdf031#abdf031c9e5ba89d606
 dependencies = [
  "base64 0.22.1",
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "flate2",
  "float-cmp 0.10.0",
  "gif",
@@ -3181,7 +3166,7 @@ name = "mnemo-render"
 version = "0.1.1"
 dependencies = [
  "bytemuck",
- "comemo 0.5.0",
+ "comemo",
  "hayro",
  "image",
  "pixglyph",
@@ -3199,9 +3184,10 @@ dependencies = [
 name = "mnemo-wasm"
 version = "0.1.1"
 dependencies = [
- "comemo 0.4.0",
  "console_error_panic_hook",
  "data-encoding",
+ "fxhash",
+ "hashbrown 0.15.5",
  "js-sys",
  "lol_alloc",
  "mnemo-render",
@@ -6427,7 +6413,7 @@ name = "typst"
 version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "rustc-hash",
  "typst-eval",
@@ -6451,7 +6437,7 @@ name = "typst-eval"
 version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "indexmap 2.10.0",
  "rustc-hash",
@@ -6471,7 +6457,7 @@ version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "palette",
  "rustc-hash",
@@ -6490,7 +6476,7 @@ name = "typst-ide"
 version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "pathdiff",
  "rustc-hash",
@@ -6508,7 +6494,7 @@ dependencies = [
  "az",
  "bumpalo",
  "codex",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "hypher",
  "icu_properties 1.5.1",
@@ -6545,7 +6531,7 @@ dependencies = [
  "chinese-number",
  "ciborium",
  "codex",
- "comemo 0.5.0",
+ "comemo",
  "csv",
  "ecow",
  "flate2",
@@ -6616,7 +6602,7 @@ version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
  "bytemuck",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "image",
  "infer",
@@ -6639,7 +6625,7 @@ source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f317
 dependencies = [
  "arrayvec",
  "bumpalo",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "regex",
  "typst-library",
@@ -6655,7 +6641,7 @@ version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
  "bytemuck",
- "comemo 0.5.0",
+ "comemo",
  "hayro",
  "image",
  "pixglyph",
@@ -6674,7 +6660,7 @@ version = "0.13.1"
 source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
 dependencies = [
  "base64 0.22.1",
- "comemo 0.5.0",
+ "comemo",
  "ecow",
  "flate2",
  "hayro",

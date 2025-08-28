@@ -1,5 +1,12 @@
-use std::{borrow::Cow, collections::HashMap, fmt, ops::Range, str::FromStr};
+use std::{
+    borrow::Cow,
+    fmt,
+    hash::{BuildHasher, Hash, Hasher},
+    ops::Range,
+    str::FromStr,
+};
 
+use hashbrown::{DefaultHashBuilder, HashMap};
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
@@ -98,11 +105,11 @@ impl TypstState {
                         #set text(top-edge:"ascender",bottom-edge:"descender")
                         #set par(leading:0em,linebreaks:"simple")
 
-                        #show math.equation.where(block:true):set block(above:0em,below:0em)
-                        #show heading:set block(above:0em,below:0em)
+                        #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
+                        #show heading:set block(above:0.25em,below:0.125em)
                         #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
-                        #show list:set block(above:0em,below:0em)
-                        #show enum:set block(above:0em,below:0em)
+                        #show list:set block(above:0.25em,below:0.125em)
+                        #show enum:set block(above:0.25em,below:0.125em)
                     "#,
                     width = context.width,
                 )
@@ -330,11 +337,13 @@ impl TypstState {
                     let canvas =
                         mnemo_render::render(document, height, offset_height, context.pixel_per_pt);
                     let encoding = canvas.encode_png().unwrap();
+                    let hash = fxhash::hash32(&encoding);
 
                     let height = height.ceil() as u32;
 
                     let render = FrameRender {
                         encoding,
+                        hash,
                         height,
                         offset_height,
                     };
@@ -745,6 +754,7 @@ pub struct FrameRender {
     #[tsify(type = "Uint8Array")]
     #[serde(with = "serde_bytes")]
     encoding: Vec<u8>,
+    hash: u32,
     height: u32,
     #[serde(rename = "offsetHeight")]
     offset_height: f64,

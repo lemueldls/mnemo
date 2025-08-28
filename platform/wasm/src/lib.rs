@@ -3,15 +3,15 @@ extern crate alloc;
 mod typst_handler;
 mod utils;
 
-// #[cfg(feature = "lol_alloc")]
-// #[cfg(target_arch = "wasm32")]
-// use lol_alloc::{AssumeSingleThreaded, FreeListAllocator};
+#[cfg(feature = "lol_alloc")]
+#[cfg(target_arch = "wasm32")]
+use lol_alloc::{AssumeSingleThreaded, FreeListAllocator};
 
-// #[cfg(feature = "lol_alloc")]
-// #[cfg(target_arch = "wasm32")]
-// #[global_allocator]
-// static ALLOCATOR: AssumeSingleThreaded<FreeListAllocator> =
-//     unsafe { AssumeSingleThreaded::new(FreeListAllocator::new()) };
+#[cfg(feature = "lol_alloc")]
+#[cfg(target_arch = "wasm32")]
+#[global_allocator]
+static ALLOCATOR: AssumeSingleThreaded<FreeListAllocator> =
+    unsafe { AssumeSingleThreaded::new(FreeListAllocator::new()) };
 
 use wasm_bindgen::prelude::*;
 

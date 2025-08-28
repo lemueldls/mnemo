@@ -21,36 +21,49 @@ import type {
 
 class TypstWidget extends WidgetType {
   #container = document.createElement("div");
-  #image = document.createElement("img");
 
   public constructor(
     private readonly typstState: TypstState,
     private readonly view: EditorView,
     private readonly frame: RangedFrame,
-    private readonly locked: boolean,
+    locked: boolean,
   ) {
     super();
 
-    this.#container.classList.add("typst-render");
-    this.#container.style.height = `${frame.render.height}px`;
+    const container = view.contentDOM.querySelector<HTMLDivElement>(
+      `div[data-hash="${frame.render.hash}"]`,
+    );
 
-    this.#image.draggable = false;
-    this.#image.src = `data:image/png;base64,${this.frame.render.encoding.toBase64()}`;
-    this.#image.height = frame.render.height;
+    if (container) {
+      this.#container = container;
+    } else {
+      this.#container.dataset.hash = frame.render.hash.toString();
+      this.#container.classList.add("typst-render");
+      this.#container.style.height = `${frame.render.height}px`;
 
-    if (!locked) {
-      this.#image.addEventListener("click", this.handleMouseEvent.bind(this));
-      this.#image.addEventListener(
-        "mousedown",
-        this.handleMouseEvent.bind(this),
-      );
-      this.#image.addEventListener(
-        "touchstart",
-        this.handleTouchEvent.bind(this),
-      );
+      const image = document.createElement("img");
+
+      image.draggable = false;
+      image.src = `data:image/png;base64,${this.frame.render.encoding.toBase64()}`;
+      image.height = frame.render.height;
+
+      if (!locked) {
+        this.#container.addEventListener(
+          "click",
+          this.handleMouseEvent.bind(this),
+        );
+        this.#container.addEventListener(
+          "mousedown",
+          this.handleMouseEvent.bind(this),
+        );
+        this.#container.addEventListener(
+          "touchstart",
+          this.handleTouchEvent.bind(this),
+        );
+      }
+
+      this.#container.append(image);
     }
-
-    this.#container.append(this.#image);
   }
 
   private handleMouseEvent(event: MouseEvent) {
@@ -68,7 +81,7 @@ class TypstWidget extends WidgetType {
 
   private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
-    const { top, left } = this.#image.getBoundingClientRect();
+    const { top, left } = this.#container.getBoundingClientRect();
 
     const x = clientX - left;
     const y = clientY - top;
@@ -81,7 +94,7 @@ class TypstWidget extends WidgetType {
   }
 
   public override eq(other: TypstWidget) {
-    return other.#image.src === this.#image.src;
+    return other.frame.render.hash === this.frame.render.hash;
   }
 
   public toDOM() {
@@ -91,17 +104,9 @@ class TypstWidget extends WidgetType {
   public override get estimatedHeight() {
     return this.frame.render.height;
   }
-
-  public override destroy() {
-    if (this.locked) return;
-
-    this.#image.removeEventListener("click", this.handleMouseEvent);
-    this.#image.removeEventListener("mousedown", this.handleMouseEvent);
-    this.#image.removeEventListener("touchstart", this.handleTouchEvent);
-  }
 }
 
-const cache = new LRUCache<string, CompileResult>({ max: 3 });
+const compileCache = new LRUCache<string, CompileResult>({ max: 3 });
 
 function decorate(
   typstState: TypstState,
@@ -115,10 +120,10 @@ function decorate(
   const text = update.state.doc.toString();
 
   let compileResult: CompileResult;
-  if (update.docChanged || widthChanged || !cache.has(path)) {
+  if (update.docChanged || widthChanged || !compileCache.has(path)) {
     compileResult = typstState.compile(fileId, text, prelude);
-    cache.set(path, compileResult);
-  } else compileResult = cache.get(path)!;
+    compileCache.set(path, compileResult);
+  } else compileResult = compileCache.get(path)!;
 
   const { view, state } = update;
 
