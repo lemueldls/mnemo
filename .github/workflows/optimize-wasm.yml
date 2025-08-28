@@ -1,11 +1,11 @@
-name: Bump Version
+name: Optimize WebAssembly
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  update_version:
+  optimize_wasm:
     permissions:
       contents: write
     runs-on: ubuntu-latest
