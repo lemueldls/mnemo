@@ -80,12 +80,6 @@ jobs:
         if: ${{ !inputs.publish }}
         uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
-      - name: 📦 Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: 🔨 Build WebAssembly
-        run: wasm-pack build -t web platform/wasm --release
-
       - name: 🛠️ Setup | Install dependencies
         if: ${{ matrix.install != '' }}
         run: ${{ matrix.install }}
