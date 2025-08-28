@@ -1,12 +1,6 @@
-use std::{
-    borrow::Cow,
-    fmt,
-    hash::{BuildHasher, Hash, Hasher},
-    ops::Range,
-    str::FromStr,
-};
+use std::{borrow::Cow, fmt, ops::Range, str::FromStr};
 
-use hashbrown::{DefaultHashBuilder, HashMap};
+use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
