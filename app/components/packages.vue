@@ -54,19 +54,16 @@ const filteredPackages = computed(() => {
   );
 });
 
-const packagesItem = await useStorageItem<Package[]>(
-  `spaces/${props.spaceId}/packages.json`,
-  [],
-);
+const installedPackages = await useInstalledPackages(() => props.spaceId);
 
 async function installPackage(pkg: Package) {
-  installTypstPackage(pkg, namespace);
+  await installTypstPackage(pkg, namespace);
 
-  packagesItem.value.push(pkg);
+  installedPackages.value.push(pkg);
 }
 
 async function uninstallPackage(pkg: Package) {
-  packagesItem.value = packagesItem.value.filter(
+  installedPackages.value = installedPackages.value.filter(
     (pkgItem) => !isSamePackage(pkg, pkgItem),
   );
 }
