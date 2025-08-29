@@ -9,6 +9,10 @@ const StorageItemSchema = object({
 
 export default defineWebSocketHandler({
   async upgrade(request) {
+    const url = new URL(request.url);
+    const token = url.searchParams.get("token");
+    request.headers.append("cookie", `mnemo.session_token=${token}`);
+
     const user = await requireUser(request.headers);
 
     return { namespace: `users:${user.id}` };

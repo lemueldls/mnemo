@@ -108,7 +108,8 @@ export const useCrdt = createSharedComposable(async () => {
     syncSnapshot();
   });
 
-  const url = new URL("/api/crdt", useApiBaseUrl());
+  const token = useApiToken().value;
+  const url = new URL(`/api/crdt?token=${token}`, useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
   const { open, close, send } = useApiWebSocket(url, {
@@ -145,7 +146,8 @@ export const useCrdtUndoManager = createSharedComposable(async () => {
 });
 
 const useSync = createSharedComposable(() => {
-  const url = new URL("/api/user-storage", useApiBaseUrl());
+  const token = useApiToken().value;
+  const url = new URL(`/api/user-storage?token=${token}`, useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
   const { open, close, send } = useApiWebSocket(url, {

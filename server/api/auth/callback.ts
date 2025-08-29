@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
     event,
     object({ redirect: string(), platform: string() }),
   );
+
   const token = getCookie(event, "mnemo.session_token");
 
   if (!token)
