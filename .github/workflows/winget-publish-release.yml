@@ -1,9 +1,10 @@
 name: Publish Desktop Release to WinGet
 
 on:
-  workflow_dispatch:
   release:
-    types: [released]
+    types:
+      - published
+  workflow_dispatch:
 
 jobs:
   publish:
