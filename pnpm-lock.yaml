@@ -131,10 +131,10 @@ importers:
         version: 1.10.27
       loro-codemirror:
         specifier: ^0.2.0
-        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.12)
+        version: 0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.6.0)
       loro-crdt:
-        specifier: ^1.5.12
-        version: 1.5.12
+        specifier: ^1.6.0
+        version: 1.6.0
       lru-cache:
         specifier: ^11.1.0
         version: 11.1.0
@@ -6075,8 +6075,8 @@ packages:
       '@codemirror/view': ^6.7.0
       loro-crdt: ^1.5.5
 
-  loro-crdt@1.5.12:
-    resolution: {integrity: sha512-mT615hwQhrweGiAqrW6dyKzIdAV68WdRdathivYmzbWW2O+Mvtm1fD/eHGRyzmlJaVZyqiFg8pCou+/TApJ+mA==}
+  loro-crdt@1.6.0:
+    resolution: {integrity: sha512-Jdtjo3GITCncKxFU9LbK1ykGwZ4zOmlhPtJFA1vzRYuy3tYpuu/gU6rXx0nZ3pSuDNv0ZklS+7mm1cSEjouOqQ==}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -14620,13 +14620,13 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
-  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.5.12):
+  loro-codemirror@0.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)(loro-crdt@1.6.0):
     dependencies:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
-      loro-crdt: 1.5.12
+      loro-crdt: 1.6.0
 
-  loro-crdt@1.5.12: {}
+  loro-crdt@1.6.0: {}
 
   lru-cache@10.4.3: {}
 
