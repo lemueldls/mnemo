@@ -2,9 +2,12 @@ name: "📱 Android (push)"
 
 on:
   push:
+    branches:
+      - main
+      - dev
 
 concurrency:
-  # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
+  # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point sG,omething broke.
   group: ${{ github.ref == 'refs/heads/main' && format('android-main-{0}', github.sha) || format('android-{0}', github.ref) }}
 
 jobs:
