@@ -1,11 +1,19 @@
-use std::{borrow::Cow, fmt, ops::Range, str::FromStr};
+use std::{
+    borrow::Cow,
+    fmt,
+    hash::{Hash, Hasher},
+    ops::Range,
+    str::FromStr,
+};
 
+use fxhash::FxHasher32;
 use hashbrown::HashMap;
+use mnemo_render::sk::IntRect;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
     WorldExt, compile,
-    ecow::EcoString,
+    ecow::{EcoString, EcoVec},
     foundations::Bytes,
     layout::{Abs, PagedDocument, Point},
     syntax::{FileId, Source, SyntaxKind, VirtualPath, package::PackageSpec},
@@ -26,6 +34,7 @@ use super::{
 pub struct TypstState {
     world: MnemoWorld,
     document: Option<PagedDocument>,
+    frame_cache: HashMap<u32, EcoVec<u8>>,
     file_contexts: HashMap<TypstFileId, FileContext>,
 }
 
@@ -151,6 +160,9 @@ impl TypstState {
         let mut index_mapper = IndexMapper::default();
         index_mapper.add_main_to_aux(0, ir.len());
 
+        self.world.main = Some(id.inner());
+        self.world.main_source_mut().replace(&ir);
+
         let aux_id = id.inner().with_extension("$.typ");
         self.world
             .files
@@ -235,10 +247,8 @@ impl TypstState {
         // );
 
         self.world.index_mapper = index_mapper;
-        self.world.main = Some(id.inner());
 
         let mut last_document = None;
-        let mut partial_ir = Cow::from(&ir);
 
         let mut offset_height = 0_f64;
         let mut diagnostics = Vec::new();
@@ -264,12 +274,13 @@ impl TypstState {
 
                 let mut end_byte = self.world.map_aux_to_main(aux_range.end);
                 if block.is_inline {
-                    // TODO: proper offsetting
+                    // TODO: proper offsetting (?)
                     end_byte += 10;
                 }
 
                 let source = self.world.main_source_mut();
-                source.replace(partial_ir.get(..end_byte)?);
+                let source_len = source.text().len();
+                source.edit(source_len..source_len, ir.get(source_len..end_byte)?);
 
                 // crate::log!("[RANGE_UTF8]: {aux_range:?}");
                 // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
@@ -281,19 +292,24 @@ impl TypstState {
                     Ok(document) => {
                         // TODO: handle changes in page margins
 
-                        let document_height = document
-                            .pages
-                            .iter()
-                            .map(|page| page.frame.height())
-                            .sum::<Abs>()
-                            .to_pt();
-                        let height = document_height - offset_height;
+                        let mut hasher = FxHasher32::default();
+                        let mut document_height = 0_f64;
 
-                        if height <= 0_f64 {
+                        for page in &document.pages {
+                            let frame = &page.frame;
+
+                            frame.hash(&mut hasher);
+                            document_height += frame.height().to_pt();
+                        }
+
+                        let hash = hasher.finish() as u32;
+                        let height = (document_height - offset_height).ceil() as u32;
+
+                        if height == 0 {
                             return None;
                         }
 
-                        let ranged_height = Some((aux_range_utf16, height, offset_height));
+                        let ranged_height = Some((aux_range_utf16, hash, height, offset_height));
 
                         offset_height = document_height;
                         last_document = Some(document);
@@ -313,10 +329,8 @@ impl TypstState {
                         let range_delta = end_byte - start_byte;
                         let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
-                        partial_ir.to_mut().replace_range(
-                            start_byte..end_byte,
-                            &(" ".repeat(repeat_range) + "\\ "),
-                        );
+                        let source = self.world.main_source_mut();
+                        source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
 
                         None
                     }
@@ -325,15 +339,25 @@ impl TypstState {
             .collect::<Vec<_>>();
 
         let frames = if let Some(document) = &last_document {
+            let canvas =
+                typst_render::render_merged(document, context.pixel_per_pt, Abs::zero(), None);
+            let width = canvas.width();
+
             ranged_heights
                 .into_iter()
-                .map(|(range, height, offset_height)| {
-                    let canvas =
-                        mnemo_render::render(document, height, offset_height, context.pixel_per_pt);
-                    let encoding = canvas.encode_png().unwrap();
-                    let hash = fxhash::hash32(&encoding);
+                .map(|(range, hash, height, offset_height)| {
+                    let encoding = self
+                        .frame_cache
+                        .entry(hash)
+                        .or_insert_with(|| {
+                            let rect =
+                                IntRect::from_xywh(0, offset_height as i32, width, height).unwrap();
+                            let canvas = canvas.clone_rect(rect).unwrap();
+                            let encoding = canvas.encode_png().unwrap();
 
-                    let height = height.ceil() as u32;
+                            EcoVec::from(encoding)
+                        })
+                        .to_vec();
 
                     let render = FrameRender {
                         encoding,
@@ -729,7 +753,7 @@ pub struct Autocomplete {
     pub completions: Box<[TypstCompletion]>,
 }
 
-#[derive(Debug, Tsify, Serialize, Deserialize)]
+#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RangedFrame {
     pub range: Range<usize>,
