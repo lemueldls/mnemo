@@ -2,6 +2,8 @@ name: Optimize WebAssembly
 
 on:
   push:
+    paths:
+      - "platform/wasm/**"
   workflow_dispatch:
 
 jobs:
@@ -33,5 +35,5 @@ jobs:
       - name: Commit and push
         run: |
           git add -A
-          git commit -S -m "perf: optimize wasm"
+          git commit -S -m "perf: optimize wasm" || echo "No changes to commit"
           git push
