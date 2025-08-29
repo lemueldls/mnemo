@@ -143,12 +143,7 @@ export function useApiWebSocket(
 
     try {
       if (isTauri()) {
-        const headers = new Headers();
-
-        const token = useApiToken().value;
-        headers.append("Cookie", `mnemo.session_token=${token || ""};`);
-
-        ws.value = await TauriWebSocket.connect(wsUrl, { headers });
+        ws.value = await TauriWebSocket.connect(wsUrl);
 
         status.value = "OPEN";
         reconnectAttempts = 0;

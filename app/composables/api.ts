@@ -11,13 +11,6 @@ export const useApiBaseUrl = createSharedComposable(() => {
   return url.origin;
 });
 
-export const useApiToken = createSharedComposable(() => {
-  const maxAge = 60 * 60 * 24 * 30; // 30 days
-
-  return useCookie(
-    "mnemo.session_token",
-    import.meta.dev
-      ? { sameSite: "lax", secure: false, httpOnly: false, maxAge }
-      : { sameSite: "none", secure: true, httpOnly: false, maxAge },
-  );
-});
+export const useApiToken = createSharedComposable(() =>
+  useLocalStorage("bearer_token", ""),
+);

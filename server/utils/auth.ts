@@ -2,6 +2,7 @@ import { D1Dialect } from "@atinux/kysely-d1";
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import { betterAuth } from "better-auth";
+import { bearer } from "better-auth/plugins";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
@@ -61,11 +62,9 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
       disableCSRFCheck: true,
-      defaultCookieAttributes: import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: false }
-        : { sameSite: "none", secure: true, httpOnly: false },
     },
     plugins: [
+      bearer(),
       polar({
         client: polarClient,
         createCustomerOnSignUp: true,
