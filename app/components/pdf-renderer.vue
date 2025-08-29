@@ -18,7 +18,7 @@ const dailyNotesItem = await getStorageItem<Note[]>(
 );
 
 const dailyNotes = await Promise.all(
-  dailyNotesItem.toReversed().map(async (note) => {
+  dailyNotesItem.map(async (note) => {
     const item = await getStorageItem<string>(
       `spaces/${spaceId.value}/daily/${note.id}.typ`,
       "",
