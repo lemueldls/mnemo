@@ -1,13 +1,15 @@
 name: Create and publish checksums
+
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       semver:
         description: The semver of the release to publish for
         type: string
         required: true
-  release:
-    types: [released]
 
 permissions:
   contents: write
