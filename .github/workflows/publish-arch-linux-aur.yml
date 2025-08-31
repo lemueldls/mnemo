@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.current-version }}
-      tag-name: ${{ steps.resolve-tag.outputs.tag-name }}
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -23,11 +22,6 @@ jobs:
         run: |
           CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
           echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve release tag
-        id: resolve-tag
-        shell: bash
-        run: echo "current-tag=v${{ steps.get-version.outputs.current-version }}" >> "$GITHUB_OUTPUT"
 
   update-aur:
     permissions:
@@ -41,10 +35,10 @@ jobs:
       matrix:
         package:
           - name: mnemo-bin
-            download_url: "https://github.com/lemueldls/mnemo/releases/download/${{ needs.release_info.outputs.tag-name }}/Mnemo_${{ needs.release_info.outputs.version }}_amd64.deb"
+            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ needs.release_info.outputs.version }}/Mnemo_${{ needs.release_info.outputs.version }}_amd64.deb"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
-            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/${{ needs.release_info.outputs.tag-name }}.tar.gz"
+            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ needs.release_info.outputs.version }}.tar.gz"
             generate_script: "./platform/aur/generate-mnemo.sh"
     steps:
       - name: 🔄 Checkout
