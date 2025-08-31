@@ -27,12 +27,7 @@ jobs:
       - name: Resolve release tag
         id: resolve-tag
         shell: bash
-        run: |
-          if [ -n "${{ github.event.release.name }}" ]; then
-            echo "tag-name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag-name=mnemo-v${{ github.event.inputs.semver }}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "current-tag=v${{ steps.get-version.outputs.current-version }}" >> "$GITHUB_OUTPUT"
 
   update-aur:
     permissions:
