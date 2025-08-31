@@ -536,7 +536,7 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_error_2acf86b8caa3ebe3 = function(arg0, arg1) {
+    imports.wbg.__wbg_error_1fd67193a397031a = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
