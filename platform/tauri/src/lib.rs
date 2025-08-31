@@ -1,9 +1,11 @@
 use std::str::FromStr;
 
+#[allow(unused_imports)]
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder, window::Color};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_os::init())
