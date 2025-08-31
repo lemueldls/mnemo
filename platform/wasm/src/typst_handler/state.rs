@@ -7,7 +7,7 @@ use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
     WorldExt, compile,
-    ecow::{EcoString, EcoVec},
+    ecow::EcoString,
     foundations::Bytes,
     layout::{Abs, PagedDocument, Point},
     syntax::{FileId, Source, SyntaxKind, VirtualPath, package::PackageSpec},
@@ -28,7 +28,6 @@ use super::{
 pub struct TypstState {
     world: MnemoWorld,
     document: Option<PagedDocument>,
-    frame_cache: HashMap<u32, EcoVec<u8>>,
     file_contexts: HashMap<TypstFileId, FileContext>,
 }
 
@@ -118,8 +117,7 @@ impl TypstState {
                     "#,
                     width = context.width,
                 )
-            }
-            RenderingMode::Html => format!(""),
+            } // RenderingMode::Html => format!(""),
         };
 
         format!(
@@ -763,5 +761,5 @@ pub struct FrameRender {
 enum RenderingMode {
     Png,
     Pdf,
-    Html,
+    // Html,
 }
