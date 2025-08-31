@@ -1,13 +1,12 @@
 use std::{
-    borrow::Cow,
     fmt,
     hash::{Hash, Hasher},
     ops::Range,
     str::FromStr,
 };
 
-use fxhash::FxHasher32;
 use hashbrown::HashMap;
+use highway::{HighwayHash, HighwayHasher};
 use mnemo_render::sk::IntRect;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -292,24 +291,19 @@ impl TypstState {
                     Ok(document) => {
                         // TODO: handle changes in page margins
 
-                        let mut hasher = FxHasher32::default();
-                        let mut document_height = 0_f64;
+                        let document_height = document
+                            .pages
+                            .iter()
+                            .map(|page| page.frame.height().to_pt())
+                            .sum::<f64>();
 
-                        for page in &document.pages {
-                            let frame = &page.frame;
-
-                            frame.hash(&mut hasher);
-                            document_height += frame.height().to_pt();
-                        }
-
-                        let hash = hasher.finish() as u32;
                         let height = (document_height - offset_height).ceil() as u32;
 
                         if height == 0 {
                             return None;
                         }
 
-                        let ranged_height = Some((aux_range_utf16, hash, height, offset_height));
+                        let ranged_height = Some((aux_range_utf16, height, offset_height));
 
                         offset_height = document_height;
                         last_document = Some(document);
@@ -345,19 +339,12 @@ impl TypstState {
 
             ranged_heights
                 .into_iter()
-                .map(|(range, hash, height, offset_height)| {
-                    let encoding = self
-                        .frame_cache
-                        .entry(hash)
-                        .or_insert_with(|| {
-                            let rect =
-                                IntRect::from_xywh(0, offset_height as i32, width, height).unwrap();
-                            let canvas = canvas.clone_rect(rect).unwrap();
-                            let encoding = canvas.encode_png().unwrap();
+                .map(|(range, height, offset_height)| {
+                    let rect = IntRect::from_xywh(0, offset_height as i32, width, height).unwrap();
+                    let canvas = canvas.clone_rect(rect).unwrap();
+                    let encoding = canvas.encode_png().unwrap();
 
-                            EcoVec::from(encoding)
-                        })
-                        .to_vec();
+                    let hash = HighwayHasher::default().hash64(&encoding) as u32;
 
                     let render = FrameRender {
                         encoding,

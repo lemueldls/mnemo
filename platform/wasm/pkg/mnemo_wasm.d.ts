@@ -98,19 +98,19 @@ export interface InitOutput {
   readonly typststate_setTheme: (a: number, b: number, c: number) => void;
   readonly typststate_createFileId: (a: number, b: number, c: number) => number;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
-  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => any;
-  readonly typststate_click: (a: number, b: number, c: number) => any;
-  readonly typststate_autocomplete: (a: number, b: number, c: number) => any;
+  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_click: (a: number, b: number, c: number) => number;
+  readonly typststate_autocomplete: (a: number, b: number, c: number) => number;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly typststate_renderPdf: (a: number, b: number) => any;
+  readonly typststate_renderPdf: (a: number, b: number) => number;
   readonly __wbg_packagefile_free: (a: number, b: number) => void;
   readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
   readonly __wbg_themecolors_free: (a: number, b: number) => void;
   readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
-  readonly rgb_toString: (a: number) => [number, number];
+  readonly rgb_toString: (a: number, b: number) => void;
   readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly start: () => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
@@ -127,12 +127,10 @@ export interface InitOutput {
   readonly qcms_enable_iccv4: () => void;
   readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
   readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
-  readonly __wbindgen_malloc: (a: number, b: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_3: WebAssembly.Table;
-  readonly __externref_table_alloc: () => number;
-  readonly __externref_table_dealloc: (a: number) => void;
+  readonly __wbindgen_export_0: (a: number, b: number) => number;
+  readonly __wbindgen_export_1: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_export_2: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_start: () => void;
 }
 
