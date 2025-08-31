@@ -90,7 +90,7 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^60.0.0",
     "nitropack": "npm:nitropack-nightly@2.12.5-20250819-230311.89278001",
-    "nuxt": "^4.0.2",
+    "nuxt": "^4.0.3",
     "nuxt-auth-utils": "^0.5.20",
     "nuxt-ssr-lit": "^1.6.30",
     "nuxthub": "^0.9.3",
