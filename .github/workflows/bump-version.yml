@@ -50,7 +50,6 @@ jobs:
           jq --indent 4 '.version="${{ steps.semver.outputs.semantic-version }}"' platform/tauri/tauri.conf.json > tauri.config.json.new && mv tauri.config.json.new platform/tauri/tauri.conf.json
           sed -i '/name = "mnemo"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
           sed -i '/name = "mnemo-wasm"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
-          sed -i '/name = "mnemo-render"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
 
       - name: Commit, tag and push
         run: |
