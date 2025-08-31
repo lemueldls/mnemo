@@ -2187,6 +2187,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "highway"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9040319a6910b901d5d49cbada4a99db52836a1b63228a05f7e2b7f8feef89b1"
+
+[[package]]
 name = "html5ever"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3186,8 +3192,8 @@ version = "0.1.2"
 dependencies = [
  "console_error_panic_hook",
  "data-encoding",
- "fxhash",
  "hashbrown 0.15.5",
+ "highway",
  "js-sys",
  "lol_alloc",
  "mnemo-render",

@@ -19,6 +19,8 @@ import type {
   TypstState,
 } from "mnemo-wasm";
 
+const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
+
 class TypstWidget extends WidgetType {
   #container = document.createElement("div");
 
@@ -30,11 +32,9 @@ class TypstWidget extends WidgetType {
   ) {
     super();
 
-    const container = view.contentDOM.querySelector<HTMLDivElement>(
-      `div[data-hash="${frame.render.hash}"]`,
-    );
+    const container = containerCache.get(frame.render.hash);
 
-    if (container) {
+    if (container && container.isConnected) {
       this.#container = container;
     } else {
       this.#container.dataset.hash = frame.render.hash.toString();
@@ -44,7 +44,7 @@ class TypstWidget extends WidgetType {
       const image = document.createElement("img");
 
       image.draggable = false;
-      image.src = `data:image/png;base64,${this.frame.render.encoding.toBase64()}`;
+      image.src = `data:image/png;base64,${frame.render.encoding.toBase64()}`;
       image.height = frame.render.height;
 
       if (!locked) {
@@ -63,6 +63,8 @@ class TypstWidget extends WidgetType {
       }
 
       this.#container.append(image);
+
+      containerCache.set(frame.render.hash, this.#container);
     }
   }
 
