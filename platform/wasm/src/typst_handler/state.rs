@@ -290,9 +290,9 @@ impl TypstState {
                             .map(|page| page.frame.height().to_pt())
                             .sum::<f64>();
 
-                        let height = (document_height - offset_height).ceil() as u32;
+                        let height = (document_height - offset_height);
 
-                        if height == 0 {
+                        if height == 0_f64 {
                             return None;
                         }
 
@@ -333,11 +333,19 @@ impl TypstState {
             ranged_heights
                 .into_iter()
                 .map(|(range, height, offset_height)| {
-                    let rect = IntRect::from_xywh(0, offset_height as i32, width, height).unwrap();
+                    let rect = IntRect::from_xywh(
+                        0,
+                        (offset_height as f32 * context.pixel_per_pt).ceil() as i32,
+                        width,
+                        (height as f32 * context.pixel_per_pt).ceil() as u32,
+                    )
+                    .unwrap();
                     let canvas = canvas.clone_rect(rect).unwrap();
                     let encoding = canvas.encode_png().unwrap();
 
                     let hash = HighwayHasher::default().hash64(&encoding) as u32;
+
+                    let height = height.ceil() as u32;
 
                     let render = FrameRender {
                         encoding,
