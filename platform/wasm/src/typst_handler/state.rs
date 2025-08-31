@@ -1,14 +1,9 @@
-use std::{
-    fmt,
-    hash::{Hash, Hasher},
-    ops::Range,
-    str::FromStr,
-};
+use std::{fmt, ops::Range, str::FromStr};
 
 use hashbrown::HashMap;
 use highway::{HighwayHash, HighwayHasher};
-use mnemo_render::sk::IntRect;
 use serde::{Deserialize, Serialize};
+use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
     WorldExt, compile,

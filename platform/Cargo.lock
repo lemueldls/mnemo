@@ -2101,21 +2101,21 @@ dependencies = [
 
 [[package]]
 name = "hayro"
-version = "0.1.0"
-source = "git+https://github.com/LaurenzV/hayro?rev=e701f95#e701f9569157a2fe4ade68930dc9e9283782dcca"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a063475c55469656ada01db8d502ccafe3351f463854019aeb686c105246307b"
 dependencies = [
  "bytemuck",
  "hayro-interpret",
  "image",
  "kurbo",
- "rustc-hash",
- "smallvec",
 ]
 
 [[package]]
 name = "hayro-font"
 version = "0.1.0"
-source = "git+https://github.com/LaurenzV/hayro?rev=e701f95#e701f9569157a2fe4ade68930dc9e9283782dcca"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "961d753ae00c7aaf512ed386dd4c723a18cf1c0cb2e0772e87bbe8c18ed1a6df"
 dependencies = [
  "log",
  "phf 0.11.3",
@@ -2123,8 +2123,9 @@ dependencies = [
 
 [[package]]
 name = "hayro-interpret"
-version = "0.1.0"
-source = "git+https://github.com/LaurenzV/hayro?rev=e701f95#e701f9569157a2fe4ade68930dc9e9283782dcca"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b35e0d2bc380332441b45e47d52b10d05c5df74a7b1e6c8ca95254aef2be1b38"
 dependencies = [
  "bitflags 2.9.1",
  "hayro-font",
@@ -2133,6 +2134,8 @@ dependencies = [
  "log",
  "phf 0.11.3",
  "qcms",
+ "rustc-hash",
+ "siphasher 1.0.1",
  "skrifa",
  "smallvec",
  "yoke 0.8.0",
@@ -2140,8 +2143,9 @@ dependencies = [
 
 [[package]]
 name = "hayro-syntax"
-version = "0.0.1"
-source = "git+https://github.com/LaurenzV/hayro?rev=e701f95#e701f9569157a2fe4ade68930dc9e9283782dcca"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1d3e06bd0f8a1861e353ed4d516751fac3c1c0a202cbe9f3ed325be9194e1cf"
 dependencies = [
  "flate2",
  "kurbo",
@@ -2153,8 +2157,9 @@ dependencies = [
 
 [[package]]
 name = "hayro-write"
-version = "0.1.0"
-source = "git+https://github.com/LaurenzV/hayro?rev=e701f95#e701f9569157a2fe4ade68930dc9e9283782dcca"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d55f2b3e748993b8d87ff2e72d34f74b4c9a11d09d6c5f4eb54340f5d2aed275"
 dependencies = [
  "flate2",
  "hayro-syntax",
@@ -2830,7 +2835,7 @@ dependencies = [
 [[package]]
 name = "krilla"
 version = "0.4.0"
-source = "git+https://github.com/LaurenzV/krilla?rev=abdf031#abdf031c9e5ba89d606f6f145fad648c75812aec"
+source = "git+https://github.com/LaurenzV/krilla?rev=747be0d#747be0db9abc14e97b1036e0ced5a069080705b6"
 dependencies = [
  "base64 0.22.1",
  "bumpalo",
@@ -2860,7 +2865,7 @@ dependencies = [
 [[package]]
 name = "krilla-svg"
 version = "0.1.0"
-source = "git+https://github.com/LaurenzV/krilla?rev=abdf031#abdf031c9e5ba89d606f6f145fad648c75812aec"
+source = "git+https://github.com/LaurenzV/krilla?rev=747be0d#747be0db9abc14e97b1036e0ced5a069080705b6"
 dependencies = [
  "flate2",
  "fontdb",
@@ -3168,25 +3173,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mnemo-render"
-version = "0.1.2"
-dependencies = [
- "bytemuck",
- "comemo",
- "hayro",
- "image",
- "pixglyph",
- "resvg",
- "tiny-skia",
- "ttf-parser",
- "typst-assets",
- "typst-ide",
- "typst-library",
- "typst-macros",
- "typst-timing",
-]
-
-[[package]]
 name = "mnemo-wasm"
 version = "0.1.2"
 dependencies = [
@@ -3196,11 +3182,11 @@ dependencies = [
  "highway",
  "js-sys",
  "lol_alloc",
- "mnemo-render",
  "serde",
  "serde-wasm-bindgen",
  "serde_bytes",
  "time",
+ "tiny-skia",
  "tsify",
  "typst",
  "typst-ide",
@@ -6417,7 +6403,7 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 [[package]]
 name = "typst"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "comemo",
  "ecow",
@@ -6441,7 +6427,7 @@ source = "git+https://github.com/typst/typst-assets?rev=fbf00f9#fbf00f9539fdb082
 [[package]]
 name = "typst-eval"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "comemo",
  "ecow",
@@ -6460,7 +6446,7 @@ dependencies = [
 [[package]]
 name = "typst-html"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "bumpalo",
  "comemo",
@@ -6480,7 +6466,7 @@ dependencies = [
 [[package]]
 name = "typst-ide"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "comemo",
  "ecow",
@@ -6495,7 +6481,7 @@ dependencies = [
 [[package]]
 name = "typst-layout"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "az",
  "bumpalo",
@@ -6529,7 +6515,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "az",
  "bitflags 2.9.1",
@@ -6594,7 +6580,7 @@ dependencies = [
 [[package]]
 name = "typst-macros"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6605,7 +6591,7 @@ dependencies = [
 [[package]]
 name = "typst-pdf"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6627,7 +6613,7 @@ dependencies = [
 [[package]]
 name = "typst-realize"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "arrayvec",
  "bumpalo",
@@ -6644,7 +6630,7 @@ dependencies = [
 [[package]]
 name = "typst-render"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6663,7 +6649,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "base64 0.22.1",
  "comemo",
@@ -6685,7 +6671,7 @@ dependencies = [
 [[package]]
 name = "typst-syntax"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -6703,7 +6689,7 @@ dependencies = [
 [[package]]
 name = "typst-timing"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "parking_lot",
  "serde",
@@ -6713,7 +6699,7 @@ dependencies = [
 [[package]]
 name = "typst-utils"
 version = "0.13.1"
-source = "git+https://github.com/typst/typst#bcc71ddb9b5146b97cb3078ecdb5406f31781ea2"
+source = "git+https://github.com/typst/typst?rev=0a86b5b#0a86b5ba47230580dbe2a8ae033e91c5cac8c165"
 dependencies = [
  "once_cell",
  "portable-atomic",

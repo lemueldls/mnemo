@@ -25,18 +25,18 @@ hashbrown = { version = "0.15.5" }
 highway = { version = "1.3.0" }
 js-sys = { version = "0.3.77", default-features = false }
 lol_alloc = { version = "0.4.1", optional = true }
-mnemo-render = { path = "./render" }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 serde_bytes = "0.11"
 time = { version = "0.3", features = ["serde"] }
+tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
-typst = { git = "https://github.com/typst/typst" }
-typst-ide = { git = "https://github.com/typst/typst" }
-typst-render = { git = "https://github.com/typst/typst" }
-# typst-svg = { git = "https://github.com/typst/typst" }
-typst-pdf = { git = "https://github.com/typst/typst" }
-# typst-html = { git = "https://github.com/typst/typst" }
+typst = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+typst-ide = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+typst-render = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+# typst-svg = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+typst-pdf = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+# typst-html = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
 wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
