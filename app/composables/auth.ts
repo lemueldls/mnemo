@@ -63,6 +63,8 @@ export const useAuth = createSharedComposable(() => {
   };
 
   if (import.meta.client) {
+    watchImmediate(token, () => fetchSession());
+
     client.$store.listen("$sessionSignal", async (signal) => {
       if (!signal) return;
       await fetchSession();
