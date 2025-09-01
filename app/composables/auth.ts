@@ -27,8 +27,8 @@ export const useAuth = createSharedComposable(() => {
   const user = ref<InferUserFromClient<ClientOptions> | null>(null);
   const sessionFetching = ref(false);
 
-  const fetchSession = async () => {
-    if (sessionFetching.value) return;
+  const fetchSession = async (force = false) => {
+    if (sessionFetching.value && !force) return;
 
     sessionFetching.value = true;
 
@@ -63,6 +63,8 @@ export const useAuth = createSharedComposable(() => {
   };
 
   if (import.meta.client) {
+    watchImmediate(token, () => fetchSession(true));
+
     client.$store.listen("$sessionSignal", async (signal) => {
       if (!signal) return;
       await fetchSession();

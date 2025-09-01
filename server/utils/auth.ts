@@ -62,9 +62,6 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
       disableCSRFCheck: true,
-      defaultCookieAttributes: import.meta.dev
-        ? { sameSite: "lax", secure: false, httpOnly: true }
-        : { sameSite: "none", secure: true, httpOnly: true },
     },
     plugins: [
       bearer(),
