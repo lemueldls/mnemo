@@ -35,8 +35,8 @@ importers:
         specifier: ^6.8.1
         version: 6.8.1
       '@codemirror/language':
-        specifier: ^6.11.2
-        version: 6.11.2
+        specifier: ^6.11.3
+        version: 6.11.3
       '@codemirror/lint':
         specifier: ^6.8.5
         version: 6.8.5
@@ -87,7 +87,7 @@ importers:
         version: 0.34.8(zod@3.25.76)
       '@replit/codemirror-vscode-keymap':
         specifier: ^6.0.2
-        version: 6.0.2(@codemirror/autocomplete@6.18.6)(@codemirror/commands@6.8.1)(@codemirror/language@6.11.2)(@codemirror/lint@6.8.5)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)
+        version: 6.0.2(@codemirror/autocomplete@6.18.6)(@codemirror/commands@6.8.1)(@codemirror/language@6.11.3)(@codemirror/lint@6.8.5)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)
       '@tauri-apps/api':
         specifier: ^2.8.0
         version: 2.8.0
@@ -564,8 +564,8 @@ packages:
   '@codemirror/commands@6.8.1':
     resolution: {integrity: sha512-KlGVYufHMQzxbdQONiLyGQDUW0itrLZwq3CcY7xpv9ZLRHqzkBSoteocBHtMCoY7/Ci4xhzSrToIeLg7FxHuaw==}
 
-  '@codemirror/language@6.11.2':
-    resolution: {integrity: sha512-p44TsNArL4IVXDTbapUmEkAlvWs2CFQbcfc0ymDsis1kH2wh0gcY96AS29c/vp2d0y2Tquk1EDSaawpzilUiAw==}
+  '@codemirror/language@6.11.3':
+    resolution: {integrity: sha512-9HBM2XnwDj7fnu0551HkGdrUrrqmYq/WC5iv6nbY2WdicXdGbhR/gfbZOH73Aqj4351alY1+aoG9rCNfiwS1RA==}
 
   '@codemirror/lint@6.8.5':
     resolution: {integrity: sha512-s3n3KisH7dx3vsoeGMxsbRAgKe4O1vbrnKBClm99PU0fWxmxsx5rR2PfqQgIt+2MMJBHbiJ5rfIdLYfB9NNvsA==}
@@ -8763,19 +8763,19 @@ snapshots:
 
   '@codemirror/autocomplete@6.18.6':
     dependencies:
-      '@codemirror/language': 6.11.2
+      '@codemirror/language': 6.11.3
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
       '@lezer/common': 1.2.3
 
   '@codemirror/commands@6.8.1':
     dependencies:
-      '@codemirror/language': 6.11.2
+      '@codemirror/language': 6.11.3
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
       '@lezer/common': 1.2.3
 
-  '@codemirror/language@6.11.2':
+  '@codemirror/language@6.11.3':
     dependencies:
       '@codemirror/state': 6.5.2
       '@codemirror/view': 6.38.1
@@ -10755,11 +10755,11 @@ snapshots:
     dependencies:
       quansync: 0.2.11
 
-  '@replit/codemirror-vscode-keymap@6.0.2(@codemirror/autocomplete@6.18.6)(@codemirror/commands@6.8.1)(@codemirror/language@6.11.2)(@codemirror/lint@6.8.5)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)':
+  '@replit/codemirror-vscode-keymap@6.0.2(@codemirror/autocomplete@6.18.6)(@codemirror/commands@6.8.1)(@codemirror/language@6.11.3)(@codemirror/lint@6.8.5)(@codemirror/search@6.5.11)(@codemirror/state@6.5.2)(@codemirror/view@6.38.1)':
     dependencies:
       '@codemirror/autocomplete': 6.18.6
       '@codemirror/commands': 6.8.1
-      '@codemirror/language': 6.11.2
+      '@codemirror/language': 6.11.3
       '@codemirror/lint': 6.8.5
       '@codemirror/search': 6.5.11
       '@codemirror/state': 6.5.2
