@@ -6,7 +6,7 @@ export interface Task {
 }
 
 export const useTasks = createSharedComposable(async () => {
-  const tasks = await useStorageMap<{ [id: string]: Task }>("tasks", {});
+  const tasks = await useStorageMap<{ [id: string]: Task }>("tasks.json", {});
 
   return extendRef(tasks, {
     sorted: computed(() =>
