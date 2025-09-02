@@ -2,7 +2,8 @@ import { D1Dialect } from "@atinux/kysely-d1";
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import { betterAuth } from "better-auth";
-import { bearer } from "better-auth/plugins";
+
+import { bearer } from "./bearer";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
