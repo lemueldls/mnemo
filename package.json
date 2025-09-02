@@ -18,7 +18,7 @@
     "@codemirror/lint": "^6.8.5",
     "@codemirror/search": "^6.5.11",
     "@codemirror/state": "^6.5.2",
-    "@codemirror/view": "^6.38.1",
+    "@codemirror/view": "^6.38.2",
     "@html2canvas/html2canvas": "^1.6.3",
     "@internationalized/date": "^3.8.2",
     "@internationalized/number": "^3.6.3",
