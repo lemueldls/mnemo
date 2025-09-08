@@ -91,7 +91,7 @@
     "eslint-plugin-unicorn": "^60.0.0",
     "nitropack": "^2.12.4",
     "nuxt": "^4.0.3",
-    "nuxt-auth-utils": "^0.5.20",
+    "nuxt-auth-utils": "^0.5.24",
     "nuxt-ssr-lit": "^1.6.30",
     "nuxthub": "^0.9.3",
     "postcss-html": "^1.8.0",
