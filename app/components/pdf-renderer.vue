@@ -2,7 +2,7 @@
 import { Rgb, ThemeColors } from "mnemo-wasm";
 import { decodeTime } from "ulid";
 
-import type { Note } from "~/composables/notes";
+import type { DailyNote } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
 const spaceId = usePageRouteQuery("space");
@@ -12,7 +12,7 @@ const { d } = useI18n();
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
-const dailyNotesItem = await getStorageItem<Note[]>(
+const dailyNotesItem = await getStorageItem<DailyNote[]>(
   `spaces/${spaceId.value}/daily/notes.json`,
   [],
 );
