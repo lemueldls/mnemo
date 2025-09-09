@@ -95,8 +95,12 @@ watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
   );
 });
 
-const packages = await useInstalledPackages(spaceId.value);
-await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
+try {
+  const packages = await useInstalledPackages(spaceId.value);
+  await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
+} catch (err) {
+  console.error("Error installing packages:", err);
+}
 
 typstState.resize(fileId, 800);
 

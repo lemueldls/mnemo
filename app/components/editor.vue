@@ -100,7 +100,7 @@ onMounted(async () => {
       if (ready) reloadEditorWidgets(view);
     });
   } catch (err) {
-    console.error("Error installing packages", err);
+    console.error("Error installing packages:", err);
   }
 
   await watchImmediateAsync(fullPath, async (fullPath) => {
