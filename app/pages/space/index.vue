@@ -102,10 +102,6 @@ const notes = useArrayMap(dailyNotes, (note) => {
 
 const currentNoteId = usePageRouteQuery("note");
 
-watchEffect(() => {
-  console.log({ currentNoteId: currentNoteId.value });
-});
-
 const currentNote = computed(() => {
   const noteIndexById = currentNoteId.value
     ? notes.value.findLastIndex((note) => note.id === currentNoteId.value)

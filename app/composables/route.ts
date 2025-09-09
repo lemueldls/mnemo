@@ -13,7 +13,6 @@ export function usePageRouteQuery(name: string, defaultValue: string = "") {
   return computed({
     get: () => [route.query[name]].flat()[0]?.toString() || defaultValue,
     set(query: string) {
-      console.log({ query: query });
       router.replace({ ...route, query: { ...route.query, [name]: query } });
     },
   });
