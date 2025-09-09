@@ -22,6 +22,8 @@ if (isTauri()) {
     await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
   });
 
+  await checkForAppUpdates();
+
   onUnmounted(() => {
     unlisten();
   });

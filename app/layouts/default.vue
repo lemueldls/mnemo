@@ -1,15 +1,5 @@
 <script setup lang="ts">
-// import "mnemo-wasm";
-
 import type { MaterialSymbol } from "material-symbols";
-
-// const runtimeConfig = useRuntimeConfig();
-// const { platform } = runtimeConfig.public;
-
-// if (platform && import.meta.env.PROD)
-//   onMounted(async () => {
-//     await checkForAppUpdates();
-//   });
 
 const route = useRoute();
 
