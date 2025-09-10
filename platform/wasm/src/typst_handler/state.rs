@@ -48,6 +48,11 @@ impl TypstState {
         self.file_contexts.get_mut(id).unwrap().theme = theme;
     }
 
+    #[wasm_bindgen(js_name = "setLocale")]
+    pub fn set_locale(&mut self, id: &TypstFileId, locale: String) {
+        self.file_contexts.get_mut(id).unwrap().locale = locale;
+    }
+
     #[wasm_bindgen(js_name = "createFileId")]
     pub fn create_file_id(&mut self, path: String) -> TypstFileId {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
@@ -104,8 +109,8 @@ impl TypstState {
                         #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
                         #show heading:set block(above:0.25em,below:0.125em)
                         #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
-                        #show list:set block(above:0.25em,below:0.125em)
-                        #show enum:set block(above:0.25em,below:0.125em)
+                        #show list:set block(above:0.25em,below:0em)
+                        #show enum:set block(above:0.25em,below:0em)
                     "#,
                     width = context.width,
                 )
@@ -123,7 +128,7 @@ impl TypstState {
         format!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:16pt)
+                #set text(fill:theme.on-background,size:16pt,lang:"{locale}")
 
                 #context {{show math.equation:set text(size:text.size*2)}}
 
@@ -142,6 +147,7 @@ impl TypstState {
                 {page_config}
             "#,
             theme = context.theme,
+            locale = context.locale,
         )
     }
 
@@ -287,10 +293,11 @@ impl TypstState {
                         let document_height = document
                             .pages
                             .iter()
-                            .map(|page| page.frame.height().to_pt())
-                            .sum::<f64>();
+                            .map(|page| page.frame.height())
+                            .sum::<Abs>()
+                            .to_pt();
 
-                        let height = (document_height - offset_height);
+                        let height = document_height - offset_height;
 
                         if height == 0_f64 {
                             return None;
@@ -497,6 +504,7 @@ struct FileContext {
     pub height: Option<f64>,
     pub pixel_per_pt: f32,
     pub theme: ThemeColors,
+    pub locale: String,
 }
 
 impl Default for FileContext {
@@ -506,6 +514,7 @@ impl Default for FileContext {
             height: None,
             pixel_per_pt: 1_f32,
             theme: ThemeColors::default(),
+            locale: String::from("en"),
         }
     }
 }

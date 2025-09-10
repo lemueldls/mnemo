@@ -70,7 +70,7 @@ const prelude = computed(() =>
     .otherwise(() => preludeItem.value),
 );
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const typstState = await useTypst();
 
@@ -103,12 +103,12 @@ onMounted(async () => {
     console.error("Error installing packages:", err);
   }
 
-  await watchImmediateAsync(fullPath, async (fullPath) => {
+  watchImmediate(fullPath, (fullPath) => {
     const fileId = typstState.createFileId(fullPath);
 
     typstState.setPixelPerPt(fileId, window.devicePixelRatio);
 
-    await watchImmediateAsync(palette, async (palette) => {
+    watchImmediate(palette, (palette) => {
       typstState.setTheme(
         fileId,
         new ThemeColors(
@@ -139,6 +139,12 @@ onMounted(async () => {
           parseColor(palette.onErrorContainer),
         ),
       );
+
+      if (ready) reloadEditorWidgets(view);
+    });
+
+    watchImmediate(locale, (locale) => {
+      typstState.setLocale(fileId, locale);
 
       if (ready) reloadEditorWidgets(view);
     });

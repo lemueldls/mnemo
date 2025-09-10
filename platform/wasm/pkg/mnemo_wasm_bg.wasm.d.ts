@@ -5,6 +5,7 @@ export const __wbg_typststate_free: (a: number, b: number) => void;
 export const typststate_new: () => number;
 export const typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
 export const typststate_setTheme: (a: number, b: number, c: number) => void;
+export const typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
 export const typststate_createFileId: (a: number, b: number, c: number) => number;
 export const typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
 export const typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;

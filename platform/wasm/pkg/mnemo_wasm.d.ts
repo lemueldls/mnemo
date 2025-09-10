@@ -77,6 +77,7 @@ export class TypstState {
   constructor();
   setPixelPerPt(id: FileId, size: number): void;
   setTheme(id: FileId, theme: ThemeColors): void;
+  setLocale(id: FileId, locale: string): void;
   createFileId(path: string): FileId;
   insertFile(id: FileId, text: string): void;
   installPackage(spec: string, files: PackageFile[]): void;
@@ -96,6 +97,7 @@ export interface InitOutput {
   readonly typststate_new: () => number;
   readonly typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
   readonly typststate_setTheme: (a: number, b: number, c: number) => void;
+  readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_createFileId: (a: number, b: number, c: number) => number;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;

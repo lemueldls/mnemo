@@ -388,6 +388,16 @@ export class TypstState {
         wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
     }
     /**
+     * @param {FileId} id
+     * @param {string} locale
+     */
+    setLocale(id, locale) {
+        _assertClass(id, FileId);
+        const ptr0 = passStringToWasm0(locale, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_setLocale(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * @param {string} path
      * @returns {FileId}
      */
