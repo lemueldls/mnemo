@@ -26,7 +26,7 @@ async function installPackage(pkg: Package) {
   loading.value = true;
 
   await installTypstPackage(pkg, namespace);
-  installedPackages.value.push(pkg);
+  installedPackages.value = [...installedPackages.value, pkg];
 
   loading.value = false;
 }
