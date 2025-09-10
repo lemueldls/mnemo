@@ -53,20 +53,6 @@ const filteredPackages = computed(() => {
     ),
   );
 });
-
-const installedPackages = await useInstalledPackages(() => props.spaceId);
-
-async function installPackage(pkg: Package) {
-  await installTypstPackage(pkg, namespace);
-
-  installedPackages.value.push(pkg);
-}
-
-async function uninstallPackage(pkg: Package) {
-  installedPackages.value = installedPackages.value.filter(
-    (pkgItem) => !isSamePackage(pkg, pkgItem),
-  );
-}
 </script>
 
 <template>
@@ -98,10 +84,9 @@ async function uninstallPackage(pkg: Package) {
         <template #default="{ data: versionedPackage }">
           <package-card
             :space-id
+            :namespace
             :versioned-package
             class="flex flex-col gap-2"
-            @install="installPackage"
-            @uninstall="uninstallPackage"
           />
         </template>
       </UseVirtualList>

@@ -71,6 +71,7 @@
       "version": "Version",
       "installed": "(Installed)",
       "install": "Install",
+      "installing": "Installing...",
       "uninstall": "Uninstall",
       "repository": "Repository"
     },
