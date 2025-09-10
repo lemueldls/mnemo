@@ -233,12 +233,15 @@ function createEditorState(fileId: FileId): EditorState {
 
 function reloadEditorWidgets(view: EditorView) {
   const { doc } = view.state;
-  const from = 0;
-  const to = doc.length ? 1 : 0;
 
-  view?.dispatch({
-    changes: { from, to, insert: doc.sliceString(from, to) },
-  });
+  if (doc.length) {
+    const from = 0;
+    const to = 1;
+
+    view?.dispatch({
+      changes: { from, to, insert: doc.sliceString(from, to) },
+    });
+  }
 }
 
 const selectionBackground = computed(() => {

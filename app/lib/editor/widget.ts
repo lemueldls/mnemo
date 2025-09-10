@@ -56,10 +56,10 @@ class TypstWidget extends WidgetType {
           "mousedown",
           this.handleMouseEvent.bind(this),
         );
-        this.#container.addEventListener(
-          "touchstart",
-          this.handleTouchEvent.bind(this),
-        );
+        // this.#container.addEventListener(
+        //   "touchstart",
+        //   this.handleTouchEvent.bind(this),
+        // );
       }
 
       this.#container.append(image);
@@ -74,12 +74,12 @@ class TypstWidget extends WidgetType {
     this.handleJump(clientX, clientY);
   }
 
-  private handleTouchEvent(event: TouchEvent) {
-    event.preventDefault();
-    const [touch] = event.touches;
-    const { clientX, clientY } = touch!;
-    this.handleJump(clientX, clientY);
-  }
+  // private handleTouchEvent(event: TouchEvent) {
+  //   event.preventDefault();
+  //   const [touch] = event.touches;
+  //   const { clientX, clientY } = touch!;
+  //   this.handleJump(clientX, clientY);
+  // }
 
   private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
@@ -155,8 +155,8 @@ function decorate(
     });
 
     const transaction = setDiagnostics(state, diagnostics);
-    queueMicrotask(() => view.dispatch(transaction));
-  } else queueMicrotask(() => view.dispatch(setDiagnostics(state, [])));
+    view.dispatch(transaction);
+  } else view.dispatch(setDiagnostics(state, []));
 
   for (const frame of compileResult.frames) {
     if (frame.render) {
@@ -175,15 +175,11 @@ function decorate(
             (end < range.from || end > range.to),
         );
 
-      if (inactive)
-        widgets.push(
-          Decoration.replace({
-            widget: new TypstWidget(typstState, view, frame, locked),
-            // inclusive: true,
-            // block: true,
-          }).range(start, end),
-        );
-      else {
+      if (inactive) {
+        const widget = new TypstWidget(typstState, view, frame, locked);
+        widgets.push(Decoration.replace({ widget }).range(start, end));
+      } else {
+        frame.range;
         let lineHeight = 0;
 
         for (
@@ -244,18 +240,20 @@ export const typstViewPlugin = (
             );
           }
 
-          const decorations = decorate(
-            typstState,
-            update,
-            path,
-            fileId,
-            prelude.value,
-            widthChanged,
-            locked,
-          );
+          queueMicrotask(() => {
+            const decorations = decorate(
+              typstState,
+              update,
+              path,
+              fileId,
+              prelude.value,
+              widthChanged,
+              locked,
+            );
+            const effects = stateEffect.of({ decorations });
 
-          const effects = stateEffect.of({ decorations });
-          queueMicrotask(() => update.view.dispatch({ effects }));
+            update.view.dispatch({ effects });
+          });
         }
       },
     };
