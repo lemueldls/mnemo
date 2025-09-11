@@ -2,6 +2,8 @@ name: Optimize WebAssembly
 
 on:
   push:
+    branches:
+      - dev
     paths:
       - "platform/wasm/**"
   workflow_dispatch:
