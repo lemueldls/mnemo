@@ -44,7 +44,7 @@
     "@tauri-apps/plugin-updater": "^2.9.0",
     "@tauri-apps/plugin-websocket": "^2.4.0",
     "@vueuse/math": "^13.5.0",
-    "@vueuse/router": "^13.5.0",
+    "@vueuse/router": "^13.9.0",
     "better-auth": "^1.3.7",
     "crossws": "^0.4.1",
     "defu": "^6.1.4",
