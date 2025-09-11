@@ -11,17 +11,6 @@
     "core:window:allow-start-dragging",
     "opener:default",
     "deep-link:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "http://192.168.1.223:3000"
-        },
-        {
-          "url": "https://notes.lemueldls.workers.dev"
-        }
-      ]
-    },
     "os:default",
     "process:default",
     "websocket:default"

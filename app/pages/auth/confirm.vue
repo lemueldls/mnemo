@@ -3,9 +3,9 @@ import { match } from "ts-pattern";
 
 definePageMeta({ layout: "empty" });
 
-const token = useRouteQuery("token").value as string;
-const redirect = useRouteQuery("redirect").value as string;
-const platform = useRouteQuery("platform").value as string;
+const token = usePageRouteQuery("token").value as string;
+const redirect = usePageRouteQuery("redirect").value as string;
+const platform = usePageRouteQuery("platform").value as string;
 
 if (token) {
   useApiToken().value = encodeURIComponent(token);
@@ -16,16 +16,22 @@ if (token) {
 
 const bearerToken = useApiToken().value!;
 
+const x = ref("");
+
+onMounted(() => {
+  x.value = window.location.href;
+});
+
 match(platform)
-  .with("windows", "darwin", "linux", () => {
+  .with("windows", "darwin", "linux", "android", "ios", () => {
     window.location.href = `mnemo://auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`;
   })
-  .with("android", "ios", () => {
-    window.open(
-      `/auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`,
-      "_blank",
-    );
-  })
+  // .with("android", "ios", () => {
+  //   window.open(
+  //     `/auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`,
+  //     "_self",
+  //   );
+  // })
   .otherwise(async () => {
     const redirectUrl = new URL(redirect);
 
@@ -43,5 +49,7 @@ match(platform)
 </script>
 
 <template>
-  <div />
+  <div>
+    <span>{{ x }}</span>
+  </div>
 </template>

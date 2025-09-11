@@ -53,7 +53,14 @@
         "deep-link": {
             "mobile": [
                 {
-                    "host": "notes.lemueldls.workers.dev"
+                    "scheme": ["mnemo"],
+                    "appLink": false
+                },
+                {
+                    "scheme": ["https"],
+                    "host": "notes.lemueldls.workers.dev",
+                    "pathPrefix": ["/auth/confirm"],
+                    "appLink": true
                 }
             ],
             "desktop": {
