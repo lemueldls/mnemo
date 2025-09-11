@@ -23,19 +23,20 @@ sha256sums=('$sha256sum')
 _builddir="mnemo-mnemo-v\$pkgver/platform"
 prepare() {
     cd "\$srcdir/\$_builddir" || exit 1
-    export RUSTUP_TOOLCHAIN=stable
-    rustup toolchain install \$RUSTUP_TOOLCHAIN --target wasm32-unknown-unknown --profile minimal --no-self-update
-    cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
-    cargo fetch --locked --target wasm32-unknown-unknown
+    # export RUSTUP_TOOLCHAIN=stable
+    # rustup toolchain install \$RUSTUP_TOOLCHAIN --target wasm32-unknown-unknown --profile minimal --no-self-update
+    # cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
+    # cargo fetch --locked --target wasm32-unknown-unknown
+    corepack enable --install-directory ~/bin
+    pnpm install
 }
 build() {
     cd "\$srcdir/\$_builddir" || exit 1
     # unfortunately LTOFLAGS -flto=auto set by /etc/makepkg.conf break linking as those are added to CFLAGS automatically
     # building will bail out with something like: undefined reference to 'ring_core_0_17_8_OPENSSL_ia32cap_P' when -flto=auto is set
     export CFLAGS="\${CFLAGS//-flto=auto//}"
+    export NODE_OPTIONS=--max-old-space-size=8192
     export NUXT_PUBLIC_API_BASE_URL="https://notes.lemueldls.workers.dev"
-    corepack enable
-    pnpm install
     pnpm tauri build -b deb -c "\${srcdir}/\${_builddir}/tauri/tauri.package.conf.json" || true
 }
 package() {
