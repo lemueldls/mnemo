@@ -23,9 +23,8 @@ sha256sums=('$sha256sum')
 _builddir="mnemo-mnemo-v\$pkgver/platform"
 prepare() {
     cd "\$srcdir/\$_builddir" || exit 1
-    # export RUSTUP_TOOLCHAIN=stable
-    # rustup toolchain install \$RUSTUP_TOOLCHAIN --target wasm32-unknown-unknown --profile minimal --no-self-update
-    # cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
+    rustup toolchain install --profile minimal --no-self-update # --target wasm32-unknown-unknown
+    cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
     # cargo fetch --locked --target wasm32-unknown-unknown
     pnpm install
 }
