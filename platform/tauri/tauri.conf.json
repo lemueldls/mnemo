@@ -1,6 +1,6 @@
 {
     "$schema": "../../node_modules/@tauri-apps/cli/config.schema.json",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "productName": "Mnemo",
     "identifier": "dev.lemueldls.mnemo",
     "build": {
@@ -53,13 +53,19 @@
         "deep-link": {
             "mobile": [
                 {
-                    "scheme": ["mnemo"],
+                    "scheme": [
+                        "mnemo"
+                    ],
                     "appLink": false
                 },
                 {
-                    "scheme": ["https"],
+                    "scheme": [
+                        "https"
+                    ],
                     "host": "notes.lemueldls.workers.dev",
-                    "pathPrefix": ["/auth/confirm"],
+                    "pathPrefix": [
+                        "/auth/confirm"
+                    ],
                     "appLink": true
                 }
             ],
