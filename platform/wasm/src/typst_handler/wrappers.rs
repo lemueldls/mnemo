@@ -40,7 +40,7 @@ impl TypstDiagnostic {
         errors
             .into_iter()
             .flat_map(|error| {
-                map_span(error.span, true, EcoVec::new(), world).map(|range| {
+                map_aux_span(error.span, true, &[], world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::Error,
@@ -69,10 +69,10 @@ impl TypstDiagnostic {
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
 
-                map_span(
+                map_aux_span(
                     diagnostic.span,
                     diagnostic.severity == Severity::Error,
-                    diagnostic.trace,
+                    &diagnostic.trace,
                     world,
                 )
                 .map(|range| {
@@ -92,14 +92,12 @@ impl TypstDiagnostic {
     }
 }
 
-fn map_span(
+pub fn map_main_span(
     span: Span,
     is_error: bool,
-    trace: EcoVec<Spanned<Tracepoint>>,
+    trace: &[Spanned<Tracepoint>],
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let aux_source = world.aux_source();
-
     let mut main_range = if world.main == span.id() {
         world.range(span)
     } else {
@@ -120,12 +118,29 @@ fn map_span(
         }
     }
 
+    main_range
+}
+
+pub fn map_aux_span(
+    span: Span,
+    is_error: bool,
+    trace: &[Spanned<Tracepoint>],
+    world: &MnemoWorld,
+) -> Option<Range<usize>> {
+    let aux_source = world.aux_source();
+
+    let main_range = map_main_span(span, is_error, trace, world);
+
     let aux_range = if let Some(main_range) = main_range {
         let aux_start = world.map_main_to_aux(main_range.start);
         let aux_end = world.map_main_to_aux(main_range.end);
 
         aux_start..aux_end
     } else {
+        if !is_error {
+            return None;
+        }
+
         0..aux_source.text().len()
     };
 
@@ -169,17 +184,21 @@ pub enum TypstJump {
 }
 
 impl TypstJump {
-    pub fn from_mapped(jump: typst_ide::Jump, world: &MnemoWorld) -> Self {
+    pub fn from_mapped(jump: typst_ide::Jump, world: &MnemoWorld) -> Option<Self> {
         match jump {
-            typst_ide::Jump::File(_id, main_position) => {
+            typst_ide::Jump::File(id, main_position) => {
+                if id != world.main? {
+                    return None;
+                }
+
                 let aux_source = world.aux_source();
                 let aux_position = world.map_main_to_aux(main_position);
-                let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position).unwrap();
+                let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 
-                Self::File {
+                Some(Self::File {
                     // id: state.finish(),
                     position: aux_position_utf16,
-                }
+                })
             }
             typst_ide::Jump::Url(..) => todo!(),
             typst_ide::Jump::Position(..) => todo!(),

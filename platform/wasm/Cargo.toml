@@ -14,15 +14,18 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["console_error_panic_hook"]
+wasm-simd = []
 
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 lol_alloc = ["dep:lol_alloc"]
 
 [dependencies]
+collected = { version = "0.4.0" }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 data-encoding = "2.9.0"
 hashbrown = { version = "0.15.5" }
 highway = { version = "1.3.0" }
+itertools = { version = "0.14.0" }
 js-sys = { version = "0.3.77", default-features = false }
 lol_alloc = { version = "0.4.1", optional = true }
 serde = { version = "1.0", features = ["derive"] }
@@ -44,4 +47,13 @@ wasm-bindgen = "0.2.100"
 wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-O4", "-all"]
+wasm-opt = false # ["-O4", "-all"]
+
+[profile.release]
+codegen-units = 1    # Single codegen unit
+debug = false        # No debug info
+inherits = "release"
+lto = "fat"          # Full LTO for inlining
+opt-level = 3        # Maximum performance
+panic = "abort"      # Smaller panic handler
+strip = true
