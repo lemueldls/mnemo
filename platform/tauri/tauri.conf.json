@@ -13,6 +13,7 @@
         "active": true,
         "license": "AGPL-3.0",
         "licenseFile": "../../LICENSE",
+        "category": "Productivity",
         "icon": [
             "icons/32x32.png",
             "icons/128x128.png",
