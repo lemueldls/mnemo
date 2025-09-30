@@ -24,18 +24,16 @@ const calendarToday = today(timeZone);
 const modelDate = defineModel<CalendarDate>("date", { required: true });
 
 const selectedDate = shallowRef(modelDate.value) as Ref<CalendarDate>;
-watch(modelDate, (date) => {
-  selectedDate.value = date;
-});
-whenever(visible, () => {
-  selectedDate.value = modelDate.value;
-});
-
 const viewingDate = shallowRef(modelDate.value);
 
+whenever(visible, () => {
+  selectedDate.value = modelDate.value;
+  viewingDate.value = modelDate.value;
+});
+
 function setToday() {
-  viewingDate.value = calendarToday;
   selectedDate.value = calendarToday;
+  viewingDate.value = calendarToday;
 }
 
 const year = new Date().getFullYear();
