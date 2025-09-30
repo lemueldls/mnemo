@@ -27,15 +27,21 @@ const selectedDate = shallowRef(modelDate.value) as Ref<CalendarDate>;
 watch(modelDate, (date) => {
   selectedDate.value = date;
 });
+whenever(visible, () => {
+  selectedDate.value = modelDate.value;
+});
+
+const viewingDate = shallowRef(modelDate.value);
 
 function setToday() {
+  viewingDate.value = calendarToday;
   selectedDate.value = calendarToday;
 }
 
 const year = new Date().getFullYear();
 
 const calendar = computed(() => {
-  const date = selectedDate.value;
+  const date = viewingDate.value;
   const calendar = [];
 
   const monthStartWeekday = getDayOfWeek(startOfMonth(date), locale.value);
@@ -105,9 +111,9 @@ function selectDate() {
         <div class="flex flex-col gap-3 p-3">
           <div class="mb-1 flex items-center justify-between">
             <md-outlined-select
-              :value="selectedDate.month"
+              :value="viewingDate.month"
               @input="
-                selectedDate = selectedDate.set({
+                viewingDate = viewingDate.set({
                   month: $event.target.value,
                 })
               "
@@ -115,7 +121,7 @@ function selectDate() {
               <md-select-option
                 v-for="(month, i) in months"
                 :key="month"
-                :selected="i + 1 === selectedDate.month"
+                :selected="i + 1 === viewingDate.month"
                 :value="i + 1"
               >
                 <span slot="headline">{{ month }}</span>
@@ -124,12 +130,12 @@ function selectDate() {
 
             <div class="flex">
               <md-icon-button
-                @click="selectedDate = selectedDate.subtract({ months: 1 })"
+                @click="viewingDate = viewingDate.subtract({ months: 1 })"
               >
                 <md-icon>keyboard_arrow_left</md-icon>
               </md-icon-button>
               <md-icon-button
-                @click="selectedDate = selectedDate.add({ months: 1 })"
+                @click="viewingDate = viewingDate.add({ months: 1 })"
               >
                 <md-icon>keyboard_arrow_right</md-icon>
               </md-icon-button>
