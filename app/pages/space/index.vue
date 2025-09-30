@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  fromAbsolute,
+  getLocalTimeZone,
+  toCalendarDate,
+} from "@internationalized/date";
 import { createId } from "@paralleldrive/cuid2";
 
 import type { StickyNote } from "~/composables/sticky";
@@ -91,13 +96,20 @@ const notes = useArrayMap(dailyNotes, (note) => {
     id,
     datetime: [year, month, day, hour, minute],
   } = note;
-  const date = d(Date.UTC(year, month, day, hour, minute), {
+
+  const date = Date.UTC(year, month, day, hour, minute);
+
+  const textDate = d(date, {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
 
-  return { id, date };
+  const timeZone = getLocalTimeZone();
+  const dateTime = fromAbsolute(date, timeZone);
+  const calendarDate = toCalendarDate(dateTime);
+
+  return { id, calendarDate, textDate };
 });
 
 const currentNoteId = usePageRouteQuery("note");
@@ -135,6 +147,18 @@ const previousDayId = computed(() => {
 
   return index === 0 ? undefined : notes.value[index - 1]!.id;
 });
+
+const currentDate = computed({
+  get: () => currentNote.value.calendarDate,
+  set(selectedDate) {
+    const selectedNote = notes.value.findLast(
+      (note) => note.calendarDate.compare(selectedDate) === 0,
+    );
+
+    if (selectedNote) currentNoteId.value = selectedNote.id;
+  },
+});
+const datesWithNotes = useArrayMap(notes, (note) => note.calendarDate);
 
 const preludePath = ref("main");
 
@@ -231,7 +255,7 @@ async function createStickyNote() {
             class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
-              <LazyEmbededPdf model-value="article2.pdf" monochrome />
+              <LazyEmbededPdf model-value="csc104.pdf" monochrome />
             </md-outlined-card> -->
 
             <div class="medium:ml-3 max-w-180 relative size-full">
@@ -300,12 +324,20 @@ async function createStickyNote() {
               </div>
 
               <md-elevated-card id="editor">
-                <div id="editor-title">
+                <div class="flex items-center justify-between gap-2">
                   <md-divider class="w-2" />
 
-                  <span class="label-large">
-                    {{ currentNote.date }}
-                  </span>
+                  <div class="z-2">
+                    <mx-modal-date-picker
+                      v-model:date="currentDate"
+                      :marked-dates="datesWithNotes"
+                      disable-unmarked-dates
+                    >
+                      <md-text-button class="font-mono">
+                        {{ currentNote.textDate }}
+                      </md-text-button>
+                    </mx-modal-date-picker>
+                  </div>
 
                   <md-divider class="flex-1" />
 
@@ -471,10 +503,6 @@ async function createStickyNote() {
 
 #editor {
   @apply h-full p-2;
-}
-
-#editor-title {
-  @apply text-on-primary-container flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none;
 }
 
 .sidebar-button {

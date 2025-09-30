@@ -22,8 +22,6 @@ const scroll = useScroll(containerRef);
 const scrollY = useState("today:scroll-y", () => 0);
 watch(scroll.y, (y) => (scrollY.value = y));
 
-const datePickerOpen = ref(false);
-
 const { d, locale } = useI18n();
 
 const title = computed(() =>
@@ -83,14 +81,18 @@ function previousDay() {
 <template>
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex">
-      <span
-        class="text-primary display-small grow-3 flex flex-1 items-center gap-2"
-      >
-        {{ title }}
+      <span class="grow-3 flex flex-1 items-center gap-2">
+        <span class="text-primary display-small">
+          {{ title }}
+        </span>
 
-        <md-icon-button @click="datePickerOpen = true">
-          <md-icon>expand_more</md-icon>
-        </md-icon-button>
+        <div class="z-2">
+          <mx-modal-date-picker v-model:date="calendarDate">
+            <md-icon-button>
+              <md-icon>expand_more</md-icon>
+            </md-icon-button>
+          </mx-modal-date-picker>
+        </div>
       </span>
 
       <div class="grow-2 flex flex-1">
@@ -164,10 +166,5 @@ function previousDay() {
         />
       </div>
     </div>
-
-    <mx-modal-date-picker
-      v-model="datePickerOpen"
-      v-model:date="calendarDate"
-    />
   </div>
 </template>
