@@ -17,22 +17,16 @@ fn main() {
     }
 
     // WASM-specific link arguments for size optimization
-    if profile == "release" || profile == "wasm" {
+    if profile == "release" {
         println!("cargo:rustc-link-arg=--no-entry");
         println!("cargo:rustc-link-arg=--gc-sections");
         println!("cargo:rustc-link-arg=--strip-all");
-        println!("cargo:rustc-link-arg=-zstack-size=4194304"); // 4 MiB
+        println!("cargo:rustc-link-arg=-zstack-size=2147000000 "); // 2 GiB
 
-        // // Enable bulk memory operations
+        // Enable bulk memory operations
         println!("cargo:rustc-target-feature=+atomics,+bulk-memory,+mutable-globals");
         // println!("cargo:rustc-link-arg=--enable-bulk-memory");
         // println!("cargo:rustc-link-arg=--enable-mutable-globals");
-
-        // Performance optimizations
-        if profile == "wasm" {
-            println!("cargo:rustc-link-arg=-O4");
-            println!("cargo:rustc-link-arg=--lto-O4");
-        }
     }
 
     // Web-specific features

@@ -32,7 +32,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Build WebAssembly
-        run: wasm-pack build -t web platform/wasm --release
+        run: wasm-pack build -t web platform/wasm --release --features wasm-simd
 
       - name: Commit and push
         run: |
