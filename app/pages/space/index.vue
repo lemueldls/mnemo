@@ -324,7 +324,7 @@ async function createStickyNote() {
               </div>
 
               <md-elevated-card id="editor">
-                <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center justify-between gap-1 p-2">
                   <md-divider class="w-2" />
 
                   <div class="z-2">
@@ -360,7 +360,7 @@ async function createStickyNote() {
                   v-model="currentNote.id"
                   kind="daily"
                   :space-id="deferredSpaceId"
-                  class="p-2 pt-0"
+                  class="p-0"
                 />
               </md-elevated-card>
             </div>
@@ -502,7 +502,7 @@ async function createStickyNote() {
 }
 
 #editor {
-  @apply h-full p-2;
+  @apply h-full;
 }
 
 .sidebar-button {

@@ -9,6 +9,7 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 
+import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { EditorState } from "@codemirror/state";
 
@@ -34,7 +35,6 @@ import { normalizeKey } from "unstorage";
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
-import { typstLanguage } from "~/lib/editor/language";
 import { typstPlugin } from "~/lib/editor/widget";
 
 const props = defineProps<{
@@ -76,9 +76,11 @@ const typstState = await useTypst();
 
 const text = await useStorageText(fullPath);
 
+let view = ref<EditorView>();
+
 onMounted(async () => {
   const container = containerRef.value!;
-  const view = new EditorView({
+  view.value = new EditorView({
     parent: container,
     root: document,
     state: EditorState.create({
@@ -97,7 +99,7 @@ onMounted(async () => {
     await watchImmediateAsync(packages, async (packages) => {
       await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
 
-      if (ready) reloadEditorWidgets(view);
+      if (ready) reloadEditorWidgets();
     });
   } catch (err) {
     console.error("Error installing packages:", err);
@@ -140,13 +142,13 @@ onMounted(async () => {
         ),
       );
 
-      if (ready) reloadEditorWidgets(view);
+      if (ready) reloadEditorWidgets();
     });
 
     watchImmediate(locale, (locale) => {
       typstState.setLocale(fileId, locale);
 
-      if (ready) reloadEditorWidgets(view);
+      if (ready) reloadEditorWidgets();
     });
 
     watch(
@@ -154,7 +156,7 @@ onMounted(async () => {
       (text) => {
         typstState.insertFile(fileId, text);
         const state = createEditorState(fileId);
-        view.setState(state);
+        view.value!.setState(state);
       },
       { once: true, immediate: !ready },
     );
@@ -201,7 +203,6 @@ function createEditorState(fileId: FileId): EditorState {
   return EditorState.create({
     extensions: [
       typstPlugin(typstState, path, fileId, prelude, props.locked),
-      typstLanguage(typstState),
 
       EditorView.lineWrapping,
       EditorView.editable.of(!props.readonly),
@@ -210,6 +211,7 @@ function createEditorState(fileId: FileId): EditorState {
       placeholder("write."),
       highlightSpecialChars(),
       // foldGutter(),
+      lintGutter(),
       drawSelection(),
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
@@ -237,14 +239,14 @@ function createEditorState(fileId: FileId): EditorState {
   });
 }
 
-function reloadEditorWidgets(view: EditorView) {
-  const { doc } = view.state;
+function reloadEditorWidgets() {
+  const { doc } = view.value!.state;
 
   if (doc.length) {
     const from = 0;
     const to = 1;
 
-    view?.dispatch({
+    view.value!.dispatch({
       changes: { from, to, insert: doc.sliceString(from, to) },
     });
   }
@@ -270,6 +272,26 @@ const renderHoverBackground = computed(() => {
 
   return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
 });
+
+const topFade = ref(0);
+const bottomFade = ref(0);
+
+const maxFade = 32;
+
+const scrollDOM = computed(() => view.value?.scrollDOM);
+const scrollHeight = useScrollHeight(scrollDOM);
+const { x: scrollX, y: scrollY } = useScroll(scrollDOM);
+const { height } = useElementSize(scrollDOM);
+
+watchImmediate(
+  [scrollDOM, scrollHeight, scrollY, height],
+  ([scrollDOM, scrollHeight, scrollY, height]) => {
+    if (!scrollDOM) return;
+
+    topFade.value = Math.min(scrollY, maxFade);
+    bottomFade.value = Math.min(scrollHeight - scrollY - height, maxFade);
+  },
+);
 </script>
 
 <template>
@@ -283,7 +305,7 @@ const renderHoverBackground = computed(() => {
 
 <style lang="scss">
 .editor {
-  @apply size-full overflow-hidden;
+  @apply size-full overflow-hidden pr-2;
 
   .cm-editor {
     @apply body-large h-full outline-none;
@@ -299,6 +321,18 @@ const renderHoverBackground = computed(() => {
 
   &__faded {
     mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  }
+
+  :not(&__faded) .cm-scroller {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 0, 0, 0.25) calc(v-bind(topFade) / 2 * 1px),
+      black calc(v-bind(topFade) * 1px),
+      black calc(100% - v-bind(bottomFade) * 1px),
+      rgba(0, 0, 0, 0.25) calc(100% - v-bind(bottomFade) / 2 * 1px),
+      transparent 100%
+    );
   }
 
   .cm-line {
@@ -479,6 +513,30 @@ const renderHoverBackground = computed(() => {
 
   .cm-diagnostic-hint {
     @apply text-outline border-outline;
+  }
+
+  .cm-gutters {
+    @apply border-none bg-transparent;
+  }
+
+  .cm-gutter {
+    @apply w-2;
+  }
+
+  .cm-gutter-lint .cm-gutterElement {
+    @apply p-x-0.75 p-0;
+  }
+
+  .cm-lint-marker {
+    @apply size-full content-none;
+  }
+
+  .cm-lint-marker-error {
+    @apply bg-error;
+  }
+
+  .cm-lint-marker-warning {
+    @apply bg-secondary;
   }
 
   .typst-render {

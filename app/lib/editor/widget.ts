@@ -225,7 +225,24 @@ function decorate(
 
 const stateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
 
-export const typstViewPlugin = (
+const typstStateField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, transaction) {
+    const effect = transaction.effects.find((effect) => effect.is(stateEffect));
+    const typstDecorations = effect?.value.decorations;
+
+    if (typstDecorations && typstDecorations.size > 0) {
+      return typstDecorations;
+    }
+
+    return decorations.map(transaction.changes);
+  },
+  provide: (field) => [EditorView.decorations.from(field)],
+});
+
+const typstViewPlugin = (
   typstState: TypstState,
   path: string,
   fileId: FileId,
@@ -297,23 +314,6 @@ export const typstViewPlugin = (
       },
     };
   });
-
-export const typstStateField = StateField.define({
-  create() {
-    return Decoration.none;
-  },
-  update(decorations, transaction) {
-    const effect = transaction.effects.find((effect) => effect.is(stateEffect));
-    const typstDecorations = effect?.value.decorations;
-
-    if (typstDecorations && typstDecorations.size > 0) {
-      return typstDecorations;
-    }
-
-    return decorations.map(transaction.changes);
-  },
-  provide: (field) => [EditorView.decorations.from(field)],
-});
 
 export const typstPlugin = (
   typstState: TypstState,
