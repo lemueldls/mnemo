@@ -18,11 +18,12 @@ import type {
   RangedFrame,
   TypstState,
 } from "mnemo-wasm";
+import { typstLanguage } from "./language";
 
 const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
 
 class TypstWidget extends WidgetType {
-  #container = document.createElement("div");
+  container = document.createElement("div");
 
   public constructor(
     private readonly typstState: TypstState,
@@ -35,11 +36,11 @@ class TypstWidget extends WidgetType {
     const container = containerCache.get(frame.render.hash);
 
     if (container && container.isConnected) {
-      this.#container = container;
+      this.container = container;
     } else {
-      this.#container.dataset.hash = frame.render.hash.toString();
-      this.#container.classList.add("typst-render");
-      this.#container.style.height = `${frame.render.height}px`;
+      this.container.dataset.hash = frame.render.hash.toString();
+      this.container.classList.add("typst-render");
+      this.container.style.height = `${frame.render.height}px`;
 
       const image = document.createElement("img");
 
@@ -48,11 +49,11 @@ class TypstWidget extends WidgetType {
       image.height = frame.render.height;
 
       if (!locked) {
-        this.#container.addEventListener(
+        this.container.addEventListener(
           "click",
           this.handleMouseEvent.bind(this),
         );
-        this.#container.addEventListener(
+        this.container.addEventListener(
           "mousedown",
           this.handleMouseEvent.bind(this),
         );
@@ -62,9 +63,9 @@ class TypstWidget extends WidgetType {
         // );
       }
 
-      this.#container.append(image);
+      this.container.append(image);
 
-      containerCache.set(frame.render.hash, this.#container);
+      containerCache.set(frame.render.hash, this.container);
     }
   }
 
@@ -83,7 +84,7 @@ class TypstWidget extends WidgetType {
 
   private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
-    const { top, left } = this.#container.getBoundingClientRect();
+    const { top, left } = this.container.getBoundingClientRect();
 
     const x = clientX - left;
     const y = clientY - top;
@@ -100,7 +101,7 @@ class TypstWidget extends WidgetType {
   }
 
   public toDOM() {
-    return this.#container;
+    return this.container;
   }
 
   public override get estimatedHeight() {
@@ -110,6 +111,8 @@ class TypstWidget extends WidgetType {
 
 const compileCache = new LRUCache<string, CompileResult>({ max: 3 });
 
+const updateFlagStore = new Set<string>();
+
 function decorate(
   typstState: TypstState,
   update: ViewUpdate,
@@ -118,11 +121,20 @@ function decorate(
   prelude: string,
   widthChanged: boolean,
   locked: boolean,
+  updateInWidget: boolean,
 ) {
   const text = update.state.doc.toString();
+  const isFlagedForUpdate = updateFlagStore.has(path);
 
   let compileResult: CompileResult;
-  if (update.docChanged || widthChanged || !compileCache.has(path)) {
+  if (
+    update.docChanged ||
+    widthChanged ||
+    !compileCache.has(path) ||
+    isFlagedForUpdate
+  ) {
+    if (isFlagedForUpdate) updateFlagStore.delete(path);
+
     compileResult = typstState.compile(fileId, text, prelude);
     compileCache.set(path, compileResult);
   } else compileResult = compileCache.get(path)!;
@@ -167,6 +179,7 @@ function decorate(
 
       const inactive =
         !view.hasFocus ||
+        !updateInWidget ||
         state.selection.ranges.every(
           (range) =>
             (range.from < start || range.from > end) &&
@@ -179,7 +192,6 @@ function decorate(
         const widget = new TypstWidget(typstState, view, frame, locked);
         widgets.push(Decoration.replace({ widget }).range(start, end));
       } else {
-        frame.range;
         let lineHeight = 0;
 
         for (
@@ -240,24 +252,68 @@ export const typstViewPlugin = (
             );
           }
 
-          queueMicrotask(() => {
-            const decorations = decorate(
-              typstState,
-              update,
-              path,
-              fileId,
-              prelude.value,
-              widthChanged,
-              locked,
-            );
-            const effects = stateEffect.of({ decorations });
+          const state = update.state;
+          const decorations = state.field(typstStateField);
 
-            update.view.dispatch({ effects });
+          let updateInWidget = false;
+
+          decorations.between(0, state.doc.length, (from, to) => {
+            const { from: start } = state.doc.lineAt(from);
+            const { to: end } = state.doc.lineAt(to);
+
+            const active = state.selection.ranges.some(
+              (range) =>
+                (range.from >= start && range.from <= end) ||
+                (range.to >= start && range.to <= end) ||
+                (start >= range.from && start <= range.to) ||
+                (end >= range.from && end <= range.to),
+            );
+
+            if (active) {
+              updateInWidget = true;
+
+              return false;
+            }
           });
+
+          if (update.docChanged && updateInWidget) updateFlagStore.add(path);
+          else
+            queueMicrotask(() => {
+              const decorations = decorate(
+                typstState,
+                update,
+                path,
+                fileId,
+                prelude.value,
+                widthChanged,
+                locked,
+                updateInWidget,
+              );
+              const effects = stateEffect.of({ decorations });
+
+              update.view.dispatch({ effects });
+            });
         }
       },
     };
   });
+
+export const typstStateField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, transaction) {
+    const effect = transaction.effects.find((effect) => effect.is(stateEffect));
+    const typstDecorations = effect?.value.decorations;
+
+    if (typstDecorations && typstDecorations.size > 0) {
+      return typstDecorations;
+    }
+
+    return decorations.map(transaction.changes);
+  },
+  provide: (field) => [EditorView.decorations.from(field)],
+});
 
 export const typstPlugin = (
   typstState: TypstState,
@@ -265,23 +321,8 @@ export const typstPlugin = (
   fileId: FileId,
   prelude: Ref<string>,
   locked: boolean,
-) =>
-  StateField.define({
-    create() {
-      return Decoration.none;
-    },
-    update(decorations, transaction) {
-      const effect = transaction.effects.find((effect) =>
-        effect.is(stateEffect),
-      );
-
-      if (effect?.value.decorations && effect.value.decorations.size > 0)
-        return effect.value.decorations;
-
-      return decorations;
-    },
-    provide: (field) => [
-      EditorView.decorations.from(field),
-      typstViewPlugin(typstState, path, fileId, prelude, locked),
-    ],
-  });
+) => [
+  typstStateField,
+  typstViewPlugin(typstState, path, fileId, prelude, locked),
+  typstLanguage(typstState),
+];
