@@ -47,7 +47,9 @@ const isDateEnabled = computed(() =>
     :disabled="!isDateEnabled"
     @click="selectedDate = selectedDate.set(date)"
   >
-    {{ date.day }}
+    <span class="font-sans text-sm font-normal">
+      {{ date.day }}
+    </span>
 
     <div
       class="absolute -bottom-3.5 left-0 flex w-10 w-full justify-center gap-1"
