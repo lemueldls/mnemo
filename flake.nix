@@ -2,7 +2,7 @@
   description = "Development environment for mnemo";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -15,9 +15,15 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = (import nixpkgs { inherit system; });
+        # mnemo = pkgs.callPackage ./platform/nix/package.nix { };
       in
       {
+        packages.mnemo = pkgs.callPackage ./platform/nix/default.nix { };
+        packages.mnemo-bin = pkgs.callPackage ./platform/nix/package.nix { };
+
+        # defaultPackage = mnemo;
+
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
             pkg-config
@@ -40,6 +46,8 @@
             pango
             webkitgtk_4_1
             openssl
+
+            # mnemo
           ];
         };
       }
