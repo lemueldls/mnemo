@@ -1,17 +1,29 @@
 @top Document { Markup }
 
-Markup { MarkupContent+ }
-MarkupContent { content | Math | ("#" Code) }
+@precedence {
+  call
+}
 
-Math { "$" math "$" }
+Markup { MarkupItem* }
+MarkupItem { Math | (CodeStart Code) | Bold | Italic | LineComment | content }
 
-Code { Content | Math | Scope | Array }
+// Heading { HeadingMarker " " MarkupItem }
+Bold { BoldStart MarkupItem BoldEnd }
+Italic { ItalicStart MarkupItem ItalicEnd }
 
-Content { "[" Markup "]" }
-Scope { "{" Code* "}" }
-Array { "(" list<Code> ")" }
+Math { MathStart MathItem* MathEnd }
+MathItem { (CodeStart Code) | LineComment | math }
 
-// Identifier { $[a-zA-Z_] $[a-zA-Z0-9_-]* }
+Code { Expression }
+
+Expression {
+  CodeMarkup { CodeMarkupStart Markup CodeMarkupEnd } |
+  Math |
+  Scope { "{" Code* "}" } |
+  Ident { identifier } |
+  // FuncCall { identifier  "(" list<Expression> ")" } |
+  Array { "(" list<Code> ")" }
+}
 
 @tokens {
   // string { '"' char* '"' }
@@ -19,25 +31,37 @@ Array { "(" list<Code> ")" }
   // esc  { $["\\\/bfnrt] | "u" hex hex hex hex }
   // hex  { $[0-9a-fA-F] }
 
-  // whitespace { $[ \n\r\t] }
+  content { ( ![$#*_\]] | "\\$" | "\\#" | "\\*" | "\\_" ) }
+  math { (![$#] | "\\$" | "\\#") }
 
-  content { ![$#\]] }
-  math { ![$] }
+  identifier { $[a-zA-Z_] $[a-zA-Z0-9_-]* }
 
-  "["[closedBy="]"] "]"[openedBy="["]
-  "{"[closedBy="}"] "}"[openedBy="{"]
-  "("[closedBy=")"] ")"[openedBy="("]
+  // "["[closedBy="]"] "]"[openedBy="["]
+  // "{"[closedBy="}"] "}"[openedBy="{"]
+  // "("[closedBy=")"] ")"[openedBy="("]
 
-  // "$"[openedBy="$", closedBy="$"]
-  // "_"[openedBy="_", closedBy="_"]
-  // "*"[openedBy="*", closedBy="*"]
+  LineCommentStart { "//" }
+  LineComment { LineCommentStart ![\n] }
+
+  CodeStart { "#" }
+
+  CodeMarkupStart[closedBy=CodeMarkupEnd] { "[" }
+  CodeMarkupEnd[openedBy=CodeMarkupStart] { "]" }
+
+  // HeadingMarker { "="+ }
+
+  MathStart[closedBy=MathEnd] { "$" }
+  MathEnd[openedBy=MathStart] { "$" }
+
+  BoldStart[closedBy=BoldEnd] { "*" }
+  BoldEnd[closedBy=BoldStart] { "*" }
+
+  ItalicStart[closedBy=ItalicEnd] { "_" }
+  ItalicEnd[closedBy=ItalicStart] { "_" }
+
+  // space { @whitespace }
 }
-
-
-// @external tokens tagStart from "./tokens.js" {
-//   StartTag[closedBy="EndTag SelfClosingEndTag"]
-// }
 
 list<item> { item ("," item)* }
 
-// @skip { whitespace }
+// @skip { space }
