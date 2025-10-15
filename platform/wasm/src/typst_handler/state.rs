@@ -26,7 +26,7 @@ use super::{
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
 use crate::typst_handler::{
-    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_items},
+    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items},
     wrappers::{map_aux_span, map_main_span},
 };
 
@@ -160,7 +160,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
-        render_by_items(id, text, prelude, self)
+        render_by_chunk(id, text, prelude, self)
     }
 
     #[wasm_bindgen]
