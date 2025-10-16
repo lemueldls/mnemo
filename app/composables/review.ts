@@ -19,16 +19,16 @@ export const useReview = createSharedComposable(async () => {
 
           return { spaceId, note, createdAt };
         })
-        .filter(({ createdAt }) => createdAt < Date.now() - 1000 * 60 * 60 * 24)
-        .sort((a, b) => b.createdAt - a.createdAt);
+        .filter(
+          ({ createdAt }) => createdAt < Date.now() - 1000 * 60 * 60 * 24,
+        );
     }),
   );
-
-  const allNotes = notes.flat();
+  const resolvedNotes = notes.flat().sort((a, b) => b.createdAt - a.createdAt);
   const notesToReview = [];
 
-  for (let i = 0; i < allNotes.length && notesToReview.length < 6; i++) {
-    const { spaceId, note, createdAt } = allNotes[i]!;
+  for (let i = 0; i < resolvedNotes.length && notesToReview.length < 6; i++) {
+    const { spaceId, note, createdAt } = resolvedNotes[i]!;
 
     const date = d(createdAt, {
       weekday: "long",
