@@ -7,7 +7,7 @@ export const useReview = createSharedComposable(async () => {
   const spaceIds = Object.keys(spaces.value);
   const notes = await Promise.all(
     spaceIds.map(async (spaceId) => {
-      const notes = await useSpaceNotes(spaceId);
+      const notes = await useDailyNotes(spaceId);
 
       return notes.value
         .map((note) => {
@@ -24,16 +24,32 @@ export const useReview = createSharedComposable(async () => {
     }),
   );
 
-  return notes
-    .flat()
-    .slice(0, 3)
-    .map(({ spaceId, note, createdAt }) => {
-      const date = d(createdAt, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
+  const allNotes = notes.flat();
+  const notesToReview = [];
 
-      return { spaceId, note, date, stage: 1, lastReviewed: Date.now() };
+  for (let i = 0; i < allNotes.length && notesToReview.length < 6; i++) {
+    const { spaceId, note, createdAt } = allNotes[i]!;
+
+    const date = d(createdAt, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     });
+
+    const content = await getStorageItem(
+      `spaces/${spaceId}/daily/${note.id}.typ`,
+      "",
+    );
+
+    if (content)
+      notesToReview.push({
+        spaceId,
+        note,
+        date,
+        stage: 1,
+        lastReviewed: Date.now(),
+      });
+  }
+
+  return notesToReview;
 });

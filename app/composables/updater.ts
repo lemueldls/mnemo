@@ -2,8 +2,14 @@ import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 
 export async function checkForAppUpdates() {
-  const update = await check();
-  if (update) {
+  const { platform } = useRuntimeConfig().public;
+  if (platform !== "windows" && platform !== "darwin" && platform !== "linux")
+    return;
+
+  try {
+    const update = await check();
+    if (!update) return;
+
     console.log(
       `found update ${update.version} from ${update.date} with notes ${update.body}`,
     );
@@ -11,7 +17,7 @@ export async function checkForAppUpdates() {
     let downloaded = 0;
     let contentLength = 0;
 
-    // alternatively we could also call update.download() and update.install() separately
+    // Alternatively, we could also call update.download() and update.install() separately
     await update.downloadAndInstall((event) => {
       switch (event.event) {
         case "Started":
@@ -29,6 +35,9 @@ export async function checkForAppUpdates() {
     });
 
     console.log("update installed");
+
     await relaunch();
+  } catch (error) {
+    console.error("Failed update:", error);
   }
 }

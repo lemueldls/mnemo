@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  fromAbsolute,
+  getLocalTimeZone,
+  toCalendarDate,
+} from "@internationalized/date";
 import { createId } from "@paralleldrive/cuid2";
 
 import type { StickyNote } from "~/composables/sticky";
@@ -8,7 +13,7 @@ definePageMeta({ layout: "empty" });
 const { d } = useI18n();
 
 const spaceId = usePageRouteQuery("id");
-watchImmediate(spaceId, async (spaceId) => {
+watchImmediate(spaceId, (spaceId) => {
   if (!spaceId) throw createError({ status: 404 });
 });
 
@@ -76,68 +81,86 @@ function copyScreenshot() {
   ]);
 }
 
-const spaceNotes = await useSpaceNotes(spaceId);
-const preludePath = ref("main");
+const dailyNotes = ref<DailyNote[]>([]);
 
-const { data: notes } = await useAsyncData(
-  () => `daily-notes:${spaceId.value}`,
-  async () => {
-    const dailyNotes = await loadDailyNotes(
-      spaceId.value,
-      spaceNotes.value,
-      false,
+await watchImmediateAsync(spaceId, async (spaceId) => {
+  const resolvedDailyNotes = await useDailyNotes(spaceId);
+  const notes = await loadDailyNotes(spaceId, resolvedDailyNotes.value, false);
+
+  dailyNotes.value = notes;
+  resolvedDailyNotes.value = notes;
+});
+
+const notes = useArrayMap(dailyNotes, (note) => {
+  const {
+    id,
+    datetime: [year, month, day, hour, minute],
+  } = note;
+
+  const date = Date.UTC(year, month, day, hour, minute);
+
+  const textDate = d(date, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const timeZone = getLocalTimeZone();
+  const dateTime = fromAbsolute(date, timeZone);
+  const calendarDate = toCalendarDate(dateTime);
+
+  return { id, calendarDate, textDate };
+});
+
+const currentNoteId = usePageRouteQuery("note");
+
+const currentNote = computed(() => {
+  const noteIndexById = currentNoteId.value
+    ? notes.value.findLastIndex((note) => note.id === currentNoteId.value)
+    : -1;
+
+  const currentNoteIndex =
+    noteIndexById === -1 ? notes.value.length - 1 : noteIndexById;
+
+  return notes.value[currentNoteIndex]!;
+});
+
+watchImmediate(currentNote, (note) => {
+  if (currentNoteId.value !== note.id) currentNoteId.value = note.id;
+});
+
+const deferredSpaceId = computedWithControl(currentNote, () => spaceId.value);
+
+const nextDayId = computed(() => {
+  const index = notes.value.findIndex(
+    (note) => note.id === currentNote.value!.id,
+  );
+
+  return index === notes.value.length - 1
+    ? undefined
+    : notes.value[index + 1]!.id;
+});
+const previousDayId = computed(() => {
+  const index = notes.value.findIndex(
+    (note) => note.id === currentNote.value!.id,
+  );
+
+  return index === 0 ? undefined : notes.value[index - 1]!.id;
+});
+
+const currentDate = computed({
+  get: () => currentNote.value.calendarDate,
+  set(selectedDate) {
+    const selectedNote = notes.value.findLast(
+      (note) => note.calendarDate.compare(selectedDate) === 0,
     );
-    spaceNotes.value = dailyNotes;
 
-    return dailyNotes.map((note) => {
-      const {
-        id,
-        datetime: [year, month, day, hour, minute],
-      } = note;
-      const date = d(Date.UTC(year, month, day, hour, minute), {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-
-      return { id, date };
-    });
+    if (selectedNote) currentNoteId.value = selectedNote.id;
   },
-  { default: () => [] },
-);
-
-const currentNoteId = useRouteQuery("note");
-const noteIndexById = currentNoteId.value
-  ? notes.value.findIndex((note) => note.id === currentNoteId.value)
-  : -1;
-
-const currentNoteIndex = ref(
-  noteIndexById === -1 ? notes.value.length - 1 : noteIndexById,
-);
-const currentNote = computed(() => notes.value[currentNoteIndex.value]);
-
-watchImmediate(currentNoteIndex, (index) => {
-  currentNoteId.value = notes.value[index]!.id;
 });
+const datesWithNotes = useArrayMap(notes, (note) => note.calendarDate);
 
-const nextDayIndex = computed(() => {
-  const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
-  );
-
-  return index === notes.value.length - 1 ? -1 : index + 1;
-});
-const previousDayIndex = computed(() => {
-  const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
-  );
-
-  return index === 0 ? -1 : index - 1;
-});
-
-watch(spaceId, () => {
-  currentNoteIndex.value = notes.value.length - 1;
-});
+const preludePath = ref("main");
 
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
 const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
@@ -145,9 +168,6 @@ const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
   {},
 );
 // stickyNotes.value = {};
-// watchEffect(() => {
-//   console.log({ stickyNotes: stickyNotes.value });
-// });
 const activeStickyNotes = ref<StickyNote[]>([]);
 
 async function createStickyNote() {
@@ -186,16 +206,13 @@ async function createStickyNote() {
       :space-id="spaceId"
       @mousedown="
         () => {
-          const lastNote = activeStickyNotes.at(-1);
-
-          if (lastNote) {
-            const currentNote = activeStickyNotes[i];
-
-            // activeStickyNotes[i] = lastNote;
-
-            // if (currentNote)
-            //   activeStickyNotes[activeStickyNotes.length - 1] = currentNote;
-          }
+          // const lastNote = activeStickyNotes.at(-1);
+          // if (lastNote) {
+          //   const currentNote = activeStickyNotes[i];
+          //   // activeStickyNotes[i] = lastNote;
+          //   // if (currentNote)
+          //   //   activeStickyNotes[activeStickyNotes.length - 1] = currentNote;
+          // }
         }
       "
       @close="
@@ -238,7 +255,7 @@ async function createStickyNote() {
             class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
-              <LazyEmbededPdf model-value="article2.pdf" monochrome />
+              <LazyEmbededPdf model-value="csc104.pdf" monochrome />
             </md-outlined-card> -->
 
             <div class="medium:ml-3 max-w-180 relative size-full">
@@ -307,24 +324,32 @@ async function createStickyNote() {
               </div>
 
               <md-elevated-card id="editor">
-                <div id="editor-title">
+                <div class="flex items-center justify-between gap-1 p-2">
                   <md-divider class="w-2" />
 
-                  <span class="label-large">
-                    {{ currentNote?.date }}
-                  </span>
+                  <div class="z-2">
+                    <mx-modal-date-picker
+                      v-model:date="currentDate"
+                      :marked-dates="datesWithNotes"
+                      disable-unmarked-dates
+                    >
+                      <md-text-button class="font-mono">
+                        {{ currentNote.textDate }}
+                      </md-text-button>
+                    </mx-modal-date-picker>
+                  </div>
 
                   <md-divider class="flex-1" />
 
                   <md-icon-button
-                    :disabled="previousDayIndex === -1"
-                    @click="currentNoteIndex = previousDayIndex"
+                    :disabled="!previousDayId"
+                    @click="currentNoteId = previousDayId!"
                   >
                     <md-icon>keyboard_arrow_left</md-icon>
                   </md-icon-button>
                   <md-icon-button
-                    :disabled="nextDayIndex === -1"
-                    @click="currentNoteIndex = nextDayIndex"
+                    :disabled="!nextDayId"
+                    @click="currentNoteId = nextDayId!"
                   >
                     <md-icon>keyboard_arrow_right</md-icon>
                   </md-icon-button>
@@ -334,8 +359,8 @@ async function createStickyNote() {
                   v-if="currentNote"
                   v-model="currentNote.id"
                   kind="daily"
-                  :space-id="spaceId"
-                  class="p-2 pt-0"
+                  :space-id="deferredSpaceId"
+                  class="p-0"
                 />
               </md-elevated-card>
             </div>
@@ -477,11 +502,7 @@ async function createStickyNote() {
 }
 
 #editor {
-  @apply h-full p-2;
-}
-
-#editor-title {
-  @apply text-on-primary-container flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none;
+  @apply h-full;
 }
 
 .sidebar-button {

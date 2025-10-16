@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "📦"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         name: 🔄 Checkout
 
       - name: 📝 Extract version from tauri.conf.json
@@ -60,7 +60,7 @@ jobs:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
       - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: platform
@@ -102,10 +102,6 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
-          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
-          NUXT_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
-          NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
-          NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
 
       - name: 📤 Upload build artifacts (push or pr builds only)
         if: ${{ !inputs.publish }}
@@ -123,16 +119,16 @@ jobs:
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
           name: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
-          draft: ${{ !inputs.publish }}
+          draft: true
           tag_name: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           make_latest: false
           generate_release_notes: false
           files: |
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk
 
-      # - name: 🛡️ Attest build provenance (publish only)
-      #   if: ${{ inputs.publish }}
-      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
-      #   with:
-      #     subject-path: |
-      #       platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.resolve-tag.outputs.current-tag }}_universal.apk
+      - name: 🛡️ Attest build provenance (publish only)
+        if: ${{ inputs.publish }}
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: |
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk

@@ -16,13 +16,13 @@ jobs:
   update_version:
     permissions:
       contents: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semver.outputs.semantic-version }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: semver
         uses: SOLIDSoftworks/semver-tags@fa8963220fb4913aea2b20cc190004de1b79f395 # v1
@@ -50,7 +50,6 @@ jobs:
           jq --indent 4 '.version="${{ steps.semver.outputs.semantic-version }}"' platform/tauri/tauri.conf.json > tauri.config.json.new && mv tauri.config.json.new platform/tauri/tauri.conf.json
           sed -i '/name = "mnemo"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
           sed -i '/name = "mnemo-wasm"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
-          sed -i '/name = "mnemo-render"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
 
       - name: Commit, tag and push
         run: |

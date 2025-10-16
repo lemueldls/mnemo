@@ -108,7 +108,8 @@ export const useCrdt = createSharedComposable(async () => {
     syncSnapshot();
   });
 
-  const url = new URL("/api/crdt", useApiBaseUrl());
+  const token = useApiToken().value;
+  const url = new URL(`/api/crdt?token=${token}`, useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
   const { open, close, send } = useApiWebSocket(url, {
@@ -145,7 +146,8 @@ export const useCrdtUndoManager = createSharedComposable(async () => {
 });
 
 const useSync = createSharedComposable(() => {
-  const url = new URL("/api/user-storage", useApiBaseUrl());
+  const token = useApiToken().value;
+  const url = new URL(`/api/user-storage?token=${token}`, useApiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
   const { open, close, send } = useApiWebSocket(url, {
@@ -351,6 +353,7 @@ export async function useStorageMap<T extends Record<string, unknown>>(
         if (!runNextSync.value) return;
 
         for (const [key, value] of Object.entries(itemMap)) map.set(key, value);
+
         commit();
       });
 
@@ -397,6 +400,7 @@ export async function useStorageList<T extends unknown[]>(
 
         const syncList = list.getShallowValue();
         const maxLength = Math.max(itemList.length, syncList.length);
+
         for (let i = 0; i < maxLength; i++)
           if (i < itemList.length && i < syncList.length) {
             if (!deepEqual(itemList[i], syncList[i])) {
@@ -405,6 +409,7 @@ export async function useStorageList<T extends unknown[]>(
             }
           } else if (i < itemList.length) list.push(itemList[i]);
           else list.delete(i, 1);
+
         commit();
       });
     },
@@ -422,9 +427,9 @@ export async function useStorageList<T extends unknown[]>(
       list.value.insert(position, value);
       commit();
     },
-    delete(position: number, length: number) {
+    async delete(position: number, length: number) {
       list.value.delete(position, length);
-      commit();
+      await commit();
     },
   });
 }
@@ -461,6 +466,51 @@ export async function getStorageItem<T extends StorageValue>(
   });
 
   return value;
+}
+
+export interface StorageDirPath {
+  kind: "directory";
+  key: string;
+  children: { [key: string]: StoragePath };
+}
+
+export interface StorageFilePath {
+  kind: "file";
+  key: string;
+  content: string;
+}
+
+export type StoragePath = StorageDirPath | StorageFilePath;
+
+export async function getStorageKeys(base?: string) {
+  const localKeys = await localDb.getKeys(base);
+
+  const root: { [key: string]: StoragePath } = {};
+
+  Promise.all(
+    localKeys.map(async (localKey) => {
+      const paths = localKey.split(":");
+      const key = paths.slice(1).join("/");
+
+      let path;
+      let directory = root;
+
+      for (let i = 1; i < paths.length; i++) {
+        path = paths[i]!;
+
+        if (i < paths.length - 1) {
+          directory[path] ||= { kind: "directory", key, children: {} };
+          directory = (directory[path] as StorageDirPath).children;
+        }
+      }
+
+      const content = await localDb.getItem<string>(key);
+
+      directory[path!] ||= { kind: "file", key, content: content! };
+    }),
+  );
+
+  return root;
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {

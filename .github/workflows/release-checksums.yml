@@ -1,13 +1,15 @@
 name: Create and publish checksums
+
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       semver:
         description: The semver of the release to publish for
         type: string
         required: true
-  release:
-    types: [released]
 
 permissions:
   contents: write
@@ -15,7 +17,7 @@ permissions:
 jobs:
   release_info:
     name: Get release info
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       tag-name: ${{ steps.release_info.outputs.tag-name }}
     steps:
@@ -30,7 +32,7 @@ jobs:
 
   generate_checksums:
     name: Generate checksums
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs:
       - release_info
     strategy:
@@ -60,7 +62,7 @@ jobs:
 
   publish:
     name: Publish checksum assets
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs:
       - release_info
       - generate_checksums

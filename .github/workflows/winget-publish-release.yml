@@ -1,13 +1,14 @@
 name: Publish Desktop Release to WinGet
 
 on:
-  workflow_dispatch:
   release:
-    types: [released]
+    types:
+      - published
+  workflow_dispatch:
 
 jobs:
   publish:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Detect Latest Release
         id: latest_release
@@ -29,7 +30,7 @@ jobs:
         run: |
           VERSION=${{ steps.latest_release.outputs.result }}
           SHORT_VERSION=${VERSION#*-v}
-          URL=https://github.com/lemueldls/mnemo/releases/download/{VERSION}/Mnemo_{SHORT_VERSION}_x64-setup.exe
+          URL=https://github.com/lemueldls/mnemo/releases/download/{VERSION}/Mnemo_{SHORT_VERSION}_x64.exe
           FINAL_URL=$(echo $URL | sed "s/{VERSION}/$VERSION/g" | sed "s/{SHORT_VERSION}/${SHORT_VERSION}/g")
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
           echo "SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
@@ -46,7 +47,7 @@ jobs:
   cleanup:
     name: Cleanup branches
     needs: publish
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Run Komac
         uses: michidk/run-komac@9b27eadc6e9235c252444a437d246c139da2f57f # v2.1.0

@@ -13,14 +13,6 @@ on:
         required: true
       NUXT_PUBLIC_API_BASE_URL:
         required: true
-      NUXT_SESSION_PASSWORD:
-        required: true
-      NUXT_OAUTH_GITHUB_CLIENT_ID:
-        required: true
-      NUXT_OAUTH_GITHUB_CLIENT_SECRET:
-        required: true
-      NUXT_OAUTH_GITHUB_REDIRECT_URL:
-        required: true
       # WINDOWS_CERTIFICATE:
       #   required: true
       # WINDOWS_CERTIFICATE_PASSWORD:
@@ -36,7 +28,7 @@ jobs:
             args: "--target universal-apple-darwin"
             symbol: 🍏
             platform: macOS
-          - os: "ubuntu-22.04"
+          - os: "ubuntu-latest"
             symbol: 🐧
             install: |
               sudo apt-get update
@@ -52,7 +44,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
@@ -84,6 +76,10 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: platform
 
+      - name: 📦 Run sccache
+        if: ${{ !inputs.publish }}
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
       - name: 🛠️ Setup | Install dependencies
         if: ${{ matrix.install != '' }}
         run: ${{ matrix.install }}
@@ -96,10 +92,6 @@ jobs:
       #   run: |
       #     cd platform
       #     cargo fmt -- --check
-
-      - name: 📦 Run sccache
-        if: ${{ !inputs.publish }}
-        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: 📦 Set Rust caching env vars only on non-release runs
         if: ${{ !inputs.publish }}
@@ -144,20 +136,17 @@ jobs:
         run: pnpm install
 
       - name: 🔨 Build using tauri action (publish artifacts on release)
-        uses: tauri-apps/tauri-action@42e9df6c59070d114bf90dcd3943a1b8f138b113 # v0.5.20
+        uses: tauri-apps/tauri-action@v0.5.23
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
-          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
-          NUXT_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_ID }}
-          NUXT_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.NUXT_OAUTH_GITHUB_CLIENT_SECRET }}
-          NUXT_OAUTH_GITHUB_REDIRECT_URL: ${{ secrets.NUXT_OAUTH_GITHUB_REDIRECT_URL }}
         with:
           releaseName: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
-          releaseDraft: ${{ !inputs.publish }}
+          releaseDraft: true
+          assetNamePattern: "[name]_[version]_[arch][ext]"
           tagName: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
           args: ${{ matrix.args }}
           retryAttempts: 1
@@ -171,13 +160,13 @@ jobs:
             platform/target/**/release/bundle
             platform/target/**/release/mnemo*
 
-      # - name: 📤 Upload debug symbols (windows only)
-      #   if: ${{ contains(matrix.os, 'windows') }}
-      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      #   with:
-      #     name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
-      #     path: |
-      #       platform/target/release/mnemo.pdb
+      - name: 📤 Upload debug symbols (windows only)
+        if: ${{ contains(matrix.os, 'windows') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
+          path: |
+            platform/target/release/mnemo.pdb
 
       # - name: 📤 Publish debug symbols to release (windows only)
       #   if: ${{ contains(matrix.os, 'windows') && (inputs.publish) }}
@@ -187,34 +176,34 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 🛡️ Attest build provenance (publish release only)
-      #   if: ${{ inputs.publish }}
-      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
-      #   with:
-      #     subject-path: |
-      #       platform/target/release/bundle/nsis/*
-      #       platform/target/**/release/bundle/macos/*.tar.gz*
-      #       platform/target/**/release/bundle/dmg/*.dmg
-      #       platform/target/release/bundle/deb/*.deb
-      #       platform/target/release/bundle/rpm/*.rpm
-      #       platform/target/**/release/mnemo
-      #       platform/target/release/mnemo.exe
-      #       platform/target/release/mnemo.pdb
+      - name: 🛡️ Attest build provenance (publish release only)
+        if: ${{ inputs.publish }}
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: |
+            platform/target/release/bundle/nsis/*
+            platform/target/**/release/bundle/macos/*.tar.gz*
+            platform/target/**/release/bundle/dmg/*.dmg
+            platform/target/release/bundle/deb/*.deb
+            platform/target/release/bundle/rpm/*.rpm
+            platform/target/**/release/mnemo
+            platform/target/release/mnemo.exe
+            platform/target/release/mnemo.pdb
 
-      # - name: 📜 Create SBOM
-      #   uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0
-      #   with:
-      #     format: "spdx-json"
-      #     output-file: "sbom.spdx.json"
-      #     artifact-name: "sbom.${{ matrix.platform }}.spdx.json"
+      - name: 📜 Create SBOM
+        uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0
+        with:
+          format: "spdx-json"
+          output-file: "sbom.spdx.json"
+          artifact-name: "sbom.${{ matrix.platform }}.spdx.json"
 
-      # - name: 🛡️ Attest SBOM
-      #   if: ${{ inputs.publish }}
-      #   uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
-      #   with:
-      #     subject-path: ${{
-      #       contains(matrix.os, 'ubuntu') && 'platform/target/release/mnemo' ||
-      #       contains(matrix.os, 'windows') && 'platform/target/release/mnemo.exe' ||
-      #       contains(matrix.os, 'macos') && 'platform/target/universal-apple-darwin/release/mnemo'
-      #       }}
-      #     sbom-path: "sbom.spdx.json"
+      - name: 🛡️ Attest SBOM
+        if: ${{ inputs.publish }}
+        uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
+        with:
+          subject-path: ${{
+            contains(matrix.os, 'ubuntu') && 'platform/target/release/mnemo' ||
+            contains(matrix.os, 'windows') && 'platform/target/release/mnemo.exe' ||
+            contains(matrix.os, 'macos') && 'platform/target/universal-apple-darwin/release/mnemo'
+            }}
+          sbom-path: "sbom.spdx.json"

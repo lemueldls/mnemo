@@ -3,25 +3,34 @@ import { match } from "ts-pattern";
 
 definePageMeta({ layout: "empty" });
 
-const token = useRouteQuery("token").value as string;
-const redirect = useRouteQuery("redirect").value as string;
-const platform = useRouteQuery("platform").value as string;
+const token = usePageRouteQuery("token").value as string;
+const redirect = usePageRouteQuery("redirect").value as string;
+const platform = usePageRouteQuery("platform").value as string;
 
 if (token) {
-  useApiToken().value = token;
+  useApiToken().value = encodeURIComponent(token);
 
   const auth = useAuth();
   await auth.fetchSession();
 }
 
-const activeToken = useApiToken().value!;
+const bearerToken = useApiToken().value!;
+
+const x = ref("");
+
+onMounted(() => {
+  x.value = window.location.href;
+});
 
 match(platform)
-  .with("windows", "darwin", "linux", () => {
-    window.location.href = `mnemo://auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+  .with("windows", "darwin", "linux", "android", "ios", () => {
+    window.location.href = `mnemo://auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`;
   })
   // .with("android", "ios", () => {
-  //   window.location.href = `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`;
+  //   window.open(
+  //     `/auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`,
+  //     "_self",
+  //   );
   // })
   .otherwise(async () => {
     const redirectUrl = new URL(redirect);
@@ -29,10 +38,10 @@ match(platform)
     if (redirectUrl.origin === useRequestURL().origin)
       await navigateTo(redirectUrl.href.replace(redirectUrl.origin, ""));
     else {
-      redirectUrl.searchParams.set("token", activeToken);
+      redirectUrl.searchParams.set("token", bearerToken);
 
       window.location.href = new URL(
-        `/auth/confirm?token=${encodeURIComponent(activeToken)}&redirect=${encodeURIComponent(redirect)}`,
+        `/auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`,
         redirectUrl,
       ).href;
     }
@@ -40,5 +49,7 @@ match(platform)
 </script>
 
 <template>
-  <div />
+  <div>
+    <span>{{ x }}</span>
+  </div>
 </template>

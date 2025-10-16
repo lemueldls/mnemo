@@ -30,14 +30,14 @@ export async function watchImmediateAsync<T = any>(
   cb: any,
   options?: Omit<WatchOptions<true>, "immediate">,
 ): Promise<WatchStopHandle> {
-  return new Promise<WatchStopHandle>((resolve) => {
+  return new Promise<WatchStopHandle>((resolve, reject) => {
     let stop: WatchStopHandle;
     // eslint-disable-next-line prefer-const
     stop = watchImmediate(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       source as any,
-      (newValue, oldValue, onCleanup) => {
-        cb(newValue, oldValue, onCleanup);
+      async (newValue, oldValue, onCleanup) => {
+        await cb(newValue, oldValue, onCleanup).catch(reject);
         resolve(stop);
       },
       { ...options },

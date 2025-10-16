@@ -14,7 +14,12 @@ const instance = new WebAssembly.Instance(wasm, {
 
 export default defineWebSocketHandler({
   async upgrade(request) {
-    const user = await requireUser(request.headers);
+    const headers = new Headers();
+    const url = new URL(request.url);
+    const token = url.searchParams.get("token");
+    headers.set("cookie", `mnemo.session_token=${token}`);
+
+    const user = await requireUser(headers);
 
     return { namespace: `users/${user.id}/crdt` };
   },

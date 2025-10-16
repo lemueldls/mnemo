@@ -1,39 +1,48 @@
 name: Publish arch linux AUR
 
 on:
-  workflow_call:
-    inputs:
-      semver:
-        description: The semver of the release to publish for
-        type: string
-        required: true
-
+  release:
+    types:
+      - published
   workflow_dispatch:
-    inputs:
-      semver:
-        description: The semver of the release to publish for
-        type: string
-        required: true
 
 jobs:
+  release_info:
+    name: Get release info
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.current-version }}
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Extract version from tauri.conf.json
+        id: get-version
+        shell: bash
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
+          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
   update-aur:
     permissions:
       packages: read
     runs-on: ubuntu-latest
+    needs:
+      - release_info
     container:
       image: ghcr.io/lemueldls/mnemo-arch-aur-builder:latest
     strategy:
       matrix:
         package:
           - name: mnemo-bin
-            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/Mnemo_${{ inputs.semver }}_amd64.deb.sha256"
+            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ needs.release_info.outputs.version }}/Mnemo_${{ needs.release_info.outputs.version }}_amd64.deb"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
-            checksum_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ inputs.semver }}/mnemo-v${{ inputs.semver }}.tar.gz.sha256"
+            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ needs.release_info.outputs.version }}.tar.gz"
             generate_script: "./platform/aur/generate-mnemo.sh"
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: 🛠️ Setup Deployment keys
         shell: bash
@@ -66,8 +75,8 @@ jobs:
             cd ~/aur
             if [[ -f PKGBUILD ]]; then
               CURRENT_VERSION=$(source PKGBUILD && echo $pkgver)
-              if [[ "$(printf "%s\n%s" "$CURRENT_VERSION" "${{ inputs.semver }}" | sort -V | head -n1)" != "$CURRENT_VERSION" ]] || [[ "$CURRENT_VERSION" == "${{ inputs.semver }}" ]]; then
-                echo "New version (${{ inputs.semver }}) is not higher than the current version ($CURRENT_VERSION). Exiting."
+              if [[ "$(printf "%s\n%s" "$CURRENT_VERSION" "${{ needs.release_info.outputs.version }}" | sort -V | head -n1)" != "$CURRENT_VERSION" ]] || [[ "$CURRENT_VERSION" == "${{ needs.release_info.outputs.version }}" ]]; then
+                echo "New version (${{ needs.release_info.outputs.version }}) is not higher than the current version ($CURRENT_VERSION). Exiting."
                 exit 1
               fi
             fi
@@ -77,16 +86,16 @@ jobs:
         id: sha256sums
         shell: bash
         run: |
-          URL="${{ matrix.package.checksum_url }}"
+          URL="${{ matrix.package.download_url }}"
           echo "getting $URL"
-          SUM=$(curl -LfsS "$URL" | cut -f1 -d ' ')
+          SUM=$(curl -LfsS "$URL" | sha256sum | cut -f1 -d ' ')
           echo "sha256=$SUM" >> $GITHUB_OUTPUT
 
       - name: 🌀 Generate PKGBUILD and update
         run: |
           su runner -c '
             set -o errexit
-            ${{ matrix.package.generate_script }} "${{ inputs.semver }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/aur/PKGBUILD
+            ${{ matrix.package.generate_script }} "${{ needs.release_info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/aur/PKGBUILD
             cd ~/aur
             if [[ -z $(git status --porcelain) ]]; then
               echo "No changes"
@@ -98,6 +107,11 @@ jobs:
             git config user.name "lemueldls"
             git config user.email "26912197+lemueldls@users.noreply.github.com"
             git add PKGBUILD .SRCINFO
-            git commit -m "New upstream release ${{ inputs.semver }}"
+            git commit -m "New upstream release ${{ needs.release_info.outputs.version }}"
             git push origin master
           '
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}

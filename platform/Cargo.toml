@@ -1,20 +1,26 @@
 [workspace]
-members = ["wasm", "tauri"]
+members = ["tauri", "wasm"]
 package.authors = ["Lemuel DLS"]
 package.categories = []
 package.edition = "2024"
 package.keywords = [""]
 package.license = "Apache-2.0"
 package.repository = "https://github.com/lemueldls/mnemo"
-package.version = "0.1.0"
+package.version = "0.1.5"
 resolver = "2"
 
-# [profile.release]
-# codegen-units = 1
-# lto = true
+[profile.release]
+codegen-units = 1
+debug = 0
+incremental = false
+lto = true
+opt-level = 3
 
 [profile.release.package."*"]
 codegen-units = 1
+debug = 0
+incremental = false
+opt-level = 3
 
 [profile.bench]
 codegen-units = 1

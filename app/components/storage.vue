@@ -44,13 +44,15 @@ function formatBytes(bytes: number) {
 
   return `${bytes.toFixed(2)} ${units[i]}`;
 }
+
+const keys = await getStorageKeys();
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-3">
-    <md-outlined-card class="flex-1 p-3">
-      <div class="flex-1">
-        <div class="text-error p-3">TODO</div>
+  <div class="flex h-full flex-col gap-3 overflow-hidden">
+    <md-outlined-card class="flex flex-1 flex-col overflow-hidden p-3">
+      <div class="flex-1 overflow-y-auto overflow-x-hidden">
+        <storage-root :keys />
       </div>
 
       <template v-if="usage && quota">
@@ -91,7 +93,7 @@ function formatBytes(bytes: number) {
       <md-filled-tonal-button v-if="user" @click="logout">
         {{ $t("components.sync.logout") }}
       </md-filled-tonal-button>
-      <md-filled-button v-else disabled @click="login">
+      <md-filled-button v-else @click="login">
         {{ $t("components.sync.continue-with-github") }}
       </md-filled-button>
     </md-outlined-card>

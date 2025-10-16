@@ -1,6 +1,4 @@
 import { polarClient } from "@polar-sh/better-auth";
-import { isTauri } from "@tauri-apps/api/core";
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { createAuthClient } from "better-auth/client";
 
 import type {
@@ -12,16 +10,15 @@ import type {
 import type { RouteLocationRaw } from "vue-router";
 
 export const useAuth = createSharedComposable(() => {
-  const headers = new Headers();
-
-  const token = useApiToken().value;
-  headers.append("Cookie", `mnemo.session_token=${token || ""};`);
+  const token = useApiToken();
 
   const client = createAuthClient({
     baseURL: useApiBaseUrl(),
     fetchOptions: {
-      headers,
-      customFetchImpl: isTauri() ? tauriFetch : undefined,
+      auth: {
+        type: "Bearer",
+        token: () => token.value,
+      },
     },
     plugins: [polarClient()],
   });
@@ -30,20 +27,19 @@ export const useAuth = createSharedComposable(() => {
   const user = ref<InferUserFromClient<ClientOptions> | null>(null);
   const sessionFetching = ref(false);
 
-  const fetchSession = async () => {
-    if (sessionFetching.value) return;
+  const fetchSession = async (force = false) => {
+    if (sessionFetching.value && !force) return;
 
     sessionFetching.value = true;
-
-    const headers = new Headers();
-
-    const token = useApiToken().value;
-    headers.append("Cookie", `mnemo.session_token=${token || ""};`);
 
     let sessionData;
     try {
       const { error, data } = await client.getSession({
-        fetchOptions: { headers },
+        fetchOptions: {
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        },
       });
 
       if (error) {
@@ -67,6 +63,8 @@ export const useAuth = createSharedComposable(() => {
   };
 
   if (import.meta.client) {
+    watchImmediate(token, () => fetchSession(true));
+
     client.$store.listen("$sessionSignal", async (signal) => {
       if (!signal) return;
       await fetchSession();

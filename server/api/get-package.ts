@@ -2,7 +2,7 @@ import { parseTarGzip, type ParsedTarFileItem } from "nanotar";
 
 export default defineCachedEventHandler(
   async (event) => {
-    const { namespace, name, version } = await getQuery(event);
+    const { namespace, name, version } = getQuery(event);
 
     const pkg = await $fetch<Blob>(
       `https://packages.typst.org/${namespace}/${name}-${version}.tar.gz`,
@@ -23,5 +23,5 @@ export default defineCachedEventHandler(
 
     return { spec, files };
   },
-  // { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path }
+  { maxAge: 60 * 60 * 24 * 7, staleMaxAge: -1, getKey: (event) => event.path },
 );

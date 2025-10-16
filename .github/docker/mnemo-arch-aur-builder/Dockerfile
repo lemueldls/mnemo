@@ -1,8 +1,10 @@
-FROM archlinux:base-devel@sha256:3f808d41e09261904a04709fc210a154ee56f6a9c369a15a70c2dfac5adab498
+FROM archlinux:base-devel@sha256:707bb974ce868085034e8d4ba52a2288ee9f152ea47524bad93e7a954268e2db
 RUN pacman -Syu --noconfirm \
     && pacman -S --noconfirm \
     appmenu-gtk-module \
     cargo \
+    nodejs \
+    pnpm \
     coreutils \
     desktop-file-utils \
     gdk-pixbuf2 \

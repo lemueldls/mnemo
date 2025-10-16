@@ -1,8 +1,8 @@
-import { isTauri } from "@tauri-apps/api/core";
-import TauriWebSocket from "@tauri-apps/plugin-websocket";
+// import { isTauri } from "@tauri-apps/api/core";
+// import TauriWebSocket from "@tauri-apps/plugin-websocket";
 import { defu } from "defu";
 
-type WS = TauriWebSocket | WebSocket;
+type WS = WebSocket; // | TauriWebSocket;
 
 export interface WebSocketMessage {
   data: string | ArrayBuffer | Uint8Array;
@@ -93,6 +93,8 @@ export function useApiWebSocket(
   let reconnectAttempts = 0;
   let explicitlyClosed = false;
 
+  // const tauri = isTauri();
+
   const cleanup = () => {
     if (heartbeatTimer) {
       clearTimeout(heartbeatTimer);
@@ -142,98 +144,93 @@ export function useApiWebSocket(
       resolvedUrl instanceof URL ? resolvedUrl.toString() : resolvedUrl;
 
     try {
-      if (isTauri()) {
-        const headers = new Headers();
+      // if (tauri) {
+      //   ws.value = await TauriWebSocket.connect(wsUrl);
 
-        const token = useApiToken().value;
-        headers.append("Cookie", `mnemo.session_token=${token || ""};`);
+      //   status.value = "OPEN";
+      //   reconnectAttempts = 0;
 
-        ws.value = await TauriWebSocket.connect(wsUrl, { headers });
+      //   onOpen?.(ws.value as WS, new Event("open"));
+      //   startHeartbeat();
 
+      //   // Set up message listener
+      //   ws.value.addListener((message) => {
+      //     switch (message.type) {
+      //       case "Binary": {
+      //         const binaryData = new Uint8Array(message.data);
+      //         const wrappedMessage = new WebSocketMessageWrapper(binaryData);
+
+      //         // data.value = binaryData;
+
+      //         onMessage?.(ws.value as WS, wrappedMessage);
+
+      //         break;
+      //       }
+
+      //       case "Text": {
+      //         const textData = message.data;
+      //         const wrappedTextMessage = new WebSocketMessageWrapper(textData);
+
+      //         // data.value = textData;
+
+      //         onMessage?.(ws.value as WS, wrappedTextMessage);
+
+      //         break;
+      //       }
+
+      //       case "Close": {
+      //         status.value = "CLOSED";
+      //         cleanup();
+      //         onClose?.(ws.value as WS, new CloseEvent("close"));
+
+      //         attemptReconnect();
+
+      //         break;
+      //       }
+      //     }
+      //   });
+      // } else {
+      // Use native WebSocket
+      status.value = "CONNECTING";
+      ws.value = new WebSocket(
+        wsUrl,
+        protocols.length > 0 ? protocols : undefined,
+      );
+
+      ws.value.addEventListener("open", (event: Event) => {
         status.value = "OPEN";
         reconnectAttempts = 0;
-
-        onOpen?.(ws.value as WS, new Event("open"));
+        onOpen?.(ws.value as WS, event);
         startHeartbeat();
+      });
 
-        // Set up message listener
-        ws.value.addListener((message) => {
-          switch (message.type) {
-            case "Binary": {
-              const binaryData = new Uint8Array(message.data);
-              const wrappedMessage = new WebSocketMessageWrapper(binaryData);
+      ws.value.addEventListener(
+        "message",
+        async (event: MessageEvent<string | Blob>) => {
+          const wrappedMessage = new WebSocketMessageWrapper(
+            typeof event.data === "string"
+              ? event.data
+              : await event.data.bytes(),
+          );
 
-              // data.value = binaryData;
+          // data.value = event.data;
 
-              onMessage?.(ws.value as WS, wrappedMessage);
+          onMessage?.(ws.value as WS, wrappedMessage);
+        },
+      );
 
-              break;
-            }
+      ws.value.addEventListener("error", (event: Event) => {
+        onError?.(ws.value as WS, event);
+      });
 
-            case "Text": {
-              const textData = message.data;
-              const wrappedTextMessage = new WebSocketMessageWrapper(textData);
+      ws.value.addEventListener("close", (event: CloseEvent) => {
+        status.value = "CLOSED";
+        cleanup();
+        onClose?.(ws.value as WS, event);
 
-              // data.value = textData;
-
-              onMessage?.(ws.value as WS, wrappedTextMessage);
-
-              break;
-            }
-
-            case "Close": {
-              status.value = "CLOSED";
-              cleanup();
-              onClose?.(ws.value as WS, new CloseEvent("close"));
-
-              attemptReconnect();
-
-              break;
-            }
-          }
-        });
-      } else {
-        // Use native WebSocket
-        status.value = "CONNECTING";
-        ws.value = new WebSocket(
-          wsUrl,
-          protocols.length > 0 ? protocols : undefined,
-        );
-
-        ws.value.addEventListener("open", (event: Event) => {
-          status.value = "OPEN";
-          reconnectAttempts = 0;
-          onOpen?.(ws.value as WS, event);
-          startHeartbeat();
-        });
-
-        ws.value.addEventListener(
-          "message",
-          async (event: MessageEvent<string | Blob>) => {
-            const wrappedMessage = new WebSocketMessageWrapper(
-              typeof event.data === "string"
-                ? event.data
-                : await event.data.bytes(),
-            );
-
-            // data.value = event.data;
-
-            onMessage?.(ws.value as WS, wrappedMessage);
-          },
-        );
-
-        ws.value.addEventListener("error", (event: Event) => {
-          onError?.(ws.value as WS, event);
-        });
-
-        ws.value.addEventListener("close", (event: CloseEvent) => {
-          status.value = "CLOSED";
-          cleanup();
-          onClose?.(ws.value as WS, event);
-
-          attemptReconnect();
-        });
-      }
+        attemptReconnect();
+      });
+      // }
     } catch (error) {
       status.value = "CLOSED";
       console.error("WebSocket connection failed:", error);
@@ -248,11 +245,11 @@ export function useApiWebSocket(
 
     if (ws.value) {
       status.value = "CLOSING";
-      if (isTauri()) {
-        await (ws.value as TauriWebSocket).disconnect();
-      } else {
-        (ws.value as WebSocket).close(code, reason);
-      }
+      // if (tauri) {
+      //   await (ws.value as TauriWebSocket).disconnect();
+      // } else {
+      (ws.value as WebSocket).close(code, reason);
+      // }
     }
 
     status.value = "CLOSED";
@@ -265,21 +262,21 @@ export function useApiWebSocket(
     await until(status).toBe("OPEN");
 
     try {
-      if (isTauri()) {
-        let sendData: string | number[];
+      // if (tauri) {
+      //   let sendData: string | number[];
 
-        if (typeof messageData === "string") {
-          sendData = messageData;
-        } else if (messageData instanceof ArrayBuffer) {
-          sendData = Array.from(new Uint8Array(messageData));
-        } else {
-          sendData = Array.from(messageData);
-        }
+      //   if (typeof messageData === "string") {
+      //     sendData = messageData;
+      //   } else if (messageData instanceof ArrayBuffer) {
+      //     sendData = Array.from(new Uint8Array(messageData));
+      //   } else {
+      //     sendData = Array.from(messageData);
+      //   }
 
-        await (ws.value as TauriWebSocket).send(sendData);
-      } else {
-        (ws.value as WebSocket).send(messageData);
-      }
+      //   await (ws.value as TauriWebSocket).send(sendData);
+      // } else {
+      (ws.value as WebSocket).send(messageData);
+      // }
 
       return true;
     } catch (error) {

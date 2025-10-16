@@ -1,13 +1,10 @@
 <script lang="ts" setup>
 import type { Package } from "~~/server/api/list-packages.get";
 
-const { spaceId, versionedPackage } = defineProps<{
+const { spaceId, namespace, versionedPackage } = defineProps<{
   spaceId: string;
+  namespace: string;
   versionedPackage: Package[];
-}>();
-const emit = defineEmits<{
-  (e: "install", pkg: Package): void;
-  (e: "uninstall", pkg: Package): void;
 }>();
 
 const selectedIndex = ref(0);
@@ -22,6 +19,23 @@ const installedPackage = computed(() =>
     (pkgItem) => pkg.value.version === pkgItem.version,
   ),
 );
+
+const loading = ref(false);
+
+async function installPackage(pkg: Package) {
+  loading.value = true;
+
+  await installTypstPackage(pkg, namespace);
+  installedPackages.value = [...installedPackages.value, pkg];
+
+  loading.value = false;
+}
+
+function uninstallPackage(pkg: Package) {
+  installedPackages.value = installedPackages.value.filter(
+    (pkgItem) => !isSamePackage(pkg, pkgItem),
+  );
+}
 </script>
 
 <template>
@@ -90,16 +104,21 @@ const installedPackage = computed(() =>
       <md-outlined-button
         v-if="installedPackage"
         class="flex-[3]"
-        @click.prevent="emit('uninstall', pkg)"
+        @click.prevent="uninstallPackage(pkg)"
       >
         {{ $t("components.package-card.uninstall") }}
       </md-outlined-button>
       <md-filled-button
         v-else
+        :disabled="loading"
         class="flex-[3]"
-        @click.prevent="emit('install', pkg)"
+        @click.prevent="installPackage(pkg)"
       >
-        {{ $t("components.package-card.install") }}
+        {{
+          loading
+            ? $t("components.package-card.installing")
+            : $t("components.package-card.install")
+        }}
       </md-filled-button>
     </div>
   </md-elevated-card>
