@@ -3174,11 +3174,9 @@ dependencies = [
  "tiny-skia",
  "tsify",
  "typst",
- "typst-html",
  "typst-ide",
  "typst-pdf",
  "typst-render",
- "typst-svg",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]

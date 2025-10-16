@@ -35,11 +35,11 @@ time = { version = "0.3", features = ["serde"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
 typst = { version = "0.14.0-rc.1" }
-typst-html = { version = "0.14.0-rc.1" }
+# typst-html = { version = "0.14.0-rc.1" }
 typst-ide = { version = "0.14.0-rc.1" }
 typst-pdf = { version = "0.14.0-rc.1" }
 typst-render = { version = "0.14.0-rc.1" }
-typst-svg = { version = "0.14.0-rc.1" }
+# typst-svg = { version = "0.14.0-rc.1" }
 wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
@@ -50,10 +50,10 @@ wasm-bindgen-test = "0.3.50"
 wasm-opt = ["-O4", "-all"]
 
 [profile.release]
-codegen-units = 1    # Single codegen unit
-debug = false        # No debug info
+codegen-units = 1
+debug = false
 inherits = "release"
-lto = "fat"          # Full LTO for inlining
-opt-level = 3        # Maximum performance
-panic = "abort"      # Smaller panic handler
+lto = "fat"
+opt-level = 3
+panic = "abort"
 strip = true
