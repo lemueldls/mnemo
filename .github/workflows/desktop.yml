@@ -44,7 +44,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
@@ -178,7 +178,7 @@ jobs:
 
       - name: 🛡️ Attest build provenance (publish release only)
         if: ${{ inputs.publish }}
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: |
             platform/target/release/bundle/nsis/*
@@ -191,7 +191,7 @@ jobs:
             platform/target/release/mnemo.pdb
 
       - name: 📜 Create SBOM
-        uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0
+        uses: anchore/sbom-action@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.20.6
         with:
           format: "spdx-json"
           output-file: "sbom.spdx.json"

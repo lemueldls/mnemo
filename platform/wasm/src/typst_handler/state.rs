@@ -1,16 +1,19 @@
-use std::{fmt, ops::Range, str::FromStr};
+use std::{cmp, fmt, iter, ops::Range, str::FromStr};
 
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use highway::{HighwayHash, HighwayHasher};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
     WorldExt, compile,
+    diag::Severity,
     ecow::EcoString,
     foundations::Bytes,
-    layout::{Abs, PagedDocument, Point},
-    syntax::{FileId, Source, SyntaxKind, VirtualPath, package::PackageSpec},
+    introspection::Tag,
+    layout::{Abs, FrameItem, FrameKind, PagedDocument, Point},
+    syntax::{FileId, Source, Span, SyntaxKind, VirtualPath, package::PackageSpec},
 };
 // use typst_html::html;
 use typst_pdf::{PdfOptions, pdf};
@@ -22,13 +25,17 @@ use super::{
     world::{FileSlot, MnemoWorld},
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
+use crate::typst_handler::{
+    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items},
+    wrappers::{map_aux_span, map_main_span},
+};
 
 #[wasm_bindgen]
 #[derive(Default)]
 pub struct TypstState {
-    world: MnemoWorld,
-    document: Option<PagedDocument>,
-    file_contexts: HashMap<TypstFileId, FileContext>,
+    pub(crate) world: MnemoWorld,
+    pub(crate) document: Option<PagedDocument>,
+    pub(crate) file_contexts: HashMap<TypstFileId, FileContext>,
 }
 
 #[wasm_bindgen]
@@ -94,7 +101,7 @@ impl TypstState {
         self.world.install_font(bytes);
     }
 
-    fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
+    pub(crate) fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
         let context = self.file_contexts.get(id).unwrap();
 
         let page_config = match rendering_mode {
@@ -153,232 +160,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
-        let mut ir = self.prelude(id, RenderingMode::Png) + prelude + "\n";
-
-        let mut index_mapper = IndexMapper::default();
-        index_mapper.add_main_to_aux(0, ir.len());
-
-        self.world.main = Some(id.inner());
-        self.world.main_source_mut().replace(&ir);
-
-        let aux_id = id.inner().with_extension("$.typ");
-        self.world
-            .files
-            .entry(aux_id)
-            .and_modify(|file| {
-                file.source_mut().unwrap().replace(&text);
-            })
-            .or_insert_with(|| FileSlot::Source(Source::new(aux_id, text)));
-        self.world.aux = Some(aux_id);
-
-        let aux_source = self.world.aux_source();
-
-        let children = aux_source.root().children();
-        let text = aux_source.text();
-
-        let mut block_ranges = Vec::<RangedBlock>::new();
-        let mut in_block = false;
-
-        let mut last_kind: Option<SyntaxKind> = None;
-
-        for node in children {
-            let range = self.world.range(node.span()).unwrap();
-
-            if let Some(until_newline) = node.text().chars().position(|ch| ch == '\n') {
-                in_block = false;
-
-                if let Some(last_block) = block_ranges.last_mut() {
-                    last_block.range.end += until_newline;
-
-                    ir += &text[last_block.range.clone()];
-
-                    match last_kind {
-                        Some(
-                            SyntaxKind::LetBinding
-                            | SyntaxKind::SetRule
-                            | SyntaxKind::ShowRule
-                            | SyntaxKind::ModuleImport
-                            | SyntaxKind::ModuleInclude
-                            | SyntaxKind::Contextual
-                            | SyntaxKind::ListItem
-                            | SyntaxKind::EnumItem
-                            | SyntaxKind::Linebreak,
-                        ) => {}
-                        _ => {
-                            ir += "\n#box() \\";
-                            last_block.is_inline = true
-                        }
-                    }
-
-                    // crate::log!("[LAST_KIND]: {last_kind:?}");
-
-                    ir += "\n";
-                }
-            } else {
-                last_kind = Some(node.kind());
-
-                if in_block {
-                    block_ranges.last_mut().unwrap().range.end = range.end;
-                } else {
-                    in_block = true;
-
-                    index_mapper.add_main_to_aux(range.start, ir.len());
-                    block_ranges.push(RangedBlock {
-                        range,
-                        is_inline: false,
-                    });
-                }
-            }
-        }
-
-        if let Some(last_block) = block_ranges.last_mut() {
-            if in_block {
-                ir += &text[last_block.range.clone()];
-            }
-        }
-
-        // crate::log!("[RANGES]: {block_ranges:?}");
-
-        // crate::log!(
-        //     "[SOURCE]: {:?}",
-        //     &ir[(self.prelude(id, RenderingMode::Png) + prelude + "\n").len()..]
-        // );
-
-        self.world.index_mapper = index_mapper;
-
-        let mut last_document = None;
-
-        let mut offset_height = 0_f64;
-        let mut diagnostics = Vec::new();
-        let mut compiled_warnings = None;
-
-        let context = self.file_contexts.get(id).unwrap();
-
-        let ranged_heights = block_ranges
-            .into_iter()
-            .filter_map(|block| {
-                match context.height {
-                    Some(height) if offset_height >= height => return None,
-                    _ => {}
-                }
-
-                let aux_source = self.world.aux_source();
-
-                let aux_range = block.range;
-                let aux_lines = aux_source.lines();
-                let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
-                let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
-                let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
-
-                let mut end_byte = self.world.map_aux_to_main(aux_range.end);
-                if block.is_inline {
-                    // TODO: proper offsetting (?)
-                    end_byte += 10;
-                }
-
-                let source = self.world.main_source_mut();
-                let source_len = source.text().len();
-                source.edit(source_len..source_len, ir.get(source_len..end_byte)?);
-
-                // crate::log!("[RANGE_UTF8]: {aux_range:?}");
-                // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
-
-                let compiled = compile::<PagedDocument>(&self.world);
-                compiled_warnings = Some(compiled.warnings);
-
-                match compiled.output {
-                    Ok(document) => {
-                        // TODO: handle changes in page margins
-
-                        let document_height = document
-                            .pages
-                            .iter()
-                            .map(|page| page.frame.height())
-                            .sum::<Abs>()
-                            .to_pt();
-
-                        let height = document_height - offset_height;
-
-                        if height == 0_f64 {
-                            return None;
-                        }
-
-                        let ranged_height = Some((aux_range_utf16, height, offset_height));
-
-                        offset_height = document_height;
-                        last_document = Some(document);
-
-                        ranged_height
-                    }
-                    Err(source_diagnostics) => {
-                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                            source_diagnostics,
-                            &self.world,
-                        ));
-
-                        // crate::error!("[ERRORS]: {diagnostics:?}");
-
-                        let start_byte = self.world.map_aux_to_main(aux_range.start);
-
-                        let range_delta = end_byte - start_byte;
-                        let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
-
-                        let source = self.world.main_source_mut();
-                        source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
-
-                        None
-                    }
-                }
-            })
-            .collect::<Vec<_>>();
-
-        let frames = if let Some(document) = &last_document {
-            let canvas =
-                typst_render::render_merged(document, context.pixel_per_pt, Abs::zero(), None);
-            let width = canvas.width();
-
-            ranged_heights
-                .into_iter()
-                .map(|(range, height, offset_height)| {
-                    let rect = IntRect::from_xywh(
-                        0,
-                        (offset_height as f32 * context.pixel_per_pt).ceil() as i32,
-                        width,
-                        (height as f32 * context.pixel_per_pt).ceil() as u32,
-                    )
-                    .unwrap();
-                    let canvas = canvas.clone_rect(rect).unwrap();
-                    let encoding = canvas.encode_png().unwrap();
-
-                    let hash = HighwayHasher::default().hash64(&encoding) as u32;
-
-                    let height = height.ceil() as u32;
-
-                    let render = FrameRender {
-                        encoding,
-                        hash,
-                        height,
-                        offset_height,
-                    };
-
-                    RangedFrame { range, render }
-                })
-                .collect()
-        } else {
-            Vec::new()
-        };
-
-        if let Some(warnings) = compiled_warnings {
-            diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &self.world));
-        }
-
-        self.document = last_document;
-        self.world.main_source_mut().replace(&ir);
-
-        CompileResult {
-            frames,
-            diagnostics,
-        }
+        render_by_chunk(id, text, prelude, self)
     }
 
     #[wasm_bindgen]
@@ -406,7 +188,7 @@ impl TypstState {
             &page.frame,
             Point::new(Abs::pt(x), Abs::pt(y)),
         )
-        .map(|jump| TypstJump::from_mapped(jump, &self.world))
+        .and_then(|jump| TypstJump::from_mapped(jump, &self.world))
     }
 
     #[wasm_bindgen]
@@ -499,7 +281,7 @@ impl TypstState {
     }
 }
 
-struct FileContext {
+pub struct FileContext {
     pub width: String,
     pub height: Option<f64>,
     pub pixel_per_pt: f32,
@@ -714,33 +496,6 @@ impl fmt::Display for Rgb {
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileResult {
-    frames: Vec<RangedFrame>,
-    diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderPdfResult {
-    pub bytes: Option<Vec<u8>>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderHtmlResult {
-    pub document: Option<String>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
-
-#[derive(Debug)]
-struct RangedBlock {
-    range: Range<usize>,
-    is_inline: bool,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct TypstError(EcoString);
 
 #[derive(Tsify, Serialize, Deserialize)]
@@ -748,35 +503,4 @@ pub struct TypstError(EcoString);
 pub struct Autocomplete {
     pub offset: usize,
     pub completions: Box<[TypstCompletion]>,
-}
-
-#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RangedFrame {
-    pub range: Range<usize>,
-    pub render: FrameRender,
-}
-
-impl RangedFrame {
-    pub fn new(range: Range<usize>, render: FrameRender) -> Self {
-        Self { range, render }
-    }
-}
-
-#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct FrameRender {
-    #[tsify(type = "Uint8Array")]
-    #[serde(with = "serde_bytes")]
-    encoding: Vec<u8>,
-    hash: u32,
-    height: u32,
-    #[serde(rename = "offsetHeight")]
-    offset_height: f64,
-}
-
-enum RenderingMode {
-    Png,
-    Pdf,
-    // Html,
 }

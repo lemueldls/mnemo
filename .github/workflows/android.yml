@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "📦"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         name: 🔄 Checkout
 
       - name: 📝 Extract version from tauri.conf.json
@@ -43,7 +43,7 @@ jobs:
           echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
       - name: ☕ Setup Java
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: "zulu"
           java-version: "17"
@@ -128,7 +128,7 @@ jobs:
 
       - name: 🛡️ Attest build provenance (publish only)
         if: ${{ inputs.publish }}
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: |
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk

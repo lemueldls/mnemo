@@ -76,11 +76,9 @@ const typstState = await useTypst();
 
 const text = await useStorageText(fullPath);
 
-let view = ref<EditorView>();
-
 onMounted(async () => {
   const container = containerRef.value!;
-  view.value = new EditorView({
+  const view = new EditorView({
     parent: container,
     root: document,
     state: EditorState.create({
@@ -88,6 +86,7 @@ onMounted(async () => {
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
         placeholder(t("components.editor.loading")),
+        lintGutter(),
       ],
     }),
   });
@@ -99,7 +98,7 @@ onMounted(async () => {
     await watchImmediateAsync(packages, async (packages) => {
       await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
 
-      if (ready) reloadEditorWidgets();
+      if (ready) reloadEditorWidgets(view);
     });
   } catch (err) {
     console.error("Error installing packages:", err);
@@ -142,13 +141,13 @@ onMounted(async () => {
         ),
       );
 
-      if (ready) reloadEditorWidgets();
+      if (ready) reloadEditorWidgets(view);
     });
 
     watchImmediate(locale, (locale) => {
       typstState.setLocale(fileId, locale);
 
-      if (ready) reloadEditorWidgets();
+      if (ready) reloadEditorWidgets(view);
     });
 
     watch(
@@ -156,7 +155,7 @@ onMounted(async () => {
       (text) => {
         typstState.insertFile(fileId, text);
         const state = createEditorState(fileId);
-        view.value!.setState(state);
+        view.setState(state);
       },
       { once: true, immediate: !ready },
     );
@@ -164,6 +163,21 @@ onMounted(async () => {
 
   ready = true;
   queueMicrotask(() => emit("ready"));
+
+  const { scrollDOM } = view;
+  const scrollHeight = useScrollHeight(scrollDOM);
+  const { x: scrollX, y: scrollY } = useScroll(scrollDOM);
+  const { height } = useElementSize(scrollDOM);
+
+  watchImmediate(
+    [scrollHeight, scrollY, height],
+    ([scrollHeight, scrollY, height]) => {
+      if (!scrollDOM) return;
+
+      topFade.value = Math.min(scrollY, maxFade);
+      bottomFade.value = Math.min(scrollHeight - scrollY - height, maxFade);
+    },
+  );
 });
 
 const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
@@ -239,14 +253,14 @@ function createEditorState(fileId: FileId): EditorState {
   });
 }
 
-function reloadEditorWidgets() {
-  const { doc } = view.value!.state;
+function reloadEditorWidgets(view: EditorView) {
+  const { doc } = view.state;
 
   if (doc.length) {
     const from = 0;
     const to = 1;
 
-    view.value!.dispatch({
+    view.dispatch({
       changes: { from, to, insert: doc.sliceString(from, to) },
     });
   }
@@ -277,21 +291,6 @@ const topFade = ref(0);
 const bottomFade = ref(0);
 
 const maxFade = 32;
-
-const scrollDOM = computed(() => view.value?.scrollDOM);
-const scrollHeight = useScrollHeight(scrollDOM);
-const { x: scrollX, y: scrollY } = useScroll(scrollDOM);
-const { height } = useElementSize(scrollDOM);
-
-watchImmediate(
-  [scrollDOM, scrollHeight, scrollY, height],
-  ([scrollDOM, scrollHeight, scrollY, height]) => {
-    if (!scrollDOM) return;
-
-    topFade.value = Math.min(scrollY, maxFade);
-    bottomFade.value = Math.min(scrollHeight - scrollY - height, maxFade);
-  },
-);
 </script>
 
 <template>
@@ -347,12 +346,12 @@ watchImmediate(
     font-family: var(--font-mono);
   }
 
-  .cm-selectionBackground,
-  .cm-content ::selection {
-    @apply text-tertiary;
+  // .cm-selectionBackground,
+  // .cm-content ::selection {
+  //   @apply text-tertiary;
 
-    background-color: v-bind(selectionBackground) !important;
-  }
+  //   background-color: v-bind(selectionBackground) !important;
+  // }
 
   .cm-panels {
     @apply bg-surface-variant text-on-surface-variant border-outline-variant;
