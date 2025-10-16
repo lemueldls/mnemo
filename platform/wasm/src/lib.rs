@@ -21,6 +21,10 @@ extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
     #[wasm_bindgen(js_namespace = console)]
+    fn group(s: &str);
+    #[wasm_bindgen(js_namespace = console, js_name = groupEnd)]
+    fn group_end(s: &str);
+    #[wasm_bindgen(js_namespace = console)]
     fn error(s: &str);
     #[wasm_bindgen(js_namespace = console)]
     fn warn(s: &str);
@@ -42,6 +46,20 @@ fn start() {
 macro_rules! log {
     ($($e:tt)*) => {
         $crate::log(&format!($($e)*))
+    };
+}
+
+#[macro_export]
+macro_rules! group {
+    ($($e:tt)*) => {
+        $crate::group(&format!($($e)*))
+    };
+}
+
+#[macro_export]
+macro_rules! group_end {
+    ($($e:tt)*) => {
+        $crate::group_end(&format!($($e)*))
     };
 }
 

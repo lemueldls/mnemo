@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Set up SSH signing key
         run: |
@@ -32,7 +32,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Build WebAssembly
-        run: wasm-pack build -t web platform/wasm --release
+        run: wasm-pack build -t web platform/wasm --release --features wasm-simd
 
       - name: Commit and push
         run: |

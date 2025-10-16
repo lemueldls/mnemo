@@ -11,8 +11,6 @@
     "core:window:allow-start-dragging",
     "opener:default",
     "deep-link:default",
-    "os:default",
-    "process:default",
-    "websocket:default"
+    "process:default"
   ]
 }

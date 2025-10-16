@@ -14,15 +14,18 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["console_error_panic_hook"]
+wasm-simd = []
 
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 lol_alloc = ["dep:lol_alloc"]
 
 [dependencies]
+collected = { version = "0.4.0" }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 data-encoding = "2.9.0"
-hashbrown = { version = "0.15.5" }
+hashbrown = { version = "0.16.0" }
 highway = { version = "1.3.0" }
+itertools = { version = "0.14.0" }
 js-sys = { version = "0.3.77", default-features = false }
 lol_alloc = { version = "0.4.1", optional = true }
 serde = { version = "1.0", features = ["derive"] }
@@ -31,12 +34,12 @@ serde_bytes = "0.11"
 time = { version = "0.3", features = ["serde"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
-typst = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
-typst-ide = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
-typst-render = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
-# typst-svg = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
-typst-pdf = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
-# typst-html = { git = "https://github.com/typst/typst", rev = "0a86b5b" }
+typst = { version = "0.14.0-rc.1" }
+# typst-html = { version = "0.14.0-rc.1" }
+typst-ide = { version = "0.14.0-rc.1" }
+typst-pdf = { version = "0.14.0-rc.1" }
+typst-render = { version = "0.14.0-rc.1" }
+# typst-svg = { version = "0.14.0-rc.1" }
 wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
@@ -45,3 +48,12 @@ wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4", "-all"]
+
+[profile.release]
+codegen-units = 1
+debug = false
+inherits = "release"
+lto = "fat"
+opt-level = 3
+panic = "abort"
+strip = true

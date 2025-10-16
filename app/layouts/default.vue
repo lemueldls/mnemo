@@ -120,11 +120,13 @@ const pages: Page[] = [
 
         <div
           :class="[
-            'flex h-full flex-1 flex-col overflow-auto pb-3',
+            'flex h-full flex-1 flex-col overflow-auto',
             { 'pl-3': !extraLarge, 'pr-3': !medium },
           ]"
         >
-          <slot />
+          <div class="pb-3 sm:h-full">
+            <slot />
+          </div>
         </div>
 
         <side-bar v-if="!medium" direction="horizontal" />

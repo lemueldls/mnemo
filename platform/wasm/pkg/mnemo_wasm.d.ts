@@ -16,13 +16,6 @@ export interface RenderHtmlResult {
     diagnostics: TypstDiagnostic[];
 }
 
-export type TypstError = EcoString;
-
-export interface Autocomplete {
-    offset: number;
-    completions: TypstCompletion[];
-}
-
 export interface RangedFrame {
     range: { start: number; end: number };
     render: FrameRender;
@@ -33,6 +26,13 @@ export interface FrameRender {
     hash: number;
     height: number;
     offsetHeight: number;
+}
+
+export type TypstError = EcoString;
+
+export interface Autocomplete {
+    offset: number;
+    completions: TypstCompletion[];
 }
 
 export interface TypstDiagnostic {
