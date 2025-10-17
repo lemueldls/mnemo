@@ -434,6 +434,80 @@ export async function useStorageList<T extends unknown[]>(
   });
 }
 
+export type SetRef<
+  K extends string | number,
+  T extends Exclude<{ [key in K]: string }, Container>[],
+> = Awaited<ReturnType<typeof useStorageSet<K, T>>>;
+export async function useStorageSet<
+  K extends string | number,
+  T extends Exclude<{ [key in K]: string }, Container>[],
+>(key: MaybeRefOrGetter<string>, setKey: K, initialValue?: T) {
+  const keyRef = computed(() => normalizeKey(toValue(key)));
+
+  const item = await createStorageItem(
+    keyRef,
+    initialValue ?? ([] as unknown as T),
+    async (key, item, runNextSync) => {
+      const doc = await useCrdt();
+      const list = doc.getList(key);
+
+      watchImmediate(item, (itemList) => {
+        if (!runNextSync.value) return;
+
+        const syncList = list.getShallowValue() as T;
+        const syncKeys = new Set<string>();
+        const deleteQueue: number[] = [];
+
+        for (let i = 0; i < syncList.length; i++) {
+          const item = syncList[i]!;
+          const key = item[setKey];
+
+          if (syncKeys.has(key)) {
+            if (!deleteQueue.includes(i)) deleteQueue.push(i);
+          } else {
+            syncKeys.add(key);
+          }
+        }
+
+        for (let i = 0; i < itemList.length; i++) {
+          const item = itemList[i]!;
+          const key = item[setKey];
+
+          if (!syncKeys.has(key)) {
+            list.push(item);
+          }
+        }
+
+        // console.log({ deleteQueue, itemList: toRaw(itemList), syncList });
+
+        for (let i = deleteQueue.length - 1; i >= 0; i--) {
+          list.delete(deleteQueue[i]!, 1);
+        }
+
+        commit();
+      });
+    },
+  );
+
+  const doc = await useCrdt();
+  const list = computedWithControl(item, () => doc.getList(keyRef.value));
+
+  return extendRef(item, {
+    push(value: Exclude<T[keyof T], Container>) {
+      list.value.push(value);
+      commit();
+    },
+    insert(position: number, value: Exclude<T[keyof T], Container>) {
+      list.value.insert(position, value);
+      commit();
+    },
+    delete(position: number, length: number) {
+      list.value.delete(position, length);
+      commit();
+    },
+  });
+}
+
 const commit = useThrottleFn(
   async () => {
     const doc = await useCrdt();

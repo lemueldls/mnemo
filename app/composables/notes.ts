@@ -4,38 +4,16 @@ export interface DailyNote {
   id: string;
   // name?: string;
   datetime: [number, number, number, number, number];
+  lastViewed?: [number, number, number, number, number];
 }
 
 export type NoteKind = "daily" | "sticky" | "prelude" | "task";
 
-async function deduplicateNotes(notes: ListRef<DailyNote[]>) {
-  const notesValue = notes.value;
-
-  const deleteQueue: number[] = [];
-  for (let i = 0; i < notesValue.length; i++) {
-    const note = notesValue[i]!;
-
-    for (let j = i + 1; j < notesValue.length; j++) {
-      const otherNote = notesValue[j]!;
-
-      if (otherNote.id === note.id && !deleteQueue.includes(j)) {
-        deleteQueue.push(j);
-      }
-    }
-  }
-
-  // console.log({ deleteQueue }, notesValue.length);
-
-  for (let i = deleteQueue.length - 1; i >= 0; i--) {
-    void notes.delete(deleteQueue[i]!, 1);
-  }
-}
-
 export async function useDailyNotes(spaceId: MaybeRefOrGetter<string>) {
-  const notes = await useStorageList<DailyNote[]>(
+  const notes = await useStorageSet<"id", DailyNote[]>(
     () => `spaces/${toValue(spaceId)}/daily/notes.json`,
+    "id",
   );
-  // void deduplicateNotes(notes);
 
   return notes;
 }
