@@ -6264,9 +6264,9 @@ dependencies = [
 
 [[package]]
 name = "typst-assets"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8077c12a0358bf74aa7ee5dbe55a6a71fbbe61fa3013d21c831750db2da26408"
+checksum = "c3851f57480f4755acc14859bb2807d417f4c74372db83cc8c6efdc0525425ee"
 
 [[package]]
 name = "typst-eval"
@@ -6362,9 +6362,9 @@ dependencies = [
 
 [[package]]
 name = "typst-library"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2701bff3882554d5f253eecd87579b511f58b0f8e2b4da3a28c8dcfd7e770597"
+checksum = "19653cc30767d525e5a84884e7e6d969573328c3747baa3a20760277f391f864"
 dependencies = [
  "az",
  "bitflags 2.9.1",
@@ -6428,9 +6428,9 @@ dependencies = [
 
 [[package]]
 name = "typst-macros"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c64d8bf1e7702a2684626f74b69bf42db18ec98df181947243d49ae58f3bd6c"
+checksum = "bdd15888d7de822e2030629627175aa23c2bc40a3f40350421fa2ebddc69a9cf"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6484,9 +6484,9 @@ dependencies = [
 
 [[package]]
 name = "typst-render"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6511ef37121ac28ac2f9dfb64e25553aad0d0bebe6e096da06aba253528adb7a"
+checksum = "2ffcb07f254e7e7d3ab7f38a48db15c8f5dd0acd42c2cf33975e7b7540227687"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6528,9 +6528,9 @@ dependencies = [
 
 [[package]]
 name = "typst-syntax"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f3ddf67329dd237dfa23ed753004d1a671dd6c3359d1df39c77ca9e4d917036"
+checksum = "1d6d940457284097193a9024d589d8315f5dd612e8cbeaff4b144e42b2bb20a3"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -6547,9 +6547,9 @@ dependencies = [
 
 [[package]]
 name = "typst-timing"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaa52d818fd4951fa08b4c3a3f32f27f29ea3e21c0c59ee634dbb988497aa682"
+checksum = "9967de2d845e35ad5cc867eb1183f4ba52e5ee239211b945f7a8b3d060cb73b8"
 dependencies = [
  "parking_lot",
  "serde",
@@ -6558,9 +6558,9 @@ dependencies = [
 
 [[package]]
 name = "typst-utils"
-version = "0.14.0-rc.1"
+version = "0.14.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a3fc86217c6d0c5bb3a5c46bad1a0d037b3d3af61965373a1787c3937fef1bb"
+checksum = "3fff4e0766e9ab5e797c8421a80b1f4b3fe7fe798fc1ee0c28cce71cf5afeb37"
 dependencies = [
  "once_cell",
  "portable-atomic",

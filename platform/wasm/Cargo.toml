@@ -38,7 +38,7 @@ typst = { version = "0.14.0-rc.1" }
 # typst-html = { version = "0.14.0-rc.1" }
 typst-ide = { version = "0.14.0-rc.1" }
 typst-pdf = { version = "0.14.0-rc.1" }
-typst-render = { version = "0.14.0-rc.1" }
+typst-render = { version = "0.14.0-rc.2" }
 # typst-svg = { version = "0.14.0-rc.1" }
 wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
