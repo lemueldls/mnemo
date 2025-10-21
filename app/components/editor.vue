@@ -42,7 +42,6 @@ const props = defineProps<{
   kind: NoteKind;
   readonly?: boolean;
   locked?: boolean;
-  faded?: boolean;
 }>();
 
 const emit = defineEmits<{ (e: "ready"): void }>();
@@ -295,10 +294,7 @@ const maxFade = 32;
 
 <template>
   <div class="size-full overflow-hidden">
-    <div
-      ref="container"
-      :class="['editor', { editor__locked: locked, editor__faded: faded }]"
-    />
+    <div ref="container" :class="['editor', { editor__locked: locked }]" />
   </div>
 </template>
 
@@ -318,11 +314,7 @@ const maxFade = 32;
     @apply overflow-hidden!;
   }
 
-  &__faded {
-    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-  }
-
-  :not(&__faded) .cm-scroller {
+  .cm-scroller {
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
