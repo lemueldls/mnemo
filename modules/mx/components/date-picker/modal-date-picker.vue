@@ -61,11 +61,15 @@ const calendar = computed(() => {
   return calendar;
 });
 
-const months = Array.from({ length: 12 }).map((_, month) =>
-  d(Date.UTC(0, month + 1), { month: "long" }),
+const months = computed(() =>
+  Array.from({ length: 12 }).map((_, month) =>
+    d(Date.UTC(0, month + 1), { month: "long" }),
+  ),
 );
-const weekdays = Array.from({ length: 7 }).map((_, weekday) =>
-  d(Date.UTC(0, 0, weekday + 1), { weekday: "narrow" }),
+const weekdays = computed(() =>
+  Array.from({ length: 7 }).map((_, weekday) =>
+    d(Date.UTC(0, 0, weekday + 1), { weekday: "narrow" }),
+  ),
 );
 
 function selectDate() {
