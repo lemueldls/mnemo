@@ -54,5 +54,5 @@ codegen-units = 1
 debug = false
 lto = "fat"
 opt-level = 3
-# panic = "abort"
+panic = "abort"
 strip = true
