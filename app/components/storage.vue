@@ -55,6 +55,8 @@ const keys = await getStorageKeys();
         <storage-root :keys />
       </div>
 
+      <div class="text-error p-3">TODO</div>
+
       <template v-if="usage && quota">
         <md-divider class="my-2" />
 
