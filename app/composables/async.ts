@@ -44,3 +44,17 @@ export async function watchImmediateAsync<T = any>(
     );
   });
 }
+
+export type MaybePromise<T> = T | Promise<T>;
+
+export function eagerComputedAsync<T>(
+  fn: () => MaybePromise<T>,
+): Promise<Ref<T>> {
+  return new Promise((resolve) => {
+    const item = ref();
+    watchEffect(async () => {
+      item.value = await fn();
+      resolve(item);
+    });
+  });
+}

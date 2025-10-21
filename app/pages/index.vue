@@ -30,8 +30,6 @@ const greeting = computed(() => {
 useHead({ title: greeting });
 
 const spaces = await useSpaces();
-const review = await useReview();
-const tasks = await useTasks();
 
 const newSpaceOpen = useNewSpaceOpen();
 </script>
@@ -51,6 +49,8 @@ const newSpaceOpen = useNewSpaceOpen();
             {{ t("pages.index.date", { date: d(now, { dateStyle: "full" }) }) }}
           </span>
         </div>
+
+        <!-- <activity-graph /> -->
 
         <div class="flex-shrink-0">
           <div id="spaces">
@@ -105,58 +105,7 @@ const newSpaceOpen = useNewSpaceOpen();
         <md-elevated-card class="flex flex-1 flex-col gap-3 p-3">
           <h3 class="title-large text-on-surface-variant">Review</h3>
 
-          <div v-if="review.length > 0" id="review">
-            <nuxt-link
-              v-for="{ spaceId, date, note, lastReviewed, stage } in review"
-              :key="note.id"
-              :to="`/space?id=${spaceId}&note=${note.id}`"
-            >
-              <mx-theme :color="spaces[spaceId]!.color">
-                <md-elevated-card class="relative flex flex-col p-2">
-                  <md-ripple />
-
-                  <div
-                    class="text-on-primary-container flex w-full items-center justify-between gap-2 bg-transparent font-mono outline-none"
-                  >
-                    <md-divider class="w-2" />
-
-                    <!-- <span class="label-large">
-                      Reviewed {{ useRelativeTime(lastReviewed) }}
-                    </span> -->
-
-                    <span class="label-large">
-                      {{ date }}
-                    </span>
-
-                    <!-- <md-icon class="text-primary text-2xl!">
-                      {{ spaces[spaceId]!.icon }}
-                    </md-icon> -->
-
-                    <md-divider class="flex-1" />
-
-                    <md-icon v-if="spaces[spaceId]?.icon" class="text-primary">
-                      {{ spaces[spaceId].icon }}
-                    </md-icon>
-                  </div>
-
-                  <div class="p-2">
-                    <editor
-                      class="h-50"
-                      :space-id="spaceId"
-                      kind="daily"
-                      :model-value="note.id"
-                      readonly
-                      locked
-                      faded
-                    />
-                  </div>
-                </md-elevated-card>
-              </mx-theme>
-            </nuxt-link>
-          </div>
-          <span v-else class="text-on-surface-varient body-large">
-            Nothing yet..
-          </span>
+          <review />
         </md-elevated-card>
 
         <md-outlined-card class="flex flex-1 flex-col gap-3 p-3">
@@ -174,11 +123,5 @@ const newSpaceOpen = useNewSpaceOpen();
   @apply grid gap-3;
 
   grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-}
-
-#review {
-  @apply grid gap-3;
-
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
 }
 </style>
