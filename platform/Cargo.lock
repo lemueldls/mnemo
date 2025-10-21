@@ -3105,7 +3105,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "once_cell",
  "serde",
@@ -3125,7 +3125,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo-wasm"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "console_error_panic_hook",
  "hashbrown 0.16.0",
