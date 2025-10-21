@@ -22,9 +22,13 @@ onMounted(() => {
   x.value = window.location.href;
 });
 
+const { idle } = useIdle();
+
 match(platform)
   .with("windows", "darwin", "linux", "android", "ios", () => {
     window.location.href = `mnemo://auth/confirm?token=${bearerToken}&redirect=${encodeURIComponent(redirect)}`;
+
+    whenever(idle, () => window.close(), { immediate: true });
   })
   // .with("android", "ios", () => {
   //   window.open(
