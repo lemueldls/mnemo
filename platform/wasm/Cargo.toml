@@ -47,4 +47,4 @@ wasm-bindgen = "0.2.100"
 wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-O4", "-all"]
+wasm-opt = ["-Oz", "-all"]

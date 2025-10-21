@@ -21,7 +21,7 @@ fn main() {
         println!("cargo:rustc-link-arg=--no-entry");
         println!("cargo:rustc-link-arg=--gc-sections");
         println!("cargo:rustc-link-arg=--strip-all");
-        println!("cargo:rustc-link-arg=-zstack-size=2147000000 "); // 2 GiB
+        println!("cargo:rustc-link-arg=-zstack-size=2147000000"); // 2 GiB
 
         // Enable bulk memory operations
         println!("cargo:rustc-target-feature=+atomics,+bulk-memory,+mutable-globals");
