@@ -152,14 +152,14 @@ function encodeColor({ r, g, b, a }: Rgba) {
     <md-elevation />
 
     <mx-filled-card
-      class="flex flex-1 flex-col gap-4 rounded-xl p-4"
+      class="flex flex-1 flex-col rounded-xl p-1"
       :style="{
         backgroundColor: encodeColor(stickyNoteContainer),
         // color: encodeColor(onStickyNoteContainer),
       }"
     >
-      <div class="flex h-full flex-1 flex-col gap-4">
-        <div ref="header" class="flex items-center gap-2">
+      <div class="flex h-full flex-1 flex-col">
+        <div ref="header" class="flex items-center p-2">
           <input
             v-model="note.title"
             type="text"
@@ -185,7 +185,7 @@ function encodeColor({ r, g, b, a }: Rgba) {
 
 <style lang="scss">
 .sticky-note {
-  @apply rounded-3 absolute z-1 flex transition-shadow;
+  @apply rounded-3 z-1 absolute flex transition-shadow;
 
   --md-elevation-level: 1;
 

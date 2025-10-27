@@ -300,7 +300,7 @@ const maxFade = 32;
 
 <style lang="scss">
 .editor {
-  @apply size-full overflow-hidden pr-2;
+  @apply size-full overflow-hidden pb-2 pr-2;
 
   .cm-editor {
     @apply body-large h-full outline-none;

@@ -324,7 +324,7 @@ async function createStickyNote() {
               </div>
 
               <md-elevated-card id="editor">
-                <div class="flex items-center justify-between gap-1 p-2">
+                <div class="flex items-center justify-between p-2">
                   <md-divider class="w-2" />
 
                   <div class="z-2">

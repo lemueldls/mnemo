@@ -1,5 +1,10 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import { StateEffect, StateField, type Range } from "@codemirror/state";
+import {
+  EditorState,
+  StateEffect,
+  StateField,
+  type Range,
+} from "@codemirror/state";
 
 import {
   Decoration,
@@ -16,6 +21,7 @@ import type {
   CompileResult,
   FileId,
   RangedFrame,
+  TypstDiagnostic,
   TypstState,
 } from "mnemo-wasm";
 import { typstLanguage } from "./language";
@@ -143,32 +149,7 @@ function decorate(
 
   const widgets: Range<Decoration>[] = [];
 
-  if (compileResult.diagnostics.length > 0) {
-    const diagnostics = compileResult.diagnostics.flatMap((diagnostic) => {
-      const diagnostics: Diagnostic[] = [
-        {
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: diagnostic.severity,
-          message: diagnostic.message,
-        },
-      ];
-
-      for (const hint of diagnostic.hints) {
-        diagnostics.push({
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: "hint",
-          message: hint,
-        });
-      }
-
-      return diagnostics;
-    });
-
-    const transaction = setDiagnostics(state, diagnostics);
-    view.dispatch(transaction);
-  } else view.dispatch(setDiagnostics(state, []));
+  dispatchDiagnostics(compileResult.diagnostics, state, view);
 
   for (const frame of compileResult.frames) {
     if (frame.render) {
@@ -260,11 +241,11 @@ const typstViewPlugin = (
         ) {
           let widthChanged = false;
           if (update.geometryChanged) {
-            const { scrollDOM } = update.view;
+            const { scrollDOM, contentDOM } = update.view;
 
             widthChanged = typstState.resize(
               fileId,
-              scrollDOM.clientWidth - 2 * window.devicePixelRatio,
+              contentDOM.clientWidth - 2 * window.devicePixelRatio,
               locked ? scrollDOM.clientHeight : undefined,
             );
           }
@@ -293,8 +274,21 @@ const typstViewPlugin = (
             }
           });
 
-          if (update.docChanged && updateInWidget) updateFlagStore.add(path);
-          else
+          if (update.docChanged && updateInWidget) {
+            updateFlagStore.add(path);
+
+            queueMicrotask(() => {
+              const diagnostics = typstState.check(
+                fileId,
+                update.state.doc.toString(),
+                prelude.value,
+              );
+
+              dispatchDiagnostics(diagnostics, state, update.view);
+            });
+
+            // void checkThrottled(typstState, update, fileId, prelude.value);
+          } else
             queueMicrotask(() => {
               const decorations = decorate(
                 typstState,
@@ -315,6 +309,18 @@ const typstViewPlugin = (
     };
   });
 
+// const checkThrottled = useThrottleFn(
+//   (
+//     typstState: TypstState,
+//     update: ViewUpdate,
+//     fileId: FileId,
+//     prelude: string,
+//   ) => {
+//     typstState.check(fileId, update.state.doc.toString(), prelude);
+//   },
+//   100,
+// );
+
 export const typstPlugin = (
   typstState: TypstState,
   path: string,
@@ -326,3 +332,36 @@ export const typstPlugin = (
   typstViewPlugin(typstState, path, fileId, prelude, locked),
   typstLanguage(typstState),
 ];
+
+function dispatchDiagnostics(
+  typstDiagnostics: TypstDiagnostic[],
+  state: EditorState,
+  view: EditorView,
+) {
+  if (typstDiagnostics.length > 0) {
+    const diagnostics = typstDiagnostics.flatMap((diagnostic) => {
+      const diagnostics: Diagnostic[] = [
+        {
+          from: diagnostic.range.start,
+          to: diagnostic.range.end,
+          severity: diagnostic.severity,
+          message: diagnostic.message,
+        },
+      ];
+
+      for (const hint of diagnostic.hints) {
+        diagnostics.push({
+          from: diagnostic.range.start,
+          to: diagnostic.range.end,
+          severity: "hint",
+          message: hint,
+        });
+      }
+
+      return diagnostics;
+    });
+
+    const transaction = setDiagnostics(state, diagnostics);
+    view.dispatch(transaction);
+  } else view.dispatch(setDiagnostics(state, []));
+}

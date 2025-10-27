@@ -124,7 +124,7 @@ const pages: Page[] = [
             { 'pl-3': !extraLarge, 'pr-3': !medium },
           ]"
         >
-          <div class="pb-3 sm:h-full">
+          <div class="medium:h-full pb-3">
             <slot />
           </div>
         </div>

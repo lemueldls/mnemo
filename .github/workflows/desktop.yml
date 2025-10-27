@@ -71,7 +71,7 @@ jobs:
           targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin,wasm32-unknown-unknown' || 'wasm32-unknown-unknown' }}
 
       - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2
+        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: platform
@@ -127,7 +127,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: 📥 Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: "pnpm"
@@ -191,7 +191,7 @@ jobs:
             platform/target/release/mnemo.pdb
 
       - name: 📜 Create SBOM
-        uses: anchore/sbom-action@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.20.6
+        uses: anchore/sbom-action@8e94d75ddd33f69f691467e42275782e4bfefe84 # v0.20.9
         with:
           format: "spdx-json"
           output-file: "sbom.spdx.json"
@@ -199,7 +199,7 @@ jobs:
 
       - name: 🛡️ Attest SBOM
         if: ${{ inputs.publish }}
-        uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2
+        uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
         with:
           subject-path: ${{
             contains(matrix.os, 'ubuntu') && 'platform/target/release/mnemo' ||

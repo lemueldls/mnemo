@@ -26,7 +26,9 @@ use super::{
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
 use crate::typst_handler::{
-    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items},
+    renderer::{
+        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items, sync_aux,
+    },
     wrappers::{map_aux_span, map_main_span},
 };
 
@@ -161,6 +163,37 @@ impl TypstState {
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
         render_by_chunk(id, text, prelude, self)
+    }
+
+    #[wasm_bindgen]
+    pub fn check(&mut self, id: &TypstFileId, text: String, prelude: &str) -> Vec<TypstDiagnostic> {
+        let (ir, _) = sync_aux(id, text, prelude, self);
+
+        let compiled = compile::<PagedDocument>(&self.world);
+        let compiled_warnings = Some(compiled.warnings);
+
+        let mut diagnostics = Vec::new();
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &self.world));
+        }
+
+        match compiled.output {
+            Ok(document) => {
+                self.document = Some(document);
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &self.world,
+                ));
+            }
+        }
+
+        self.world.main = Some(id.inner());
+        self.world.main_source_mut().replace(&ir);
+
+        diagnostics
     }
 
     #[wasm_bindgen]

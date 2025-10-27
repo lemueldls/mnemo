@@ -11,6 +11,7 @@ export const typststate_insertFile: (a: number, b: number, c: number, d: number)
 export const typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
 export const typststate_installFont: (a: number, b: number, c: number) => void;
 export const typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+export const typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
 export const typststate_click: (a: number, b: number, c: number) => number;
 export const typststate_autocomplete: (a: number, b: number, c: number) => number;
 export const typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
