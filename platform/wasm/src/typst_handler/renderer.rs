@@ -36,99 +36,7 @@ pub fn render_by_chunk(
     prelude: &str,
     state: &mut TypstState,
 ) -> CompileResult {
-    let mut ir = state.prelude(id, RenderingMode::Png) + prelude + "\n";
-
-    let mut index_mapper = IndexMapper::default();
-    index_mapper.add_main_to_aux(0, ir.len());
-
-    state.world.main = Some(id.inner());
-    state.world.main_source_mut().replace(&ir);
-
-    let aux_id = id.inner().with_extension("$.typ");
-    state
-        .world
-        .files
-        .entry(aux_id)
-        .and_modify(|file| {
-            file.source_mut().unwrap().replace(&text);
-        })
-        .or_insert_with(|| FileSlot::Source(Source::new(aux_id, text)));
-    state.world.aux = Some(aux_id);
-
-    let aux_source = state.world.aux_source();
-
-    let children = aux_source.root().children();
-    let text = aux_source.text();
-
-    let mut ast_blocks = Vec::<AstBlock>::new();
-    let mut in_block = false;
-
-    let mut last_kind: Option<SyntaxKind> = None;
-
-    for node in children {
-        let range = state.world.range(node.span()).unwrap();
-
-        if let Some(until_newline) = node.text().chars().position(|ch| ch == '\n') {
-            in_block = false;
-
-            if let Some(last_block) = ast_blocks.last_mut() {
-                last_block.range.end += until_newline;
-
-                ir += &text[last_block.range.clone()];
-
-                match last_kind {
-                    Some(
-                        SyntaxKind::LetBinding
-                        | SyntaxKind::SetRule
-                        | SyntaxKind::ShowRule
-                        | SyntaxKind::ModuleImport
-                        | SyntaxKind::ModuleInclude
-                        | SyntaxKind::Contextual
-                        | SyntaxKind::ListItem
-                        | SyntaxKind::EnumItem
-                        | SyntaxKind::Linebreak,
-                    ) => {}
-                    _ => {
-                        ir += "\n#box() \\";
-                        last_block.is_inline = true
-                    }
-                }
-
-                // crate::log!("[LAST_KIND]: {last_kind:?}");
-
-                ir += "\n";
-            }
-        } else {
-            last_kind = Some(node.kind());
-
-            if in_block {
-                ast_blocks.last_mut().unwrap().range.end = range.end;
-            } else {
-                in_block = true;
-
-                index_mapper.add_main_to_aux(range.start, ir.len());
-                ast_blocks.push(AstBlock {
-                    range,
-                    is_inline: false,
-                });
-            }
-        }
-    }
-
-    if let Some(last_block) = ast_blocks.last_mut() {
-        if in_block {
-            ir += &text[last_block.range.clone()];
-        }
-    }
-
-    // crate::log!("[RANGES]: {block_ranges:?}");
-
-    // crate::log!(
-    //     "[SOURCE]: {:?}",
-    //     &ir[(state.prelude(id, RenderingMode::Png) + prelude + "\n").len()..]
-    // );
-
-    state.world.index_mapper = index_mapper;
+    let (ir, ast_blocks) = sync_aux(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -264,12 +172,12 @@ pub fn render_by_chunk(
     }
 }
 
-pub fn render_by_items(
+pub fn sync_aux(
     id: &TypstFileId,
     text: String,
     prelude: &str,
     state: &mut TypstState,
-) -> CompileResult {
+) -> (String, Vec<AstBlock>) {
     let mut ir = state.prelude(id, RenderingMode::Png) + prelude + "\n";
 
     let mut index_mapper = IndexMapper::default();
@@ -277,8 +185,6 @@ pub fn render_by_items(
 
     state.world.main = Some(id.inner());
     state.world.main_source_mut().replace(&ir);
-
-    // let pre_ir = ir.clone();
 
     let aux_id = id.inner().with_extension("$.typ");
     state
@@ -365,6 +271,16 @@ pub fn render_by_items(
     // );
 
     state.world.index_mapper = index_mapper;
+    (ir, ast_blocks)
+}
+
+pub fn render_by_items(
+    id: &TypstFileId,
+    text: String,
+    prelude: &str,
+    state: &mut TypstState,
+) -> CompileResult {
+    let (ir, ast_blocks) = sync_aux(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -908,7 +824,7 @@ pub struct RenderHtmlResult {
 }
 
 #[derive(Debug, Clone)]
-struct AstBlock {
+pub struct AstBlock {
     range: Range<usize>,
     is_inline: bool,
 }

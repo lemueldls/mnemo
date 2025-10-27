@@ -135,6 +135,16 @@ function passArray8ToWasm0(arg, malloc) {
     return ptr;
 }
 
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(takeObject(mem.getUint32(i, true)));
+    }
+    return result;
+}
+
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
@@ -462,6 +472,30 @@ export class TypstState {
         return takeObject(ret);
     }
     /**
+     * @param {FileId} id
+     * @param {string} text
+     * @param {string} prelude
+     * @returns {TypstDiagnostic[]}
+     */
+    check(id, text, prelude) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(id, FileId);
+            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.typststate_check(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v3 = getArrayJsValueFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
+            return v3;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
@@ -557,7 +591,7 @@ function __wbg_get_imports() {
             wasm.__wbindgen_export_2(deferred0_0, deferred0_1, 1);
         }
     };
-    imports.wbg.__wbg_error_dd106cc04793c0ee = function(arg0, arg1) {
+    imports.wbg.__wbg_error_fa781aa98ef9cd10 = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_from_2a5d3e218e67aa85 = function(arg0) {

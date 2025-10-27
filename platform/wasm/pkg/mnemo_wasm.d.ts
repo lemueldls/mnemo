@@ -83,6 +83,7 @@ export class TypstState {
   installPackage(spec: string, files: PackageFile[]): void;
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
+  check(id: FileId, text: string, prelude: string): TypstDiagnostic[];
   click(x: number, y: number): TypstJump | undefined;
   autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
   resize(id: FileId, width?: number | null, height?: number | null): boolean;
@@ -103,6 +104,7 @@ export interface InitOutput {
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly typststate_click: (a: number, b: number, c: number) => number;
   readonly typststate_autocomplete: (a: number, b: number, c: number) => number;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
