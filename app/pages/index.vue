@@ -40,17 +40,21 @@ const newSpaceOpen = useNewSpaceOpen();
       <mx-outlined-card
         class="medium:border-1! medium:p-3! medium:overflow-auto border-0! p-0! flex h-full flex-1 flex-col gap-3"
       >
-        <div>
-          <h1 class="display-medium overflow-hidden">
-            {{ greeting }}
-          </h1>
+        <div class="expanded:flex-row flex flex-col gap-3">
+          <div class="grow-2">
+            <h1 class="display-medium overflow-hidden">
+              {{ greeting }}
+            </h1>
 
-          <span class="text-on-surface-variant title-large">
-            {{ t("pages.index.date", { date: d(now, { dateStyle: "full" }) }) }}
-          </span>
+            <span class="text-on-surface-variant title-large">
+              {{
+                t("pages.index.date", { date: d(now, { dateStyle: "full" }) })
+              }}
+            </span>
+          </div>
+
+          <!-- <activity-graph class="grow-3" /> -->
         </div>
-
-        <!-- <activity-graph /> -->
 
         <div class="flex-shrink-0">
           <div id="spaces">
@@ -99,8 +103,6 @@ const newSpaceOpen = useNewSpaceOpen();
             </md-outlined-card>
           </div>
         </div>
-
-        <!-- <div class="flex flex-col gap-3 lg:flex-row" /> -->
 
         <md-elevated-card class="flex flex-1 flex-col gap-3 p-3">
           <h3 class="title-large text-on-surface-variant">Review</h3>

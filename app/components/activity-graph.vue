@@ -63,8 +63,8 @@ const weekdays = computed(() =>
 </script>
 
 <template>
-  <md-outlined-card class="flex flex-1 flex-col gap-3 p-3">
-    <div class="flex justify-between">
+  <md-outlined-card class="flex flex-col gap-3 overflow-hidden p-3">
+    <!-- <div class="flex justify-between">
       <h3 class="title-large text-on-surface-variant">Activity Graph</h3>
 
       <div class="flex items-center gap-1">
@@ -86,7 +86,7 @@ const weekdays = computed(() =>
         </div>
         <span>More</span>
       </div>
-    </div>
+    </div> -->
 
     <div class="flex gap-3">
       <div class="flex h-full flex-col justify-evenly">

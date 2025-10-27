@@ -241,11 +241,11 @@ const typstViewPlugin = (
         ) {
           let widthChanged = false;
           if (update.geometryChanged) {
-            const { scrollDOM } = update.view;
+            const { scrollDOM, contentDOM } = update.view;
 
             widthChanged = typstState.resize(
               fileId,
-              scrollDOM.clientWidth - 2 * window.devicePixelRatio,
+              contentDOM.clientWidth - 2 * window.devicePixelRatio,
               locked ? scrollDOM.clientHeight : undefined,
             );
           }
