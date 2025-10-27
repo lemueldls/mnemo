@@ -46,7 +46,7 @@
     "defu": "^6.1.4",
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
-    "loro-codemirror": "^0.2.0",
+    "loro-codemirror": "^0.3.3",
     "loro-crdt": "^1.8.5",
     "lru-cache": "^11.2.2",
     "material-symbols": "^0.36.1",
@@ -113,7 +113,6 @@
     },
     "patchedDependencies": {
       "crossws": "patches/crossws.patch",
-      "loro-codemirror": "patches/loro-codemirror.patch",
       "nitropack": "patches/nitropack.patch",
       "unwasm": "patches/unwasm.patch"
     }
