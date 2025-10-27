@@ -26,7 +26,7 @@ ulid = { version = "1.2.1", features = ["serde"] }
 
 tauri = { version = "2.9.0", features = ["devtools"] }
 tauri-plugin-deep-link = "2.4.3"
-tauri-plugin-opener = "2.5.0"
+tauri-plugin-opener = "2.5.2"
 tauri-plugin-process = "2.3.0"
 
 [features]
