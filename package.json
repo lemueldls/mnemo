@@ -47,7 +47,7 @@
     "idb-keyval": "^6.2.2",
     "interactjs": "^1.10.27",
     "loro-codemirror": "^0.2.0",
-    "loro-crdt": "^1.8.1",
+    "loro-crdt": "^1.8.5",
     "lru-cache": "^11.2.2",
     "material-symbols": "^0.36.1",
     "mnemo-wasm": "workspace:*",
