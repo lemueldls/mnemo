@@ -34,12 +34,12 @@ serde_bytes = "0.11"
 time = { version = "0.3", features = ["serde"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
-typst = { version = "0.14.0-rc.2" }
-# typst-html = { version = "0.14.0-rc.2" }
-typst-ide = { version = "0.14.0-rc.2" }
-typst-pdf = { version = "0.14.0-rc.2" }
-typst-render = { version = "0.14.0-rc.2" }
-# typst-svg = { version = "0.14.0-rc.2" }
+typst = { version = "0.14.0" }
+# typst-html = { version = "0.14.0" }
+typst-ide = { version = "0.14.0" }
+typst-pdf = { version = "0.14.0" }
+typst-render = { version = "0.14.0" }
+# typst-svg = { version = "0.14.0" }
 wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
