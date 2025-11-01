@@ -1,7 +1,6 @@
 import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
 import { Decoration, EditorView, type DecorationSet } from "@codemirror/view";
 import { FileId, TypstState } from "mnemo-wasm";
-import { styleTags, tags } from "@lezer/highlight";
 
 export const typstSyntaxHighlighting = (
   fileId: FileId,
