@@ -1,4 +1,4 @@
-use std::{cmp, fmt, iter, ops::Range, str::FromStr};
+use std::{cmp, fmt, fs::File, iter, ops::Range, str::FromStr};
 
 use hashbrown::{HashMap, HashSet};
 use highway::{HighwayHash, HighwayHasher};
@@ -23,20 +23,20 @@ use wasm_bindgen::prelude::*;
 use super::{
     index_mapper::IndexMapper,
     world::{FileSlot, MnemoWorld},
-    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
+    wrappers::{TypstDiagnostic, TypstFileId, TypstJump},
 };
 use crate::typst_handler::{
-    state::TypstState,
-    wrappers::{map_aux_span, map_main_span},
+    state::{FileContext, TypstState},
+    wrappers::map_main_span,
 };
 
 pub fn render_by_chunk(
     id: &TypstFileId,
-    text: String,
+    text: &str,
     prelude: &str,
     state: &mut TypstState,
 ) -> CompileResult {
-    let (ir, ast_blocks) = sync_aux(id, text, prelude, state);
+    let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -44,7 +44,7 @@ pub fn render_by_chunk(
     let mut diagnostics = Vec::new();
     let mut compiled_warnings = None;
 
-    let context = state.file_contexts.get(id).unwrap();
+    let context = state.file_contexts.get_mut(id).unwrap();
 
     let ranged_heights = ast_blocks
         .into_iter()
@@ -54,7 +54,7 @@ pub fn render_by_chunk(
                 _ => {}
             }
 
-            let aux_source = state.world.aux_source();
+            let aux_source = context.aux_source(&state.world);
 
             let aux_range = block.range;
             let aux_lines = aux_source.lines();
@@ -62,13 +62,13 @@ pub fn render_by_chunk(
             let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
             let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-            let mut end_byte = state.world.map_aux_to_main(aux_range.end);
+            let mut end_byte = context.map_aux_to_main(aux_range.end);
             if block.is_inline {
                 // TODO: proper offsetting (?)
                 end_byte += 10;
             }
 
-            let source = state.world.main_source_mut();
+            let source = context.main_source_mut(&mut state.world);
             let source_len = source.text().len();
             source.edit(source_len..source_len, ir.get(source_len..end_byte)?);
 
@@ -105,17 +105,18 @@ pub fn render_by_chunk(
                 Err(source_diagnostics) => {
                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
                         source_diagnostics,
+                        &context,
                         &state.world,
                     ));
 
                     // crate::error!("[ERRORS]: {diagnostics:?}");
 
-                    let start_byte = state.world.map_aux_to_main(aux_range.start);
+                    let start_byte = context.map_aux_to_main(aux_range.start);
 
                     let range_delta = end_byte - start_byte;
                     let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
-                    let source = state.world.main_source_mut();
+                    let source = context.main_source_mut(&mut state.world);
                     source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
 
                     None
@@ -160,11 +161,15 @@ pub fn render_by_chunk(
     };
 
     if let Some(warnings) = compiled_warnings {
-        diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &state.world));
+        diagnostics.extend(TypstDiagnostic::from_diagnostics(
+            warnings,
+            &context,
+            &state.world,
+        ));
     }
 
-    state.document = last_document;
-    state.world.main_source_mut().replace(&ir);
+    context.document = last_document;
+    context.main_source_mut(&mut state.world).replace(&ir);
 
     CompileResult {
         frames,
@@ -172,32 +177,26 @@ pub fn render_by_chunk(
     }
 }
 
-pub fn sync_aux(
+pub fn sync_file_context(
     id: &TypstFileId,
-    text: String,
+    text: &str,
     prelude: &str,
     state: &mut TypstState,
 ) -> (String, Vec<AstBlock>) {
     let mut ir = state.prelude(id, RenderingMode::Png) + prelude + "\n";
 
-    let mut index_mapper = IndexMapper::default();
-    index_mapper.add_main_to_aux(0, ir.len());
+    let context = state.file_contexts.get_mut(id).unwrap();
 
-    state.world.main = Some(id.inner());
-    state.world.main_source_mut().replace(&ir);
+    context.index_mapper = IndexMapper::default();
+    context.index_mapper.add_main_to_aux(0, ir.len());
 
-    let aux_id = id.inner().with_extension("$.typ");
-    state
-        .world
-        .files
-        .entry(aux_id)
-        .and_modify(|file| {
-            file.source_mut().unwrap().replace(&text);
-        })
-        .or_insert_with(|| FileSlot::Source(Source::new(aux_id, text)));
-    state.world.aux = Some(aux_id);
+    state.world.main_id = Some(context.main_id);
+    context.main_source_mut(&mut state.world).replace(&ir);
 
-    let aux_source = state.world.aux_source();
+    context.aux_source_mut(&mut state.world).replace(&text);
+    state.world.aux_id = Some(context.aux_id);
+
+    let aux_source = context.aux_source(&state.world);
 
     let children = aux_source.root().children();
     let text = aux_source.text();
@@ -248,7 +247,7 @@ pub fn sync_aux(
             } else {
                 in_block = true;
 
-                index_mapper.add_main_to_aux(range.start, ir.len());
+                context.index_mapper.add_main_to_aux(range.start, ir.len());
                 ast_blocks.push(AstBlock {
                     range,
                     is_inline: false,
@@ -270,17 +269,16 @@ pub fn sync_aux(
     //     &ir[(state.prelude(id, RenderingMode::Png) + prelude + "\n").len()..]
     // );
 
-    state.world.index_mapper = index_mapper;
     (ir, ast_blocks)
 }
 
 pub fn render_by_items(
     id: &TypstFileId,
-    text: String,
+    text: &str,
     prelude: &str,
     state: &mut TypstState,
 ) -> CompileResult {
-    let (ir, ast_blocks) = sync_aux(id, text, prelude, state);
+    let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -289,9 +287,9 @@ pub fn render_by_items(
 
     // let mut erronous_ranges = Vec::new();
 
-    let context = state.file_contexts.get(id).unwrap();
+    let context = state.file_contexts.get_mut(id).unwrap();
 
-    state.world.main_source_mut().replace(&ir);
+    context.main_source_mut(&mut state.world).replace(&ir);
 
     let mut ranged_heights = Vec::new();
 
@@ -339,6 +337,7 @@ pub fn render_by_items(
                         page.frame.items().flat_map(|frame_item| {
                             fn frame_item_range(
                                 item: &FrameItem,
+                                context: &FileContext,
                                 world: &MnemoWorld,
                             ) -> Option<Range<usize>> {
                                 let span = match item {
@@ -379,7 +378,7 @@ pub fn render_by_items(
                                     }
                                 };
 
-                                if world.main == span.id() {
+                                if Some(context.main_id) == span.id() {
                                     world.range(span)
                                 } else {
                                     None
@@ -388,6 +387,7 @@ pub fn render_by_items(
 
                             fn frame_with_bounds(
                                 frame_item: &(Point, FrameItem),
+                                context: &FileContext,
                                 world: &MnemoWorld,
                             ) -> Box<[FrameBlock]> {
                                 let (point, item) = frame_item;
@@ -401,7 +401,7 @@ pub fn render_by_items(
                                             .frame
                                             .items()
                                             .flat_map(|frame_item| {
-                                                frame_with_bounds(frame_item, &world)
+                                                frame_with_bounds(frame_item, &context, &world)
                                                     .into_iter()
                                                     .map(|mut frame_block| {
                                                         frame_block.start_height += point.y;
@@ -420,7 +420,7 @@ pub fn render_by_items(
                                     FrameItem::Tag(..) => (point.y, point.y),
                                 };
 
-                                let range = frame_item_range(&item, world);
+                                let range = frame_item_range(&item, &context, world);
 
                                 // crate::log!("[F RANGE] {range:?}");
 
@@ -453,7 +453,7 @@ pub fn render_by_items(
                                 }))
                             }
 
-                            frame_with_bounds(frame_item, &state.world)
+                            frame_with_bounds(frame_item, &context, &state.world)
                         })
                     })
                     .peekable();
@@ -465,7 +465,7 @@ pub fn render_by_items(
                 while let Some(ast_block) = ast_blocks.next() {
                     // let mut index = 0;
 
-                    let aux_source = state.world.aux_source();
+                    let aux_source = context.aux_source(&state.world);
 
                     let aux_range = &ast_block.range;
                     let aux_lines = aux_source.lines();
@@ -473,8 +473,8 @@ pub fn render_by_items(
                     let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                     let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                    let main_range_start = state.world.map_aux_to_main(aux_range.start);
-                    let main_range_end = state.world.map_aux_to_main(aux_range.end);
+                    let main_range_start = context.map_aux_to_main(aux_range.start);
+                    let main_range_end = context.map_aux_to_main(aux_range.end);
                     let main_range = main_range_start..main_range_end;
 
                     let mut items = Vec::new();
@@ -692,6 +692,7 @@ pub fn render_by_items(
                             diagnostic.span,
                             diagnostic.severity == Severity::Error,
                             &diagnostic.trace,
+                            &context,
                             &state.world,
                         )
                     })
@@ -699,13 +700,13 @@ pub fn render_by_items(
 
                 crate::log!("[ERROR RANGES]: {error_ranges:?}");
 
-                // let main_source = state.world.main_source();
+                // let main_source = context.main_source(&self.world);
 
                 let Some(block) = ast_blocks.iter().find(|block| {
                     let aux_range = &block.range;
 
-                    let main_range_start = state.world.map_aux_to_main(aux_range.start);
-                    let main_range_end = state.world.map_aux_to_main(aux_range.end);
+                    let main_range_start = context.map_aux_to_main(aux_range.start);
+                    let main_range_end = context.map_aux_to_main(aux_range.end);
                     // let main_range = main_range_start..main_range_end;
 
                     // crate::log!("[BLOCK RANGE]: {main_range_start} - {main_range_end}");
@@ -720,7 +721,7 @@ pub fn render_by_items(
                     break;
                 };
 
-                // let aux_source = state.world.aux_source();
+                // let aux_source = context.aux_source(&state.world);
                 // let aux_lines = aux_source.lines();
 
                 let aux_range = &block.range;
@@ -728,7 +729,7 @@ pub fn render_by_items(
                 // let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                 // let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                let mut end_byte = state.world.map_aux_to_main(aux_range.end);
+                let mut end_byte = context.map_aux_to_main(aux_range.end);
                 if block.is_inline {
                     // TODO: proper offsetting (?)
                     end_byte += 10;
@@ -736,17 +737,18 @@ pub fn render_by_items(
 
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
+                    &context,
                     &state.world,
                 ));
 
                 // crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let start_byte = state.world.map_aux_to_main(aux_range.start);
+                let start_byte = context.map_aux_to_main(aux_range.start);
 
                 let range_delta = end_byte - start_byte;
                 let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
-                let source = state.world.main_source_mut();
+                let source = context.main_source_mut(&mut state.world);
                 source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
 
                 Vec::new()
@@ -790,11 +792,15 @@ pub fn render_by_items(
     };
 
     if let Some(warnings) = compiled_warnings {
-        diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &state.world));
+        diagnostics.extend(TypstDiagnostic::from_diagnostics(
+            warnings,
+            &context,
+            &state.world,
+        ));
     }
 
-    state.document = last_document;
-    state.world.main_source_mut().replace(&ir);
+    context.document = last_document;
+    context.main_source_mut(&mut state.world).replace(&ir);
 
     CompileResult {
         frames,

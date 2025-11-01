@@ -44,6 +44,13 @@ export interface TypstDiagnostic {
 
 export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
 
+export interface TypstHighlight {
+    tag: TypstTag;
+    range: { start: number; end: number };
+}
+
+export type TypstTag = "comment" | "punctuation" | "escape" | "strong" | "emph" | "link" | "raw" | "label" | "ref" | "heading" | "list-marker" | "list-term" | "math-delimiter" | "math-operator" | "keyword" | "operator" | "number" | "string" | "function" | "interpolated" | "error";
+
 export type TypstJump = { type: "File"; position: number };
 
 export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
@@ -54,6 +61,8 @@ export interface TypstCompletion {
     apply: string | undefined;
     detail: string | undefined;
 }
+
+export type TypstTooltip = { type: "text"; content: string } | { type: "code"; content: string };
 
 export class FileId {
   private constructor();
@@ -84,8 +93,10 @@ export class TypstState {
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
   check(id: FileId, text: string, prelude: string): TypstDiagnostic[];
-  click(x: number, y: number): TypstJump | undefined;
-  autocomplete(aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
+  highlight(id: FileId, text: string): TypstHighlight[];
+  click(id: FileId, x: number, y: number): TypstJump | undefined;
+  autocomplete(id: FileId, aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
+  hover(id: FileId, aux_cursor_utf16: number, side: number): TypstTooltip | undefined;
   resize(id: FileId, width?: number | null, height?: number | null): boolean;
   renderPdf(id: FileId): RenderPdfResult;
 }
@@ -105,8 +116,10 @@ export interface InitOutput {
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly typststate_click: (a: number, b: number, c: number) => number;
-  readonly typststate_autocomplete: (a: number, b: number, c: number) => number;
+  readonly typststate_highlight: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
+  readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => number;
+  readonly typststate_hover: (a: number, b: number, c: number, d: number) => number;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly typststate_renderPdf: (a: number, b: number) => number;
   readonly __wbg_packagefile_free: (a: number, b: number) => void;

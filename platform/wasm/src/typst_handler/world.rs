@@ -14,8 +14,8 @@ use typst_ide::IdeWorld;
 use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
 
 pub struct MnemoWorld {
-    pub main: Option<FileId>,
-    pub aux: Option<FileId>,
+    pub main_id: Option<FileId>,
+    pub aux_id: Option<FileId>,
     pub files: HashMap<FileId, FileSlot>,
     pub index_mapper: IndexMapper,
     library: LazyHash<Library>,
@@ -31,8 +31,8 @@ impl Default for MnemoWorld {
         let library = Library::builder().with_features(features).build();
 
         Self {
-            main: None,
-            aux: None,
+            main_id: None,
+            aux_id: None,
             files: HashMap::new(),
             index_mapper: IndexMapper::default(),
             library: LazyHash::new(library),
@@ -42,46 +42,6 @@ impl Default for MnemoWorld {
 }
 
 impl MnemoWorld {
-    pub fn main_source(&self) -> &Source {
-        self.files
-            .get(self.main.as_ref().unwrap())
-            .unwrap()
-            .source()
-            .unwrap()
-    }
-
-    pub fn main_source_mut(&mut self) -> &mut Source {
-        self.files
-            .get_mut(self.main.as_ref().unwrap())
-            .unwrap()
-            .source_mut()
-            .unwrap()
-    }
-
-    pub fn aux_source(&self) -> &Source {
-        self.files
-            .get(self.aux.as_ref().unwrap())
-            .unwrap()
-            .source()
-            .unwrap()
-    }
-
-    pub fn aux_source_mut(&mut self) -> &mut Source {
-        self.files
-            .get_mut(self.aux.as_ref().unwrap())
-            .unwrap()
-            .source_mut()
-            .unwrap()
-    }
-
-    pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
-        self.index_mapper.main_to_aux(main_idx)
-    }
-
-    pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
-        self.index_mapper.aux_to_main(aux_idx)
-    }
-
     pub fn insert_source(&mut self, id: FileId, text: String) {
         let source = Source::new(id, text);
 
@@ -124,7 +84,7 @@ impl World for MnemoWorld {
     }
 
     fn main(&self) -> FileId {
-        self.main.unwrap()
+        self.main_id.unwrap()
     }
 
     fn source(&self, id: FileId) -> FileResult<Source> {

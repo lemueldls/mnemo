@@ -12,8 +12,10 @@ export const typststate_installPackage: (a: number, b: number, c: number, d: num
 export const typststate_installFont: (a: number, b: number, c: number) => void;
 export const typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-export const typststate_click: (a: number, b: number, c: number) => number;
-export const typststate_autocomplete: (a: number, b: number, c: number) => number;
+export const typststate_highlight: (a: number, b: number, c: number, d: number, e: number) => void;
+export const typststate_click: (a: number, b: number, c: number, d: number) => number;
+export const typststate_autocomplete: (a: number, b: number, c: number, d: number) => number;
+export const typststate_hover: (a: number, b: number, c: number, d: number) => number;
 export const typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const typststate_renderPdf: (a: number, b: number) => number;
 export const __wbg_packagefile_free: (a: number, b: number) => void;

@@ -17,6 +17,7 @@ use typst::{
 };
 // use typst_html::html;
 use typst_pdf::{PdfOptions, pdf};
+use typst_syntax::{LinkedNode, Side};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
@@ -27,16 +28,16 @@ use super::{
 };
 use crate::typst_handler::{
     renderer::{
-        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items, sync_aux,
+        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items,
+        sync_file_context,
     },
-    wrappers::{map_aux_span, map_main_span},
+    wrappers::{TypstHighlight, TypstTag, TypstTooltip, map_aux_span, map_main_span},
 };
 
 #[wasm_bindgen]
 #[derive(Default)]
 pub struct TypstState {
     pub(crate) world: MnemoWorld,
-    pub(crate) document: Option<PagedDocument>,
     pub(crate) file_contexts: HashMap<TypstFileId, FileContext>,
 }
 
@@ -67,8 +68,9 @@ impl TypstState {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
         let id_wrapper = TypstFileId::new(id);
 
-        self.file_contexts
-            .insert(id_wrapper.clone(), FileContext::default());
+        let context = FileContext::new(id);
+        self.world.insert_source(context.aux_id, String::new());
+        self.file_contexts.insert(id_wrapper.clone(), context);
 
         id_wrapper
     }
@@ -139,19 +141,30 @@ impl TypstState {
                 #let theme={theme}
                 #set text(fill:theme.on-background,size:16pt,lang:"{locale}")
 
-                #context {{show math.equation:set text(size:text.size*2)}}
-
-                #show math.equation.where(block:true):set text(size:18pt)
-                #show math.equation.where(block:true):set par(leading:9pt)
-
-                #set table(stroke:theme.outline)
-
                 #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
                 #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
                 #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
                 #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
                 #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
+
+                #show link: set text(fill:theme.primary)
+                #show link: underline
+
+                #set line(stroke:theme.outline)
+                #set table(stroke:theme.outline)
+                #set circle(stroke:theme.outline)
+                #set ellipse(stroke:theme.outline)
+                #set line(stroke:theme.outline)
+                #set path(stroke:theme.outline)
+                #set polygon(stroke:theme.outline)
+                #set rect(stroke:theme.outline)
+                #set square(stroke:theme.outline)
+
+                #show math.equation.where(block:true):set text(size:18pt)
+                #show math.equation.where(block:true):set par(leading:9pt)
+
+                #context {{show math.equation:set text(size:text.size*2)}}
 
                 {page_config}
             "#,
@@ -161,13 +174,16 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn compile(&mut self, id: &TypstFileId, text: String, prelude: &str) -> CompileResult {
+    pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
         render_by_chunk(id, text, prelude, self)
     }
 
     #[wasm_bindgen]
-    pub fn check(&mut self, id: &TypstFileId, text: String, prelude: &str) -> Vec<TypstDiagnostic> {
-        let (ir, _) = sync_aux(id, text, prelude, self);
+    pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> Vec<TypstDiagnostic> {
+        let (ir, _) = sync_file_context(id, text, prelude, self);
+
+        let context = self.file_contexts.get_mut(id).unwrap();
+        context.main_source_mut(&mut self.world).replace(&ir);
 
         let compiled = compile::<PagedDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -175,30 +191,75 @@ impl TypstState {
         let mut diagnostics = Vec::new();
 
         if let Some(warnings) = compiled_warnings {
-            diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &self.world));
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                warnings,
+                &context,
+                &self.world,
+            ));
         }
 
         match compiled.output {
             Ok(document) => {
-                self.document = Some(document);
+                context.document = Some(document);
             }
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
+                    &context,
                     &self.world,
                 ));
             }
         }
 
-        self.world.main = Some(id.inner());
-        self.world.main_source_mut().replace(&ir);
-
         diagnostics
     }
 
     #[wasm_bindgen]
-    pub fn click(&mut self, x: f64, mut y: f64) -> Option<TypstJump> {
-        let document = self.document.as_ref()?;
+    pub fn highlight(&mut self, id: &TypstFileId, text: &str) -> Vec<TypstHighlight> {
+        let context = self.file_contexts.get(id).unwrap();
+
+        let root = typst_syntax::parse(text);
+        context.aux_source_mut(&mut self.world).replace(text);
+
+        let mut queue = vec![LinkedNode::new(&root)];
+        let mut highlights = Vec::new();
+
+        let aux_source = context.aux_source(&self.world);
+        let aux_lines = aux_source.lines();
+
+        while queue.len() > 0 {
+            let curr = queue.pop().unwrap();
+            let tag = typst_syntax::highlight(&curr);
+            let range = curr.range();
+
+            let highlight = tag.and_then(|tag| {
+                let aux_range_start_utf16 = aux_lines.byte_to_utf16(range.start)?;
+                let aux_range_end_utf16 = aux_lines.byte_to_utf16(range.end)?;
+                let aux_range_utf16 = aux_range_start_utf16..aux_range_end_utf16;
+
+                Some(TypstHighlight {
+                    tag: TypstTag::from(tag),
+                    range: aux_range_utf16,
+                })
+            });
+
+            if let Some(highlight) = highlight {
+                highlights.push(highlight);
+            }
+
+            for child in curr.children() {
+                queue.push(child);
+            }
+        }
+
+        highlights.reverse(); // idx-ascending
+        highlights
+    }
+
+    #[wasm_bindgen]
+    pub fn click(&mut self, id: &TypstFileId, x: f64, mut y: f64) -> Option<TypstJump> {
+        let context = self.file_contexts.get(id)?;
+        let document = context.document.as_ref()?;
 
         let index = document
             .pages
@@ -221,27 +282,34 @@ impl TypstState {
             &page.frame,
             Point::new(Abs::pt(x), Abs::pt(y)),
         )
-        .and_then(|jump| TypstJump::from_mapped(jump, &self.world))
+        .and_then(|jump| TypstJump::from_mapped(jump, context, &self.world))
     }
 
     #[wasm_bindgen]
-    pub fn autocomplete(&self, aux_cursor_utf16: usize, explicit: bool) -> Option<Autocomplete> {
-        let main_source = self.world.main_source();
-        let aux_source = self.world.aux_source();
+    pub fn autocomplete(
+        &self,
+        id: &TypstFileId,
+        aux_cursor_utf16: usize,
+        explicit: bool,
+    ) -> Option<Autocomplete> {
+        let context = self.file_contexts.get(id)?;
+
+        let main_source = context.main_source(&self.world);
+        let aux_source = context.aux_source(&self.world);
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = self.world.map_aux_to_main(aux_cursor);
+        let main_cursor = context.map_aux_to_main(aux_cursor);
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
-            self.document.as_ref(),
+            context.document.as_ref(),
             main_source,
             main_cursor,
             explicit,
         )?;
 
-        let aux_offset = self.world.map_main_to_aux(main_offset);
+        let aux_offset = context.map_main_to_aux(main_offset);
         let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
 
         Some(Autocomplete {
@@ -251,6 +319,39 @@ impl TypstState {
                 .map(TypstCompletion::from)
                 .collect::<Box<[_]>>(),
         })
+    }
+
+    #[wasm_bindgen]
+    pub fn hover(
+        &self,
+        id: &TypstFileId,
+        aux_cursor_utf16: usize,
+        side: i8,
+    ) -> Option<TypstTooltip> {
+        let context = self.file_contexts.get(id).unwrap();
+
+        let main_source = context.main_source(&self.world);
+        let aux_source = context.aux_source(&self.world);
+
+        let aux_lines = aux_source.lines();
+        let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
+        let main_cursor = context.map_aux_to_main(aux_cursor);
+
+        let side = if side == -1 {
+            Side::Before
+        } else {
+            Side::After
+        };
+
+        let tooltip = typst_ide::tooltip(
+            &self.world,
+            context.document.as_ref(),
+            main_source,
+            main_cursor,
+            side,
+        );
+
+        tooltip.map(TypstTooltip::from)
     }
 
     #[wasm_bindgen]
@@ -270,21 +371,23 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = renderPdf)]
     pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
-        self.world.main = Some(id.inner());
+        self.world.main_id = Some(id.inner());
 
         let mut ir = self.prelude(id, RenderingMode::Pdf);
-        let main_source = self.world.main_source_mut();
+
+        let context = self.file_contexts.get_mut(id).unwrap();
+        let main_source = context.main_source_mut(&mut self.world);
         let text = main_source.text().to_string();
         ir += &text;
+
         main_source.replace(&ir);
 
-        let aux_id = id.inner().with_extension("aux.typ");
-        self.world.insert_source(aux_id, text);
-        self.world.aux = Some(aux_id);
+        self.world.insert_source(context.aux_id, text);
+        self.world.aux_id = Some(context.aux_id);
 
         let compiled = compile(&self.world);
         let mut diagnostics =
-            TypstDiagnostic::from_diagnostics(compiled.warnings, &self.world).into_vec();
+            TypstDiagnostic::from_diagnostics(compiled.warnings, &context, &self.world).into_vec();
 
         let bytes = match compiled.output {
             Ok(document) => {
@@ -293,6 +396,7 @@ impl TypstState {
                     Err(source_diagnostics) => {
                         diagnostics.extend(TypstDiagnostic::from_diagnostics(
                             source_diagnostics,
+                            &context,
                             &self.world,
                         ));
 
@@ -303,6 +407,7 @@ impl TypstState {
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
+                    &context,
                     &self.world,
                 ));
 
@@ -315,6 +420,11 @@ impl TypstState {
 }
 
 pub struct FileContext {
+    pub main_id: FileId,
+    pub aux_id: FileId,
+    pub index_mapper: IndexMapper,
+    pub document: Option<PagedDocument>,
+
     pub width: String,
     pub height: Option<f64>,
     pub pixel_per_pt: f32,
@@ -322,15 +432,55 @@ pub struct FileContext {
     pub locale: String,
 }
 
-impl Default for FileContext {
-    fn default() -> Self {
+impl FileContext {
+    pub fn new(main_id: FileId) -> Self {
+        let aux_id: FileId = main_id.with_extension("$.typ");
+
         Self {
+            main_id,
+            aux_id,
+            index_mapper: IndexMapper::default(),
+            document: None,
             width: String::from("auto"),
             height: None,
             pixel_per_pt: 1_f32,
             theme: ThemeColors::default(),
             locale: String::from("en"),
         }
+    }
+
+    pub fn main_source<'a>(&self, world: &'a MnemoWorld) -> &'a Source {
+        world.files.get(&self.main_id).unwrap().source().unwrap()
+    }
+
+    pub fn main_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> &'a mut Source {
+        world
+            .files
+            .get_mut(&self.main_id)
+            .unwrap()
+            .source_mut()
+            .unwrap()
+    }
+
+    pub fn aux_source<'a>(&self, world: &'a MnemoWorld) -> &'a Source {
+        world.files.get(&self.aux_id).unwrap().source().unwrap()
+    }
+
+    pub fn aux_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> &'a mut Source {
+        world
+            .files
+            .get_mut(&self.aux_id)
+            .unwrap()
+            .source_mut()
+            .unwrap()
+    }
+
+    pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
+        self.index_mapper.main_to_aux(main_idx)
+    }
+
+    pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
+        self.index_mapper.aux_to_main(aux_idx)
     }
 }
 

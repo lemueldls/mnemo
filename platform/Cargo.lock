@@ -3102,6 +3102,7 @@ dependencies = [
  "typst-ide",
  "typst-pdf",
  "typst-render",
+ "typst-syntax",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]

@@ -1,13 +1,42 @@
-import { styleTags, tags as t } from "@lezer/highlight";
+import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
+import { Decoration, EditorView, type DecorationSet } from "@codemirror/view";
+import { FileId, TypstState } from "mnemo-wasm";
+import { styleTags, tags } from "@lezer/highlight";
 
-export const typstHighlighting = styleTags({
-  String: t.string,
-  Number: t.number,
-  "true false": t.bool,
-  PropertyName: t.propertyName,
-  Null: t.null,
-  ", :": t.separator,
-  "[ ]": t.squareBracket,
-  "{ }": t.brace,
-  "$ $": t.bracket,
-});
+export const typstSyntaxHighlighting = (
+  fileId: FileId,
+
+  typstState: TypstState,
+) =>
+  StateField.define<DecorationSet>({
+    create(state) {
+      return buildDecorations(state, fileId, typstState);
+    },
+    update(decoration, transaction) {
+      if (transaction.docChanged)
+        return buildDecorations(transaction.state, fileId, typstState);
+      return decoration;
+    },
+    provide(field) {
+      return EditorView.decorations.from(field);
+    },
+  });
+
+function buildDecorations(
+  state: EditorState,
+  fileId: FileId,
+  typstState: TypstState,
+): DecorationSet {
+  const builder = new RangeSetBuilder<Decoration>();
+  const tokens = typstState.highlight(fileId, state.doc.toString());
+
+  for (const token of tokens) {
+    builder.add(
+      token.range.start,
+      token.range.end,
+      Decoration.mark({ class: "cm-highlight-" + token.tag }),
+    );
+  }
+
+  return builder.finish();
+}

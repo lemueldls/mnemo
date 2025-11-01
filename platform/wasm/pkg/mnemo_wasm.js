@@ -496,21 +496,57 @@ export class TypstState {
         }
     }
     /**
+     * @param {FileId} id
+     * @param {string} text
+     * @returns {TypstHighlight[]}
+     */
+    highlight(id, text) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(id, FileId);
+            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.typststate_highlight(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @param {FileId} id
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
      */
-    click(x, y) {
-        const ret = wasm.typststate_click(this.__wbg_ptr, x, y);
+    click(id, x, y) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_click(this.__wbg_ptr, id.__wbg_ptr, x, y);
         return takeObject(ret);
     }
     /**
+     * @param {FileId} id
      * @param {number} aux_cursor_utf16
      * @param {boolean} explicit
      * @returns {Autocomplete | undefined}
      */
-    autocomplete(aux_cursor_utf16, explicit) {
-        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, aux_cursor_utf16, explicit);
+    autocomplete(id, aux_cursor_utf16, explicit) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, explicit);
+        return takeObject(ret);
+    }
+    /**
+     * @param {FileId} id
+     * @param {number} aux_cursor_utf16
+     * @param {number} side
+     * @returns {TypstTooltip | undefined}
+     */
+    hover(id, aux_cursor_utf16, side) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_hover(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, side);
         return takeObject(ret);
     }
     /**
@@ -580,6 +616,9 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
+    imports.wbg.__wbg_error_5ad1627019d20a6b = function(arg0, arg1) {
+        console.error(getStringFromWasm0(arg0, arg1));
+    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -590,9 +629,6 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_export_2(deferred0_0, deferred0_1, 1);
         }
-    };
-    imports.wbg.__wbg_error_fa781aa98ef9cd10 = function(arg0, arg1) {
-        console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_from_2a5d3e218e67aa85 = function(arg0) {
         const ret = Array.from(getObject(arg0));

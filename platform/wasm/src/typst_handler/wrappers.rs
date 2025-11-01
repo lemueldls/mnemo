@@ -8,9 +8,10 @@ use typst::{
     ecow::{EcoVec, eco_format},
     syntax::{FileId, Span, Spanned, SyntaxError},
 };
+use typst_ide::Tooltip;
 use wasm_bindgen::prelude::*;
 
-use crate::typst_handler::world::MnemoWorld;
+use crate::typst_handler::{state::FileContext, world::MnemoWorld};
 
 #[wasm_bindgen(js_name = "FileId")]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -36,11 +37,15 @@ pub struct TypstDiagnostic {
 }
 
 impl TypstDiagnostic {
-    pub fn from_errors(errors: EcoVec<SyntaxError>, world: &MnemoWorld) -> Box<[Self]> {
+    pub fn from_errors(
+        errors: EcoVec<SyntaxError>,
+        context: &FileContext,
+        world: &MnemoWorld,
+    ) -> Box<[Self]> {
         errors
             .into_iter()
             .flat_map(|error| {
-                map_aux_span(error.span, true, &[], world).map(|range| {
+                map_aux_span(error.span, true, &[], context, world).map(|range| {
                     TypstDiagnostic {
                         range,
                         severity: TypstDiagnosticSeverity::Error,
@@ -54,6 +59,7 @@ impl TypstDiagnostic {
 
     pub fn from_diagnostics(
         diagnostics: EcoVec<SourceDiagnostic>,
+        context: &FileContext,
         world: &MnemoWorld,
     ) -> Box<[Self]> {
         diagnostics
@@ -73,6 +79,7 @@ impl TypstDiagnostic {
                     diagnostic.span,
                     diagnostic.severity == Severity::Error,
                     &diagnostic.trace,
+                    context,
                     world,
                 )
                 .map(|range| {
@@ -96,9 +103,10 @@ pub fn map_main_span(
     span: Span,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
+    context: &FileContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let mut main_range = if world.main == span.id() {
+    let mut main_range = if Some(context.main_id) == span.id() {
         world.range(span)
     } else {
         None
@@ -112,7 +120,7 @@ pub fn map_main_span(
         for tracepoint in trace {
             if main_range.is_some() {
                 break;
-            } else if world.main == tracepoint.span.id() {
+            } else if Some(context.main_id) == tracepoint.span.id() {
                 main_range = world.range(tracepoint.span)
             }
         }
@@ -125,15 +133,16 @@ pub fn map_aux_span(
     span: Span,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
+    context: &FileContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let aux_source = world.aux_source();
+    let aux_source = context.aux_source(&world);
 
-    let main_range = map_main_span(span, is_error, trace, world);
+    let main_range = map_main_span(span, is_error, trace, context, world);
 
     let aux_range = if let Some(main_range) = main_range {
-        let aux_start = world.map_main_to_aux(main_range.start);
-        let aux_end = world.map_main_to_aux(main_range.end);
+        let aux_start = context.map_main_to_aux(main_range.start);
+        let aux_end = context.map_main_to_aux(main_range.end);
 
         aux_start..aux_end
     } else {
@@ -173,6 +182,68 @@ impl TypstDiagnosticSeverity {
 
 #[derive(Tsify, Serialize, Deserialize, Debug)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct TypstHighlight {
+    pub tag: TypstTag,
+    pub range: Range<usize>,
+}
+
+#[derive(Tsify, Serialize, Deserialize, Debug)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(rename_all = "kebab-case")]
+pub enum TypstTag {
+    Comment,
+    Punctuation,
+    Escape,
+    Strong,
+    Emph,
+    Link,
+    Raw,
+    Label,
+    Ref,
+    Heading,
+    ListMarker,
+    ListTerm,
+    MathDelimiter,
+    MathOperator,
+    Keyword,
+    Operator,
+    Number,
+    String,
+    Function,
+    Interpolated,
+    Error,
+}
+
+impl From<typst_syntax::Tag> for TypstTag {
+    fn from(tag: typst_syntax::Tag) -> Self {
+        match tag {
+            typst_syntax::Tag::Comment => TypstTag::Comment,
+            typst_syntax::Tag::Punctuation => TypstTag::Punctuation,
+            typst_syntax::Tag::Escape => TypstTag::Escape,
+            typst_syntax::Tag::Strong => TypstTag::Strong,
+            typst_syntax::Tag::Emph => TypstTag::Emph,
+            typst_syntax::Tag::Link => TypstTag::Link,
+            typst_syntax::Tag::Raw => TypstTag::Raw,
+            typst_syntax::Tag::Label => TypstTag::Label,
+            typst_syntax::Tag::Ref => TypstTag::Ref,
+            typst_syntax::Tag::Heading => TypstTag::Heading,
+            typst_syntax::Tag::ListMarker => TypstTag::ListMarker,
+            typst_syntax::Tag::ListTerm => TypstTag::ListTerm,
+            typst_syntax::Tag::MathDelimiter => TypstTag::MathDelimiter,
+            typst_syntax::Tag::MathOperator => TypstTag::MathOperator,
+            typst_syntax::Tag::Keyword => TypstTag::Keyword,
+            typst_syntax::Tag::Operator => TypstTag::Operator,
+            typst_syntax::Tag::Number => TypstTag::Number,
+            typst_syntax::Tag::String => TypstTag::String,
+            typst_syntax::Tag::Function => TypstTag::Function,
+            typst_syntax::Tag::Interpolated => TypstTag::Interpolated,
+            typst_syntax::Tag::Error => TypstTag::Error,
+        }
+    }
+}
+
+#[derive(Tsify, Serialize, Deserialize, Debug)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type")]
 pub enum TypstJump {
     File {
@@ -184,15 +255,19 @@ pub enum TypstJump {
 }
 
 impl TypstJump {
-    pub fn from_mapped(jump: typst_ide::Jump, world: &MnemoWorld) -> Option<Self> {
+    pub fn from_mapped(
+        jump: typst_ide::Jump,
+        context: &FileContext,
+        world: &MnemoWorld,
+    ) -> Option<Self> {
         match jump {
             typst_ide::Jump::File(id, main_position) => {
-                if id != world.main? {
+                if id != context.main_id {
                     return None;
                 }
 
-                let aux_source = world.aux_source();
-                let aux_position = world.map_main_to_aux(main_position);
+                let aux_source = context.aux_source(&world);
+                let aux_position = context.map_main_to_aux(main_position);
                 let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 
                 Some(Self::File {
@@ -200,8 +275,8 @@ impl TypstJump {
                     position: aux_position_utf16,
                 })
             }
-            typst_ide::Jump::Url(..) => todo!(),
-            typst_ide::Jump::Position(..) => todo!(),
+            typst_ide::Jump::Url(..) => None,
+            typst_ide::Jump::Position(..) => None,
         }
     }
 }
@@ -250,6 +325,23 @@ impl From<typst_ide::Completion> for TypstCompletion {
             label: value.label.to_string(),
             apply: value.apply.map(|s| s.to_string()),
             detail: value.detail.map(|s| s.to_string()),
+        }
+    }
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(rename_all = "camelCase", tag = "type", content = "content")]
+pub enum TypstTooltip {
+    Text(String),
+    Code(String),
+}
+
+impl From<Tooltip> for TypstTooltip {
+    fn from(tooltip: Tooltip) -> Self {
+        match tooltip {
+            Tooltip::Text(str) => TypstTooltip::Text(str.to_string()),
+            Tooltip::Code(str) => TypstTooltip::Code(str.to_string()),
         }
     }
 }

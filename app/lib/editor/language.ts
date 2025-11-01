@@ -6,42 +6,18 @@ import {
   type CompletionResult,
 } from "@codemirror/autocomplete";
 
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
-
-import { parser } from "./parser";
+import { EditorState } from "@codemirror/state";
 
 import type { EditorView } from "@codemirror/view";
-import type { TypstState } from "mnemo-wasm";
+import type { FileId, TypstState } from "mnemo-wasm";
 
-export const createLanguage = (typstState: TypstState) =>
-  LRLanguage.define({
-    name: "typst",
-    parser,
-    languageData: {
-      closeBrackets: {
-        brackets: ["(", "[", "{", '"', "`", "$", "_", "*"],
-        before: ')]}"`$,;',
-      },
-      commentTokens: {
-        line: "//",
-        block: {
-          open: "/*",
-          close: "*/",
-        },
-      },
-      wordChars: "-_",
-      indentOnInput: /^\s*[[\]{}()]$/,
-      autocomplete: (context: CompletionContext) =>
-        autocomplete(typstState, context),
-    },
-  });
-
-async function autocomplete(
-  typstState: TypstState,
+export async function autocomplete(
   context: CompletionContext,
+  fileId: FileId,
+  typstState: TypstState,
 ): Promise<CompletionResult | null> {
   const { pos, explicit } = context;
-  const result = typstState.autocomplete(pos, explicit);
+  const result = typstState.autocomplete(fileId, pos, explicit);
   if (!result) return null;
 
   const { offset, completions } = result;
@@ -80,6 +56,16 @@ async function autocomplete(
   };
 }
 
-export function typstLanguage(typstState: TypstState) {
-  return new LanguageSupport(createLanguage(typstState));
-}
+export const typstLanguageData = EditorState.languageData.of(() => [
+  {
+    closeBrackets: {
+      brackets: ["(", "[", "{", '"', "`", "$"],
+      before: ')]}"`$,;',
+    },
+    commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
+    wordChars: "-_",
+    indentOnInput: /^\s*[[\]{}()$]$/,
+    // autocomplete: (context: CompletionContext) =>
+    //   autocomplete(context, fileId, typstState),
+  },
+]);
