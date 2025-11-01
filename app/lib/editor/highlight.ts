@@ -4,7 +4,6 @@ import { FileId, TypstState } from "mnemo-wasm";
 
 export const typstSyntaxHighlighting = (
   fileId: FileId,
-
   typstState: TypstState,
 ) =>
   StateField.define<DecorationSet>({
@@ -39,3 +38,17 @@ function buildDecorations(
 
   return builder.finish();
 }
+
+// export const parseBackticks = (str: string, into: HTMLElement) => {
+//   const result = str.split("`").map((sub, i) => {
+//     if (i % 2) {
+//       const code = document.createElement("code");
+//       code.textContent = sub;
+//       return code;
+//     } else {
+//       return document.createTextNode(sub);
+//     }
+//   });
+
+//   into.append(...result);
+// };

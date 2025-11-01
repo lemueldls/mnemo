@@ -11,7 +11,8 @@ import {
 
 import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
-import { EditorState } from "@codemirror/state";
+import { EditorState, type EditorStateConfig } from "@codemirror/state";
+import { history, historyField } from "@codemirror/commands";
 
 import {
   crosshairCursor,
@@ -25,8 +26,8 @@ import {
 } from "@codemirror/view";
 
 import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
-import { LoroExtensions } from "loro-codemirror";
-import { EphemeralStore } from "loro-crdt";
+// import { LoroExtensions } from "loro-codemirror";
+// import { EphemeralStore } from "loro-crdt";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId } from "mnemo-wasm";
 import { match } from "ts-pattern";
@@ -35,7 +36,8 @@ import { normalizeKey } from "unstorage";
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
-import { typstPlugin } from "~/lib/editor/widget";
+import { typstPlugin } from "~/lib/editor/plugin";
+import { LRUCache } from "lru-cache";
 
 const props = defineProps<{
   spaceId: string;
@@ -60,6 +62,10 @@ function parseColor(color: Rgba): Rgb {
 
 const containerRef = useTemplateRef("container");
 
+const topFade = ref(0);
+const bottomFade = ref(0);
+const maxFade = 32;
+
 const preludeItem = await useStorageText(
   () => `spaces/${props.spaceId}/prelude/main.typ`,
 );
@@ -74,6 +80,8 @@ const { t, locale } = useI18n();
 const typstState = await useTypst();
 
 const text = await useStorageText(fullPath);
+
+const stateCache = new LRUCache<string, EditorState>({ max: 3 });
 
 onMounted(async () => {
   const container = containerRef.value!;
@@ -103,7 +111,7 @@ onMounted(async () => {
     console.error("Error installing packages:", err);
   }
 
-  watchImmediate(fullPath, (fullPath) => {
+  watchImmediate(fullPath, (fullPath, oldFullPath) => {
     const fileId = typstState.createFileId(fullPath);
 
     typstState.setPixelPerPt(fileId, window.devicePixelRatio);
@@ -153,8 +161,28 @@ onMounted(async () => {
       text,
       (text) => {
         typstState.insertFile(fileId, text);
-        const state = createEditorState(fileId);
-        view.setState(state);
+
+        if (oldFullPath)
+          stateCache.set(
+            oldFullPath,
+            view.state.toJSON({
+              history: historyField,
+            }),
+          );
+
+        const cache = stateCache.get(fullPath);
+        const stateConfig = createStateConfig(fileId, view);
+
+        if (cache)
+          view.setState(
+            EditorState.fromJSON(cache, stateConfig, {
+              history: historyField,
+            }),
+          );
+        else {
+          stateConfig.doc = text;
+          view.setState(EditorState.create(stateConfig));
+        }
       },
       { once: true, immediate: !ready },
     );
@@ -165,7 +193,7 @@ onMounted(async () => {
 
   const { scrollDOM } = view;
   const scrollHeight = useScrollHeight(scrollDOM);
-  const { x: scrollX, y: scrollY } = useScroll(scrollDOM);
+  const { y: scrollY } = useScroll(scrollDOM);
   const { height } = useElementSize(scrollDOM);
 
   watchImmediate(
@@ -179,43 +207,28 @@ onMounted(async () => {
   );
 });
 
-const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
-  (view, from, to, text) => {
-    if (text === " ") {
-      const state = view.state;
-      const pos = from;
-      const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
-      const before = state.doc.sliceString(
-        pos - 1,
-        pos,
-      ) as keyof typeof bracketPairs;
-      const after = state.doc.sliceString(
-        pos,
-        pos + 1,
-      ) as keyof typeof bracketPairs;
+// const doc = await useCrdt();
+// const undoManager = await useCrdtUndoManager();
 
-      if (bracketPairs[before] && after === bracketPairs[before]) {
-        // Insert a space before the closing bracket
-        view.dispatch({
-          changes: { from: pos, to: pos, insert: " " },
-          selection: { anchor: pos + 1 },
-        });
-      }
-    }
-
-    return false;
-  },
-);
-
-const doc = await useCrdt();
-const undoManager = await useCrdtUndoManager();
-
-function createEditorState(fileId: FileId): EditorState {
+function createStateConfig(
+  fileId: FileId,
+  view: EditorView,
+): EditorStateConfig {
   const path = normalizeKey(fullPath.value);
 
-  return EditorState.create({
+  return {
     extensions: [
-      typstPlugin(typstState, path, fileId, prelude, props.locked),
+      EditorView.exceptionSink.of((error) => {
+        console.error(error);
+
+        queueMicrotask(() => {
+          const stateConfig = createStateConfig(fileId, view);
+          stateConfig.doc = text.value;
+          view.setState(EditorState.create(stateConfig));
+        });
+      }),
+
+      typstPlugin(fileId, path, text, prelude, props.locked, typstState),
 
       EditorView.lineWrapping,
       EditorView.editable.of(!props.readonly),
@@ -225,6 +238,7 @@ function createEditorState(fileId: FileId): EditorState {
       highlightSpecialChars(),
       // foldGutter(),
       lintGutter(),
+      history(),
       drawSelection(),
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
@@ -236,33 +250,15 @@ function createEditorState(fileId: FileId): EditorState {
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
-      addSpaceBeforeClosingBracket,
-      keymap.of(vscodeKeymap),
 
-      LoroExtensions(
-        doc,
-        {
-          ephemeral: new EphemeralStore(),
-          user: { name: "You", colorClassName: "you" },
-        },
-        undoManager,
-        (doc) => doc.getText(path),
-      ),
+      keymap.of(vscodeKeymap),
     ],
-  });
+  };
 }
 
 function reloadEditorWidgets(view: EditorView) {
-  const { doc } = view.state;
-
-  if (doc.length) {
-    const from = 0;
-    const to = 1;
-
-    view.dispatch({
-      changes: { from, to, insert: doc.sliceString(from, to) },
-    });
-  }
+  view.dispatch({ changes: [{ from: 0, insert: " " }] });
+  view.dispatch({ changes: [{ from: 0, to: 1 }] });
 }
 
 const selectionBackground = computed(() => {
@@ -285,11 +281,6 @@ const renderHoverBackground = computed(() => {
 
   return `rgba(${secondaryContainer.r},${secondaryContainer.g},${secondaryContainer.b},0.25)`;
 });
-
-const topFade = ref(0);
-const bottomFade = ref(0);
-
-const maxFade = 32;
 </script>
 
 <template>
@@ -401,7 +392,7 @@ const maxFade = 32;
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest rounded-bl-0 max-w-1/3 m-0 rounded-lg border-none p-0 shadow;
+    @apply bg-surface-container-lowest max-w-1/3 m-0 rounded-lg border-none p-0 shadow;
 
     font-family: var(--font-mono);
 
@@ -430,6 +421,10 @@ const maxFade = 32;
     li {
       @apply rounded;
     }
+  }
+
+  .cm-tooltip-hover {
+    @apply p-1;
   }
 
   .cm-completionIcon {
@@ -545,6 +540,90 @@ const maxFade = 32;
         background-color: v-bind(renderHoverBackground);
       }
     }
+  }
+
+  .cm-highlight-comment {
+    @apply text-outline;
+  }
+
+  .cm-highlight-punctuation {
+    @apply text-on-surface-variant;
+  }
+
+  .cm-highlight-escape {
+    @apply text-outline;
+  }
+
+  .cm-highlight-strong {
+    @apply font-bold;
+  }
+
+  .cm-highlight-emph {
+    @apply italic;
+  }
+
+  .cm-highlight-link {
+    @apply text-primary underline;
+  }
+
+  .cm-highlight-raw {
+    @apply text-secondary;
+  }
+
+  .cm-highlight-label {
+    @apply text-on-primary-container;
+  }
+
+  .cm-highlight-ref {
+    @apply text-on-primary-container;
+  }
+
+  .cm-highlight-heading {
+    @apply text-on-secondary-container;
+  }
+
+  .cm-highlight-list-marker {
+    @apply font-bold;
+  }
+
+  .cm-highlight-list-term {
+    @apply font-bold;
+  }
+
+  .cm-highlight-math-delimiter {
+    @apply text-outline;
+  }
+
+  .cm-highlight-math-operator {
+    @apply text-on-error-container;
+  }
+
+  .cm-highlight-keyword {
+    @apply text-primary;
+  }
+
+  .cm-highlight-operator {
+    @apply text-on-error-container;
+  }
+
+  .cm-highlight-number {
+    @apply text-tertiary;
+  }
+
+  .cm-highlight-string {
+    @apply text-tertiary;
+  }
+
+  .cm-highlight-function {
+    @apply text-on-primary-container;
+  }
+
+  .cm-highlight-interpolated {
+    @apply text-on-secondary-container;
+  }
+
+  .cm-highlight-error {
+    @apply text-error;
   }
 }
 </style>

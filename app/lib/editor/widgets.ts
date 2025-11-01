@@ -24,7 +24,7 @@ import type {
   TypstDiagnostic,
   TypstState,
 } from "mnemo-wasm";
-import { parseBackticks } from "./highlight";
+// import { parseBackticks } from "./highlight";
 
 const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
 

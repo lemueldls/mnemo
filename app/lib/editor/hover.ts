@@ -1,5 +1,6 @@
 import { hoverTooltip } from "@codemirror/view";
 import { TypstState, FileId } from "mnemo-wasm";
+// import { parseBackticks } from "./highlight";
 
 export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
   hoverTooltip((_, pos, side) => {
@@ -29,17 +30,3 @@ export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
       };
     else return null;
   });
-
-// const parseBackticks = (str: string, into: HTMLElement) => {
-//   const result = str.split("`").map((sub, i) => {
-//     if (i % 2) {
-//       const code = document.createElement("code");
-//       code.textContent = sub;
-//       return code;
-//     } else {
-//       return document.createTextNode(sub);
-//     }
-//   });
-
-//   into.append(...result);
-// };
