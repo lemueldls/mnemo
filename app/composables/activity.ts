@@ -42,7 +42,7 @@ export const useActivity = createSharedComposable(async () => {
     const timeZone = getLocalTimeZone();
 
     watchImmediate(resolvedNotes, (notes) => {
-      const days = 200;
+      const days = 259;
       let deltaDate = today(timeZone).subtract({ days });
 
       const recentActivity = Object.fromEntries(

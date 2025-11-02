@@ -41,7 +41,7 @@ const newSpaceOpen = useNewSpaceOpen();
         class="medium:border-1! medium:p-3! medium:overflow-auto border-0! p-0! flex h-full flex-1 flex-col gap-3"
       >
         <div class="expanded:flex-row flex flex-col gap-3">
-          <div class="grow-2">
+          <div class="flex-1">
             <h1 class="display-medium overflow-hidden">
               {{ greeting }}
             </h1>
@@ -53,8 +53,10 @@ const newSpaceOpen = useNewSpaceOpen();
             </span>
           </div>
 
-          <!-- <activity-graph class="grow-3" /> -->
+          <activity-graph class="expanded:max-w-sm w-full" />
         </div>
+
+        <md-divider class="flex-shrink-0" />
 
         <div class="flex-shrink-0">
           <div id="spaces">
