@@ -60,8 +60,6 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
-export type TypstTooltip = { type: "text"; content: string } | { type: "code"; content: string };
-
 export class FileId {
   private constructor();
   free(): void;
