@@ -6,6 +6,7 @@ import { autocompletion } from "@codemirror/autocomplete";
 import { EditorView } from "@codemirror/view";
 import { type Extension } from "@codemirror/state";
 import { typstHoverTooltip } from "./hover";
+import { IndentContext, indentService } from "@codemirror/language";
 
 export const typstPlugin = (
   fileId: FileId,
@@ -27,12 +28,12 @@ export const typstPlugin = (
   typstHoverTooltip(fileId, typstState),
 
   addSpaceBeforeClosingBracket,
-  // indentService.of((ctx: IndentContext, pos: number): number => {
-  //   const last = Math.max(0, pos - 1);
-  //   const prev = ctx.lineAt(last).text;
-  //   const indent = /[{[($]\s*$/.test(prev);
-  //   return ctx.lineIndent(last) + (indent ? ctx.unit : 0);
-  // }),
+  indentService.of((ctx: IndentContext, pos: number): number => {
+    const last = Math.max(0, pos - 1);
+    const prev = ctx.lineAt(last).text;
+    const indent = /[{[($]\s*$/.test(prev);
+    return ctx.lineIndent(last) + (indent ? ctx.unit : 0);
+  }),
 ];
 
 const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(

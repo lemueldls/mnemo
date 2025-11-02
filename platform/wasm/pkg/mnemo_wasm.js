@@ -542,12 +542,24 @@ export class TypstState {
      * @param {FileId} id
      * @param {number} aux_cursor_utf16
      * @param {number} side
-     * @returns {TypstTooltip | undefined}
+     * @returns {string | undefined}
      */
     hover(id, aux_cursor_utf16, side) {
-        _assertClass(id, FileId);
-        const ret = wasm.typststate_hover(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, side);
-        return takeObject(ret);
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(id, FileId);
+            wasm.typststate_hover(retptr, this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, side);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            let v1;
+            if (r0 !== 0) {
+                v1 = getStringFromWasm0(r0, r1).slice();
+                wasm.__wbindgen_export_2(r0, r1 * 1, 1);
+            }
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
     /**
      * @param {FileId} id

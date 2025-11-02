@@ -32,23 +32,23 @@ function buildDecorations(
     builder.add(
       token.range.start,
       token.range.end,
-      Decoration.mark({ class: "cm-highlight-" + token.tag }),
+      Decoration.mark({ class: token.tag }),
     );
   }
 
   return builder.finish();
 }
 
-// export const parseBackticks = (str: string, into: HTMLElement) => {
-//   const result = str.split("`").map((sub, i) => {
-//     if (i % 2) {
-//       const code = document.createElement("code");
-//       code.textContent = sub;
-//       return code;
-//     } else {
-//       return document.createTextNode(sub);
-//     }
-//   });
+export const parseBackticks = (str: string, into: HTMLElement) => {
+  const result = str.split("`").map((sub, i) => {
+    if (i % 2) {
+      const code = document.createElement("code");
+      code.textContent = sub;
+      return code;
+    } else {
+      return document.createTextNode(sub);
+    }
+  });
 
-//   into.append(...result);
-// };
+  into.append(...result);
+};

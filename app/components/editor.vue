@@ -425,6 +425,10 @@ const renderHoverBackground = computed(() => {
 
   .cm-tooltip-hover {
     @apply p-1;
+
+    code {
+      @apply text-wrap;
+    }
   }
 
   .cm-completionIcon {
@@ -542,87 +546,87 @@ const renderHoverBackground = computed(() => {
     }
   }
 
-  .cm-highlight-comment {
+  .typ-comment {
     @apply text-outline;
   }
 
-  .cm-highlight-punctuation {
+  .typ-punct {
     @apply text-on-surface-variant;
   }
 
-  .cm-highlight-escape {
+  .typ-escape {
     @apply text-outline;
   }
 
-  .cm-highlight-strong {
+  .typ-strong {
     @apply font-bold;
   }
 
-  .cm-highlight-emph {
+  .typ-emph {
     @apply italic;
   }
 
-  .cm-highlight-link {
+  .typ-link {
     @apply text-primary underline;
   }
 
-  .cm-highlight-raw {
+  .typ-raw {
     @apply text-secondary;
   }
 
-  .cm-highlight-label {
+  .typ-label {
     @apply text-on-primary-container;
   }
 
-  .cm-highlight-ref {
+  .typ-ref {
     @apply text-on-primary-container;
   }
 
-  .cm-highlight-heading {
+  .typ-heading {
     @apply text-on-secondary-container;
   }
 
-  .cm-highlight-list-marker {
+  .typ-marker {
     @apply font-bold;
   }
 
-  .cm-highlight-list-term {
+  .typ-term {
     @apply font-bold;
   }
 
-  .cm-highlight-math-delimiter {
+  .typ-math-delim {
     @apply text-outline;
   }
 
-  .cm-highlight-math-operator {
+  .typ-math-op {
     @apply text-on-error-container;
   }
 
-  .cm-highlight-keyword {
+  .typ-key {
     @apply text-primary;
   }
 
-  .cm-highlight-operator {
+  .typ-op {
     @apply text-on-error-container;
   }
 
-  .cm-highlight-number {
+  .typ-num {
     @apply text-tertiary;
   }
 
-  .cm-highlight-string {
+  .typ-str {
     @apply text-tertiary;
   }
 
-  .cm-highlight-function {
+  .typ-func {
     @apply text-on-primary-container;
   }
 
-  .cm-highlight-interpolated {
+  .typ-pol {
     @apply text-on-secondary-container;
   }
 
-  .cm-highlight-error {
+  .typ-error {
     @apply text-error;
   }
 }

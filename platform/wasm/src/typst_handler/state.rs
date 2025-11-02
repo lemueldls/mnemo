@@ -1,20 +1,16 @@
-use std::{cmp, fmt, iter, ops::Range, str::FromStr};
+use std::{fmt, str::FromStr};
 
-use hashbrown::{HashMap, HashSet};
-use highway::{HighwayHash, HighwayHasher};
-use itertools::Itertools;
+use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
-use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
-    WorldExt, compile,
-    diag::Severity,
+    compile,
     ecow::EcoString,
     foundations::Bytes,
-    introspection::Tag,
-    layout::{Abs, FrameItem, FrameKind, PagedDocument, Point},
-    syntax::{FileId, Source, Span, SyntaxKind, VirtualPath, package::PackageSpec},
+    layout::{Abs, PagedDocument, Point},
+    syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
+use typst_ide::Tooltip;
 // use typst_html::html;
 use typst_pdf::{PdfOptions, pdf};
 use typst_syntax::{LinkedNode, Side};
@@ -23,7 +19,7 @@ use wasm_bindgen::prelude::*;
 
 use super::{
     index_mapper::IndexMapper,
-    world::{FileSlot, MnemoWorld},
+    world::MnemoWorld,
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
 use crate::typst_handler::{
@@ -31,7 +27,7 @@ use crate::typst_handler::{
         CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items,
         sync_file_context,
     },
-    wrappers::{TypstHighlight, TypstTag, TypstTooltip, map_aux_span, map_main_span},
+    wrappers::TypstHighlight,
 };
 
 #[wasm_bindgen]
@@ -238,7 +234,7 @@ impl TypstState {
                 let aux_range_utf16 = aux_range_start_utf16..aux_range_end_utf16;
 
                 Some(TypstHighlight {
-                    tag: TypstTag::from(tag),
+                    tag: tag.css_class().to_string(),
                     range: aux_range_utf16,
                 })
             });
@@ -322,12 +318,7 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn hover(
-        &self,
-        id: &TypstFileId,
-        aux_cursor_utf16: usize,
-        side: i8,
-    ) -> Option<TypstTooltip> {
+    pub fn hover(&self, id: &TypstFileId, aux_cursor_utf16: usize, side: i8) -> Option<String> {
         let context = self.file_contexts.get(id).unwrap();
 
         let main_source = context.main_source(&self.world);
@@ -351,7 +342,12 @@ impl TypstState {
             side,
         );
 
-        tooltip.map(TypstTooltip::from)
+        tooltip.map(|tooltip| {
+            match tooltip {
+                Tooltip::Text(text) => text.to_string(),
+                Tooltip::Code(text) => typst_syntax::highlight_html(&typst_syntax::parse(&text)),
+            }
+        })
     }
 
     #[wasm_bindgen]
