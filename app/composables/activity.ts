@@ -63,7 +63,7 @@ export const useActivity = createSharedComposable(async () => {
         ([date, activity]) => ({ date, activity }),
       );
     });
-  }, 2500);
+  }, 500);
 
   return activity;
 });

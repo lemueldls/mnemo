@@ -75,10 +75,9 @@ export const useReview = createSharedComposable(
             });
         }
 
-        console.log({ notesToReview });
         review.value = notesToReview;
       });
-    }, 2500);
+    }, 250);
 
     return review;
   },
