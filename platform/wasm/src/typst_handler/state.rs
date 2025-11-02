@@ -148,15 +148,15 @@ impl TypstState {
                 #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
                 #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
 
-                #show link: set text(fill:theme.primary)
-                #show link: underline
+                #show link:set text(fill:theme.primary)
+                #show link:underline
 
                 #set line(stroke:theme.outline)
                 #set table(stroke:theme.outline)
                 #set circle(stroke:theme.outline)
                 #set ellipse(stroke:theme.outline)
                 #set line(stroke:theme.outline)
-                #set path(stroke:theme.outline)
+                #set curve(stroke:theme.outline)
                 #set polygon(stroke:theme.outline)
                 #set rect(stroke:theme.outline)
                 #set square(stroke:theme.outline)
