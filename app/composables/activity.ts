@@ -1,16 +1,69 @@
-export interface Activity {
-  date: [number, number, number];
-  kind: ActivityKind;
+import {
+  fromAbsolute,
+  getLocalTimeZone,
+  toCalendarDate,
+  today,
+} from "@internationalized/date";
+
+interface ActivityNode {
+  date: string;
+  activity: number;
 }
 
-export type ActivityKind = "task-create" | "task-delete";
+export const useActivity = createSharedComposable(async () => {
+  const activity = await useStorageSet<ActivityNode[]>("activity.json", "date");
 
-export const useActivity = createSharedComposable(() =>
-  useStorageMap("activity.json"),
-);
+  setTimeout(async () => {
+    const spaces = await useSpaces();
 
-// export function markActivity(kind: ActivityKind) {}
+    const spaceIds = computed(() => Object.keys(spaces.value));
+    const notes = await eagerComputedAsync(() =>
+      Promise.all(
+        spaceIds.value.map(async (spaceId) => {
+          const notes = await useDailyNotes(spaceId);
 
-// export const useNotesVistited = createSharedComposable(() =>
-//   useStorageMap("activity.json"),
-// );
+          return notes.value.map((note) => {
+            const {
+              datetime: [year, month, day, hour, minute],
+            } = note;
+
+            const createdAt = Date.UTC(year, month, day, hour, minute);
+
+            return { spaceId, note, createdAt };
+          });
+        }),
+      ),
+    );
+
+    const resolvedNotes = computed(() =>
+      notes.value.flat().sort((a, b) => b.createdAt - a.createdAt),
+    );
+
+    const timeZone = getLocalTimeZone();
+
+    watchImmediate(resolvedNotes, (notes) => {
+      const days = 200;
+      let deltaDate = today(timeZone).subtract({ days });
+
+      const recentActivity = Object.fromEntries(
+        Array.from({ length: days }).map((_, days) => {
+          const date = deltaDate.add({ days });
+
+          return [date.toString(), 0];
+        }),
+      );
+
+      for (const note of notes) {
+        const date = toCalendarDate(fromAbsolute(note.createdAt, timeZone));
+        const key = date.toString();
+        if (recentActivity[key] != undefined) recentActivity[key]++;
+      }
+
+      activity.value = Object.entries(recentActivity).map(
+        ([date, activity]) => ({ date, activity }),
+      );
+    });
+  }, 2500);
+
+  return activity;
+});

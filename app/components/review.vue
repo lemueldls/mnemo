@@ -17,9 +17,9 @@ const review = await useReview(amount);
   <div ref="container">
     <div v-if="review.length > 0" id="review">
       <nuxt-link
-        v-for="{ spaceId, date, note, lastReviewed, stage } in review"
-        :key="note.id"
-        :to="`/space?id=${spaceId}&note=${note.id}`"
+        v-for="{ spaceId, date, noteId, lastReviewed, stage } in review"
+        :key="noteId"
+        :to="`/space?id=${spaceId}&note=${noteId}`"
       >
         <mx-theme :color="spaces[spaceId]!.color">
           <md-elevated-card class="h-70 relative flex flex-col">
@@ -53,7 +53,7 @@ const review = await useReview(amount);
               class="flex-1"
               :space-id="spaceId"
               kind="daily"
-              :model-value="note.id"
+              :model-value="noteId"
               readonly
               locked
             />

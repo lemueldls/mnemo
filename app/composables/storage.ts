@@ -434,14 +434,11 @@ export async function useStorageList<T extends unknown[]>(
   });
 }
 
-export type SetRef<
-  K extends string | number,
-  T extends Exclude<{ [key in K]: string }, Container>[],
-> = Awaited<ReturnType<typeof useStorageSet<K, T>>>;
+export type SetRef<T extends Exclude<{ [key: string]: any }, Container>[]> =
+  Awaited<ReturnType<typeof useStorageSet<T>>>;
 export async function useStorageSet<
-  K extends string | number,
-  T extends Exclude<{ [key in K]: string }, Container>[],
->(key: MaybeRefOrGetter<string>, setKey: K, initialValue?: T) {
+  T extends Exclude<{ [key: string]: any }, Container>[],
+>(key: MaybeRefOrGetter<string>, setKey: keyof T[number], initialValue?: T) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
 
   const item = await createStorageItem(
@@ -459,7 +456,7 @@ export async function useStorageSet<
         const deleteQueue: number[] = [];
 
         for (let i = 0; i < syncList.length; i++) {
-          const item = syncList[i]!;
+          const item = syncList[i] as Exclude<T[number], Container>;
           const key = item[setKey];
 
           if (syncKeys.has(key)) {
@@ -470,7 +467,7 @@ export async function useStorageSet<
         }
 
         for (let i = 0; i < itemList.length; i++) {
-          const item = itemList[i]!;
+          const item = itemList[i] as Exclude<T[number], Container>;
           const key = item[setKey];
 
           if (!syncKeys.has(key)) {

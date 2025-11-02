@@ -10,7 +10,7 @@ export interface DailyNote {
 export type NoteKind = "daily" | "sticky" | "prelude" | "task";
 
 export async function useDailyNotes(spaceId: MaybeRefOrGetter<string>) {
-  const notes = await useStorageSet<"id", DailyNote[]>(
+  const notes = await useStorageSet<DailyNote[]>(
     () => `spaces/${toValue(spaceId)}/daily/notes.json`,
     "id",
   );
