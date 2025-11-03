@@ -18,13 +18,12 @@ import { LRUCache } from "lru-cache";
 import type { DecorationSet, ViewUpdate } from "@codemirror/view";
 
 import type {
-  CompileResult,
   FileId,
   RangedFrame,
   TypstDiagnostic,
   TypstState,
 } from "mnemo-wasm";
-// import { parseBackticks } from "./highlight";
+import { parseBackticks } from "./highlight";
 
 const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
 
@@ -120,7 +119,7 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const compileCache = new LRUCache<string, CompileResult>({ max: 3 });
+const framesCache = new LRUCache<string, RangedFrame[]>({ max: 3 });
 
 const updateFlagStore = new Set<string>();
 
@@ -137,11 +136,12 @@ function decorate(
   const text = update.state.doc.toString();
   const isFlagedForUpdate = updateFlagStore.has(path);
 
-  let compileResult: CompileResult;
+  let frames: RangedFrame[];
+
   if (
     update.docChanged ||
     widthChanged ||
-    !compileCache.has(path) ||
+    !framesCache.has(path) ||
     isFlagedForUpdate
   ) {
     if (update.docChanged && updateInWidget) {
@@ -152,28 +152,26 @@ function decorate(
 
       if (!isFlagedForUpdate) {
         updateFlagStore.add(path);
-        compileResult = compileCache.get(path)!;
+        frames = framesCache.get(path)!;
       } else return;
     } else {
       updateFlagStore.delete(path);
 
-      compileResult = typstState.compile(fileId, text, prelude);
-      compileCache.set(path, compileResult);
+      const compileResult = typstState.compile(fileId, text, prelude);
+      dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+
+      frames = compileResult.frames;
+      framesCache.set(path, compileResult.frames);
     }
-  } else compileResult = compileCache.get(path)!;
+  } else frames = framesCache.get(path)!;
 
   const { view, state } = update;
 
   const widgets: Range<Decoration>[] = [];
 
-  dispatchDiagnostics(compileResult.diagnostics, state, view);
-
-  for (const frame of compileResult.frames) {
+  for (const frame of frames) {
     if (frame.render) {
-      const { from: start, number: startLine } = state.doc.lineAt(
-        frame.range.start,
-      );
-      const { to: end, number: endLine } = state.doc.lineAt(frame.range.end);
+      const { start, end } = frame.range;
 
       const inactive =
         !view.hasFocus ||
@@ -191,6 +189,9 @@ function decorate(
         widgets.push(Decoration.replace({ widget }).range(start, end));
       } else {
         let lineHeight = 0;
+
+        const { number: startLine } = state.doc.lineAt(start);
+        const { number: endLine } = state.doc.lineAt(end);
 
         for (
           let currentLine = startLine;
@@ -253,8 +254,6 @@ export const typstViewPlugin = (
   ViewPlugin.define((_view) => {
     return {
       update(update: ViewUpdate) {
-        if (update.docChanged) text.value = update.state.doc.toString();
-
         if (
           update.docChanged ||
           update.geometryChanged ||
@@ -313,6 +312,8 @@ export const typstViewPlugin = (
               update.view.dispatch({ effects });
             }
           });
+
+          if (update.docChanged) text.value = update.state.doc.toString();
         }
       },
     };
@@ -324,58 +325,34 @@ function dispatchDiagnostics(
   view: EditorView,
 ) {
   if (typstDiagnostics.length > 0) {
-    // const diagnostics = typstDiagnostics.map((diagnostic) => {
-    //   return {
-    //     from: diagnostic.range.start,
-    //     to: diagnostic.range.end,
-    //     severity: diagnostic.severity,
-    //     message: diagnostic.message,
-    //     renderMessage() {
-    //       const frag = document.createDocumentFragment();
-    //       const p = document.createElement("p");
-    //       parseBackticks(diagnostic.message, p);
-    //       frag.append(p);
+    const diagnostics = typstDiagnostics.map((diagnostic) => {
+      return {
+        from: diagnostic.range.start,
+        to: diagnostic.range.end,
+        severity: diagnostic.severity,
+        message: diagnostic.message,
+        renderMessage() {
+          const frag = document.createDocumentFragment();
+          const p = document.createElement("p");
+          parseBackticks(diagnostic.message, p);
+          frag.append(p);
 
-    //       if (diagnostic.hints.length) {
-    //         const ul = document.createElement("ul");
-    //         ul.className =
-    //           "text-xs pb-1 " +
-    //           (diagnostic.hints.length > 1 && "list-disc list-inside");
+          if (diagnostic.hints.length) {
+            const ul = document.createElement("ul");
+            ul.className = "typst-hints";
 
-    //         for (const hint of diagnostic.hints) {
-    //           const li = document.createElement("li");
-    //           parseBackticks(hint, li);
-    //           ul.append(li);
-    //         }
+            for (const hint of diagnostic.hints) {
+              const li = document.createElement("li");
+              parseBackticks(hint, li);
+              ul.append(li);
+            }
 
-    //         frag.append(ul);
-    //       }
+            frag.append(ul);
+          }
 
-    //       return frag;
-    //     },
-    //   };
-    // });
-
-    const diagnostics = typstDiagnostics.flatMap((diagnostic) => {
-      const diagnostics: Diagnostic[] = [
-        {
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: diagnostic.severity,
-          message: diagnostic.message,
+          return frag;
         },
-      ];
-
-      for (const hint of diagnostic.hints) {
-        diagnostics.push({
-          from: diagnostic.range.start,
-          to: diagnostic.range.end,
-          severity: "hint",
-          message: hint,
-        });
-      }
-
-      return diagnostics;
+      };
     });
 
     const transaction = setDiagnostics(state, diagnostics);

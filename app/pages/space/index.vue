@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import {
-  fromAbsolute,
-  getLocalTimeZone,
-  toCalendarDate,
-} from "@internationalized/date";
+import { fromAbsolute, toCalendarDate } from "@internationalized/date";
 import { createId } from "@paralleldrive/cuid2";
+import { decodeTime } from "ulid";
 
 import type { StickyNote } from "~/composables/sticky";
 
@@ -92,22 +89,18 @@ await watchImmediateAsync(spaceId, async (spaceId) => {
 });
 
 const notes = useArrayMap(dailyNotes, (note) => {
-  const {
-    id,
-    datetime: [year, month, day, hour, minute],
-  } = note;
+  const { id } = note;
 
-  const date = Date.UTC(year, month, day, hour, minute);
+  const time = decodeTime(id);
 
-  const textDate = d(date, {
+  const timeZone = useTimeZone();
+  const calendarDate = toCalendarDate(fromAbsolute(time, timeZone));
+
+  const textDate = d(time, {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
-
-  const timeZone = getLocalTimeZone();
-  const dateTime = fromAbsolute(date, timeZone);
-  const calendarDate = toCalendarDate(dateTime);
 
   return { id, calendarDate, textDate };
 });

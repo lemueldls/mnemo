@@ -392,26 +392,40 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest max-w-1/3 m-0 rounded-lg border-none p-0 shadow;
+    @apply bg-surface-container-lowest max-w-1/3 m-0 overflow-hidden rounded-lg border-none p-0 font-mono shadow;
 
-    font-family: var(--font-mono);
-
-    [aria-selected="true"] {
+    li[aria-selected="true"] {
       @apply bg-secondary-container! text-on-secondary-container!;
     }
 
-    li {
-      @apply p-1!;
+    li[role="option"] {
+      @apply p-1! font-mono;
+    }
 
-      font-family: var(--font-mono);
+    pre {
+      @apply bg-surface-container rounded;
+    }
+
+    code {
+      @apply bg-surface-container text-wrap rounded px-1 font-mono;
     }
   }
 
-  .cm-tooltip-lint {
-    @apply -translate-x-1;
+  .cm-tooltip-hover {
+    @apply p-1;
+  }
 
-    li {
-      @apply first:b-t-2 p-1! first:rounded-t last:rounded-b;
+  // .cm-tooltip-below {
+  //   @apply rounded-tl-0;
+  // }
+
+  // .cm-tooltip-above {
+  //   @apply rounded-bl-0;
+  // }
+
+  .cm-tooltip-lint {
+    .cm-diagnostic {
+      @apply first:rounded-t last:rounded-b;
     }
   }
 
@@ -423,13 +437,9 @@ const renderHoverBackground = computed(() => {
     }
   }
 
-  .cm-tooltip-hover {
-    @apply p-1;
-
-    code {
-      @apply text-wrap;
-    }
-  }
+  // .cm-tooltip-hover {
+  //   @apply p-1;
+  // }
 
   .cm-completionIcon {
     @apply translate-y-0.5;
@@ -485,13 +495,9 @@ const renderHoverBackground = computed(() => {
     font-family: var(--md-icon-font);
   }
 
-  /* .cm-tooltip-above {
-    @apply rounded-bl-0;
+  .cm-tooltip-section:not(:first-child) {
+    @apply mt-1 rounded-tl border-none;
   }
-
-  .cm-tooltip-below {
-    @apply rounded-tl-0;
-  } */
 
   .cm-diagnostic {
     @apply b-l-6;
@@ -499,6 +505,10 @@ const renderHoverBackground = computed(() => {
 
   .cm-diagnostic-error {
     @apply text-error border-error;
+  }
+
+  .cm-diagnostic-warning {
+    @apply text-secondary border-secondary;
   }
 
   .cm-diagnostic-hint {
@@ -527,6 +537,14 @@ const renderHoverBackground = computed(() => {
 
   .cm-lint-marker-warning {
     @apply bg-secondary;
+  }
+
+  .typst-hints {
+    @apply text-secondary body-small text-wrap;
+
+    li {
+      @apply text-wrap;
+    }
   }
 
   .typst-render {

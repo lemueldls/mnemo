@@ -1,6 +1,7 @@
 use std::{fmt, str::FromStr};
 
 use hashbrown::HashMap;
+use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
@@ -106,7 +107,7 @@ impl TypstState {
 
         let page_config = match rendering_mode {
             RenderingMode::Png => {
-                format!(
+                formatdoc!(
                     r#"
                         #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
 
@@ -123,16 +124,16 @@ impl TypstState {
                 )
             }
             RenderingMode::Pdf => {
-                format!(
+                formatdoc!(
                     r#"
                         #set page(width:{width},height:auto,margin:16pt)
                     "#,
                     width = context.width,
                 )
-            } // RenderingMode::Html => format!(""),
+            } // RenderingMode::Html => formatdoc!(""),
         };
 
-        format!(
+        formatdoc!(
             r#"
                 #let theme={theme}
                 #set text(fill:theme.on-background,size:16pt,lang:"{locale}")
