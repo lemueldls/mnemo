@@ -11,6 +11,7 @@ const space = ref<Space>({
   icon: undefined,
   color: "#16161d", // Eigengrau
   order: Object.keys(spaces.value).length,
+  archived: false,
 });
 
 function createSpace() {

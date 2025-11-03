@@ -1,9 +1,10 @@
+import { decodeTime } from "ulid";
+
 interface Review {
   spaceId: string;
   noteId: string;
   date: string;
   stage: number;
-  lastReviewed: number;
 }
 
 export const useReview = createSharedComposable(
@@ -13,69 +14,62 @@ export const useReview = createSharedComposable(
     const review = await useStorageSet<Review[]>("review.json", "noteId");
 
     setTimeout(async () => {
+      if (toValue(amount) < 1) return;
+
       const spaces = await useSpaces();
 
+      // const timeZone = useTimeZone();
+      const yesterday = Date.now() - 1000 * 60 * 60 * 24;
+
       const spaceIds = computed(() => Object.keys(spaces.value));
-      const notes = await eagerComputedAsync(() =>
-        Promise.all(
+      const notes = await eagerComputedAsync(() => {
+        const max = toValue(amount);
+
+        return Promise.all(
           spaceIds.value.map(async (spaceId) => {
-            const notes = await useDailyNotes(spaceId);
+            const dailyNotes = await useDailyNotes(spaceId);
+            const notes = dailyNotes.value;
 
-            return notes.value
-              .map((note) => {
-                const {
-                  datetime: [year, month, day, hour, minute],
-                } = note;
+            const notesToReview = [];
 
-                const createdAt = Date.UTC(year, month, day, hour, minute);
+            const end = notes.length - 1;
+            for (let i = end; i >= 0 && notesToReview.length < max; i--) {
+              const note = notes[i]!;
 
-                return { spaceId, note, createdAt };
-              })
-              .filter(
-                ({ createdAt }) => createdAt < Date.now() - 1000 * 60 * 60 * 24,
-              );
+              const createdAt = decodeTime(note.id);
+
+              if (createdAt < yesterday) {
+                const noteId = note.id;
+
+                const content = await getStorageItem(
+                  `spaces/${spaceId}/daily/${noteId}.typ`,
+                  "",
+                );
+
+                if (content) {
+                  const date = d(createdAt, {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  });
+
+                  notesToReview.push({
+                    spaceId,
+                    noteId,
+                    date,
+                    stage: 1,
+                  });
+                }
+              }
+            }
+
+            return notesToReview;
           }),
-        ),
-      );
+        );
+      });
 
-      const resolvedNotes = computed(() =>
-        notes.value.flat().sort((a, b) => b.createdAt - a.createdAt),
-      );
-
-      return await eagerComputedAsync(async () => {
-        const notesToReview = [];
-        const notes = resolvedNotes.value;
-
-        for (
-          let i = 0;
-          i < notes.length && notesToReview.length < toValue(amount);
-          i++
-        ) {
-          const { spaceId, note, createdAt } = notes[i]!;
-
-          const noteId = note.id;
-          const date = d(createdAt, {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          });
-
-          const content = await getStorageItem(
-            `spaces/${spaceId}/daily/${noteId}.typ`,
-            "",
-          );
-
-          if (content)
-            notesToReview.push({
-              spaceId,
-              noteId,
-              date,
-              stage: 1,
-              lastReviewed: Date.now(),
-            });
-        }
-
-        review.value = notesToReview;
+      watchImmediate(notes, (notes) => {
+        review.value = notes.flat();
       });
     }, 250);
 

@@ -5,8 +5,8 @@ const { width } = useElementSize(container);
 const reviewCardWidth = 352;
 const gapSize = 12;
 
-const amount = computed(
-  () => Math.floor(width.value / (reviewCardWidth + gapSize)) * 2,
+const amount = computed(() =>
+  Math.floor(width.value / (reviewCardWidth + gapSize)),
 );
 
 const spaces = await useSpaces();
@@ -17,7 +17,7 @@ const review = await useReview(amount);
   <div ref="container">
     <div v-if="review.length > 0" id="review">
       <nuxt-link
-        v-for="{ spaceId, date, noteId, lastReviewed, stage } in review"
+        v-for="{ spaceId, date, noteId, stage } in review"
         :key="noteId"
         :to="`/space?id=${spaceId}&note=${noteId}`"
       >

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import {
   getDayOfWeek,
-  getLocalTimeZone,
   today,
   type CalendarDate,
 } from "@internationalized/date";
 
-const timeZone = getLocalTimeZone();
+const timeZone = useTimeZone();
 const calendarDate = useState<CalendarDate>("today:calendar-date", () =>
   today(timeZone),
 );

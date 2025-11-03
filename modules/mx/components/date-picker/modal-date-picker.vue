@@ -3,7 +3,6 @@ import {
   CalendarDate,
   endOfMonth,
   getDayOfWeek,
-  getLocalTimeZone,
   startOfMonth,
   today,
 } from "@internationalized/date";
@@ -19,7 +18,7 @@ const visible = defineModel<boolean>();
 
 const { d, locale } = useI18n();
 
-const timeZone = getLocalTimeZone();
+const timeZone = useTimeZone();
 const calendarToday = today(timeZone);
 const modelDate = defineModel<CalendarDate>("date", { required: true });
 

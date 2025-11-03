@@ -1,10 +1,11 @@
+import { fromAbsolute, isToday, toCalendarDate } from "@internationalized/date";
 import { decodeTime, ulid } from "ulid";
 
 export interface DailyNote {
   id: string;
   // name?: string;
-  datetime: [number, number, number, number, number];
-  lastViewed?: [number, number, number, number, number];
+  // datetime: [number, number, number, number, number];
+  datesReviewed?: string[];
 }
 
 export type NoteKind = "daily" | "sticky" | "prelude" | "task";
@@ -23,22 +24,15 @@ export async function loadDailyNotes(
   notes: DailyNote[],
   archived?: boolean,
 ) {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const date = today.getDate();
-
   let addToday = true;
 
   const maybeNotes = await Promise.all(
     notes.map(async (note) => {
-      if (
-        note.datetime[2] === date &&
-        note.datetime[1] === month &&
-        note.datetime[0] === year &&
-        !archived
-      )
-        addToday = false;
+      const date = toCalendarDate(
+        fromAbsolute(decodeTime(note.id), useTimeZone()),
+      );
+
+      if (isToday(date, useTimeZone()) && !archived) addToday = false;
       else {
         const item = await getStorageItem<string>(
           `spaces/${spaceId}/daily/${note.id}.typ`,
@@ -56,17 +50,7 @@ export async function loadDailyNotes(
 
   if (addToday) {
     const id = ulid();
-
-    const date = new Date(decodeTime(id));
-    const datetime: [number, number, number, number, number] = [
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-    ];
-
-    newNotes.push({ id, datetime });
+    newNotes.push({ id, datesReviewed: [] });
   }
 
   return newNotes;

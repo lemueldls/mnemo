@@ -5,7 +5,7 @@ export interface Space {
   icon?: MaterialSymbol;
   color: string;
   order: number;
-  archived: boolean;
+  archived?: boolean;
 }
 
 export async function useSpaces(archived?: boolean) {

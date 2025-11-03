@@ -72,6 +72,8 @@ const keys = await getStorageKeys();
       </template>
     </md-outlined-card>
 
+    <!-- <md-outlined-button>Export</md-outlined-button> -->
+
     <md-outlined-card class="flex flex-col gap-3 p-3">
       <div class="flex justify-between">
         <h4 class="title-large">Sync</h4>

@@ -12,10 +12,17 @@ const { width } = useElementSize(container);
 const scrollWidth = useScrollWidth(container);
 const { x: scrollX } = useScroll(container);
 
-// const cellSize = 12;
+const cellSize = 12;
 // const gapSize = 4;
 
-const activityGraph = await useActivity();
+const amount = computed(() => {
+  const quotient = width.value / cellSize;
+  const columns = Math.ceil(quotient);
+
+  return columns * totalWeekdays;
+});
+
+const activityGraph = await useActivityGraph(amount);
 
 const weightedMax = ref(12);
 
@@ -61,8 +68,9 @@ const weekdays = computed(() =>
         </div>
       </div>
 
-      <div class="activity-graph" ref="container" v-if="activityGraph[0]">
+      <div class="activity-graph" ref="container">
         <template
+          v-if="activityGraph[0]"
           v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)"
         >
           <div v-if="i >= startWeekday" />

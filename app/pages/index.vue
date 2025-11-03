@@ -70,9 +70,11 @@ const newSpaceOpen = useNewSpaceOpen();
                   <md-ripple />
 
                   <div class="flex h-12 justify-between">
-                    <md-icon v-if="space.icon" class="text-primary">
-                      {{ space.icon }}
-                    </md-icon>
+                    <div>
+                      <md-icon v-if="space.icon" class="text-primary">
+                        {{ space.icon }}
+                      </md-icon>
+                    </div>
 
                     <md-icon-button disabled @click.prevent>
                       <md-icon>more_vert</md-icon>
