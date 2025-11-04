@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import type { Package } from "~~/server/api/list-packages.get";
 
-const { spaceId, namespace, versionedPackage } = defineProps<{
+const props = defineProps<{
   spaceId: string;
   namespace: string;
   versionedPackage: Package[];
 }>();
 
 const selectedIndex = ref(0);
-const pkg = computed(() => versionedPackage[selectedIndex.value]!);
+const pkg = computed(() => props.versionedPackage[selectedIndex.value]!);
 
-const installedPackages = await useInstalledPackages(spaceId);
+const installedPackages = await useInstalledPackages(() => props.spaceId);
 const installedPackageByName = computed(() =>
   installedPackages.value.filter((pkgItem) => pkg.value.name === pkgItem.name),
 );
@@ -25,8 +25,8 @@ const loading = ref(false);
 async function installPackage(pkg: Package) {
   loading.value = true;
 
-  await installTypstPackage(pkg, namespace);
-  installedPackages.value = [...installedPackages.value, pkg];
+  await installTypstPackage(pkg, props.namespace);
+  installedPackages.value.push(pkg);
 
   loading.value = false;
 }
@@ -39,7 +39,7 @@ function uninstallPackage(pkg: Package) {
 </script>
 
 <template>
-  <md-elevated-card :key="pkg.name" class="flex flex-col gap-4 p-4">
+  <md-elevated-card class="flex flex-col gap-4 p-4">
     <div class="medium:flex-row flex flex-col justify-between gap-2">
       <h1 class="text-on-surface-variant title-large font-semibold">
         {{ pkg.name }}

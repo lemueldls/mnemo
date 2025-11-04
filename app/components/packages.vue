@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UseVirtualList } from "@vueuse/components";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 
 import type { Package } from "~~/server/api/list-packages.get";
 
@@ -40,19 +40,33 @@ const filteredPackages = computed(() => {
   if (!packageList) return;
 
   if (search.value === "") {
-    return packageList;
+    return Object.values(packageList);
   }
 
   const searchLower = search.value.toLowerCase();
 
-  return Object.fromEntries(
-    Object.entries(packageList).filter(
+  return Object.entries(packageList)
+    .filter(
       ([name, [pkg]]) =>
         name.toLowerCase().includes(searchLower) ||
         pkg!.description.toLowerCase().includes(searchLower),
-    ),
-  );
+    )
+    .map(([_, pkgs]) => pkgs);
 });
+
+const packagesVirtualizer = useVirtualizer(
+  computed(() => ({
+    // count: filteredPackages.value?.length || 0,
+    count: 5,
+    getScrollElement: () => containerRef.value,
+    estimateSize: () => (medium.value ? 220 : 264),
+  })),
+);
+
+const virtualPackages = computed(() =>
+  packagesVirtualizer.value.getVirtualItems(),
+);
+// const totalSize = computed(() => packagesVirtualizer.value.getTotalSize())
 </script>
 
 <template>
@@ -72,24 +86,25 @@ const filteredPackages = computed(() => {
       </md-icon-button> -->
     </div>
 
-    <form slot="content" method="dialog" class="px-0">
-      <UseVirtualList
-        v-if="filteredPackages && Object.keys(filteredPackages).length > 0"
-        ref="container"
-        :list="Object.values(filteredPackages)"
-        :options="{ itemHeight: medium ? 220 : 264 }"
-        height="27rem"
-        class="virtual-list px-6"
+    <form
+      ref="container"
+      slot="content"
+      method="dialog"
+      class="flex h-full flex-col gap-4 px-6"
+    >
+      <template
+        v-if="filteredPackages && filteredPackages.length > 0"
+        v-for="{ key, index } in virtualPackages"
+        :key="filteredPackages[index]?.[0]?.name || key"
       >
-        <template #default="{ data: versionedPackage }">
-          <package-card
-            :space-id
-            :namespace
-            :versioned-package
-            class="flex flex-col gap-2"
-          />
-        </template>
-      </UseVirtualList>
+        <package-card
+          v-if="filteredPackages[index]"
+          :space-id
+          :namespace
+          :versioned-package="filteredPackages[index]"
+          class="flex flex-col gap-2"
+        />
+      </template>
 
       <md-filled-card v-else class="label-large mx-4 p-2">
         <div class="flex items-center justify-between">
@@ -105,13 +120,3 @@ const filteredPackages = computed(() => {
     </form>
   </md-dialog>
 </template>
-
-<style>
-/* .virtual-list {
-  height: 29rem !important;
-} */
-
-.virtual-list > div {
-  @apply flex flex-col gap-4;
-}
-</style>

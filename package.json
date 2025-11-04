@@ -2,7 +2,7 @@
   "name": "mnemo",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -28,6 +28,7 @@
     "@polar-sh/better-auth": "^1.1.6",
     "@polar-sh/sdk": "^0.35.3",
     "@replit/codemirror-vscode-keymap": "^6.0.2",
+    "@tanstack/vue-virtual": "^3.13.12",
     "@tauri-apps/api": "^2.9.0",
     "@tauri-apps/cli": "^2.9.1",
     "@tauri-apps/plugin-cli": "^2.4.1",
