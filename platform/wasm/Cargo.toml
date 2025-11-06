@@ -46,7 +46,12 @@ wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
 [dev-dependencies]
+criterion = { version = "0.7.0", features = ["html_reports"] }
 wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-Oz", "-all"]
+
+[[bench]]
+harness = false
+name = "renderer"

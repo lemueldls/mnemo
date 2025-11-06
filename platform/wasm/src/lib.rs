@@ -6,6 +6,7 @@ mod utils;
 #[cfg(feature = "lol_alloc")]
 #[cfg(target_arch = "wasm32")]
 use lol_alloc::{AssumeSingleThreaded, FreeListAllocator};
+pub use typst_handler::*;
 
 #[cfg(feature = "lol_alloc")]
 #[cfg(target_arch = "wasm32")]
