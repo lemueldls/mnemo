@@ -144,24 +144,28 @@ function decorate(
     !framesCache.has(path) ||
     isFlagedForUpdate
   ) {
-    if (update.docChanged && updateInWidget) {
-      updateFlagStore.add(path);
-
+    if (update.docChanged && updateInWidget && isFlagedForUpdate) {
       const diagnostics = typstState.check(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
-      if (!isFlagedForUpdate) {
+      return;
+    } else {
+      if (update.docChanged && updateInWidget && !isFlagedForUpdate) {
         updateFlagStore.add(path);
         frames = framesCache.get(path)!;
-      } else return;
-    } else {
-      updateFlagStore.delete(path);
+      } else {
+        updateFlagStore.delete(path);
 
-      const compileResult = typstState.compile(fileId, text, prelude);
-      dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+        const compileResult = typstState.compile(fileId, text, prelude);
+        dispatchDiagnostics(
+          compileResult.diagnostics,
+          update.state,
+          update.view,
+        );
 
-      frames = compileResult.frames;
-      framesCache.set(path, compileResult.frames);
+        frames = compileResult.frames;
+        framesCache.set(path, compileResult.frames);
+      }
     }
   } else frames = framesCache.get(path)!;
 
