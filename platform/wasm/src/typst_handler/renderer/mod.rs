@@ -1,39 +1,26 @@
 mod chunk;
 mod items;
 
-use std::{cmp, fmt, fs::File, iter, ops::Range, str::FromStr};
+use std::ops::Range;
 
 pub use chunk::render_by_chunk;
-use hashbrown::{HashMap, HashSet};
-use highway::{HighwayHash, HighwayHasher};
 pub use items::render_by_items;
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
-    WorldExt, compile,
-    diag::Severity,
-    ecow::EcoString,
-    foundations::Bytes,
-    introspection::Tag,
-    layout::{Abs, FrameItem, FrameKind, PagedDocument, Point},
-    syntax::{FileId, Source, Span, SyntaxKind, VirtualPath, package::PackageSpec},
+    WorldExt,
+    layout::{Abs, FrameItem},
+    syntax::SyntaxKind,
 };
 // use typst_html::html;
-use typst_pdf::{PdfOptions, pdf};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
 use super::{
     index_mapper::IndexMapper,
-    world::{FileSlot, MnemoWorld},
-    wrappers::{TypstDiagnostic, TypstFileId, TypstJump},
+    wrappers::{TypstDiagnostic, TypstFileId},
 };
-use crate::typst_handler::{
-    state::{FileContext, TypstState},
-    wrappers::map_main_span,
-};
+use crate::typst_handler::state::TypstState;
 
 pub fn sync_file_context(
     id: &TypstFileId,
@@ -49,12 +36,18 @@ pub fn sync_file_context(
     context.index_mapper.add_main_to_aux(0, ir.len());
 
     state.world.main_id = Some(context.main_id);
-    context.main_source_mut(&mut state.world).replace(&ir);
+    context
+        .main_source_mut(&mut state.world)
+        .unwrap()
+        .replace(&ir);
 
-    context.aux_source_mut(&mut state.world).replace(&text);
+    context
+        .aux_source_mut(&mut state.world)
+        .unwrap()
+        .replace(&text);
     state.world.aux_id = Some(context.aux_id);
 
-    let aux_source = context.aux_source(&state.world);
+    let aux_source = context.aux_source(&state.world).unwrap();
 
     let children = aux_source.root().children();
     let text = aux_source.text();

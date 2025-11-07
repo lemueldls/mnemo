@@ -24,10 +24,7 @@ use super::{
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
 use crate::typst_handler::{
-    renderer::{
-        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items,
-        sync_file_context,
-    },
+    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, sync_file_context},
     wrappers::TypstHighlight,
 };
 
@@ -75,6 +72,12 @@ impl TypstState {
     #[wasm_bindgen(js_name = "insertFile")]
     pub fn insert_file(&mut self, id: &TypstFileId, text: String) {
         self.world.insert_source(id.inner(), text);
+    }
+
+    #[wasm_bindgen(js_name = "removeFile")]
+    pub fn remove_file(&mut self, id: &TypstFileId) {
+        self.file_contexts.remove(id);
+        self.world.remove_source(&id.inner());
     }
 
     #[wasm_bindgen(js_name = "installPackage")]
@@ -180,7 +183,10 @@ impl TypstState {
         let (ir, _) = sync_file_context(id, text, prelude, self);
 
         let context = self.file_contexts.get_mut(id).unwrap();
-        context.main_source_mut(&mut self.world).replace(&ir);
+        context
+            .main_source_mut(&mut self.world)
+            .unwrap()
+            .replace(&ir);
 
         let compiled = compile::<PagedDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -213,15 +219,19 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn highlight(&mut self, id: &TypstFileId, text: &str) -> Vec<TypstHighlight> {
-        let context = self.file_contexts.get(id).unwrap();
+        let Some(context) = self.file_contexts.get(id) else {
+            return Vec::new();
+        };
 
         let root = typst_syntax::parse(text);
-        context.aux_source_mut(&mut self.world).replace(text);
+        let Some(aux_source) = context.aux_source_mut(&mut self.world) else {
+            return Vec::new();
+        };
+        aux_source.replace(text);
 
         let mut queue = vec![LinkedNode::new(&root)];
         let mut highlights = Vec::new();
 
-        let aux_source = context.aux_source(&self.world);
         let aux_lines = aux_source.lines();
 
         while queue.len() > 0 {
@@ -291,8 +301,8 @@ impl TypstState {
     ) -> Option<Autocomplete> {
         let context = self.file_contexts.get(id)?;
 
-        let main_source = context.main_source(&self.world);
-        let aux_source = context.aux_source(&self.world);
+        let main_source = context.main_source(&self.world)?;
+        let aux_source = context.aux_source(&self.world)?;
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
@@ -322,8 +332,8 @@ impl TypstState {
     pub fn hover(&self, id: &TypstFileId, aux_cursor_utf16: usize, side: i8) -> Option<String> {
         let context = self.file_contexts.get(id).unwrap();
 
-        let main_source = context.main_source(&self.world);
-        let aux_source = context.aux_source(&self.world);
+        let main_source = context.main_source(&self.world)?;
+        let aux_source = context.aux_source(&self.world)?;
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
@@ -373,7 +383,7 @@ impl TypstState {
         let mut ir = self.prelude(id, RenderingMode::Pdf);
 
         let context = self.file_contexts.get_mut(id).unwrap();
-        let main_source = context.main_source_mut(&mut self.world);
+        let main_source = context.main_source_mut(&mut self.world).unwrap();
         let text = main_source.text().to_string();
         ir += &text;
 
@@ -446,30 +456,20 @@ impl FileContext {
         }
     }
 
-    pub fn main_source<'a>(&self, world: &'a MnemoWorld) -> &'a Source {
-        world.files.get(&self.main_id).unwrap().source().unwrap()
+    pub fn main_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
+        world.files.get(&self.main_id)?.source()
     }
 
-    pub fn main_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> &'a mut Source {
-        world
-            .files
-            .get_mut(&self.main_id)
-            .unwrap()
-            .source_mut()
-            .unwrap()
+    pub fn main_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
+        world.files.get_mut(&self.main_id)?.source_mut()
     }
 
-    pub fn aux_source<'a>(&self, world: &'a MnemoWorld) -> &'a Source {
-        world.files.get(&self.aux_id).unwrap().source().unwrap()
+    pub fn aux_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
+        world.files.get(&self.aux_id)?.source()
     }
 
-    pub fn aux_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> &'a mut Source {
-        world
-            .files
-            .get_mut(&self.aux_id)
-            .unwrap()
-            .source_mut()
-            .unwrap()
+    pub fn aux_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
+        world.files.get_mut(&self.aux_id)?.source_mut()
     }
 
     pub fn map_main_to_aux(&self, main_idx: usize) -> usize {

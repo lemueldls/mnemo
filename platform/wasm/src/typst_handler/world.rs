@@ -48,6 +48,10 @@ impl MnemoWorld {
         self.files.insert(id, FileSlot::Source(source));
     }
 
+    pub fn remove_source(&mut self, id: &FileId) {
+        self.files.remove(id);
+    }
+
     pub fn insert_file(&mut self, id: FileId, bytes: Bytes) {
         self.files.insert(id, FileSlot::Bytes(bytes));
     }

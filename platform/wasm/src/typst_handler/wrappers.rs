@@ -8,7 +8,6 @@ use typst::{
     ecow::{EcoVec, eco_format},
     syntax::{FileId, Span, Spanned, SyntaxError},
 };
-use typst_ide::Tooltip;
 use wasm_bindgen::prelude::*;
 
 use crate::typst_handler::{state::FileContext, world::MnemoWorld};
@@ -136,7 +135,7 @@ pub fn map_aux_span(
     context: &FileContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let aux_source = context.aux_source(&world);
+    let aux_source = context.aux_source(&world)?;
 
     let main_range = map_main_span(span, is_error, trace, context, world);
 
@@ -211,7 +210,7 @@ impl TypstJump {
                     return None;
                 }
 
-                let aux_source = context.aux_source(&world);
+                let aux_source = context.aux_source(&world)?;
                 let aux_position = context.map_main_to_aux(main_position);
                 let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 

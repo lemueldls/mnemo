@@ -428,6 +428,13 @@ export class TypstState {
         wasm.typststate_insertFile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
     }
     /**
+     * @param {FileId} id
+     */
+    removeFile(id) {
+        _assertClass(id, FileId);
+        wasm.typststate_removeFile(this.__wbg_ptr, id.__wbg_ptr);
+    }
+    /**
      * @param {string} spec
      * @param {PackageFile[]} files
      */

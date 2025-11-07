@@ -1,25 +1,19 @@
-use std::{cmp, fmt, fs::File, iter, ops::Range, str::FromStr};
+use std::{cmp, iter, ops::Range};
 
-use hashbrown::{HashMap, HashSet};
+use hashbrown::HashSet;
 use highway::{HighwayHash, HighwayHasher};
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
 use tiny_skia::IntRect;
-use tsify::Tsify;
 use typst::{
     WorldExt, compile,
     diag::Severity,
-    ecow::EcoString,
-    foundations::Bytes,
     introspection::Tag,
-    layout::{Abs, FrameItem, FrameKind, PagedDocument, Point},
-    syntax::{FileId, Source, Span, SyntaxKind, VirtualPath, package::PackageSpec},
+    layout::{Abs, FrameItem, PagedDocument, Point},
+    syntax::Span,
 };
-// use typst_html::html;
-use typst_pdf::{PdfOptions, pdf};
-// use typst_svg::{svg, svg_merged};
-use wasm_bindgen::prelude::*;
 
+// use typst_html::html;
+// use typst_svg::{svg, svg_merged};
 use crate::typst_handler::{
     renderer::{CompileResult, FrameBlock, FrameRender, RangedFrame, sync_file_context},
     state::{FileContext, TypstState},
@@ -44,7 +38,10 @@ pub fn render_by_items(
 
     let context = state.file_contexts.get_mut(id).unwrap();
 
-    context.main_source_mut(&mut state.world).replace(&ir);
+    context
+        .main_source_mut(&mut state.world)
+        .unwrap()
+        .replace(&ir);
 
     let mut ranged_heights = Vec::new();
 
@@ -220,7 +217,7 @@ pub fn render_by_items(
                 while let Some(ast_block) = ast_blocks.next() {
                     // let mut index = 0;
 
-                    let aux_source = context.aux_source(&state.world);
+                    let aux_source = context.aux_source(&state.world).unwrap();
 
                     let aux_range = &ast_block.range;
                     let aux_lines = aux_source.lines();
@@ -504,7 +501,7 @@ pub fn render_by_items(
                 let range_delta = end_byte - start_byte;
                 let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
-                let source = context.main_source_mut(&mut state.world);
+                let source = context.main_source_mut(&mut state.world).unwrap();
                 source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
 
                 Vec::new()
@@ -556,7 +553,10 @@ pub fn render_by_items(
     }
 
     context.document = last_document;
-    context.main_source_mut(&mut state.world).replace(&ir);
+    context
+        .main_source_mut(&mut state.world)
+        .unwrap()
+        .replace(&ir);
 
     CompileResult {
         frames,

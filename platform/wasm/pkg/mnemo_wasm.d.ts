@@ -85,6 +85,7 @@ export class TypstState {
   setLocale(id: FileId, locale: string): void;
   createFileId(path: string): FileId;
   insertFile(id: FileId, text: string): void;
+  removeFile(id: FileId): void;
   installPackage(spec: string, files: PackageFile[]): void;
   installFont(bytes: Uint8Array): void;
   compile(id: FileId, text: string, prelude: string): CompileResult;
@@ -108,6 +109,7 @@ export interface InitOutput {
   readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_createFileId: (a: number, b: number, c: number) => number;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_removeFile: (a: number, b: number) => void;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
