@@ -8,9 +8,9 @@ interface ActivityNode {
 
 export const useActivityGraph = createSharedComposable(
   async (amount: MaybeRefOrGetter<number>) => {
-    const activityGraph = await useStorageSet<ActivityNode[]>(
+    const activityGraph = await useStorageItem<ActivityNode[]>(
       "activity.json",
-      "date",
+      [],
     );
 
     setTimeout(async () => {
@@ -38,8 +38,6 @@ export const useActivityGraph = createSharedComposable(
         const days = toValue(amount);
         let deltaDate = today(timeZone).subtract({ days });
 
-        console.log({ days });
-
         return Object.fromEntries(
           Array.from({ length: days }).map((_, days) => {
             const date = deltaDate.add({ days });
@@ -52,11 +50,14 @@ export const useActivityGraph = createSharedComposable(
       watchImmediate(
         [() => notes.value.flat(), recentActivity],
         ([notes, recentActivity]) => {
-          console.log({ notes, recentActivity });
+          for (const { note, createdAt } of notes) {
+            const date = createdAt.toString();
+            if (recentActivity[date] != undefined) recentActivity[date]++;
 
-          for (const note of notes) {
-            const key = note.createdAt.toString();
-            if (recentActivity[key] != undefined) recentActivity[key]++;
+            if (note.datesReviewed?.length)
+              for (const date of note.datesReviewed) {
+                if (recentActivity[date] != undefined) recentActivity[date]++;
+              }
           }
 
           activityGraph.value = Object.entries(recentActivity).map(

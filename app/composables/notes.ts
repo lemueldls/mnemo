@@ -26,13 +26,12 @@ export async function loadDailyNotes(
 ) {
   let addToday = true;
 
+  const timeZone = useTimeZone();
   const maybeNotes = await Promise.all(
     notes.map(async (note) => {
-      const date = toCalendarDate(
-        fromAbsolute(decodeTime(note.id), useTimeZone()),
-      );
+      const date = toCalendarDate(fromAbsolute(decodeTime(note.id), timeZone));
 
-      if (isToday(date, useTimeZone()) && !archived) addToday = false;
+      if (isToday(date, timeZone) && !archived) addToday = false;
       else {
         const item = await getStorageItem<string>(
           `spaces/${spaceId}/daily/${note.id}.typ`,
@@ -50,7 +49,9 @@ export async function loadDailyNotes(
 
   if (addToday) {
     const id = ulid();
-    newNotes.push({ id, datesReviewed: [] });
+    const date = toCalendarDate(fromAbsolute(decodeTime(id), timeZone));
+
+    newNotes.push({ id, datesReviewed: [date.toString()] });
   }
 
   return newNotes;

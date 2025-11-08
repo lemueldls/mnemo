@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { fromAbsolute, toCalendarDate } from "@internationalized/date";
+import { fromAbsolute, toCalendarDate, today } from "@internationalized/date";
 import { createId } from "@paralleldrive/cuid2";
 import { decodeTime } from "ulid";
 
@@ -88,14 +88,13 @@ await watchImmediateAsync(spaceId, async (spaceId) => {
   resolvedDailyNotes.value = notes;
 });
 
+const timeZone = useTimeZone();
+
 const notes = useArrayMap(dailyNotes, (note) => {
   const { id } = note;
 
   const time = decodeTime(id);
-
-  const timeZone = useTimeZone();
   const calendarDate = toCalendarDate(fromAbsolute(time, timeZone));
-
   const textDate = d(time, {
     weekday: "long",
     month: "long",
@@ -188,6 +187,24 @@ async function createStickyNote() {
 
   stickyNotesOpen.value = false;
 }
+
+const { idle } = useIdle(5 * 1000); // 5 seconds
+whenever(idle, async () => {
+  const index = dailyNotes.value.findIndex(
+    (note) => note.id === currentNote.value!.id,
+  );
+
+  const note = dailyNotes.value[index]!;
+  note.datesReviewed ||= [];
+
+  const date = today(timeZone).toString();
+  if (!note.datesReviewed.includes(date)) {
+    note.datesReviewed.push(date);
+
+    const resolvedDailyNotes = await useDailyNotes(spaceId);
+    resolvedDailyNotes.value[index] = note;
+  }
+});
 </script>
 
 <template>
