@@ -18,7 +18,6 @@
 
 ## TODO
 
-- Review algorithm
 - Global search system
 - Prompt to install missing packages
 - Local storage explorer (and search?)
