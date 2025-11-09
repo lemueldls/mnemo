@@ -36,7 +36,7 @@ onNuxtReady(async () => {
           <span class="text-xl font-bold tracking-tight">
             {{ currentStep || $t("components.splashscreen.loading") }}
           </span>
-          <span class="text-primary/80 font-mono text-sm">
+          <span class="text-primary-fixed/80 font-mono text-sm">
             {{ completedSteps }}/{{ steps.length }}
           </span>
         </div>
@@ -47,35 +47,35 @@ onNuxtReady(async () => {
             :key="step.id"
             class="flex-1 rounded transition-all duration-300 ease-out"
             :class="{
-              'bg-primary scale-y-100': step.status === 'done',
-              'bg-primary/80 scale-y-100 animate-pulse':
+              'bg-primary-fixed scale-y-100': step.status === 'done',
+              'bg-primary-fixed/80 scale-y-100 animate-pulse':
                 step.status === 'loading',
-              'bg-surface/30 scale-y-75': step.status === 'pending',
+              'bg-on-primary-fixed/30 scale-y-75': step.status === 'pending',
             }"
           />
         </div>
       </div>
 
       <div
-        class="border-primary/20 flex flex-col border-l-2 pl-4 font-mono text-sm leading-relaxed"
+        class="border-primary-fixed/20 flex flex-col border-l-2 pl-4 font-mono text-sm leading-relaxed"
       >
         <div
           v-for="step in steps"
           :key="step.id"
           class="transition-all duration-300"
           :class="{
-            'text-primary translate-x-1': step.status === 'loading',
-            'text-primary/60': step.status === 'done',
-            'text-primary/40': step.status === 'pending',
+            'text-primary-fixed translate-x-1': step.status === 'loading',
+            'text-primary-fixed/60': step.status === 'done',
+            'text-primary-fixed/40': step.status === 'pending',
           }"
         >
           <div class="flex items-baseline gap-3">
             <span
               class="mt-2 h-2 w-2 shrink-0 rounded-sm"
               :class="{
-                'bg-primary animate-pulse': step.status === 'loading',
-                'bg-primary/60': step.status === 'done',
-                'bg-primary/20': step.status === 'pending',
+                'bg-primary-fixed animate-pulse': step.status === 'loading',
+                'bg-primary-fixed/60': step.status === 'done',
+                'bg-primary-fixed/20': step.status === 'pending',
               }"
             />
             <span>{{ $t(`components.splashscreen.steps.${step.id}`) }}</span>
