@@ -36,7 +36,6 @@ const route = useRoute();
 const head = useLocaleHead({
   dir: true,
   lang: true,
-  key: "id",
   seo: true,
 });
 
@@ -96,8 +95,8 @@ function resize() {
 onMounted(() => {
   resize();
 
-  window.addEventListener("resize", resize);
-  window.addEventListener("mouseup", (event) => {
+  useEventListener(window, "resize", resize);
+  useEventListener(window, "mouseup", (event) => {
     x.value = event.clientX;
     y.value = event.clientY;
   });

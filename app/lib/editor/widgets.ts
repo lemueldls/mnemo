@@ -146,14 +146,11 @@ function decorate(
     isFlaggedForUpdate
   ) {
     if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
-      console.log("CHECKING??");
-
       const diagnostics = typstState.check(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
       return;
     } else {
-      console.log("COMPILING!!");
       if (isFlaggedForUpdate) updateFlagStore.delete(path);
       else updateFlagStore.add(path);
 

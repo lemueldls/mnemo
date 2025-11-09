@@ -113,8 +113,6 @@ export function getReviewStage(dates: string[]) {
         if (state.stage < REVIEW_STAGES.length) {
           const lastTime = state.lastReviewed.toDate(timeZone).getTime();
 
-          console.log({ time, lastTime });
-
           if (time - lastTime > REVIEW_STAGES[state.stage]!)
             return { stage: state.stage + 1, lastReviewed: calendarDate };
         }
