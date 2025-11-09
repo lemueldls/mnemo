@@ -23,7 +23,7 @@ const namespace = "preview" as const;
 
 const packages = ref<{ [name: string]: Package[] }>();
 const installedPackages = await useInstalledPackages(() => props.spaceId);
-const installedFilter = ref<"all" | "installed" | "not_installed">("all");
+const installedFilter = ref<"all" | "installed" | "not-installed">("all");
 
 async function loadPackages() {
   try {
@@ -89,6 +89,14 @@ const packagesVirtualizer = useVirtualizer(
     // count: 5,
     getScrollElement: () => containerRef.value,
     estimateSize: () => (medium.value ? 220 : 264),
+    getItemKey: (index) => {
+      const pkgs = filteredPackages.value[index];
+      if (!pkgs) return "";
+
+      const pkg = pkgs[0]!;
+
+      return "@" + namespace + "/" + pkg.name;
+    },
   })),
 );
 
@@ -141,18 +149,18 @@ const virtualPackages = computed(() =>
             {{ $t("components.packages.form.filters.installed") }}
           </md-outlined-button>
 
-          <md-filled-tonal-button
-            v-if="installedFilter === 'not_installed'"
-            @click.prevent="installedFilter = 'not_installed'"
+          <!-- <md-filled-tonal-button
+            v-if="installedFilter === 'not-installed'"
+            @click.prevent="installedFilter = 'not-installed'"
           >
             {{ $t("components.packages.form.filters.not-installed") }}
           </md-filled-tonal-button>
           <md-outlined-button
             v-else
-            @click.prevent="installedFilter = 'not_installed'"
+            @click.prevent="installedFilter = 'not-installed'"
           >
             {{ $t("components.packages.form.filters.not-installed") }}
-          </md-outlined-button>
+          </md-outlined-button> -->
         </div>
       </div>
     </div>
@@ -161,12 +169,12 @@ const virtualPackages = computed(() =>
       ref="container"
       slot="content"
       method="dialog"
-      class="flex h-full flex-col gap-4 px-6"
+      class="flex h-full flex-col gap-4"
     >
       <template
         v-if="filteredPackages.length > 0"
         v-for="{ key, index } in virtualPackages"
-        :key="filteredPackages[index]?.[0]?.name || key"
+        :key
       >
         <package-card
           v-if="filteredPackages[index]"
@@ -177,15 +185,15 @@ const virtualPackages = computed(() =>
         />
       </template>
 
-      <md-filled-card v-else class="label-large mx-4 p-2">
+      <md-filled-card v-else class="label-large p-3">
         <div class="flex items-center justify-between">
           <span>
             {{ $t("components.packages.form.no-results") }}
           </span>
 
-          <md-filled-tonal-button @click.prevent="loadPackages">
+          <md-outlined-button @click.prevent="loadPackages">
             {{ $t("components.packages.form.reload") }}
-          </md-filled-tonal-button>
+          </md-outlined-button>
         </div>
       </md-filled-card>
     </form>

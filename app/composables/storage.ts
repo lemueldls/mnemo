@@ -365,16 +365,16 @@ export async function useStorageMap<T extends Record<string, unknown>>(
   const map = computedWithControl(item, () => doc.getMap(keyRef.value));
 
   return extendRef(item, {
-    set(key: string, value: Exclude<T[keyof T], Container>) {
+    async set(key: string, value: Exclude<T[keyof T], Container>) {
       // item.value[key as keyof T] = value;
       map.value.set(key, value);
-      commit();
+      await commit();
     },
-    delete(key: string) {
+    async delete(key: string) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete item.value[key];
       map.value.delete(key);
-      commit();
+      await commit();
     },
   });
 }
@@ -419,13 +419,13 @@ export async function useStorageList<T extends unknown[]>(
   const list = computedWithControl(item, () => doc.getList(keyRef.value));
 
   return extendRef(item, {
-    push(value: Exclude<T[keyof T], Container>) {
+    async push(value: Exclude<T[keyof T], Container>) {
       list.value.push(value);
-      commit();
+      await commit();
     },
-    insert(position: number, value: Exclude<T[keyof T], Container>) {
+    async insert(position: number, value: Exclude<T[keyof T], Container>) {
       list.value.insert(position, value);
-      commit();
+      await commit();
     },
     async delete(position: number, length: number) {
       list.value.delete(position, length);
@@ -490,17 +490,17 @@ export async function useStorageSet<
   const list = computedWithControl(item, () => doc.getList(keyRef.value));
 
   return extendRef(item, {
-    push(value: Exclude<T[keyof T], Container>) {
+    async push(value: Exclude<T[keyof T], Container>) {
       list.value.push(value);
-      commit();
+      await commit();
     },
-    insert(position: number, value: Exclude<T[keyof T], Container>) {
+    async insert(position: number, value: Exclude<T[keyof T], Container>) {
       list.value.insert(position, value);
-      commit();
+      await commit();
     },
-    delete(position: number, length: number) {
+    async delete(position: number, length: number) {
       list.value.delete(position, length);
-      commit();
+      await commit();
     },
   });
 }

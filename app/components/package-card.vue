@@ -11,14 +11,18 @@ const selectedIndex = ref(0);
 const pkg = computed(() => props.versionedPackage[selectedIndex.value]!);
 
 const installedPackages = await useInstalledPackages(() => props.spaceId);
-const installedPackageByName = computed(() =>
-  installedPackages.value.filter((pkgItem) => pkg.value.name === pkgItem.name),
-);
-const installedPackage = computed(() =>
-  installedPackageByName.value.find(
-    (pkgItem) => pkg.value.version === pkgItem.version,
-  ),
-);
+const installedPackageByName = computed(() => {
+  const { name } = pkg.value;
+
+  return installedPackages.value.filter((pkgItem) => name === pkgItem.name);
+});
+const installedPackage = computed(() => {
+  const { version } = pkg.value;
+
+  return installedPackageByName.value.find(
+    (pkgItem) => version === pkgItem.version,
+  );
+});
 
 const loading = ref(false);
 
@@ -32,18 +36,24 @@ async function installPackage(pkg: Package) {
   };
 
   await installTypstPackage(pkgSpec);
-  installedPackages.value.push(pkgSpec);
+  installedPackages.push(pkgSpec);
 
   loading.value = false;
 }
 
 function uninstallPackage(pkg: Package) {
-  installedPackages.value = installedPackages.value.filter(
-    (pkgItem) =>
-      pkg.name !== pkgItem.name ||
-      pkg.version !== pkgItem.version ||
-      props.namespace !== pkgItem.namespace,
-  );
+  const pkgs = installedPackages.value;
+  for (let i = pkgs.length - 1; i >= 0; i--) {
+    const pkgItem = pkgs[i]!;
+
+    if (
+      pkg.name === pkgItem.name &&
+      pkg.version === pkgItem.version
+      // && props.namespace === pkgItem.namespace
+    ) {
+      installedPackages.delete(i, 1);
+    }
+  }
 }
 </script>
 
