@@ -1,4 +1,4 @@
-import { today } from "@internationalized/date";
+import { fromAbsolute, toCalendarDate, today } from "@internationalized/date";
 import { decodeTime } from "ulid";
 
 interface ActivityNode {
@@ -17,15 +17,19 @@ export const useActivityGraph = createSharedComposable(
       if (toValue(amount) < 1) return;
 
       const spaces = await useSpaces();
-
       const spaceIds = computed(() => Object.keys(spaces.value));
+
+      const timeZone = useTimeZone();
+
       const notes = await eagerComputedAsync(() =>
         Promise.all(
           spaceIds.value.map(async (spaceId) => {
             const notes = await useDailyNotes(spaceId);
 
             return notes.value.map((note) => {
-              const createdAt = decodeTime(note.id);
+              const createdAt = toCalendarDate(
+                fromAbsolute(decodeTime(note.id), timeZone),
+              );
 
               return { note, createdAt };
             });
@@ -33,7 +37,6 @@ export const useActivityGraph = createSharedComposable(
         ),
       );
 
-      const timeZone = useTimeZone();
       const recentActivity = computed(() => {
         const days = toValue(amount);
         let deltaDate = today(timeZone).subtract({ days });
@@ -52,11 +55,11 @@ export const useActivityGraph = createSharedComposable(
         ([notes, recentActivity]) => {
           for (const { note, createdAt } of notes) {
             const date = createdAt.toString();
-            if (recentActivity[date] != undefined) recentActivity[date]++;
+            if (recentActivity[date] !== undefined) recentActivity[date]++;
 
             if (note.datesReviewed?.length)
               for (const date of note.datesReviewed) {
-                if (recentActivity[date] != undefined) recentActivity[date]++;
+                if (recentActivity[date] !== undefined) recentActivity[date]++;
               }
           }
 
