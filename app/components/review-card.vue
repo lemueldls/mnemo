@@ -33,14 +33,15 @@ const stages = useReviewStages().length;
           </md-icon>
         </div>
 
-        <editor
-          class="flex-1"
-          :space-id="review.spaceId"
-          kind="daily"
-          :model-value="review.noteId"
-          readonly
-          locked
-        />
+        <div class="flex-1 overflow-hidden">
+          <editor
+            :space-id="review.spaceId"
+            kind="daily"
+            :model-value="review.noteId"
+            readonly
+            locked
+          />
+        </div>
 
         <div
           class="text-on-primary-container flex gap-3 p-2 pt-0 font-mono"
