@@ -99,7 +99,13 @@
       "storage": "Storage"
     },
     "splashscreen": {
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "steps": {
+        "mount": "Initializing application",
+        "fonts": "Loading fonts",
+        "typst": "Initializing document renderer",
+        "nuxt": "Loading application resources"
+      }
     },
     "study": {
       "title": "Study"

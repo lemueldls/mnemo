@@ -1,49 +1,126 @@
 <script setup lang="ts">
 const emit = defineEmits<{ (e: "ready", isReady: boolean): void }>();
 
-const progress = ref(0);
-const totalProgress = 3;
+const { steps, currentStep, completedSteps, isComplete, startStep } = useSteps({
+  initialSteps: ["mount", "typst", "nuxt"],
+  onComplete: () => emit("ready", true),
+});
 
-onMounted(() => {
-  progress.value++;
+const ready = isComplete;
 
+onMounted(async () => {
+  // Initialize app
+  const mount = await startStep("mount");
+  await nextTick();
+  mount.complete();
+
+  // Initialize Typst
+  const typst = await startStep("typst");
   const typstState = useTypst();
-  typstState.then(() => progress.value++);
+  await typstState;
+  typst.complete();
 });
 
 onNuxtReady(async () => {
-  progress.value++;
+  const nuxt = await startStep("nuxt");
+  await nextTick();
+  nuxt.complete();
 });
-
-const ready = computed(() => progress.value >= totalProgress);
-whenever(ready, () => emit("ready", true));
 </script>
 
 <template>
   <mx-theme id="splashscreen" color="#16161d" dark :class="{ ready }">
-    <div class="m-16 flex w-full max-w-sm flex-col gap-2">
-      <div class="label-large flex justify-between">
-        <span class="font-bold">
-          {{ $t("components.splashscreen.loading") }}
-        </span>
+    <div class="m-16 flex w-full max-w-sm flex-col gap-6">
+      <div class="flex flex-col gap-3">
+        <div class="flex items-baseline justify-between">
+          <span class="text-xl font-bold tracking-tight">
+            {{ currentStep || $t("components.splashscreen.loading") }}
+          </span>
+          <span class="text-primary/80 font-mono text-sm">
+            {{ completedSteps }}/{{ steps.length }}
+          </span>
+        </div>
 
-        <span>{{ progress }} / {{ totalProgress }}</span>
+        <div class="flex h-2 gap-1.5">
+          <div
+            v-for="step in steps"
+            :key="step.id"
+            class="flex-1 rounded transition-all duration-300 ease-out"
+            :class="{
+              'bg-primary scale-y-100': step.status === 'done',
+              'bg-primary/80 scale-y-100 animate-pulse':
+                step.status === 'loading',
+              'bg-surface/30 scale-y-75': step.status === 'pending',
+            }"
+          />
+        </div>
       </div>
 
-      <md-linear-progress :value="progress / totalProgress" />
+      <div
+        class="border-primary/20 flex flex-col border-l-2 pl-4 font-mono text-sm leading-relaxed"
+      >
+        <div
+          v-for="step in steps"
+          :key="step.id"
+          class="transition-all duration-300"
+          :class="{
+            'text-primary translate-x-1': step.status === 'loading',
+            'text-primary/60': step.status === 'done',
+            'text-primary/40': step.status === 'pending',
+          }"
+        >
+          <div class="flex items-baseline gap-3">
+            <span
+              class="mt-2 h-2 w-2 shrink-0 rounded-sm"
+              :class="{
+                'bg-primary animate-pulse': step.status === 'loading',
+                'bg-primary/60': step.status === 'done',
+                'bg-primary/20': step.status === 'pending',
+              }"
+            />
+            <span>{{ $t(`components.splashscreen.steps.${step.id}`) }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </mx-theme>
 </template>
 
 <style>
 #splashscreen {
-  @apply text-on-background bg-background animate-fade-in animate-duration-150 absolute inset-0 z-12 flex h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto opacity-100 transition-opacity duration-150;
-
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fade-in 600ms cubic-bezier(0.4, 0, 0.2, 1);
   background-color: #4c4d72;
   color: #cecefa;
+  letter-spacing: -0.01em;
 
   &.ready {
-    @apply pointer-events-none opacity-0 select-none;
+    pointer-events: none;
+    opacity: 0;
+    user-select: none;
+    transform: scale(1.05);
+    filter: blur(4px);
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 }
 </style>
