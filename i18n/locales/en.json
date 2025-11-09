@@ -39,7 +39,8 @@
   },
   "components": {
     "editor": {
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "installing-packages": "Installing packages..."
     },
     "new-space": {
       "title": "New Space",

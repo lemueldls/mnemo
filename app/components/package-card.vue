@@ -25,15 +25,24 @@ const loading = ref(false);
 async function installPackage(pkg: Package) {
   loading.value = true;
 
-  await installTypstPackage(pkg, props.namespace);
-  installedPackages.value.push(pkg);
+  const pkgSpec = {
+    namespace: props.namespace,
+    name: pkg.name,
+    version: pkg.version,
+  };
+
+  await installTypstPackage(pkgSpec);
+  installedPackages.value.push(pkgSpec);
 
   loading.value = false;
 }
 
 function uninstallPackage(pkg: Package) {
   installedPackages.value = installedPackages.value.filter(
-    (pkgItem) => !isSamePackage(pkg, pkgItem),
+    (pkgItem) =>
+      pkg.name === pkgItem.name &&
+      pkg.version === pkgItem.version &&
+      props.namespace === pkgItem.namespace,
   );
 }
 </script>

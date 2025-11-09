@@ -11,7 +11,11 @@ import {
 
 import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
-import { EditorState, type EditorStateConfig } from "@codemirror/state";
+import {
+  EditorState,
+  type EditorStateConfig,
+  Compartment,
+} from "@codemirror/state";
 import { history, historyField } from "@codemirror/commands";
 
 import {
@@ -84,6 +88,9 @@ const text = await useStorageText(fullPath);
 
 const stateCache = new LRUCache<string, EditorState>({ max: 3 });
 
+// Compartment to allow dynamic updates to the placeholder text
+const placeholderCompartment = new Compartment();
+
 onMounted(async () => {
   const container = containerRef.value!;
   const view = new EditorView({
@@ -93,7 +100,8 @@ onMounted(async () => {
       extensions: [
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
-        placeholder(t("components.editor.loading")),
+        // placeholder is placed inside a Compartment so we can update it
+        placeholderCompartment.of(placeholder(t("components.editor.loading"))),
         lintGutter(),
       ],
     }),
@@ -103,8 +111,64 @@ onMounted(async () => {
 
   try {
     const packages = await useInstalledPackages(() => props.spaceId);
+
+    const showInstallingPlaceholder = (lines: string[]) =>
+      view.dispatch({
+        effects: placeholderCompartment.reconfigure(
+          placeholder(lines.join("\n")),
+        ),
+      });
+
+    // Start with a generic installing header
+    showInstallingPlaceholder([t("components.editor.installing-packages")]);
+
     await watchImmediateAsync(packages, async (packages) => {
-      await Promise.all(packages.map((pkg) => installTypstPackage(pkg)));
+      if (!packages || packages.length === 0) {
+        // nothing to install — restore default
+        showInstallingPlaceholder([t("components.editor.loading")]);
+        if (ready) reloadEditorWidgets(view);
+        return;
+      }
+
+      // Track statuses so we can continuously update the placeholder
+      const statuses = packages.map((p) => ({
+        namespace: p.namespace || "preview",
+        name: p.name,
+        version: p.version,
+        status: "pending",
+      }));
+
+      const buildLines = () => {
+        const header = t("components.editor.installing-packages");
+        const pkgLines = statuses.map((s) => {
+          const mark =
+            s.status === "done" ? "✔" : s.status === "failed" ? "✖" : "•";
+          return `${mark} @${s.namespace}/${s.name}:${s.version}`;
+        });
+        return [header, ...pkgLines];
+      };
+
+      showInstallingPlaceholder(buildLines());
+
+      for (let i = 0; i < packages.length; i++) {
+        const pkg = packages[i];
+        if (!pkg) continue;
+        try {
+          await installTypstPackage(pkg);
+          const s = statuses[i];
+          if (s) s.status = "done";
+        } catch (err) {
+          console.error("Error installing package:", pkg, err);
+          const s = statuses[i];
+          if (s) s.status = "failed";
+        }
+
+        // update placeholder after each package
+        showInstallingPlaceholder(buildLines());
+      }
+
+      // restore the original loading/placeholder text after install
+      showInstallingPlaceholder([t("components.editor.loading")]);
 
       if (ready) reloadEditorWidgets(view);
     });

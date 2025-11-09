@@ -1,7 +1,5 @@
 import init, { PackageFile, TypstState } from "mnemo-wasm";
 
-import type { Package } from "~~/server/api/list-packages.get";
-
 export const useTypst = createSharedComposable(
   async () =>
     await init().then(async () => {
@@ -44,21 +42,27 @@ export const useTypst = createSharedComposable(
     }),
 );
 
+export interface TypstPackageSpec {
+  namespace: string;
+  name: string;
+  version: string;
+}
+
 export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
-  await useStorageItem<Package[]>(
+  await useStorageItem<TypstPackageSpec[]>(
     () => `spaces/${toValue(spaceId)}/packages.json`,
     [],
   );
 
-export function isSamePackage(a: Package, b: Package) {
-  return a.name === b.name && a.version === b.version;
-}
-
-export async function installTypstPackage(pkg: Package, namespace = "preview") {
+export const installTypstPackage = useMemoize(async (pkg: TypstPackageSpec) => {
   const { $api } = useNuxtApp();
 
   const { spec, files } = await $api("/api/get-package", {
-    query: { namespace, name: pkg.name, version: pkg.version },
+    query: {
+      namespace: pkg.namespace || "preview",
+      name: pkg.name,
+      version: pkg.version,
+    },
   });
 
   const typstState = await useTypst();
@@ -68,4 +72,4 @@ export async function installTypstPackage(pkg: Package, namespace = "preview") {
       (file) => new PackageFile(file.path, new Uint8Array(file.content!)),
     ),
   );
-}
+});
