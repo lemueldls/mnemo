@@ -1,8 +1,14 @@
-use std::{fmt, str::FromStr};
+use std::{
+    fmt,
+    fs::File,
+    io::{Cursor, Read},
+    str::FromStr,
+};
 
 use hashbrown::HashMap;
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
+use tar::Archive;
 use tsify::Tsify;
 use typst::{
     compile,
@@ -81,19 +87,25 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = "installPackage")]
-    pub fn install_package(
-        &mut self,
-        spec: &str,
-        files: Vec<PackageFile>,
-    ) -> Result<(), TypstError> {
+    pub fn install_package(&mut self, spec: &str, data: Vec<u8>) -> Result<(), TypstError> {
         let package_spec = Some(PackageSpec::from_str(spec).map_err(TypstError)?);
 
-        for file in files {
-            let id = FileId::new(package_spec.clone(), VirtualPath::new(&file.path));
+        let data = Cursor::new(data);
+        let data = flate2::read::GzDecoder::new(data);
+        let mut archive = Archive::new(data);
 
-            match String::from_utf8(file.content.clone()) {
+        for entry in archive.entries().unwrap() {
+            let mut file = entry.unwrap();
+            let path = file.path().unwrap();
+
+            let id = FileId::new(package_spec.clone(), VirtualPath::new(&path));
+
+            let mut content = Vec::new();
+            file.read_to_end(&mut content).unwrap();
+
+            match String::from_utf8(content.clone()) {
                 Ok(content) => self.world.insert_source(id, content),
-                Err(..) => self.world.insert_file(id, Bytes::new(file.content)),
+                Err(..) => self.world.insert_file(id, Bytes::new(content)),
             }
         }
 

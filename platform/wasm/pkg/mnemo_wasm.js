@@ -125,16 +125,6 @@ function passArray8ToWasm0(arg, malloc) {
     return ptr;
 }
 
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    const mem = getDataViewMemory0();
-    for (let i = 0; i < array.length; i++) {
-        mem.setUint32(ptr + 4 * i, addHeapObject(array[i]), true);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
-}
-
 function getArrayJsValueFromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     const mem = getDataViewMemory0();
@@ -185,13 +175,6 @@ const PackageFileFinalization = (typeof FinalizationRegistry === 'undefined')
     : new FinalizationRegistry(ptr => wasm.__wbg_packagefile_free(ptr >>> 0, 1));
 
 export class PackageFile {
-
-    static __unwrap(jsValue) {
-        if (!(jsValue instanceof PackageFile)) {
-            return 0;
-        }
-        return jsValue.__destroy_into_raw();
-    }
 
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
@@ -373,14 +356,29 @@ export class TypstState {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_typststate_free(ptr, 0);
     }
+    constructor() {
+        const ret = wasm.typststate_new();
+        this.__wbg_ptr = ret >>> 0;
+        TypstStateFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
     /**
      * @param {FileId} id
-     * @returns {RenderPdfResult}
+     * @param {number} size
      */
-    renderPdf(id) {
+    setPixelPerPt(id, size) {
         _assertClass(id, FileId);
-        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
-        return takeObject(ret);
+        wasm.typststate_setPixelPerPt(this.__wbg_ptr, id.__wbg_ptr, size);
+    }
+    /**
+     * @param {FileId} id
+     * @param {ThemeColors} theme
+     */
+    setTheme(id, theme) {
+        _assertClass(id, FileId);
+        _assertClass(theme, ThemeColors);
+        var ptr0 = theme.__destroy_into_raw();
+        wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
     }
     /**
      * @param {FileId} id
@@ -391,6 +389,16 @@ export class TypstState {
         const ptr0 = passStringToWasm0(locale, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
         wasm.typststate_setLocale(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} path
+     * @returns {FileId}
+     */
+    createFileId(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.typststate_createFileId(this.__wbg_ptr, ptr0, len0);
+        return FileId.__wrap(ret);
     }
     /**
      * @param {FileId} id
@@ -410,44 +418,15 @@ export class TypstState {
         wasm.typststate_removeFile(this.__wbg_ptr, id.__wbg_ptr);
     }
     /**
-     * @param {FileId} id
-     * @param {number} aux_cursor_utf16
-     * @param {boolean} explicit
-     * @returns {Autocomplete | undefined}
-     */
-    autocomplete(id, aux_cursor_utf16, explicit) {
-        _assertClass(id, FileId);
-        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, explicit);
-        return takeObject(ret);
-    }
-    /**
-     * @param {Uint8Array} bytes
-     */
-    installFont(bytes) {
-        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_export_0);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.typststate_installFont(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string} path
-     * @returns {FileId}
-     */
-    createFileId(path) {
-        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_createFileId(this.__wbg_ptr, ptr0, len0);
-        return FileId.__wrap(ret);
-    }
-    /**
      * @param {string} spec
-     * @param {PackageFile[]} files
+     * @param {Uint8Array} data
      */
-    installPackage(spec, files) {
+    installPackage(spec, data) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             const ptr0 = passStringToWasm0(spec, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
             const len0 = WASM_VECTOR_LEN;
-            const ptr1 = passArrayJsValueToWasm0(files, wasm.__wbindgen_export_0);
+            const ptr1 = passArray8ToWasm0(data, wasm.__wbindgen_export_0);
             const len1 = WASM_VECTOR_LEN;
             wasm.typststate_installPackage(retptr, this.__wbg_ptr, ptr0, len0, ptr1, len1);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
@@ -460,18 +439,27 @@ export class TypstState {
         }
     }
     /**
-     * @param {FileId} id
-     * @param {number} size
+     * @param {Uint8Array} bytes
      */
-    setPixelPerPt(id, size) {
-        _assertClass(id, FileId);
-        wasm.typststate_setPixelPerPt(this.__wbg_ptr, id.__wbg_ptr, size);
+    installFont(bytes) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_export_0);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_installFont(this.__wbg_ptr, ptr0, len0);
     }
-    constructor() {
-        const ret = wasm.typststate_new();
-        this.__wbg_ptr = ret >>> 0;
-        TypstStateFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+    /**
+     * @param {FileId} id
+     * @param {string} text
+     * @param {string} prelude
+     * @returns {CompileResult}
+     */
+    compile(id, text, prelude) {
+        _assertClass(id, FileId);
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.typststate_compile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
     }
     /**
      * @param {FileId} id
@@ -499,6 +487,27 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
+     * @param {string} text
+     * @returns {TypstHighlight[]}
+     */
+    highlight(id, text) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(id, FileId);
+            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.typststate_highlight(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @param {FileId} id
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
@@ -506,6 +515,17 @@ export class TypstState {
     click(id, x, y) {
         _assertClass(id, FileId);
         const ret = wasm.typststate_click(this.__wbg_ptr, id.__wbg_ptr, x, y);
+        return takeObject(ret);
+    }
+    /**
+     * @param {FileId} id
+     * @param {number} aux_cursor_utf16
+     * @param {boolean} explicit
+     * @returns {Autocomplete | undefined}
+     */
+    autocomplete(id, aux_cursor_utf16, explicit) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, explicit);
         return takeObject(ret);
     }
     /**
@@ -544,49 +564,12 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
-     * @param {string} text
-     * @param {string} prelude
-     * @returns {CompileResult}
+     * @returns {RenderPdfResult}
      */
-    compile(id, text, prelude) {
+    renderPdf(id) {
         _assertClass(id, FileId);
-        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_compile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
         return takeObject(ret);
-    }
-    /**
-     * @param {FileId} id
-     * @param {string} text
-     * @returns {TypstHighlight[]}
-     */
-    highlight(id, text) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            _assertClass(id, FileId);
-            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.typststate_highlight(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
-            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
-            return v2;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @param {FileId} id
-     * @param {ThemeColors} theme
-     */
-    setTheme(id, theme) {
-        _assertClass(id, FileId);
-        _assertClass(theme, ThemeColors);
-        var ptr0 = theme.__destroy_into_raw();
-        wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
     }
 }
 
@@ -672,10 +655,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_newwithbyteoffsetandlength_d97e637ebe145a9a = function(arg0, arg1, arg2) {
         const ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
         return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_packagefile_unwrap = function(arg0) {
-        const ret = PackageFile.__unwrap(takeObject(arg0));
-        return ret;
     };
     imports.wbg.__wbg_set_37837023f3d740e8 = function(arg0, arg1, arg2) {
         getObject(arg0)[arg1 >>> 0] = takeObject(arg2);

@@ -40,9 +40,9 @@ async function installPackage(pkg: Package) {
 function uninstallPackage(pkg: Package) {
   installedPackages.value = installedPackages.value.filter(
     (pkgItem) =>
-      pkg.name === pkgItem.name &&
-      pkg.version === pkgItem.version &&
-      props.namespace === pkgItem.namespace,
+      pkg.name !== pkgItem.name ||
+      pkg.version !== pkgItem.version ||
+      props.namespace !== pkgItem.namespace,
   );
 }
 </script>
