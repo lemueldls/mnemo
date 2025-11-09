@@ -168,8 +168,7 @@ onMounted(async () => {
         showInstallingPlaceholder(buildLines());
       }
 
-      // restore the original loading/placeholder text after install
-      showInstallingPlaceholder([t("components.editor.loading")]);
+      // showInstallingPlaceholder([t("components.editor.loading")]);
 
       if (ready) reloadEditorWidgets(view);
     });
