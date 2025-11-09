@@ -115,13 +115,16 @@ impl TypstState {
                         #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
 
                         #set text(top-edge:"ascender",bottom-edge:"descender")
-                        #set par(leading:0em,linebreaks:"simple")
+                        #set par(leading:0.08em,linebreaks:"simple")
+
+                        #set list(spacing:0.125em)
+                        #set enum(spacing:0.125em)
 
                         #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
                         #show heading:set block(above:0.25em,below:0.125em)
                         #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
-                        #show list:set block(above:0.25em,below:0em)
-                        #show enum:set block(above:0.25em,below:0em)
+                        #show list:set block(above:0.25em,below:0.125em)
+                        #show enum:set block(above:0.25em,below:0.125em)
                     "#,
                     width = context.width,
                 )

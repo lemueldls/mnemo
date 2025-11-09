@@ -31,6 +31,7 @@ export const typstPlugin = (
   indentService.of((ctx: IndentContext, pos: number): number => {
     const last = Math.max(0, pos - 1);
     const prev = ctx.lineAt(last).text;
+    if (prev.endsWith("$") && prev !== "$") return 0;
     const indent = /[{[($]\s*$/.test(prev);
     return ctx.lineIndent(last) + (indent ? ctx.unit : 0);
   }),

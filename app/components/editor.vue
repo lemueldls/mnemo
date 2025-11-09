@@ -78,6 +78,7 @@ const prelude = computed(() =>
 const { t, locale } = useI18n();
 
 const typstState = await useTypst();
+// const idsToCleanup = new Set<FileId>();
 
 const text = await useStorageText(fullPath);
 
@@ -113,8 +114,12 @@ onMounted(async () => {
 
   watchImmediate(fullPath, (fullPath, oldFullPath) => {
     const fileId = typstState.createFileId(fullPath);
+    // idsToCleanup.add(fileId);
 
     typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    useEventListener(window, "resize", () => {
+      typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    });
 
     watchImmediate(palette, (palette) => {
       typstState.setTheme(
@@ -207,6 +212,13 @@ onMounted(async () => {
   );
 });
 
+// onUnmounted(() => {
+//   console.log({ idsToCleanup });
+//   for (const id of idsToCleanup) {
+//     typstState.removeFile(id);
+//   }
+// });
+
 // const doc = await useCrdt();
 // const undoManager = await useCrdtUndoManager();
 
@@ -257,7 +269,7 @@ function createStateConfig(
 }
 
 function reloadEditorWidgets(view: EditorView) {
-  view.dispatch({ changes: [{ from: 0, insert: " " }] });
+  view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
   view.dispatch({ changes: [{ from: 0, to: 1 }] });
 }
 
@@ -329,12 +341,11 @@ const renderHoverBackground = computed(() => {
     font-family: var(--font-mono);
   }
 
-  // .cm-selectionBackground,
-  // .cm-content ::selection {
-  //   @apply text-tertiary;
+  .cm-selectionBackground {
+    @apply text-tertiary;
 
-  //   background-color: v-bind(selectionBackground) !important;
-  // }
+    background-color: v-bind(selectionBackground) !important;
+  }
 
   .cm-panels {
     @apply bg-surface-variant text-on-surface-variant border-outline-variant;
@@ -589,7 +600,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .typ-raw {
-    @apply text-secondary;
+    @apply text-tertiary;
   }
 
   .typ-label {
@@ -605,7 +616,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .typ-marker {
-    @apply font-bold;
+    @apply text-on-surface-variant font-bold;
   }
 
   .typ-term {
@@ -613,7 +624,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .typ-math-delim {
-    @apply text-outline;
+    @apply text-on-surface-variant;
   }
 
   .typ-math-op {

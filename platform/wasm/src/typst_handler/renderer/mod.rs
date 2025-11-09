@@ -76,9 +76,11 @@ pub fn sync_file_context(
                         | SyntaxKind::ModuleImport
                         | SyntaxKind::ModuleInclude
                         | SyntaxKind::Contextual
-                        | SyntaxKind::ListItem
-                        | SyntaxKind::EnumItem
-                        | SyntaxKind::Linebreak,
+                        // | SyntaxKind::ListItem
+                        // | SyntaxKind::EnumItem
+                        | SyntaxKind::Linebreak
+                        | SyntaxKind::LineComment
+                        | SyntaxKind::BlockComment,
                     ) => {}
                     _ => {
                         ir += "\n#box() \\";

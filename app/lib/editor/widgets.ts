@@ -124,17 +124,18 @@ const framesCache = new LRUCache<string, RangedFrame[]>({ max: 3 });
 const updateFlagStore = new Set<string>();
 
 function decorate(
-  typstState: TypstState,
   update: ViewUpdate,
   path: string,
   fileId: FileId,
   prelude: string,
+  // currentDecorations: DecorationSet,
   widthChanged: boolean,
   locked: boolean,
   updateInWidget: boolean,
+  typstState: TypstState,
 ) {
   const text = update.state.doc.toString();
-  const isFlagedForUpdate = updateFlagStore.has(path);
+  const isFlaggedForUpdate = updateFlagStore.has(path);
 
   let frames: RangedFrame[];
 
@@ -142,44 +143,38 @@ function decorate(
     update.docChanged ||
     widthChanged ||
     !framesCache.has(path) ||
-    isFlagedForUpdate
+    isFlaggedForUpdate
   ) {
-    if (update.docChanged && updateInWidget && isFlagedForUpdate) {
+    if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
+      console.log("CHECKING??");
+
       const diagnostics = typstState.check(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
       return;
     } else {
-      if (update.docChanged && updateInWidget && !isFlagedForUpdate) {
-        updateFlagStore.add(path);
-        frames = framesCache.get(path)!;
-      } else {
-        updateFlagStore.delete(path);
+      console.log("COMPILING!!");
+      if (isFlaggedForUpdate) updateFlagStore.delete(path);
+      else updateFlagStore.add(path);
 
-        const compileResult = typstState.compile(fileId, text, prelude);
-        dispatchDiagnostics(
-          compileResult.diagnostics,
-          update.state,
-          update.view,
-        );
+      const compileResult = typstState.compile(fileId, text, prelude);
+      dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
-        frames = compileResult.frames;
-        framesCache.set(path, compileResult.frames);
-      }
+      frames = compileResult.frames;
+      framesCache.set(path, compileResult.frames);
     }
   } else frames = framesCache.get(path)!;
 
   const { view, state } = update;
 
-  const widgets: Range<Decoration>[] = [];
+  const decorations: Range<Decoration>[] = [];
 
   for (const frame of frames) {
-    if (frame.render) {
-      const { start, end } = frame.range;
+    const { start, end } = frame.range;
 
+    if (frame.render && end <= state.doc.length) {
       const inactive =
         !view.hasFocus ||
-        !updateInWidget ||
         state.selection.ranges.every(
           (range) =>
             (range.from < start || range.from > end) &&
@@ -190,7 +185,8 @@ function decorate(
 
       if (inactive) {
         const widget = new TypstWidget(view, frame, locked, fileId, typstState);
-        widgets.push(Decoration.replace({ widget }).range(start, end));
+
+        decorations.push(Decoration.replace({ widget }).range(start, end));
       } else {
         let lineHeight = 0;
 
@@ -210,9 +206,12 @@ function decorate(
               "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
             style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
-          else lineHeight += view.lineBlockAt(line.from).height;
+          else {
+            // lineHeight += view.lineBlockAt(line.from).height;
+            lineHeight += 22.39; // TODO: don't hardcode (fix when font size is configurable)
+          }
 
-          widgets.push(
+          decorations.push(
             Decoration.line({
               class: "cm-activeLine",
               attributes: { style },
@@ -223,7 +222,7 @@ function decorate(
     }
   }
 
-  return Decoration.set(widgets);
+  return Decoration.set(decorations);
 }
 
 const typstStateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
@@ -236,12 +235,8 @@ export const typstStateField = StateField.define({
     const effect = transaction.effects.find((effect) =>
       effect.is(typstStateEffect),
     );
-    const typstDecorations = effect?.value.decorations;
 
-    if (typstDecorations && typstDecorations.size > 0) {
-      return typstDecorations;
-    }
-
+    if (effect) return effect.value.decorations;
     return decorations.map(transaction.changes);
   },
   provide: (field) => [EditorView.decorations.from(field)],
@@ -258,29 +253,31 @@ export const typstViewPlugin = (
   ViewPlugin.define((_view) => {
     return {
       update(update: ViewUpdate) {
+        let widthChanged = false;
+        if (update.geometryChanged) {
+          const { scrollDOM, contentDOM } = update.view;
+
+          widthChanged = typstState.resize(
+            fileId,
+            contentDOM.clientWidth - 2 * window.devicePixelRatio,
+            locked ? scrollDOM.clientHeight : undefined,
+          );
+        }
+
         if (
           update.docChanged ||
-          update.geometryChanged ||
           update.selectionSet ||
-          update.focusChanged
+          update.focusChanged ||
+          widthChanged
         ) {
-          let widthChanged = false;
-          if (update.geometryChanged) {
-            const { scrollDOM, contentDOM } = update.view;
-
-            widthChanged = typstState.resize(
-              fileId,
-              contentDOM.clientWidth - 2 * window.devicePixelRatio,
-              locked ? scrollDOM.clientHeight : undefined,
-            );
-          }
-
           const state = update.state;
-          const decorations = state.field(typstStateField);
+          const currentDecorations = state.field(typstStateField);
 
           let updateInWidget = false;
 
-          decorations.between(0, state.doc.length, (from, to) => {
+          currentDecorations.between(0, state.doc.length, (from, to) => {
+            if (to > state.doc.length) return;
+
             const { from: start } = state.doc.lineAt(from);
             const { to: end } = state.doc.lineAt(to);
 
@@ -301,14 +298,15 @@ export const typstViewPlugin = (
 
           queueMicrotask(() => {
             const decorations = decorate(
-              typstState,
               update,
               path,
               fileId,
               prelude.value,
+              // currentDecorations,
               widthChanged,
               locked,
               updateInWidget,
+              typstState,
             );
 
             if (decorations) {
