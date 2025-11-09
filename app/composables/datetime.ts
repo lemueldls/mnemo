@@ -18,7 +18,9 @@ export function useRelativeTime(time: number) {
   const now = useNow({ interval: 60000 });
 
   const { locale } = useI18n();
-  const relativeTimeFormat = new Intl.RelativeTimeFormat(locale.value, {});
+  const relativeTimeFormat = new Intl.RelativeTimeFormat(locale.value, {
+    numeric: "auto",
+  });
 
   return computed(() => {
     const milliseconds = now.value.getTime() - time;
@@ -27,7 +29,6 @@ export function useRelativeTime(time: number) {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (days === 0) return "today";
     return relativeTimeFormat.format(-days, "days");
 
     // if (days > 0) return relativeTimeFormat.format(-days, "days");
@@ -36,3 +37,12 @@ export function useRelativeTime(time: number) {
     // else return relativeTimeFormat.format(-seconds, "seconds");
   });
 }
+
+export const useWeekdays = createSharedComposable(() => {
+  const showWeekends = useCookie("show-weekends", { default: () => false });
+  const startWeekday = computed(() => (showWeekends.value ? 0 : 1));
+  const endWeekday = computed(() => (showWeekends.value ? 7 : 6));
+  const totalWeekdays = computed(() => endWeekday.value - startWeekday.value);
+
+  return { showWeekends, startWeekday, endWeekday, totalWeekdays };
+});

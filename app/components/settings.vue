@@ -2,6 +2,7 @@
 const open = defineModel<boolean>();
 
 const dark = useDark();
+const { showWeekends } = useWeekdays();
 const name = await useStorageText("name");
 
 const { t, locale, locales, setLocale } = useI18n();
@@ -22,6 +23,17 @@ const { t, locale, locales, setLocale } = useI18n();
           icons
           :selected="dark"
           @change="dark = $event.target.selected"
+        />
+      </label>
+
+      <label class="flex items-center justify-between gap-4">
+        {{ t("components.settings.form.show-weekdays") }}
+
+        <md-switch
+          :aria-label="t('components.settings.form.show-weekdays')"
+          icons
+          :selected="showWeekends"
+          @change="showWeekends = $event.target.selected"
         />
       </label>
 

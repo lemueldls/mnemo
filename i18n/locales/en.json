@@ -89,10 +89,14 @@
         }
       }
     },
+    "review-card": {
+      "reviewed": "Reviewed"
+    },
     "settings": {
       "title": "Settings",
       "form": {
         "dark-theme": "Dark Theme",
+        "show-weekdays": "Show Weekdays",
         "name": "Name",
         "language": "Language"
       }

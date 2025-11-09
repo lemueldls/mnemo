@@ -1,4 +1,9 @@
-import { fromAbsolute, toCalendarDate, today } from "@internationalized/date";
+import {
+  fromAbsolute,
+  getDayOfWeek,
+  toCalendarDate,
+  today,
+} from "@internationalized/date";
 import { decodeTime } from "ulid";
 
 interface ActivityNode {
@@ -8,6 +13,8 @@ interface ActivityNode {
 
 export const useActivityGraph = createSharedComposable(
   async (amount: MaybeRefOrGetter<number>) => {
+    const { locale } = useI18n();
+
     const activityGraph = await useStorageItem<ActivityNode[]>(
       "activity.json",
       [],
@@ -37,16 +44,32 @@ export const useActivityGraph = createSharedComposable(
         ),
       );
 
-      const recentActivity = computed(() => {
+      const { startWeekday, endWeekday } = useWeekdays();
+      const recentActivity = computed<{ [date: string]: number }>(() => {
         const days = toValue(amount);
-        let deltaDate = today(timeZone).subtract({ days });
+        let deltaDate = today(timeZone).add({ days: 1 });
+
+        const start = startWeekday.value;
+        const end = endWeekday.value;
+
+        // console.log(deltaDate.toString(), { start, end });
 
         return Object.fromEntries(
-          Array.from({ length: days }).map((_, days) => {
-            const date = deltaDate.add({ days });
+          Array.from({ length: days })
+            .map(() => {
+              deltaDate = deltaDate.subtract({ days: 1 });
 
-            return [date.toString(), 0];
-          }),
+              const dayOfWeek = getDayOfWeek(deltaDate, locale.value);
+
+              const startDelta = start - dayOfWeek;
+              if (startDelta > 0) deltaDate = deltaDate.subtract({ days: 2 });
+
+              const endDelta = dayOfWeek - end;
+              if (endDelta > 0) deltaDate = deltaDate.subtract({ days: 1 });
+
+              return [deltaDate.toString(), 0];
+            })
+            .reverse(),
         );
       });
 
@@ -57,10 +80,11 @@ export const useActivityGraph = createSharedComposable(
             const date = createdAt.toString();
             if (recentActivity[date] !== undefined) recentActivity[date]++;
 
-            if (note.datesReviewed?.length)
+            if (note.datesReviewed?.length) {
               for (const date of note.datesReviewed) {
                 if (recentActivity[date] !== undefined) recentActivity[date]++;
               }
+            }
           }
 
           activityGraph.value = Object.entries(recentActivity).map(

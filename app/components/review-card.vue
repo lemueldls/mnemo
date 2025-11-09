@@ -58,7 +58,8 @@ const stages = useReviewStages().length;
           </div>
 
           <span class="label-large self-end text-right">
-            Reviewed {{ useRelativeTime(review.lastReviewed) }}
+            {{ $t("components.review-card.reviewed") }}
+            {{ useRelativeTime(review.lastReviewed) }}
           </span>
         </div>
       </md-elevated-card>

@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { getDayOfWeek, parseDate } from "@internationalized/date";
 
-const showWeekends = false;
-const startWeekday = showWeekends ? 0 : 1;
-const endWeekday = showWeekends ? 7 : 6;
-const totalWeekdays = endWeekday - startWeekday;
+const { startWeekday, totalWeekdays } = useWeekdays();
 
 const container = useTemplateRef("container");
 const { width } = useElementSize(container);
@@ -13,13 +10,13 @@ const scrollWidth = useScrollWidth(container);
 const { x: scrollX } = useScroll(container);
 
 const cellSize = 12;
-// const gapSize = 4;
+const gapSize = 4;
 
 const amount = computed(() => {
-  const quotient = width.value / cellSize;
-  const columns = Math.ceil(quotient);
+  const quotient = width.value / (cellSize + gapSize);
+  const columns = Math.ceil(quotient) + 1;
 
-  return columns * totalWeekdays;
+  return columns * totalWeekdays.value;
 });
 
 const activityGraph = await useActivityGraph(amount);
@@ -61,10 +58,12 @@ const weekdays = computed(() =>
 
 <template>
   <div class="flex flex-col gap-3 overflow-hidden">
-    <div class="flex items-stretch justify-between gap-3">
+    <div class="flex items-stretch justify-between gap-1">
       <div class="flex flex-col">
         <div class="label-small flex-1" v-for="i in totalWeekdays">
-          <span v-if="i % 2">{{ weekdays[startWeekday + i - 1] }}</span>
+          <span v-if="(i + startWeekday) % 2 == 0">
+            {{ weekdays[startWeekday + i - 1] }}
+          </span>
         </div>
       </div>
 
@@ -73,14 +72,13 @@ const weekdays = computed(() =>
           v-if="activityGraph[0]"
           v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)"
         >
-          <div v-if="i >= startWeekday" />
+          <div v-if="i > startWeekday" />
         </template>
 
         <template v-for="(node, i) in activityGraph" :key="i">
           <div
             class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
             :title="node.date.toString()"
-            v-if="i % endWeekday >= startWeekday"
           >
             <div
               :style="{ opacity: node.activity / weightedMax }"

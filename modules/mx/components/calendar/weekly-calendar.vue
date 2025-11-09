@@ -1,26 +1,26 @@
 <script setup lang="ts">
+import { isToday, today, type CalendarDate } from "@internationalized/date";
+
 const { d } = useI18n();
 
-const activeDay = ref(new Date());
+const timeZone = useTimeZone();
+const activeDate = ref(today(timeZone)) as Ref<CalendarDate>;
 
-// const containerRef = useTemplateRef("container");
+const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
 
-const scrollHeight = ref(1152);
+const scrollHeight = useScrollHeight(containerRef);
 const newSpaceDialogOpen = ref(false);
 const editSpaceDialogOpen = ref(false);
 
-onMounted(() => {
-  // const container = containerRef.value!;
-  const caret = caretRef.value!;
+const { startWeekday, endWeekday, totalWeekdays } = useWeekdays();
 
-  // useIntervalFn(() => {
-  //   scrollHeight.value = container.scrollHeight;
-  // }, 200);
+onMounted(() => {
+  const caret = caretRef.value!;
 
   useIntervalFn(
     () => {
-      if (isToday(activeDay.value)) {
+      if (isToday(activeDate.value, timeZone)) {
         const now = new Date();
 
         caret.style.top = `${
@@ -33,19 +33,13 @@ onMounted(() => {
   );
 });
 
-function isToday(date: Date) {
-  const now = new Date();
+const days = computed(() => {
+  const start = startWeekday.value + 1;
 
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
+  return Array.from({ length: totalWeekdays.value }).map((_, day) =>
+    d(Date.UTC(0, 0, day + start), { weekday: "short" }),
   );
-}
-
-const days = [1, 2, 3, 4, 5].map((day) =>
-  d(Date.UTC(0, 0, day + 1), { weekday: "short" }),
-);
+});
 
 const newSpaceOpen = useNewSpaceOpen();
 
@@ -174,19 +168,26 @@ function timeToMinutes(time: string) {
         </span>
       </div>
 
-      <div v-for="day in days.length" :key="day" class="calendar__body-column">
+      <div
+        v-for="day in days.length"
+        :key="day - 1 + startWeekday"
+        class="calendar__body-column"
+      >
         <div
           v-for="hour in 24"
           :key="hour"
           class="calendar__cell relative flex cursor-pointer items-center"
-          @click="openDialog(day, hour)"
+          @click="openDialog(day - 1 + startWeekday, hour)"
         >
           <md-ripple />
 
           <div class="border-(b outline-variant) b-b-dashed w-full" />
         </div>
 
-        <template v-for="({ spaceId, from, to }, i) in schedule[day]" :key="i">
+        <template
+          v-for="({ spaceId, from, to }, i) in schedule[day - 1 + startWeekday]"
+          :key="i"
+        >
           <mx-theme
             v-if="spaces![spaceId]"
             :color="spaces[spaceId].color"
@@ -254,7 +255,7 @@ function timeToMinutes(time: string) {
         >
           <md-outlined-card
             class="flex flex-col gap-2 p-3"
-            @click="newSpaceId = id"
+            @click="newSpaceId = id as string"
           >
             <md-ripple />
 

@@ -153,6 +153,7 @@ onMounted(async () => {
       for (let i = 0; i < packages.length; i++) {
         const pkg = packages[i];
         if (!pkg) continue;
+
         try {
           await installTypstPackage(pkg);
           const s = statuses[i];
