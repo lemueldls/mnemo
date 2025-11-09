@@ -22,6 +22,8 @@ watch(search, () => {
 const namespace = "preview" as const;
 
 const packages = ref<{ [name: string]: Package[] }>();
+const installedPackages = await useInstalledPackages(() => props.spaceId);
+const installedFilter = ref<"all" | "installed" | "not_installed">("all");
 
 async function loadPackages() {
   try {
@@ -33,14 +35,30 @@ async function loadPackages() {
   }
 }
 
-loadPackages();
+whenever(open, () => {
+  loadPackages();
+});
 
 const filteredPackages = computed(() => {
   const packageList = packages.value;
-  if (!packageList) return;
+  if (!packageList) return [];
 
   if (search.value === "") {
-    return Object.values(packageList);
+    let entries = Object.entries(packageList);
+
+    if (installedFilter.value !== "all") {
+      const installedNames = new Set(
+        installedPackages.value.map((p) => p.name),
+      );
+
+      if (installedFilter.value === "installed") {
+        entries = entries.filter(([name]) => installedNames.has(name));
+      } else {
+        entries = entries.filter(([name]) => !installedNames.has(name));
+      }
+    }
+
+    return entries.map(([, pkgs]) => pkgs);
   }
 
   const searchLower = search.value.toLowerCase();
@@ -51,13 +69,24 @@ const filteredPackages = computed(() => {
         name.toLowerCase().includes(searchLower) ||
         pkg!.description.toLowerCase().includes(searchLower),
     )
+    .filter(([name]) => {
+      if (installedFilter.value === "all") return true;
+
+      const installedNames = new Set(
+        installedPackages.value.map((p) => p.name),
+      );
+
+      return installedFilter.value === "installed"
+        ? installedNames.has(name)
+        : !installedNames.has(name);
+    })
     .map(([_, pkgs]) => pkgs);
 });
 
 const packagesVirtualizer = useVirtualizer(
   computed(() => ({
-    // count: filteredPackages.value?.length || 0,
-    count: 5,
+    count: filteredPackages.value.length || 0,
+    // count: 5,
     getScrollElement: () => containerRef.value,
     estimateSize: () => (medium.value ? 220 : 264),
   })),
@@ -66,24 +95,66 @@ const packagesVirtualizer = useVirtualizer(
 const virtualPackages = computed(() =>
   packagesVirtualizer.value.getVirtualItems(),
 );
-// const totalSize = computed(() => packagesVirtualizer.value.getTotalSize())
 </script>
 
 <template>
   <md-dialog :open="open" class="size-xl" @closed="open = false">
-    <div slot="headline" class="flex justify-between gap-6">
-      <span>{{ $t("components.packages.title") }}</span>
+    <div slot="headline" class="flex flex-col items-stretch gap-4">
+      <div class="flex items-center justify-between gap-6">
+        <span>{{ $t("components.packages.title") }}</span>
 
-      <md-outlined-text-field
-        :value="search"
-        :placeholder="$t('components.packages.form.search')"
-        class="flex-1"
-        @input="search = $event.target.value"
-      />
+        <md-outlined-text-field
+          :value="search"
+          :placeholder="$t('components.packages.form.search')"
+          class="flex-1"
+          @input="search = $event.target.value"
+        />
 
-      <!-- <md-icon-button @click="open = false">
+        <!-- <md-icon-button @click="open = false">
         <md-icon>close</md-icon>
       </md-icon-button> -->
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Segmented control implemented with buttons to match existing MD components -->
+        <div class="flex gap-2">
+          <md-filled-tonal-button
+            v-if="installedFilter === 'all'"
+            @click.prevent="installedFilter = 'all'"
+          >
+            {{ $t("components.packages.form.filters.all") }}
+          </md-filled-tonal-button>
+          <md-outlined-button v-else @click.prevent="installedFilter = 'all'">
+            {{ $t("components.packages.form.filters.all") }}
+          </md-outlined-button>
+
+          <md-filled-tonal-button
+            v-if="installedFilter === 'installed'"
+            @click.prevent="installedFilter = 'installed'"
+          >
+            {{ $t("components.packages.form.filters.installed") }}
+          </md-filled-tonal-button>
+          <md-outlined-button
+            v-else
+            @click.prevent="installedFilter = 'installed'"
+          >
+            {{ $t("components.packages.form.filters.installed") }}
+          </md-outlined-button>
+
+          <md-filled-tonal-button
+            v-if="installedFilter === 'not_installed'"
+            @click.prevent="installedFilter = 'not_installed'"
+          >
+            {{ $t("components.packages.form.filters.not-installed") }}
+          </md-filled-tonal-button>
+          <md-outlined-button
+            v-else
+            @click.prevent="installedFilter = 'not_installed'"
+          >
+            {{ $t("components.packages.form.filters.not-installed") }}
+          </md-outlined-button>
+        </div>
+      </div>
     </div>
 
     <form
@@ -93,7 +164,7 @@ const virtualPackages = computed(() =>
       class="flex h-full flex-col gap-4 px-6"
     >
       <template
-        v-if="filteredPackages && filteredPackages.length > 0"
+        v-if="filteredPackages.length > 0"
         v-for="{ key, index } in virtualPackages"
         :key="filteredPackages[index]?.[0]?.name || key"
       >

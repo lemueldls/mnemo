@@ -81,7 +81,12 @@
       "form": {
         "search": "Search packages",
         "no-results": "No packages found.",
-        "reload": "Reload"
+        "reload": "Reload",
+        "filters": {
+          "all": "All",
+          "installed": "Installed",
+          "not-installed": "Not Installed"
+        }
       }
     },
     "settings": {
