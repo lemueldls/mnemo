@@ -24,12 +24,10 @@ import {
   dropCursor,
   EditorView,
   highlightSpecialChars,
-  keymap,
   placeholder,
   rectangularSelection,
 } from "@codemirror/view";
 
-import { vscodeKeymap } from "@replit/codemirror-vscode-keymap";
 // import { LoroExtensions } from "loro-codemirror";
 // import { EphemeralStore } from "loro-crdt";
 import { Rgb } from "mnemo-wasm";
@@ -336,8 +334,6 @@ function createStateConfig(
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
-
-      keymap.of(vscodeKeymap),
     ],
   };
 }

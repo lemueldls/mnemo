@@ -274,7 +274,7 @@ impl TypstState {
             }
         }
 
-        highlights.sort_by_key(|highlight| highlight.range.start);
+        highlights.sort_unstable_by_key(|highlight| highlight.range.start);
 
         highlights
     }

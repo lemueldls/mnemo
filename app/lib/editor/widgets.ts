@@ -119,7 +119,7 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const framesCache = new LRUCache<string, RangedFrame[]>({ max: 3 });
+const framesCache = new LRUCache<string, RangedFrame[]>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 

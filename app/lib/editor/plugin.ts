@@ -7,6 +7,7 @@ import { EditorView } from "@codemirror/view";
 import { type Extension } from "@codemirror/state";
 import { typstHoverTooltip } from "./hover";
 import { IndentContext, indentService } from "@codemirror/language";
+import { typstKeymap } from "./keymap";
 
 export const typstPlugin = (
   fileId: FileId,
@@ -23,6 +24,7 @@ export const typstPlugin = (
     override: [(context) => autocomplete(context, fileId, typstState)],
   }),
 
+  typstKeymap,
   typstLanguageData,
   typstSyntaxHighlighting(fileId, typstState),
   typstHoverTooltip(fileId, typstState),
