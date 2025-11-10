@@ -86,16 +86,13 @@ const filteredPackages = computed(() => {
 const packagesVirtualizer = useVirtualizer(
   computed(() => ({
     count: filteredPackages.value.length || 0,
-    // count: 5,
     getScrollElement: () => containerRef.value,
     estimateSize: () => (medium.value ? 220 : 264),
     getItemKey: (index) => {
       const pkgs = filteredPackages.value[index];
       if (!pkgs) return "";
 
-      const pkg = pkgs[0]!;
-
-      return "@" + namespace + "/" + pkg.name;
+      return pkgs[0]!.name + index;
     },
   })),
 );
