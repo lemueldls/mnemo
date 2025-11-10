@@ -160,13 +160,6 @@ pub struct FrameBlock {
     item: FrameItem,
 }
 
-#[derive(Debug, Clone)]
-pub struct WidgetBlock {
-    range: Range<usize>,
-    height: Abs,
-    offset_height: Abs,
-}
-
 #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RangedFrame {

@@ -42,8 +42,8 @@ pub fn render_by_chunk(
 
             let aux_range = block.range;
             let aux_lines = aux_source.lines();
-            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
-            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
+            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start)?;
+            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end)?;
             let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
             let mut end_byte = context.map_aux_to_main(aux_range.end);

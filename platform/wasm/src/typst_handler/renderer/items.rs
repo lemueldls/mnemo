@@ -174,28 +174,28 @@ pub fn render_by_items(
 
                                 let range = frame_item_range(&item, &context, world);
 
-                                // crate::log!("[F RANGE] {range:?}");
+                                crate::log!("[F RANGE] {range:?}");
 
-                                // match &item {
-                                //     FrameItem::Group(..) => {
-                                //         crate::log!("[F GROUP]: {:?}", &item)
-                                //     }
-                                //     FrameItem::Text(..) => {
-                                //         crate::log!("[F TEXT]: {:?}", &item)
-                                //     }
-                                //     FrameItem::Shape(..) => {
-                                //         crate::log!("[F SHAPE]: {:?}", &item)
-                                //     }
-                                //     FrameItem::Image(..) => {
-                                //         crate::log!("[F IMAGE]: {:?}", &item)
-                                //     }
-                                //     FrameItem::Link(..) => {
-                                //         crate::log!("[F LINK]: {:?}", &item)
-                                //     }
-                                //     FrameItem::Tag(..) => {
-                                //         crate::log!("[F TAG]: {:?}", &item)
-                                //     }
-                                // }
+                                match &item {
+                                    FrameItem::Group(..) => {
+                                        crate::log!("[F GROUP]: {:?}", &item)
+                                    }
+                                    FrameItem::Text(..) => {
+                                        crate::log!("[F TEXT]: {:?}", &item)
+                                    }
+                                    FrameItem::Shape(..) => {
+                                        crate::log!("[F SHAPE]: {:?}", &item)
+                                    }
+                                    FrameItem::Image(..) => {
+                                        crate::log!("[F IMAGE]: {:?}", &item)
+                                    }
+                                    FrameItem::Link(..) => {
+                                        crate::log!("[F LINK]: {:?}", &item)
+                                    }
+                                    FrameItem::Tag(..) => {
+                                        crate::log!("[F TAG]: {:?}", &item)
+                                    }
+                                }
 
                                 Box::from_iter(iter::once(FrameBlock {
                                     range,
@@ -282,36 +282,36 @@ pub fn render_by_items(
                     //     })
                     //     .collect_vec();
 
-                    // for (i, frame_block) in items.iter().enumerate() {
-                    //     crate::group!("{i} [ITEMS]");
+                    for (i, frame_block) in items.iter().enumerate() {
+                        crate::group!("{i} [ITEMS]");
 
-                    //     crate::log!("[BLOCK_RANGE]: {:?}", frame_block.range);
-                    //     crate::log!("[BLOCK_START]: {:?}", frame_block.start_height);
-                    //     crate::log!("[BLOCK_END]: {:?}", frame_block.end_height);
+                        crate::log!("[BLOCK_RANGE]: {:?}", frame_block.range);
+                        crate::log!("[BLOCK_START]: {:?}", frame_block.start_height);
+                        crate::log!("[BLOCK_END]: {:?}", frame_block.end_height);
 
-                    //     match &frame_block.item {
-                    //         FrameItem::Group(..) => {
-                    //             crate::log!("[GROUP]: {:?}", &frame_block.item)
-                    //         }
-                    //         FrameItem::Text(..) => {
-                    //             crate::log!("[TEXT]: {:?}", &frame_block.item)
-                    //         }
-                    //         FrameItem::Shape(..) => {
-                    //             crate::log!("[SHAPE]: {:?}", &frame_block.item)
-                    //         }
-                    //         FrameItem::Image(..) => {
-                    //             crate::log!("[IMAGE]: {:?}", &frame_block.item)
-                    //         }
-                    //         FrameItem::Link(..) => {
-                    //             crate::log!("[LINK]: {:?}", &frame_block.item)
-                    //         }
-                    //         FrameItem::Tag(..) => {
-                    //             crate::log!("[TAG]: {:?}", &frame_block.item)
-                    //         }
-                    //     }
+                        match &frame_block.item {
+                            FrameItem::Group(..) => {
+                                crate::log!("[GROUP]: {:?}", &frame_block.item)
+                            }
+                            FrameItem::Text(..) => {
+                                crate::log!("[TEXT]: {:?}", &frame_block.item)
+                            }
+                            FrameItem::Shape(..) => {
+                                crate::log!("[SHAPE]: {:?}", &frame_block.item)
+                            }
+                            FrameItem::Image(..) => {
+                                crate::log!("[IMAGE]: {:?}", &frame_block.item)
+                            }
+                            FrameItem::Link(..) => {
+                                crate::log!("[LINK]: {:?}", &frame_block.item)
+                            }
+                            FrameItem::Tag(..) => {
+                                crate::log!("[TAG]: {:?}", &frame_block.item)
+                            }
+                        }
 
-                    //     crate::group_end!("{i} [ITEMS]");
-                    // }
+                        crate::group_end!("{i} [ITEMS]");
+                    }
 
                     // crate::log!(
                     //     "[1 ITEMS]: {:?}",

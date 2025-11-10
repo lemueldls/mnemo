@@ -1,6 +1,5 @@
 use std::{
     fmt,
-    fs::File,
     io::{Cursor, Read},
     str::FromStr,
 };
@@ -29,8 +28,11 @@ use super::{
     world::MnemoWorld,
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
 };
-use crate::typst_handler::{
-    renderer::{CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, sync_file_context},
+use crate::{
+    renderer::{
+        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items,
+        sync_file_context,
+    },
     wrappers::TypstHighlight,
 };
 
@@ -56,6 +58,16 @@ impl TypstState {
     #[wasm_bindgen(js_name = "setTheme")]
     pub fn set_theme(&mut self, id: &TypstFileId, theme: ThemeColors) {
         self.file_contexts.get_mut(id).unwrap().theme = theme;
+    }
+
+    #[wasm_bindgen(js_name = "setFont")]
+    pub fn set_font(&mut self, id: &TypstFileId, font: String) {
+        self.file_contexts.get_mut(id).unwrap().font = font;
+    }
+
+    #[wasm_bindgen(js_name = "setMathFont")]
+    pub fn set_math_font(&mut self, id: &TypstFileId, math_font: Option<String>) {
+        self.file_contexts.get_mut(id).unwrap().math_font = math_font;
     }
 
     #[wasm_bindgen(js_name = "setLocale")]
@@ -154,7 +166,7 @@ impl TypstState {
         formatdoc!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:16pt,lang:"{locale}")
+                #set text(fill:theme.on-background,size:16pt,lang:"{locale}",font:"{font}")
 
                 #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
                 #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
@@ -176,6 +188,7 @@ impl TypstState {
                 #set rect(stroke:theme.outline)
                 #set square(stroke:theme.outline)
 
+                #show math.equation:set text(font:"{math_font}")
                 #show math.equation.where(block:true):set text(size:18pt)
                 #show math.equation.where(block:true):set par(leading:9pt)
 
@@ -185,6 +198,8 @@ impl TypstState {
             "#,
             theme = context.theme,
             locale = context.locale,
+            font = context.font,
+            math_font = context.math_font.as_ref().unwrap_or(&context.font),
         )
     }
 
@@ -453,6 +468,8 @@ pub struct FileContext {
     pub pixel_per_pt: f32,
     pub theme: ThemeColors,
     pub locale: String,
+    pub font: String,
+    pub math_font: Option<String>,
 }
 
 impl FileContext {
@@ -469,6 +486,8 @@ impl FileContext {
             pixel_per_pt: 1_f32,
             theme: ThemeColors::default(),
             locale: String::from("en"),
+            font: String::from("Maple Mono"),
+            math_font: Some(String::from("New Computer Modern Math")),
         }
     }
 
