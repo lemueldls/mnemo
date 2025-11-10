@@ -131,12 +131,12 @@ const ready = ref(false);
 .conjure-enter-active {
   @apply z-2;
 
-  animation: conjure 1000ms ease-out;
+  animation: conjure 1s ease-out;
 }
 
 .conjure-leave-active {
   @apply z-[-2];
 
-  animation: none 1000ms;
+  animation: none 1s;
 }
 </style>

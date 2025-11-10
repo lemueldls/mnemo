@@ -36,20 +36,20 @@ onMounted(async () => {
   for (const imp of fontImports) {
     await imp;
     fontLoaded.value++;
+    // await nextTick();
   }
 
   fontsStep.complete();
 
   // Initialize Typst
   const typst = await startStep("typst");
-  const typstState = useTypst();
-  await typstState;
+  await useTypst();
   typst.complete();
 });
 
 // onNuxtReady(async () => {
 //   const nuxt = await startStep("nuxt");
-//   await nextTick();
+//   // await nextTick();
 //   nuxt.complete();
 // });
 </script>
