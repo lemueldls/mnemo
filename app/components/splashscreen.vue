@@ -2,7 +2,12 @@
 const emit = defineEmits<{ (e: "ready", isReady: boolean): void }>();
 
 const { steps, currentStep, completedSteps, isComplete, startStep } = useSteps({
-  initialSteps: ["mount", "fonts", "typst", "nuxt"],
+  initialSteps: [
+    "mount",
+    "fonts",
+    "typst",
+    // "nuxt",
+  ],
   onComplete: () => emit("ready", true),
 });
 
@@ -19,19 +24,17 @@ const currentLoadingId = computed(
 onMounted(async () => {
   // Initialize app
   const mount = await startStep("mount");
-  await nextTick();
+  // await nextTick();
   mount.complete();
 
   // Load fonts
   const fontsStep = await startStep("fonts");
-  const fontImports = getTypstFontImports();
-  const flat = fontImports.flat();
-  fontTotal.value = flat.length;
+  const fontImports = getTypstFontImports().flat();
+  fontTotal.value = fontImports.length;
   fontLoaded.value = 0;
 
-  for (const imp of flat) {
+  for (const imp of fontImports) {
     await imp;
-
     fontLoaded.value++;
   }
 
@@ -44,11 +47,11 @@ onMounted(async () => {
   typst.complete();
 });
 
-onNuxtReady(async () => {
-  const nuxt = await startStep("nuxt");
-  await nextTick();
-  nuxt.complete();
-});
+// onNuxtReady(async () => {
+//   const nuxt = await startStep("nuxt");
+//   await nextTick();
+//   nuxt.complete();
+// });
 </script>
 
 <template>
