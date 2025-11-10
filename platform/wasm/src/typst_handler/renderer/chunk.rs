@@ -115,16 +115,15 @@ pub fn render_by_chunk(
 
         ranged_heights
             .into_iter()
-            .map(|(range, height, offset_height)| {
+            .filter_map(|(range, height, offset_height)| {
                 let rect = IntRect::from_xywh(
                     0,
                     (offset_height as f32 * context.pixel_per_pt).ceil() as i32,
                     width,
                     (height as f32 * context.pixel_per_pt).ceil() as u32,
-                )
-                .unwrap();
-                let canvas = canvas.clone_rect(rect).unwrap();
-                let encoding = canvas.encode_png().unwrap();
+                )?;
+                let canvas = canvas.clone_rect(rect)?;
+                let encoding = canvas.encode_png().ok()?;
 
                 let hash = HighwayHasher::default().hash64(&encoding) as u32;
 
@@ -137,7 +136,7 @@ pub fn render_by_chunk(
                     offset_height,
                 };
 
-                RangedFrame { range, render }
+                Some(RangedFrame { range, render })
             })
             .collect()
     } else {
