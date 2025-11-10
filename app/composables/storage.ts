@@ -6,6 +6,7 @@ import type { Container } from "loro-crdt";
 
 import type {
   DebuggerOptions,
+  EffectScope,
   WatchStopHandle,
   WritableComputedOptions,
 } from "vue";
@@ -85,8 +86,6 @@ export const useCrdt = createSharedComposable(async () => {
 
   doc.subscribe(async (event) => {
     for (const { path, diff } of event.events) {
-      // console.log("[CRDT]", path, diff);
-
       const key = normalizeKey(path[0] as string);
 
       const item = match(diff.type)
@@ -201,7 +200,7 @@ function shallowComputed<T, S = T>(
 
 async function asyncComputedRef<T>(
   key: MaybeRefOrGetter<string>,
-  handler: (key: string) => Promise<CustomRef<T>>,
+  handler: (key: string, scope: EffectScope) => Promise<CustomRef<T>>,
 ) {
   let item: Ref<T>;
   const data = shallowRef<T>();
@@ -221,12 +220,14 @@ async function asyncComputedRef<T>(
       itemRefCount[key] ??= 0;
       itemRefCount[key]++;
 
-      const scope = effectScope();
+      const scope = effectScope(true);
 
       onWatcherCleanup(() => {
         stopSync?.();
 
         if (!itemRefCount[key] || itemRefCount[key] <= 1) {
+          scope.stop();
+
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete itemRefs[key];
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -234,7 +235,7 @@ async function asyncComputedRef<T>(
         } else itemRefCount[key]--;
       });
 
-      itemRefs[key] ??= handler(key);
+      itemRefs[key] ??= handler(key, scope);
       item = (await itemRefs[key]) as CustomRef<T>;
 
       scope.run(() => {
@@ -260,9 +261,7 @@ function createStorageItem<T extends StorageValue>(
     runNextSync: Ref<boolean>,
   ) => void,
 ) {
-  return asyncComputedRef(key, async (key) => {
-    const scope = effectScope();
-
+  return asyncComputedRef(key, async (key, scope) => {
     const storageItem = await getStorageItem<T>(key, initialValue);
     const item = ref(storageItem) as Ref<T>;
 
@@ -272,8 +271,6 @@ function createStorageItem<T extends StorageValue>(
       watchThrottled(
         item,
         async (value: T) => {
-          // console.log("local setting", key, "to", toRaw(value));
-
           const updatedAt = Date.now();
 
           await localDb.setItem(key, value);
@@ -325,7 +322,7 @@ export async function useStorageText<T extends string>(
         if (!runNextSync.value) return;
 
         text.update(itemText);
-        commit();
+        void commit();
       });
     },
   );
@@ -354,7 +351,7 @@ export async function useStorageMap<T extends Record<string, unknown>>(
 
         for (const [key, value] of Object.entries(itemMap)) map.set(key, value);
 
-        commit();
+        void commit();
       });
 
       return item;
@@ -410,7 +407,7 @@ export async function useStorageList<T extends unknown[]>(
           } else if (i < itemList.length) list.push(itemList[i]);
           else list.delete(i, 1);
 
-        commit();
+        void commit();
       });
     },
   );
@@ -475,13 +472,11 @@ export async function useStorageSet<
           }
         }
 
-        // console.log({ deleteQueue, itemList: toRaw(itemList), syncList });
-
         for (let i = deleteQueue.length - 1; i >= 0; i--) {
           list.delete(deleteQueue[i]!, 1);
         }
 
-        commit();
+        void commit();
       });
     },
   );
