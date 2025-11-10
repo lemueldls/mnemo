@@ -7,6 +7,8 @@ import symbols from "~/assets/symbols.json";
 
 // import type { MaterialSymbol } from "material-symbols";
 
+type Symbol = (typeof symbols)[number];
+
 const space = defineModel<Space>({ required: true });
 
 const colors = [
@@ -42,15 +44,30 @@ watch(iconSearch, () => {
 });
 
 const filteredSymbols = computed(() => {
-  const search = iconSearch.value;
+  const search = iconSearch.value.trim().toLowerCase();
+  if (!search) return symbols;
 
-  return search
-    ? symbols.filter((symbol) => symbol.includes(search.toLowerCase()))
-    : symbols;
+  return symbols.filter((sym: any) => {
+    if (!sym) return false;
+
+    const id = sym.id.toLowerCase();
+    const title = sym.title.toLowerCase();
+
+    if (id.includes(search)) return true;
+    if (title.includes(search)) return true;
+    if (
+      Array.isArray(sym.synonyms) &&
+      sym.synonyms.some((k: string) => k.toLowerCase().includes(search))
+    )
+      return true;
+
+    // match by words in title (useful for short queries)
+    return title.split(/\s+/).some((w: string) => w.startsWith(search));
+  });
 });
 
 const groupedSymbols = computed(() => {
-  const groups: string[][] = [];
+  const groups: Symbol[][] = [];
   const entries = Object.entries(filteredSymbols.value);
 
   for (const [i, symbol] of entries) {
@@ -113,18 +130,18 @@ const groupedSymbols = computed(() => {
         <div class="mb-4 flex gap-4">
           <component
             :is="
-              space.icon === symbol
+              space.icon === symbol.id
                 ? 'md-filled-tonal-icon-button'
                 : 'md-icon-button'
             "
             v-for="symbol in symbolGroup"
-            :key="symbol"
-            :title="symbol"
+            :key="symbol.id"
+            :title="symbol.title"
             toggle
-            :selected="space.icon === symbol"
-            @click.prevent="space.icon = symbol"
+            :selected="space.icon === symbol.id"
+            @click.prevent="space.icon = symbol.id"
           >
-            <mx-icon :name="symbol" />
+            <mx-icon :name="symbol.id" />
           </component>
         </div>
       </template>

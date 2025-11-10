@@ -25,9 +25,7 @@
 - Static assets manager
 - Custom font loader
 - Publishing service
-- Pull to refresh
 - Document collaboration
-- Better icon search
 - Handwritten notes and drawings
 - Reference study sheet generator
 - Flash cards and quiz generator
