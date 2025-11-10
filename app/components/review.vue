@@ -15,10 +15,7 @@ const review = await useReview(amount);
 <template>
   <div ref="container">
     <div v-if="review.length > 0" id="review">
-      <template v-for="i in amount">
-        <review-card v-if="i < review.length" :review="review[i]!" />
-        <md-outlined-card v-else />
-      </template>
+      <review-card v-for="review in review" :key="review.noteId" :review />
     </div>
     <span v-else class="text-on-surface-varient body-large">
       Nothing yet..

@@ -25,40 +25,39 @@ export const useReview = createSharedComposable(
     const review = await useStorageItem<Review[]>("review.json", []);
 
     setTimeout(async () => {
-      if (toValue(amount) < 1) return;
-
       const spaces = await useSpaces();
 
       const today = Date.now();
       const yesterday = today - 1000 * 60 * 60 * 24;
 
       const spaceIds = computed(() => Object.keys(spaces.value));
-      const notes = await eagerComputedAsync(() => {
+      const notes = await eagerComputedAsync(async () => {
         const max = toValue(amount);
+        if (max < 1) return [];
 
-        return Promise.all(
+        const notesToReview: Review[] = [];
+
+        await Promise.all(
           spaceIds.value.map(async (spaceId) => {
             const dailyNotes = await useDailyNotes(spaceId);
             const notes = dailyNotes.value;
-
-            const notesToReview = [];
 
             const end = notes.length - 1;
             for (let i = end; i >= 0 && notesToReview.length < max; i--) {
               const note = notes[i]!;
 
-              if (!note.datesReviewed) continue;
+              const datesReviewed = note.datesReviewed || [];
 
               const createdAt = decodeTime(note.id);
               if (createdAt > yesterday) continue;
 
-              const lastDateReviewed = note.datesReviewed.at(-1);
+              const lastDateReviewed = datesReviewed.at(-1);
               const timeZone = useTimeZone();
               const lastReviewed = lastDateReviewed
                 ? parseDate(lastDateReviewed).toDate(timeZone).getTime()
                 : undefined;
 
-              const stage = getReviewStage(note.datesReviewed);
+              const stage = getReviewStage(datesReviewed);
 
               // if (lastReviewed && lastReviewed > today - REVIEW_STAGES[stage]!)
               //   continue;
@@ -77,19 +76,20 @@ export const useReview = createSharedComposable(
                   day: "numeric",
                 });
 
-                notesToReview.push({
-                  spaceId,
-                  noteId,
-                  date,
-                  stage,
-                  lastReviewed,
-                });
+                if (notesToReview.length < max)
+                  notesToReview.push({
+                    spaceId,
+                    noteId,
+                    date,
+                    stage,
+                    lastReviewed,
+                  });
               }
             }
-
-            return notesToReview;
           }),
         );
+
+        return notesToReview;
       });
 
       watchImmediate(notes, (notes) => {
@@ -113,7 +113,7 @@ export function getReviewStage(dates: string[]) {
         if (state.stage < REVIEW_STAGES.length) {
           const lastTime = state.lastReviewed.toDate(timeZone).getTime();
 
-          if (time - lastTime > REVIEW_STAGES[state.stage]!)
+          if (time - lastTime >= REVIEW_STAGES[state.stage]!)
             return { stage: state.stage + 1, lastReviewed: calendarDate };
         }
 

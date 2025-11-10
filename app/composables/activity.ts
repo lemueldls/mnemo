@@ -21,8 +21,6 @@ export const useActivityGraph = createSharedComposable(
     );
 
     setTimeout(async () => {
-      if (toValue(amount) < 1) return;
-
       const spaces = await useSpaces();
       const spaceIds = computed(() => Object.keys(spaces.value));
 
@@ -47,6 +45,7 @@ export const useActivityGraph = createSharedComposable(
       const { startWeekday, endWeekday } = useWeekdays();
       const recentActivity = computed<{ [date: string]: number }>(() => {
         const days = toValue(amount);
+
         let deltaDate = today(timeZone).add({ days: 1 });
 
         const start = startWeekday.value;
