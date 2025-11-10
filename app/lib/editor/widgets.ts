@@ -219,7 +219,7 @@ function decorate(
     }
   }
 
-  return Decoration.set(decorations, true);
+  return Decoration.set(decorations);
 }
 
 const typstStateEffect = StateEffect.define<{ decorations: DecorationSet }>({});

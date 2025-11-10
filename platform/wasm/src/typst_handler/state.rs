@@ -274,7 +274,8 @@ impl TypstState {
             }
         }
 
-        highlights.reverse(); // idx-ascending
+        highlights.sort_by_key(|highlight| highlight.range.start);
+
         highlights
     }
 
