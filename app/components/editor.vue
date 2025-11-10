@@ -411,6 +411,10 @@ const renderHoverBackground = computed(() => {
     font-family: var(--font-mono);
   }
 
+  .cm-placeholder {
+    @apply text-outline;
+  }
+
   .cm-selectionBackground {
     @apply text-tertiary;
 
