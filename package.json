@@ -83,7 +83,7 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^61.0.2",
     "nitropack": "^2.12.6",
-    "nuxt": "^4.2.0",
+    "nuxt": "^4.2.1",
     "nuxt-ssr-lit": "^1.6.32",
     "nuxthub": "^0.9.3",
     "prettier": "^3.6.2",
@@ -97,7 +97,7 @@
     "typescript": "^5.9.2",
     "unocss": "^66.5.2",
     "vite-plugin-wasm": "^3.5.0",
-    "vue": "^3.5.22",
+    "vue": "^3.5.24",
     "wasm-pack": "^0.13.1",
     "wrangler": "^4.40.2"
   },
