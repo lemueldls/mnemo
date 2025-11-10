@@ -136,12 +136,14 @@ const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
       v-if="!Object.keys(taskPositions).length && sortedTasks.length"
       class="flex min-h-40 items-center justify-center"
     >
-      <div class="text-surface-variant animate-pulse">Loading tasks...</div>
+      <div class="text-surface-variant animate-pulse">
+        {{ $t("components.tasks-masonry.loading") }}
+      </div>
     </div>
 
     <!-- Empty state -->
     <span v-else-if="!sortedTasks.length" class="text-on-surface-variant">
-      No tasks yet.
+      {{ $t("components.tasks-masonry.no-tasks") }}
     </span>
   </div>
 </template>

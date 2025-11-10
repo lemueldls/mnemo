@@ -18,7 +18,7 @@ const review = await useReview(amount);
       <review-card v-for="review in review" :key="review.noteId" :review />
     </div>
     <span v-else class="text-on-surface-varient body-large">
-      Nothing yet..
+      {{ $t("components.review.no-review") }}
     </span>
   </div>
 </template>

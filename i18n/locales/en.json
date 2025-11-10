@@ -40,7 +40,8 @@
   "components": {
     "editor": {
       "loading": "Loading...",
-      "installing-packages": "Installing packages..."
+      "installing-packages": "Installing packages...",
+      "placeholder": "Write."
     },
     "new-space": {
       "title": "New Space",
@@ -92,6 +93,9 @@
     "review-card": {
       "reviewed": "Reviewed"
     },
+    "review": {
+      "no-review": "Nothing yet..."
+    },
     "settings": {
       "title": "Settings",
       "form": {
@@ -125,6 +129,10 @@
       "local-quota": "Local Quota",
       "logout": "Logout",
       "continue-with-github": "Continue with GitHub"
+    },
+    "tasks-masonry": {
+      "no-tasks": "No tasks left.",
+      "loading": "Loading tasks..."
     },
     "tasks": {
       "title": "Tasks"

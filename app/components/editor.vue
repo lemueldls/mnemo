@@ -88,7 +88,6 @@ const text = await useStorageText(fullPath);
 
 const stateCache = new LRUCache<string, EditorState>({ max: 3 });
 
-// Compartment to allow dynamic updates to the placeholder text
 const placeholderCompartment = new Compartment();
 
 onMounted(async () => {
@@ -100,7 +99,6 @@ onMounted(async () => {
       extensions: [
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
-        // placeholder is placed inside a Compartment so we can update it
         placeholderCompartment.of(placeholder(t("components.editor.loading"))),
         lintGutter(),
       ],
@@ -112,21 +110,22 @@ onMounted(async () => {
   try {
     const packages = await useInstalledPackages(() => props.spaceId);
 
-    const showInstallingPlaceholder = (lines: string[]) =>
-      view.dispatch({
-        effects: placeholderCompartment.reconfigure(
-          placeholder(lines.join("\n")),
-        ),
-      });
+    const showInstallingPlaceholder = (lines: string[]) => {
+      if (!ready)
+        view.dispatch({
+          effects: placeholderCompartment.reconfigure(
+            placeholder(lines.join("\n")),
+          ),
+        });
+    };
 
-    // Start with a generic installing header
     showInstallingPlaceholder([t("components.editor.installing-packages")]);
 
     await watchImmediateAsync(packages, async (packages) => {
       if (!packages || packages.length === 0) {
-        // nothing to install — restore default
         showInstallingPlaceholder([t("components.editor.loading")]);
         if (ready) reloadEditorWidgets(view);
+
         return;
       }
 
@@ -164,17 +163,25 @@ onMounted(async () => {
           if (s) s.status = "failed";
         }
 
-        // update placeholder after each package
         showInstallingPlaceholder(buildLines());
       }
 
-      // showInstallingPlaceholder([t("components.editor.loading")]);
+      showInstallingPlaceholder([t("components.editor.loading")]);
 
       if (ready) reloadEditorWidgets(view);
     });
   } catch (err) {
     console.error("Error installing packages:", err);
   }
+
+  watchImmediate(
+    () => t("components.editor.placeholder"),
+    (content) => {
+      view.dispatch({
+        effects: placeholderCompartment.reconfigure(placeholder(content)),
+      });
+    },
+  );
 
   watchImmediate(fullPath, (fullPath, oldFullPath) => {
     const fileId = typstState.createFileId(fullPath);
@@ -310,7 +317,10 @@ function createStateConfig(
       EditorView.editable.of(!props.readonly),
       EditorState.readOnly.of(props.readonly),
 
-      placeholder("write."),
+      placeholderCompartment.of(
+        placeholder(t("components.editor.placeholder")),
+      ),
+
       highlightSpecialChars(),
       // foldGutter(),
       lintGutter(),
