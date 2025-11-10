@@ -13,7 +13,7 @@ const cellSize = 12;
 const gapSize = 4;
 
 const amount = computed(() => {
-  const quotient = width.value / (cellSize + gapSize);
+  const quotient = (width.value + gapSize) / (cellSize + gapSize);
   const columns = Math.ceil(quotient) + 1;
 
   return columns * totalWeekdays.value;

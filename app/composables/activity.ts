@@ -51,8 +51,6 @@ export const useActivityGraph = createSharedComposable(
         const start = startWeekday.value;
         const end = endWeekday.value;
 
-        // console.log(deltaDate.toString(), { start, end });
-
         return Object.fromEntries(
           Array.from({ length: days })
             .map(() => {
@@ -91,7 +89,7 @@ export const useActivityGraph = createSharedComposable(
           );
         },
       );
-    }, 500);
+    }, 1000);
 
     return activityGraph;
   },

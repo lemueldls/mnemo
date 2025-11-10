@@ -21,27 +21,39 @@ export const useReviewStages = () => REVIEW_STAGES;
 export const useReview = createSharedComposable(
   async (amount: MaybeRefOrGetter<number>) => {
     const { d } = useI18n();
+    const spaces = await useSpaces();
 
     const review = await useStorageItem<Review[]>("review.json", []);
 
-    setTimeout(async () => {
-      const spaces = await useSpaces();
+    const today = Date.now();
+    const yesterday = today - 1000 * 60 * 60 * 24;
 
-      const today = Date.now();
-      const yesterday = today - 1000 * 60 * 60 * 24;
+    const spaceIds = computed(() => Object.keys(spaces.value));
+    const spaceNotes = await eagerComputedAsync(() =>
+      Promise.all(
+        spaceIds.value.map(async (spaceId) => {
+          const dailyNotes = await useDailyNotes(spaceId);
+          const notes = dailyNotes.value;
 
-      const spaceIds = computed(() => Object.keys(spaces.value));
-      const notes = await eagerComputedAsync(async () => {
-        const max = toValue(amount);
+          return { spaceId, notes };
+        }),
+      ),
+    );
+
+    watchDebounced(
+      [amount, spaceNotes],
+      async (results) => {
+        const [max, spaceNotes] = results as [
+          number,
+          { spaceId: string; notes: DailyNote[] }[],
+        ];
+
         if (max < 1) return [];
 
         const notesToReview: Review[] = [];
 
         await Promise.all(
-          spaceIds.value.map(async (spaceId) => {
-            const dailyNotes = await useDailyNotes(spaceId);
-            const notes = dailyNotes.value;
-
+          spaceNotes.map(async ({ spaceId, notes }) => {
             const end = notes.length - 1;
             for (let i = end; i >= 0 && notesToReview.length < max; i--) {
               const note = notes[i]!;
@@ -89,13 +101,10 @@ export const useReview = createSharedComposable(
           }),
         );
 
-        return notesToReview;
-      });
-
-      watchImmediate(notes, (notes) => {
-        review.value = notes.flat();
-      });
-    }, 250);
+        review.value = notesToReview.flat();
+      },
+      { debounce: 500 },
+    );
 
     return review;
   },
