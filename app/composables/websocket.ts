@@ -210,7 +210,7 @@ export function useApiWebSocket(
           const wrappedMessage = new WebSocketMessageWrapper(
             typeof event.data === "string"
               ? event.data
-              : await event.data.bytes(),
+              : new Uint8Array(await event.data.arrayBuffer()),
           );
 
           // data.value = event.data;
