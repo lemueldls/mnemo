@@ -100,7 +100,7 @@
       "title": "Settings",
       "form": {
         "dark-theme": "Dark Theme",
-        "show-weekdays": "Show Weekdays",
+        "show-weekends": "Show Weekends",
         "name": "Name",
         "language": "Language"
       }

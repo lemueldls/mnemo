@@ -27,10 +27,10 @@ const { t, locale, locales, setLocale } = useI18n();
       </label>
 
       <label class="flex items-center justify-between gap-4">
-        {{ t("components.settings.form.show-weekdays") }}
+        {{ t("components.settings.form.show-weekends") }}
 
         <md-switch
-          :aria-label="t('components.settings.form.show-weekdays')"
+          :aria-label="t('components.settings.form.show-weekends')"
           icons
           :selected="showWeekends"
           @change="showWeekends = $event.target.selected"
