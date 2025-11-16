@@ -32,12 +32,15 @@ export default defineWebSocketHandler({
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;
 
-    if (!meta?.updatedAt || updatedAt > (meta.updatedAt as number)) {
+    const clientMoreRecent =
+      !meta?.updatedAt || updatedAt > (meta.updatedAt as number);
+
+    if (clientMoreRecent && value !== null && value !== undefined) {
       await userStorage.setItem(key, value);
       await userStorage.setMeta(key, { updatedAt });
 
       peer.publish(peer.namespace, item);
-    } else
+    } else if (meta)
       peer.send({
         key,
         value: await userStorage.getItem(key),
