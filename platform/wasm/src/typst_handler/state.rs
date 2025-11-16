@@ -1,11 +1,12 @@
 use std::{
     fmt,
     io::{Cursor, Read},
+    path::PathBuf,
     str::FromStr,
 };
 
-use hashbrown::HashMap;
 use indoc::formatdoc;
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use tar::Archive;
 use tsify::Tsify;
@@ -30,8 +31,8 @@ use super::{
 };
 use crate::{
     renderer::{
-        CompileResult, RenderPdfResult, RenderingMode, render_by_chunk, render_by_items,
-        sync_file_context,
+        RangedFrame, RenderPdfResult, RenderResult, RenderingMode, render_by_chunk,
+        render_by_items, sync_file_context,
     },
     wrappers::TypstHighlight,
 };
@@ -40,7 +41,7 @@ use crate::{
 #[derive(Default)]
 pub struct TypstState {
     pub(crate) world: MnemoWorld,
-    pub(crate) file_contexts: HashMap<TypstFileId, FileContext>,
+    pub(crate) file_contexts: FxHashMap<TypstFileId, FileContext>,
 }
 
 #[wasm_bindgen]
@@ -129,6 +130,31 @@ impl TypstState {
         self.world.install_font(bytes);
     }
 
+    fn process_requests(&self) -> Vec<TypstRequest> {
+        let mut requests = Vec::new();
+
+        for source in self.world.requested_sources.iter() {
+            requests.push(TypstRequest::Source(source.as_rooted_path().to_path_buf()));
+        }
+        self.world.requested_sources.clear();
+
+        for file in self.world.requested_files.iter() {
+            requests.push(TypstRequest::File(file.as_rooted_path().to_path_buf()));
+        }
+        self.world.requested_files.clear();
+
+        for package in self.world.requested_packages.iter() {
+            requests.push(TypstRequest::Package {
+                namespace: package.namespace.to_string(),
+                name: package.name.to_string(),
+                version: package.version.to_string(),
+            });
+        }
+        self.world.requested_packages.clear();
+
+        requests
+    }
+
     pub(crate) fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
         let context = self.file_contexts.get(id).unwrap();
 
@@ -139,7 +165,7 @@ impl TypstState {
                         #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
 
                         #set text(top-edge:"ascender",bottom-edge:"descender")
-                        #set par(leading:0.08em,linebreaks:"simple")
+                        #set par(leading:0.125em)
 
                         #set list(spacing:0.125em)
                         #set enum(spacing:0.125em)
@@ -205,11 +231,17 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
-        render_by_chunk(id, text, prelude, self)
+        let result = render_by_chunk(id, text, prelude, self);
+
+        CompileResult {
+            frames: result.frames,
+            diagnostics: result.diagnostics,
+            requests: self.process_requests(),
+        }
     }
 
     #[wasm_bindgen]
-    pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> Vec<TypstDiagnostic> {
+    pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
         let (ir, _) = sync_file_context(id, text, prelude, self);
 
         let context = self.file_contexts.get_mut(id).unwrap();
@@ -244,7 +276,10 @@ impl TypstState {
             }
         }
 
-        diagnostics
+        CheckResult {
+            diagnostics,
+            requests: self.process_requests(),
+        }
     }
 
     #[wasm_bindgen]
@@ -528,6 +563,34 @@ impl PackageFile {
     pub fn new(path: String, content: Vec<u8>) -> Self {
         Self { path, content }
     }
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CompileResult {
+    pub frames: Vec<RangedFrame>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+    pub requests: Vec<TypstRequest>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CheckResult {
+    pub diagnostics: Vec<TypstDiagnostic>,
+    pub requests: Vec<TypstRequest>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(tag = "type", content = "value", rename_all = "kebab-case")]
+pub enum TypstRequest {
+    Source(PathBuf),
+    File(PathBuf),
+    Package {
+        namespace: String,
+        name: String,
+        version: String,
+    },
 }
 
 #[wasm_bindgen]

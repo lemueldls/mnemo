@@ -198,7 +198,7 @@ function shallowComputed<T, S = T>(
   return root;
 }
 
-async function asyncComputedRef<T>(
+async function useSharedAsyncData<T>(
   key: MaybeRefOrGetter<string>,
   handler: (key: string, scope: EffectScope) => Promise<CustomRef<T>>,
 ) {
@@ -261,7 +261,7 @@ function createStorageItem<T extends StorageValue>(
     runNextSync: Ref<boolean>,
   ) => void,
 ) {
-  return asyncComputedRef(key, async (key, scope) => {
+  return useSharedAsyncData(key, async (key, scope) => {
     const storageItem = await getStorageItem<T>(key, initialValue);
     const item = ref(storageItem) as Ref<T>;
 
@@ -510,28 +510,38 @@ const commit = useThrottleFn(
   true,
 );
 
+export async function useStorageBytes(
+  key: MaybeRefOrGetter<string>,
+  initialValue?: Uint8Array,
+) {
+  const item = await createStorageItem(
+    key,
+    initialValue ? initialValue.toBase64() : "",
+  );
+
+  return computed({
+    get: () => Uint8Array.fromBase64(item.value),
+    set(bytes) {
+      item.value = bytes.toBase64();
+    },
+  });
+}
+
 export async function getStorageItem<T extends StorageValue>(
   key: string,
   initialValue: T,
 ) {
   const localItem = await localDb.getItem<T>(key);
 
-  if (localItem === null || localItem === undefined) {
-    await localDb.setItem(key, initialValue);
-    await localDb.setMeta(key, { updatedAt: 0 });
-  }
-
-  const value = localItem ?? initialValue;
-
   const localMeta = localDb.getMeta(key) as Promise<
     { updatedAt?: number } | undefined
   >;
 
   localMeta.then((meta) => {
-    useSync().updateItem(key, value, meta?.updatedAt ?? 0);
+    useSync().updateItem(key, localItem, meta?.updatedAt ?? 0);
   });
 
-  return value;
+  return localItem ?? initialValue;
 }
 
 export interface StorageDirPath {

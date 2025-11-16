@@ -97,80 +97,13 @@ onMounted(async () => {
       extensions: [
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
-        placeholderCompartment.of(placeholder(t("components.editor.loading"))),
+        placeholder(t("components.editor.loading")),
         lintGutter(),
       ],
     }),
   });
 
   let ready = false;
-
-  try {
-    const packages = await useInstalledPackages(() => props.spaceId);
-
-    const showInstallingPlaceholder = (lines: string[]) => {
-      if (!ready)
-        view.dispatch({
-          effects: placeholderCompartment.reconfigure(
-            placeholder(lines.join("\n")),
-          ),
-        });
-    };
-
-    showInstallingPlaceholder([t("components.editor.installing-packages")]);
-
-    await watchImmediateAsync(packages, async (packages) => {
-      if (!packages || packages.length === 0) {
-        showInstallingPlaceholder([t("components.editor.loading")]);
-        if (ready) reloadEditorWidgets(view);
-
-        return;
-      }
-
-      // Track statuses so we can continuously update the placeholder
-      const statuses = packages.map((p) => ({
-        namespace: p.namespace || "preview",
-        name: p.name,
-        version: p.version,
-        status: "pending",
-      }));
-
-      const buildLines = () => {
-        const header = t("components.editor.installing-packages");
-        const pkgLines = statuses.map((s) => {
-          const mark =
-            s.status === "done" ? "✔" : s.status === "failed" ? "✖" : "•";
-          return `${mark} @${s.namespace}/${s.name}:${s.version}`;
-        });
-        return [header, ...pkgLines];
-      };
-
-      showInstallingPlaceholder(buildLines());
-
-      for (let i = 0; i < packages.length; i++) {
-        const pkg = packages[i];
-        if (!pkg) continue;
-
-        try {
-          await installTypstPackage(pkg);
-          const s = statuses[i];
-          if (s) s.status = "done";
-        } catch (err) {
-          console.error("Error installing package:", pkg, err);
-          const s = statuses[i];
-          if (s) s.status = "failed";
-        }
-
-        showInstallingPlaceholder(buildLines());
-      }
-
-      showInstallingPlaceholder([t("components.editor.loading")]);
-
-      if (ready) reloadEditorWidgets(view);
-    });
-  } catch (err) {
-    console.error("Error installing packages:", err);
-  }
 
   watchImmediate(
     () => t("components.editor.placeholder"),
@@ -309,7 +242,15 @@ function createStateConfig(
         });
       }),
 
-      typstPlugin(fileId, path, text, prelude, props.locked, typstState),
+      typstPlugin(
+        fileId,
+        props.spaceId,
+        path,
+        text,
+        prelude,
+        props.locked,
+        typstState,
+      ),
 
       EditorView.lineWrapping,
       EditorView.editable.of(!props.readonly),

@@ -1,5 +1,6 @@
-use highway::{HighwayHash, HighwayHasher};
-use itertools::Itertools;
+use std::hash::BuildHasher;
+
+use rustc_hash::FxBuildHasher;
 use tiny_skia::IntRect;
 use typst::{
     WorldExt, compile,
@@ -9,7 +10,7 @@ use typst::{
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
 use crate::typst_handler::{
-    renderer::{CompileResult, FrameRender, RangedFrame, sync_file_context},
+    renderer::{FrameRender, RangedFrame, RenderResult, sync_file_context},
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
@@ -19,7 +20,7 @@ pub fn render_by_chunk(
     text: &str,
     prelude: &str,
     state: &mut TypstState,
-) -> CompileResult {
+) -> RenderResult {
     let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
 
     let mut last_document = None;
@@ -49,7 +50,7 @@ pub fn render_by_chunk(
             let mut end_byte = context.map_aux_to_main(aux_range.end);
             if block.is_inline {
                 // TODO: proper offsetting (?)
-                end_byte += 9;
+                end_byte += 29;
             }
 
             let source = context.main_source_mut(&mut state.world)?;
@@ -98,10 +99,9 @@ pub fn render_by_chunk(
                     let start_byte = context.map_aux_to_main(aux_range.start);
 
                     let range_delta = end_byte - start_byte;
-                    let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
                     let source = context.main_source_mut(&mut state.world)?;
-                    source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
+                    source.edit(start_byte..end_byte, &(" ".repeat(range_delta)));
 
                     None
                 }
@@ -125,7 +125,7 @@ pub fn render_by_chunk(
                 let canvas = canvas.clone_rect(rect)?;
                 let encoding = canvas.encode_png().ok()?;
 
-                let hash = HighwayHasher::default().hash64(&encoding) as u32;
+                let hash = FxBuildHasher.hash_one(&encoding) as u32;
 
                 let height = height.ceil() as u32;
 
@@ -156,7 +156,7 @@ pub fn render_by_chunk(
         main_source.replace(&ir);
     }
 
-    CompileResult {
+    RenderResult {
         frames,
         diagnostics,
     }

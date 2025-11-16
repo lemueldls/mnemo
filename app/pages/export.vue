@@ -14,11 +14,11 @@ const space = computed(() => spaces.value[spaceId.value]!);
         <div class="flex size-full flex-1 flex-col">
           <mx-top-app-bar>
             <template #leading>
-              <nuxt-link-locale :to="`/space?id=${spaceId}`">
+              <nuxt-link :to="`/space?id=${spaceId}`">
                 <md-icon-button>
                   <md-icon>arrow_back</md-icon>
                 </md-icon-button>
-              </nuxt-link-locale>
+              </nuxt-link>
             </template>
           </mx-top-app-bar>
 

@@ -124,14 +124,14 @@ const framesCache = new LRUCache<string, RangedFrame[]>({ max: 8 });
 const updateFlagStore = new Set<string>();
 
 function decorate(
-  update: ViewUpdate,
-  path: string,
   fileId: FileId,
+  spaceId: string,
+  path: string,
   prelude: string,
-  // currentDecorations: DecorationSet,
-  widthChanged: boolean,
   locked: boolean,
+  update: ViewUpdate,
   updateInWidget: boolean,
+  widthChanged: boolean,
   typstState: TypstState,
 ) {
   const text = update.state.doc.toString();
@@ -146,8 +146,14 @@ function decorate(
     isFlaggedForUpdate
   ) {
     if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
-      const diagnostics = typstState.check(fileId, text, prelude);
+      const { diagnostics, requests } = typstState.check(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
+
+      if (requests.length > 0)
+        handleTypstRequests(requests, spaceId).then(() => {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        });
 
       return;
     } else {
@@ -156,6 +162,12 @@ function decorate(
 
       const compileResult = typstState.compile(fileId, text, prelude);
       dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+
+      if (compileResult.requests.length > 0)
+        handleTypstRequests(compileResult.requests, spaceId).then(() => {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        });
 
       frames = compileResult.frames;
       framesCache.set(path, compileResult.frames);
@@ -241,6 +253,7 @@ export const typstStateField = StateField.define({
 
 export const typstViewPlugin = (
   fileId: FileId,
+  spaceId: string,
   path: string,
   text: Ref<string>,
   prelude: Ref<string>,
@@ -295,14 +308,14 @@ export const typstViewPlugin = (
 
           queueMicrotask(() => {
             const decorations = decorate(
-              update,
-              path,
               fileId,
+              spaceId,
+              path,
               prelude.value,
-              // currentDecorations,
-              widthChanged,
               locked,
+              update,
               updateInWidget,
+              widthChanged,
               typstState,
             );
 

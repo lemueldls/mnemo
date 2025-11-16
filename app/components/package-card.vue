@@ -35,8 +35,7 @@ async function installPackage(pkg: Package) {
     version: pkg.version,
   };
 
-  await installTypstPackage(pkgSpec);
-  installedPackages.push(pkgSpec);
+  await installTypstPackage(pkgSpec, props.spaceId);
 
   loading.value = false;
 }
@@ -47,9 +46,9 @@ function uninstallPackage(pkg: Package) {
     const pkgItem = pkgs[i]!;
 
     if (
+      // props.namespace === pkgItem.namespace &&
       pkg.name === pkgItem.name &&
       pkg.version === pkgItem.version
-      // && props.namespace === pkgItem.namespace
     ) {
       installedPackages.delete(i, 1);
     }

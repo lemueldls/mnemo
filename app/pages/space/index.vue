@@ -235,11 +235,11 @@ whenever(idle, async () => {
         <div class="flex size-full flex-1 flex-col">
           <mx-top-app-bar>
             <template #leading>
-              <nuxt-link-locale to="/">
+              <nuxt-link to="/">
                 <md-icon-button>
                   <md-icon>arrow_back</md-icon>
                 </md-icon-button>
-              </nuxt-link-locale>
+              </nuxt-link>
             </template>
 
             <div class="flex flex-1 items-center justify-center gap-2">
@@ -320,7 +320,7 @@ whenever(idle, async () => {
                       <md-icon>camera</md-icon>
                     </div>
                   </div>
-                  <NuxtLinkLocale
+                  <nuxt-link
                     class="sidebar-button"
                     title="Export"
                     :to="`/export?space=${spaceId}`"
@@ -329,7 +329,7 @@ whenever(idle, async () => {
                       <md-ripple />
                       <md-icon>export_notes</md-icon>
                     </div>
-                  </NuxtLinkLocale>
+                  </nuxt-link>
                 </div>
               </div>
 

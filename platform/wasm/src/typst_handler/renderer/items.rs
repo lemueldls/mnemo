@@ -1,8 +1,7 @@
-use std::{cmp, iter, ops::Range};
+use std::{cmp, hash::BuildHasher, iter, ops::Range};
 
-use hashbrown::HashSet;
-use highway::{HighwayHash, HighwayHasher};
 use itertools::Itertools;
+use rustc_hash::{FxBuildHasher, FxHashSet};
 use tiny_skia::IntRect;
 use typst::{
     WorldExt, compile,
@@ -15,7 +14,7 @@ use typst::{
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
 use crate::typst_handler::{
-    renderer::{CompileResult, FrameBlock, FrameRender, RangedFrame, sync_file_context},
+    renderer::{FrameBlock, FrameRender, RangedFrame, RenderResult, sync_file_context},
     state::{FileContext, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
@@ -26,7 +25,7 @@ pub fn render_by_items(
     text: &str,
     prelude: &str,
     state: &mut TypstState,
-) -> CompileResult {
+) -> RenderResult {
     let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
 
     let mut last_document = None;
@@ -124,7 +123,12 @@ pub fn render_by_items(
                                     FrameItem::Link(_destination, _axes) => Span::detached(),
                                     FrameItem::Tag(tag) => {
                                         match tag {
-                                            Tag::Start(content, _flags) => content.span(),
+                                            Tag::Start(content, _flags) => {
+                                                match content.elem().name() {
+                                                    "equation" => content.span(),
+                                                    _ => Span::detached(),
+                                                }
+                                            }
                                             Tag::End(_location, _key, _flags) => Span::detached(),
                                         }
                                     }
@@ -415,7 +419,7 @@ pub fn render_by_items(
                         // crate::log!("ITEM START HEIGHT: {block_start_height:?}");
                         // crate::log!("ITEM END HEIGHT: {block_end_height:?}");
 
-                        let delta = (previous_height - block_end_height - 1.0).max(0.0);
+                        let delta = (previous_height - block_end_height - 2.0).max(0.0);
 
                         let height = block_end_height - block_start_height;
 
@@ -448,7 +452,7 @@ pub fn render_by_items(
                             &state.world,
                         )
                     })
-                    .collect::<HashSet<_>>();
+                    .collect::<FxHashSet<_>>();
 
                 // crate::log!("[ERROR RANGES]: {error_ranges:?}");
 
@@ -484,7 +488,7 @@ pub fn render_by_items(
                 let mut end_byte = context.map_aux_to_main(aux_range.end);
                 if block.is_inline {
                     // TODO: proper offsetting (?)
-                    end_byte += 10;
+                    end_byte += 2;
                 }
 
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -493,8 +497,7 @@ pub fn render_by_items(
                     &state.world,
                 ));
 
-                // crate::error!("[ERRORS]: {diagnostics:?}");
-                panic!("[ERRORS]: {diagnostics:?}");
+                crate::error!("[ERRORS]: {diagnostics:?}");
 
                 let start_byte = context.map_aux_to_main(aux_range.start);
 
@@ -526,7 +529,7 @@ pub fn render_by_items(
                 let canvas = canvas.clone_rect(rect).unwrap();
                 let encoding = canvas.encode_png().unwrap();
 
-                let hash = HighwayHasher::default().hash64(&encoding) as u32;
+                let hash = FxBuildHasher.hash_one(&encoding) as u32;
 
                 let height = height.ceil() as u32;
 
@@ -558,7 +561,7 @@ pub fn render_by_items(
         .unwrap()
         .replace(&ir);
 
-    CompileResult {
+    RenderResult {
         frames,
         diagnostics,
     }

@@ -100,6 +100,12 @@ onMounted(() => {
     x.value = event.clientX;
     y.value = event.clientY;
   });
+
+  if (import.meta.env.PROD)
+    useEventListener(window, "error", (event) => {
+      const { createNotification } = useNotifications();
+      createNotification(event.message, { type: "error" });
+    });
 });
 
 const ready = ref(false);

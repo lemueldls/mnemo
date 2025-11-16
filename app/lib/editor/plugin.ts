@@ -11,6 +11,7 @@ import { typstKeymap } from "./keymap";
 
 export const typstPlugin = (
   fileId: FileId,
+  spaceId: string,
   path: string,
   text: Ref<string>,
   prelude: Ref<string>,
@@ -18,7 +19,7 @@ export const typstPlugin = (
   typstState: TypstState,
 ): Extension => [
   typstStateField,
-  typstViewPlugin(fileId, path, text, prelude, locked, typstState),
+  typstViewPlugin(fileId, spaceId, path, text, prelude, locked, typstState),
 
   autocompletion({
     override: [(context) => autocomplete(context, fileId, typstState)],

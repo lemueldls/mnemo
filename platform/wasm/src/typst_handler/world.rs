@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-
+use dashmap::DashSet;
+use rustc_hash::FxHashMap;
 use time::{OffsetDateTime, UtcOffset};
 use typst::{
-    Feature, Library, LibraryExt, World,
+    Library, LibraryExt, World,
     diag::{FileError, FileResult},
     foundations::{Bytes, Datetime},
     syntax::{FileId, Source},
@@ -10,33 +10,35 @@ use typst::{
     utils::LazyHash,
 };
 use typst_ide::IdeWorld;
+use typst_syntax::{VirtualPath, package::PackageSpec};
 
 use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
 
 pub struct MnemoWorld {
     pub main_id: Option<FileId>,
     pub aux_id: Option<FileId>,
-    pub files: HashMap<FileId, FileSlot>,
+    pub files: FxHashMap<FileId, FileSlot>,
     pub index_mapper: IndexMapper,
     library: LazyHash<Library>,
     font_loader: FontLoader,
+
+    pub requested_sources: DashSet<&'static VirtualPath>,
+    pub requested_files: DashSet<&'static VirtualPath>,
+    pub requested_packages: DashSet<&'static PackageSpec>,
 }
 
 impl Default for MnemoWorld {
     fn default() -> Self {
-        let mut font_loader = FontLoader::new();
-        font_loader.load();
-
-        let features = [Feature::Html].into_iter().collect();
-        let library = Library::builder().with_features(features).build();
-
         Self {
             main_id: None,
             aux_id: None,
-            files: HashMap::new(),
+            files: FxHashMap::default(),
             index_mapper: IndexMapper::default(),
-            library: LazyHash::new(library),
-            font_loader,
+            library: LazyHash::new(Library::default()),
+            font_loader: FontLoader::default(),
+            requested_sources: DashSet::default(),
+            requested_files: DashSet::default(),
+            requested_packages: DashSet::default(),
         }
     }
 }
@@ -92,13 +94,31 @@ impl World for MnemoWorld {
     }
 
     fn source(&self, id: FileId) -> FileResult<Source> {
-        self.get_source(id).cloned().ok_or(FileError::Other(None))
+        match self.get_source(id) {
+            Some(source) => Ok(source.clone()),
+            None => {
+                match id.package() {
+                    Some(spec) => self.requested_packages.insert(spec),
+                    None => self.requested_sources.insert(id.vpath()),
+                };
+
+                Err(FileError::Other(None))
+            }
+        }
     }
 
     fn file(&self, id: FileId) -> FileResult<Bytes> {
-        self.get_file(id)
-            .map(|file| file.bytes())
-            .ok_or(FileError::Other(None))
+        match self.get_file(id) {
+            Some(file) => Ok(file.bytes()),
+            None => {
+                match id.package() {
+                    Some(spec) => self.requested_packages.insert(spec),
+                    None => self.requested_files.insert(id.vpath()),
+                };
+
+                Err(FileError::Other(None))
+            }
+        }
     }
 
     fn font(&self, index: usize) -> Option<Font> {

@@ -79,11 +79,12 @@ pub fn sync_file_context(
                         // | SyntaxKind::ListItem
                         // | SyntaxKind::EnumItem
                         | SyntaxKind::Linebreak
+                        | SyntaxKind::Semicolon
                         | SyntaxKind::LineComment
                         | SyntaxKind::BlockComment,
                     ) => {}
                     _ => {
-                        ir += "\n#box() \\";
+                        ir += "\n#block(above:0pt,below:0pt)";
                         last_block.is_inline = true
                     }
                 }
@@ -127,9 +128,9 @@ pub fn sync_file_context(
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileResult {
-    frames: Vec<RangedFrame>,
-    diagnostics: Vec<TypstDiagnostic>,
+pub struct RenderResult {
+    pub frames: Vec<RangedFrame>,
+    pub diagnostics: Vec<TypstDiagnostic>,
 }
 
 #[derive(Tsify, Serialize, Deserialize)]

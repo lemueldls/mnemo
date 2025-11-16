@@ -1,4 +1,4 @@
-import init, { TypstState } from "mnemo-wasm";
+import init, { TypstState, type TypstRequest } from "mnemo-wasm";
 
 export function getTypstFontImports() {
   return [
@@ -58,17 +58,67 @@ export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
     [],
   );
 
-export const installTypstPackage = useMemoize(async (pkg: TypstPackageSpec) => {
+export const installTypstPackage = useMemoize(
+  (pkg: TypstPackageSpec, spaceId: string) => {
+    const { createNotification } = useNotifications();
+
+    const spec = usePackageSpec(pkg);
+
+    // oxlint-disable-next-line no-async-promise-executor
+    return new Promise<void>(async (resolve) => {
+      const spaces = await useSpaces();
+      const space = spaces.value[spaceId]!;
+
+      const installedPackages = await useInstalledPackages(spaceId);
+      const hasPackage = installedPackages.value.find(
+        (p) =>
+          // p.namespace === pkg.namespace &&
+          p.name === pkg.name && p.version === pkg.version,
+      );
+
+      if (hasPackage) {
+        await loadTypstPackage(pkg);
+
+        return resolve();
+      }
+
+      createNotification(
+        `${space.name} is requesting to install the package: \`${spec}\``,
+        {
+          actions: [
+            {
+              label: "Install",
+              variant: "primary",
+              async onClick() {
+                try {
+                  await loadTypstPackage(pkg);
+
+                  const installedPackages = await useInstalledPackages(spaceId);
+                  installedPackages.push(pkg);
+                } catch (error) {
+                  createNotification(
+                    `Error installing ${spec}: ${error instanceof Error ? error.message : String(error)}`,
+                    { type: "error" },
+                  );
+
+                  throw error;
+                }
+
+                resolve();
+              },
+            },
+          ],
+        },
+      );
+    });
+  },
+);
+
+async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { $api } = useNuxtApp();
 
-  const { namespace = "preview", name, version } = pkg;
-
   const data = await $api("/api/download-package", {
-    query: {
-      namespace,
-      name,
-      version,
-    },
+    query: pkg,
     responseType: "blob",
   });
 
@@ -76,8 +126,33 @@ export const installTypstPackage = useMemoize(async (pkg: TypstPackageSpec) => {
   const buffer = await blob.arrayBuffer();
 
   const typstState = await useTypst();
-  typstState.installPackage(
-    `@${namespace}/${name}:${version}`,
-    new Uint8Array(buffer),
+  typstState.installPackage(usePackageSpec(pkg), new Uint8Array(buffer));
+}
+
+export function usePackageSpec(pkg: TypstPackageSpec) {
+  return `@${pkg.namespace}/${pkg.name}:${pkg.version}`;
+}
+
+export function handleTypstRequests(requests: TypstRequest[], spaceId: string) {
+  return Promise.all(
+    requests.map(async (request) => {
+      switch (request.type) {
+        case "source": {
+          const path = request.value;
+
+          const typstState = await useTypst();
+          const fileId = typstState.createFileId(path);
+
+          break;
+        }
+
+        case "package": {
+          const pkg = request.value;
+          await installTypstPackage(pkg, spaceId);
+
+          break;
+        }
+      }
+    }),
   );
-});
+}
