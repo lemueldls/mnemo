@@ -123,12 +123,7 @@ pub fn render_by_items(
                                     FrameItem::Link(_destination, _axes) => Span::detached(),
                                     FrameItem::Tag(tag) => {
                                         match tag {
-                                            Tag::Start(content, _flags) => {
-                                                match content.elem().name() {
-                                                    "equation" => content.span(),
-                                                    _ => Span::detached(),
-                                                }
-                                            }
+                                            Tag::Start(content, _flags) => content.span(),
                                             Tag::End(_location, _key, _flags) => Span::detached(),
                                         }
                                     }
@@ -419,7 +414,7 @@ pub fn render_by_items(
                         // crate::log!("ITEM START HEIGHT: {block_start_height:?}");
                         // crate::log!("ITEM END HEIGHT: {block_end_height:?}");
 
-                        let delta = (previous_height - block_end_height - 2.0).max(0.0);
+                        let delta = (previous_height - block_end_height - 1.0).max(0.0);
 
                         let height = block_end_height - block_start_height;
 
@@ -488,7 +483,7 @@ pub fn render_by_items(
                 let mut end_byte = context.map_aux_to_main(aux_range.end);
                 if block.is_inline {
                     // TODO: proper offsetting (?)
-                    end_byte += 2;
+                    end_byte += 29;
                 }
 
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
