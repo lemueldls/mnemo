@@ -65,19 +65,19 @@ export const installTypstPackage = useMemoize(
     const spec = usePackageSpec(pkg);
 
     // oxlint-disable-next-line no-async-promise-executor
-    return new Promise<void>(async (resolve) => {
+    return new Promise<void>(async (resolve, reject) => {
       const spaces = await useSpaces();
       const space = spaces.value[spaceId]!;
 
       const installedPackages = await useInstalledPackages(spaceId);
-      const hasPackage = installedPackages.value.find(
+      const hasPackage = installedPackages.value.some(
         (p) =>
           // p.namespace === pkg.namespace &&
           p.name === pkg.name && p.version === pkg.version,
       );
 
       if (hasPackage) {
-        await loadTypstPackage(pkg);
+        await loadTypstPackage(pkg).catch(reject);
 
         return resolve();
       }
@@ -95,16 +95,16 @@ export const installTypstPackage = useMemoize(
 
                   const installedPackages = await useInstalledPackages(spaceId);
                   installedPackages.push(pkg);
+
+                  resolve();
                 } catch (error) {
                   createNotification(
                     `Error installing ${spec}: ${error instanceof Error ? error.message : String(error)}`,
                     { type: "error" },
                   );
 
-                  throw error;
+                  reject(error);
                 }
-
-                resolve();
               },
             },
           ],
