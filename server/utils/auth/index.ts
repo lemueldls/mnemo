@@ -31,6 +31,9 @@ export function serverAuth() {
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
+    trustedOrigins: (req) => [
+      req.headers.get("origin") || new URL(req.url).origin,
+    ],
     database: {
       dialect: new D1Dialect({
         database: hubDatabase() as D1Database,

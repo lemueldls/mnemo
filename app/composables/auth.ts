@@ -15,10 +15,7 @@ export const useAuth = createSharedComposable(() => {
   const client = createAuthClient({
     baseURL: useApiBaseUrl(),
     fetchOptions: {
-      auth: {
-        type: "Bearer",
-        token: () => token.value,
-      },
+      auth: { type: "Bearer", token: () => token.value },
     },
     plugins: [polarClient()],
   });
