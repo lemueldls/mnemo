@@ -10,7 +10,7 @@ use typst::{
 };
 use wasm_bindgen::prelude::*;
 
-use crate::typst_handler::{state::FileContext, world::MnemoWorld};
+use crate::{state::FileContext, world::MnemoWorld};
 
 #[wasm_bindgen(js_name = "FileId")]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]

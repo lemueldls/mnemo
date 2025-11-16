@@ -13,7 +13,7 @@ use typst::{
 
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
-use crate::typst_handler::{
+use crate::{
     renderer::{FrameBlock, FrameRender, RangedFrame, RenderResult, sync_file_context},
     state::{FileContext, TypstState},
     world::MnemoWorld,

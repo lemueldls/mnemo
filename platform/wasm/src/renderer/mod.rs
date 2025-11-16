@@ -20,7 +20,7 @@ use super::{
     index_mapper::IndexMapper,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
-use crate::typst_handler::state::TypstState;
+use crate::state::TypstState;
 
 pub fn sync_file_context(
     id: &TypstFileId,

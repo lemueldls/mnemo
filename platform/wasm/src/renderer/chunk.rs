@@ -9,7 +9,7 @@ use typst::{
 
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
-use crate::typst_handler::{
+use crate::{
     renderer::{FrameRender, RangedFrame, RenderResult, sync_file_context},
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},

@@ -12,7 +12,7 @@ use typst::{
 use typst_ide::IdeWorld;
 use typst_syntax::{VirtualPath, package::PackageSpec};
 
-use crate::typst_handler::{fonts::FontLoader, index_mapper::IndexMapper};
+use crate::{fonts::FontLoader, index_mapper::IndexMapper};
 
 pub struct MnemoWorld {
     pub main_id: Option<FileId>,
