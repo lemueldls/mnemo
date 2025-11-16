@@ -31,9 +31,6 @@ export function serverAuth() {
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
-    trustedOrigins: (req) => [
-      req.headers.get("origin") || new URL(req.url).origin,
-    ],
     database: {
       dialect: new D1Dialect({
         database: hubDatabase() as D1Database,
@@ -66,6 +63,7 @@ export function serverAuth() {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
       disableCSRFCheck: true,
+      disableOriginCheck: true,
       defaultCookieAttributes: import.meta.dev
         ? { sameSite: "lax", secure: false, httpOnly: true }
         : { sameSite: "none", secure: true, httpOnly: true },

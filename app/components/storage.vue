@@ -2,20 +2,20 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { UseOnline } from "@vueuse/components";
 
+const { $api } = useNuxtApp();
+
 const auth = useAuth();
 const { user } = auth;
 
 async function login() {
   const { platform } = useRuntimeConfig().public;
 
-  const { error, data } = await auth.signIn.social({
-    provider: "github",
-    callbackURL: `/api/auth/callback?redirect=${encodeURIComponent(window.location.href)}&platform=${platform}`,
-    disableRedirect: !!platform,
-  });
-  if (error) throw createError(error);
+  const { url } = await $api(
+    `/api/auth/sign-in?provider=github&redirect=${encodeURIComponent(window.location.href)}&platform=${platform}`,
+  );
 
-  if (platform) await openUrl(data.url!);
+  if (platform) await openUrl(url);
+  else window.location.href = url;
 }
 
 async function logout() {
