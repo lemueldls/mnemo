@@ -32,6 +32,7 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+                .inner_size(896.0, 672.0)
                 .background_color(Color::from_str("#4c4d72").unwrap());
 
             #[cfg(desktop)]
