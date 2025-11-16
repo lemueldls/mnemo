@@ -75,7 +75,7 @@ const weekdays = computed(() =>
           <div v-if="i > startWeekday" />
         </template>
 
-        <template v-for="(node, i) in activityGraph" :key="i">
+        <template v-for="node in activityGraph" :key="node.date">
           <div
             class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
             :title="node.date.toString()"
