@@ -48,7 +48,7 @@ export async function loadDailyNotes(
 
   if (addToday) {
     const id = ulid();
-    const date = toCalendarDate(fromAbsolute(decodeTime(id), timeZone));
+    // const date = toCalendarDate(fromAbsolute(decodeTime(id), timeZone));
 
     newNotes.push({ id, datesReviewed: [] });
   }

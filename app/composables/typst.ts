@@ -55,7 +55,6 @@ export interface TypstPackageSpec {
 export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
   await useStorageList<TypstPackageSpec[]>(
     () => `spaces/${toValue(spaceId)}/packages.json`,
-    [],
   );
 
 export const installTypstPackage = useMemoize(
