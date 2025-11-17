@@ -112,6 +112,10 @@ function takeObject(idx) {
     return ret;
 }
 
+export function start() {
+    wasm.start();
+}
+
 function _assertClass(instance, klass) {
     if (!(instance instanceof klass)) {
         throw new Error(`expected instance of ${klass.name}`);
@@ -137,10 +141,6 @@ function getArrayJsValueFromWasm0(ptr, len) {
         result.push(takeObject(mem.getUint32(i, true)));
     }
     return result;
-}
-
-export function start() {
-    wasm.start();
 }
 
 const FileIdFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -629,7 +629,7 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_error_61e06cf2fe7ba119 = function(arg0, arg1) {
+    imports.wbg.__wbg_error_1481099ce6e8ca33 = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {

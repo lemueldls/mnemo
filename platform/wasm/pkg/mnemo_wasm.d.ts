@@ -1,39 +1,24 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export type TypstError = EcoString;
-
-export type TypstRequest = { type: "source"; value: string } | { type: "file"; value: string } | { type: "package"; value: { namespace: string; name: string; version: string } };
-
-export interface CheckResult {
-    diagnostics: TypstDiagnostic[];
-    requests: TypstRequest[];
-}
-
 export interface CompileResult {
     frames: RangedFrame[];
     diagnostics: TypstDiagnostic[];
     requests: TypstRequest[];
 }
 
+export interface CheckResult {
+    diagnostics: TypstDiagnostic[];
+    requests: TypstRequest[];
+}
+
+export type TypstRequest = { type: "source"; value: string } | { type: "file"; value: string } | { type: "package"; value: { namespace: string; name: string; version: string } };
+
+export type TypstError = EcoString;
+
 export interface Autocomplete {
     offset: number;
     completions: TypstCompletion[];
-}
-
-export interface RenderResult {
-    frames: RangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface RangedFrame {
-    range: { start: number; end: number };
-    render: FrameRender;
-}
-
-export interface RenderHtmlResult {
-    document: string | undefined;
-    diagnostics: TypstDiagnostic[];
 }
 
 export interface FrameRender {
@@ -43,9 +28,24 @@ export interface FrameRender {
     offsetHeight: number;
 }
 
+export interface RenderResult {
+    frames: RangedFrame[];
+    diagnostics: TypstDiagnostic[];
+}
+
 export interface RenderPdfResult {
     bytes: number[] | undefined;
     diagnostics: TypstDiagnostic[];
+}
+
+export interface RenderHtmlResult {
+    document: string | undefined;
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface RangedFrame {
+    range: { start: number; end: number };
+    render: FrameRender;
 }
 
 export interface TypstCompletion {
@@ -55,6 +55,8 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
+export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
+
 export interface TypstDiagnostic {
     range: { start: number; end: number };
     severity: TypstDiagnosticSeverity;
@@ -62,16 +64,14 @@ export interface TypstDiagnostic {
     hints: string[];
 }
 
-export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
-
-export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
-
 export interface TypstHighlight {
     tag: string;
     range: { start: number; end: number };
 }
 
 export type TypstJump = { type: "File"; position: number };
+
+export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
 
 export class FileId {
   private constructor();
