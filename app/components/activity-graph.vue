@@ -23,7 +23,7 @@ const activityGraph = await useActivityGraph(amount);
 
 const weightedMax = ref(12);
 
-const { d, locale } = useI18n();
+const { d, locale } = useSharedI18n();
 
 const leftFade = ref(0);
 const rightFade = ref(0);

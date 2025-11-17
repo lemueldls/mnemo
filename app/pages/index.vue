@@ -3,7 +3,7 @@ definePageMeta({ title: "Home" });
 
 const name = await useStorageText("name");
 
-const { t, d } = useI18n();
+const { t, d } = useSharedI18n();
 const now = useNow({ interval: 1000 * 60 * 15 });
 
 const greeting = computed(() => {

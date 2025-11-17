@@ -30,7 +30,7 @@ if (isTauri()) {
   });
 }
 
-const { t, te } = useI18n();
+const { t, te } = useSharedI18n();
 
 const route = useRoute();
 const head = useLocaleHead({

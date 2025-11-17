@@ -5,7 +5,7 @@ const dark = useDark();
 const { showWeekends } = useWeekdays();
 const name = await useStorageText("name");
 
-const { t, locale, locales, setLocale } = useI18n();
+const { t, locale, locales, setLocale } = useSharedI18n();
 </script>
 
 <template>

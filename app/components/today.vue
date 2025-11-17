@@ -21,7 +21,7 @@ const scroll = useScroll(containerRef);
 const scrollY = useState("today:scroll-y", () => 0);
 watch(scroll.y, (y) => (scrollY.value = y));
 
-const { d, locale } = useI18n();
+const { d, locale } = useSharedI18n();
 
 const title = computed(() =>
   d(calendarDate.value.toDate(timeZone), { month: "short", day: "numeric" }),

@@ -77,7 +77,7 @@ const prelude = computed(() =>
     .otherwise(() => preludeItem.value),
 );
 
-const { t, locale } = useI18n();
+const { t, locale } = useSharedI18n();
 
 const typstState = await useTypst();
 // const idsToCleanup = new Set<FileId>();

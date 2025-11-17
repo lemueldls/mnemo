@@ -7,7 +7,7 @@ import type { StickyNote } from "~/composables/sticky";
 
 definePageMeta({ layout: "empty" });
 
-const { d } = useI18n();
+const { d } = useSharedI18n();
 
 const spaceId = usePageRouteQuery("id");
 watchImmediate(spaceId, (spaceId) => {

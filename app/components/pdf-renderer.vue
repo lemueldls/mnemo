@@ -7,7 +7,7 @@ import type { Rgba } from "~~/modules/mx/types";
 
 const spaceId = usePageRouteQuery("space");
 
-const { d } = useI18n();
+const { d } = useSharedI18n();
 
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
