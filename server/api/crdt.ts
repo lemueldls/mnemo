@@ -21,7 +21,7 @@ export default defineWebSocketHandler({
 
     const user = await requireUser(headers);
 
-    return { namespace: `users/${user.id}/crdt` };
+    return { namespace: `users/${user.id}/crdt`, context: { token } };
   },
 
   async open(peer) {
@@ -45,6 +45,20 @@ export default defineWebSocketHandler({
 
     const snapshot = doc.export({ mode: "snapshot" });
     await hubBlob().put(peer.namespace, snapshot);
+
+    const headers = new Headers();
+    const token = peer.context.token;
+    headers.set("cookie", `mnemo.session_token=${token}`);
+
+    const auth = serverAuth();
+
+    await auth.api.ingestion({
+      headers,
+      body: {
+        event: "crdt-sync",
+        metadata: { bytes: bytes.length },
+      },
+    });
   },
 
   async close(peer) {

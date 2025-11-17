@@ -16,7 +16,7 @@ export default defineWebSocketHandler({
 
     const user = await requireUser(headers);
 
-    return { namespace: `users:${user.id}` };
+    return { namespace: `users:${user.id}`, context: { token } };
   },
 
   async open(peer) {
@@ -46,6 +46,20 @@ export default defineWebSocketHandler({
         value: await userStorage.getItem(key),
         updatedAt: meta.updatedAt,
       });
+
+    const headers = new Headers();
+    const token = peer.context.token;
+    headers.set("cookie", `mnemo.session_token=${token}`);
+
+    const auth = serverAuth();
+
+    await auth.api.ingestion({
+      headers,
+      body: {
+        event: "kv-sync",
+        metadata: { bytes: JSON.stringify(item).length },
+      },
+    });
   },
 
   async close(peer) {
