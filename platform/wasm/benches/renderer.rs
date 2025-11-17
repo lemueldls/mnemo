@@ -16,7 +16,7 @@ fn benchmark_renderers(c: &mut Criterion) {
     state.install_font(include_bytes!("../../../public/fonts/NewCMMath-Regular.otf").to_vec());
 
     let id = state.create_file_id(filename);
-    state.insert_file(&id, text.clone());
+    state.insert_source(&id, text.clone());
 
     let prelude = "";
 

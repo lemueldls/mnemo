@@ -35,7 +35,6 @@ export async function loadDailyNotes(
       else {
         const item = await getStorageItem<string>(
           `spaces/${spaceId}/daily/${note.id}.typ`,
-          "",
         );
 
         if (!item) return;

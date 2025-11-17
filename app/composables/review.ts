@@ -78,7 +78,6 @@ export const useReview = createSharedComposable(
 
               const content = await getStorageItem(
                 `spaces/${spaceId}/daily/${noteId}.typ`,
-                "",
               );
 
               if (content) {

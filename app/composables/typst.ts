@@ -82,8 +82,13 @@ export const installTypstPackage = useMemoize(
         return resolve();
       }
 
+      const { t } = useSharedI18n();
+
       createNotification(
-        `${space.name} is requesting to install the package: \`${spec}\``,
+        t("composables.typst.package-request", {
+          space: space.name,
+          package: spec,
+        }),
         {
           actions: [
             {
@@ -99,7 +104,11 @@ export const installTypstPackage = useMemoize(
                   resolve();
                 } catch (error) {
                   createNotification(
-                    `Error installing ${spec}: ${error instanceof Error ? error.message : String(error)}`,
+                    t("composables.typst.error-installing", {
+                      package: spec,
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                    }),
                     { type: "error" },
                   );
 
@@ -116,6 +125,14 @@ export const installTypstPackage = useMemoize(
 
 async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { $api } = useNuxtApp();
+  const { t } = useSharedI18n();
+
+  const { createNotification, dismiss } = useNotifications();
+
+  const spec = usePackageSpec(pkg);
+  const notifId = createNotification(
+    t("composables.typst.installing", { package: spec }),
+  );
 
   const data = await $api("/api/download-package", {
     query: pkg,
@@ -126,33 +143,76 @@ async function loadTypstPackage(pkg: TypstPackageSpec) {
   const buffer = await blob.arrayBuffer();
 
   const typstState = await useTypst();
-  typstState.installPackage(usePackageSpec(pkg), new Uint8Array(buffer));
+  typstState.installPackage(spec, new Uint8Array(buffer));
+
+  dismiss(notifId);
 }
 
 export function usePackageSpec(pkg: TypstPackageSpec) {
   return `@${pkg.namespace}/${pkg.name}:${pkg.version}`;
 }
 
-export function handleTypstRequests(requests: TypstRequest[], spaceId: string) {
-  return Promise.all(
-    requests.map(async (request) => {
-      switch (request.type) {
-        case "source": {
-          const path = request.value;
+/** @returns `true` if the typst state has been updated */
+export async function handleTypstRequests(
+  requests: TypstRequest[],
+  spaceId: string,
+) {
+  const resolvedRequests = await Promise.all(
+    requests.map((request) => handleTypstRequest(request, spaceId)),
+  );
 
+  return resolvedRequests.some((update) => update);
+}
+
+/** @returns `true` if the typst state has been updated */
+const handleTypstRequest = useMemoize(
+  async (request: TypstRequest, spaceId: string) => {
+    switch (request.type) {
+      case "source": {
+        const path = request.value;
+
+        const item = await getStorageItem<string>(path);
+
+        if (item) {
+          const typstState = await useTypst();
+          const fileId = typstState.createSourceId(path);
+
+          typstState.insertSource(fileId, item);
+
+          return true;
+        }
+
+        return false;
+      }
+
+      case "file": {
+        const path = request.value;
+
+        const item = await getStorageItem<string>(path);
+
+        if (item) {
           const typstState = await useTypst();
           const fileId = typstState.createFileId(path);
 
-          break;
+          try {
+            typstState.insertFile(fileId, Uint8Array.fromBase64(item));
+          } catch {
+            const encoder = new TextEncoder();
+            typstState.insertFile(fileId, encoder.encode(JSON.stringify(item)));
+          }
+
+          return true;
         }
 
-        case "package": {
-          const pkg = request.value;
-          await installTypstPackage(pkg, spaceId);
-
-          break;
-        }
+        return false;
       }
-    }),
-  );
-}
+
+      case "package": {
+        const pkg = request.value;
+        await installTypstPackage(pkg, spaceId);
+
+        return true;
+      }
+    }
+  },
+);
