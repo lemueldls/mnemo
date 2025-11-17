@@ -24,6 +24,7 @@ console_error_panic_hook = ["dep:console_error_panic_hook"]
 console_error_panic_hook = { version = "0.1.7", optional = true }
 # data-encoding = "2.9.0"
 dashmap = { version = "6.1.0" }
+ecow = { version = "0.2.6" }
 flate2 = { version = "1.1.5" }
 indoc = { version = "2.0.7" }
 itertools = { version = "0.14.0" }
@@ -37,21 +38,20 @@ time = { version = "0.3", features = ["serde"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
 typst = { version = "0.14.0" }
-# typst-html = { version = "0.14.0" }
+typst-html = { version = "0.14.0" }
 typst-ide = { version = "0.14.0" }
 typst-pdf = { version = "0.14.0" }
 typst-render = { version = "0.14.0" }
-# typst-svg = { version = "0.14.0" }
+typst-svg = { version = "0.14.0" }
 typst-syntax = { version = "0.14.0" }
 wasm-bindgen = "0.2.100"
-# web-sys = "0.3.69"
 
 [dev-dependencies]
 criterion = { version = "0.7.0", features = ["html_reports"] }
 wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Oz", "-all"]
+wasm-opt = false # ["-Oz", "-all"]
 
 [[bench]]
 harness = false

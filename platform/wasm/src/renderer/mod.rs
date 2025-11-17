@@ -1,9 +1,11 @@
 mod chunk;
+mod html;
 mod items;
 
 use std::ops::Range;
 
 pub use chunk::render_by_chunk;
+pub use html::render_by_elements;
 pub use items::render_by_items;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -16,11 +18,11 @@ use typst::{
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
-use super::{
+use crate::{
     index_mapper::IndexMapper,
+    state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
-use crate::state::TypstState;
 
 pub fn sync_file_context(
     id: &TypstFileId,

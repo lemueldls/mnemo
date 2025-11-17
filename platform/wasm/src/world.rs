@@ -2,7 +2,7 @@ use dashmap::DashSet;
 use rustc_hash::FxHashMap;
 use time::{OffsetDateTime, UtcOffset};
 use typst::{
-    Library, LibraryExt, World,
+    Feature, Library, LibraryExt, World,
     diag::{FileError, FileResult},
     foundations::{Bytes, Datetime},
     syntax::{FileId, Source},
@@ -29,12 +29,15 @@ pub struct MnemoWorld {
 
 impl Default for MnemoWorld {
     fn default() -> Self {
+        let features = [Feature::Html, Feature::A11yExtras].into_iter().collect();
+        let library = Library::builder().with_features(features).build();
+
         Self {
             main_id: None,
             aux_id: None,
             files: FxHashMap::default(),
             index_mapper: IndexMapper::default(),
-            library: LazyHash::new(Library::default()),
+            library: LazyHash::new(library),
             font_loader: FontLoader::default(),
             requested_sources: DashSet::default(),
             requested_files: DashSet::default(),

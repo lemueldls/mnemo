@@ -24,17 +24,14 @@ use typst_syntax::{LinkedNode, Side};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
-use super::{
-    index_mapper::IndexMapper,
-    world::MnemoWorld,
-    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
-};
 use crate::{
+    index_mapper::IndexMapper,
     renderer::{
-        RangedFrame, RenderPdfResult, RenderResult, RenderingMode, render_by_chunk,
+        RangedFrame, RenderPdfResult, RenderingMode, render_by_chunk, render_by_elements,
         render_by_items, sync_file_context,
     },
-    wrappers::TypstHighlight,
+    world::MnemoWorld,
+    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump},
 };
 
 #[wasm_bindgen]
@@ -162,7 +159,7 @@ impl TypstState {
             RenderingMode::Png => {
                 formatdoc!(
                     r#"
-                        #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
+                        // #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
 
                         #set text(top-edge:"ascender",bottom-edge:"descender")
                         #set par(leading:0.125em)
@@ -231,11 +228,13 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
-        let result = render_by_chunk(id, text, prelude, self);
+        // let result = render_by_chunk(id, text, prelude, self);
+
+        render_by_elements(id, text, prelude, self);
 
         CompileResult {
-            frames: result.frames,
-            diagnostics: result.diagnostics,
+            frames: Vec::new(),
+            diagnostics: Vec::new(),
             requests: self.process_requests(),
         }
     }
