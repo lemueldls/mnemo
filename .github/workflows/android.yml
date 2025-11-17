@@ -59,11 +59,11 @@ jobs:
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-      - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-          workspaces: platform
+      # - name: 📦 Rust cache
+      #   uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+      #   with:
+      #     save-if: ${{ github.ref == 'refs/heads/main' }}
+      #     workspaces: platform
 
       - name: 📦 Run sccache
         if: ${{ !inputs.publish }}
