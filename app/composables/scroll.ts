@@ -12,32 +12,34 @@ export function useScrollWidth(
     if (element) scrollWidth.value = element.scrollWidth;
   };
 
-  tryOnMounted(() => {
-    const element = elementRef.value;
+  whenever(
+    elementRef,
+    (element) => {
+      observer = new ResizeObserver(updateWidth);
+      if (element) {
+        for (const child of element.children) {
+          observer.observe(child);
+        }
 
-    observer = new ResizeObserver(updateWidth);
-    if (element) {
-      for (const child of element.children) {
-        observer.observe(child);
+        updateWidth();
       }
 
-      updateWidth();
-    }
+      // Use a separate MutationObserver to detect added/removed nodes
+      const mutationObserver = new MutationObserver(updateWidth);
+      if (element) {
+        mutationObserver.observe(element, {
+          childList: true,
+          // subtree: true,
+        });
+      }
 
-    // Use a separate MutationObserver to detect added/removed nodes
-    const mutationObserver = new MutationObserver(updateWidth);
-    if (element) {
-      mutationObserver.observe(element, {
-        childList: true,
-        // subtree: true,
+      tryOnUnmounted(() => {
+        observer.disconnect();
+        mutationObserver.disconnect();
       });
-    }
-
-    tryOnUnmounted(() => {
-      observer.disconnect();
-      mutationObserver.disconnect();
-    });
-  });
+    },
+    { once: true, immediate: true },
+  );
 
   watch(elementRef, (element) => {
     if (element && observer) {
@@ -66,35 +68,38 @@ export function useScrollHeight(
 
   const updateHeight = () => {
     const element = elementRef.value;
+
     if (element) scrollHeight.value = element.scrollHeight;
   };
 
-  tryOnMounted(() => {
-    const element = elementRef.value;
+  whenever(
+    elementRef,
+    (element) => {
+      observer = new ResizeObserver(updateHeight);
+      if (element) {
+        for (const child of element.children) {
+          observer.observe(child);
+        }
 
-    observer = new ResizeObserver(updateHeight);
-    if (element) {
-      for (const child of element.children) {
-        observer.observe(child);
+        updateHeight();
       }
 
-      updateHeight();
-    }
+      // Use a separate MutationObserver to detect added/removed nodes
+      const mutationObserver = new MutationObserver(updateHeight);
+      if (element) {
+        mutationObserver.observe(element, {
+          childList: true,
+          // subtree: true,
+        });
+      }
 
-    // Use a separate MutationObserver to detect added/removed nodes
-    const mutationObserver = new MutationObserver(updateHeight);
-    if (element) {
-      mutationObserver.observe(element, {
-        childList: true,
-        // subtree: true,
+      tryOnUnmounted(() => {
+        observer.disconnect();
+        mutationObserver.disconnect();
       });
-    }
-
-    tryOnUnmounted(() => {
-      observer.disconnect();
-      mutationObserver.disconnect();
-    });
-  });
+    },
+    { once: true, immediate: true },
+  );
 
   watch(elementRef, (element) => {
     if (element && observer) {

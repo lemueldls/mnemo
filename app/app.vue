@@ -105,6 +105,8 @@ onMounted(() => {
     useEventListener(window, "error", (event) => {
       const { createNotification } = useNotifications();
       createNotification(event.message, { type: "error" });
+
+      console.error(event.error);
     });
 });
 
