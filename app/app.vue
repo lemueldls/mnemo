@@ -101,13 +101,12 @@ onMounted(() => {
     y.value = event.clientY;
   });
 
-  if (import.meta.env.PROD)
-    useEventListener(window, "error", (event) => {
-      const { createNotification } = useNotifications();
-      createNotification(event.message, { type: "error" });
+  // useEventListener(window, "error", (event) => {
+  //   const { createNotification } = useNotifications();
+  //   createNotification(event.message, { type: "error" });
 
-      console.error(event.error);
-    });
+  //   console.error(event.error);
+  // });
 });
 
 const ready = ref(false);
