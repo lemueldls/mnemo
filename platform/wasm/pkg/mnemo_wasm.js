@@ -112,14 +112,14 @@ function takeObject(idx) {
     return ret;
 }
 
+export function start() {
+    wasm.start();
+}
+
 function _assertClass(instance, klass) {
     if (!(instance instanceof klass)) {
         throw new Error(`expected instance of ${klass.name}`);
     }
-}
-
-function isLikeNone(x) {
-    return x === undefined || x === null;
 }
 
 function passArray8ToWasm0(arg, malloc) {
@@ -127,6 +127,10 @@ function passArray8ToWasm0(arg, malloc) {
     getUint8ArrayMemory0().set(arg, ptr / 1);
     WASM_VECTOR_LEN = arg.length;
     return ptr;
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
 }
 
 function getArrayJsValueFromWasm0(ptr, len) {
@@ -137,10 +141,6 @@ function getArrayJsValueFromWasm0(ptr, len) {
         result.push(takeObject(mem.getUint32(i, true)));
     }
     return result;
-}
-
-export function start() {
-    wasm.start();
 }
 
 const FileIdFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -356,49 +356,14 @@ export class TypstState {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_typststate_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.typststate_new();
-        this.__wbg_ptr = ret >>> 0;
-        TypstStateFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
     /**
      * @param {FileId} id
-     * @param {number} size
+     * @returns {RenderPdfResult}
      */
-    setPixelPerPt(id, size) {
+    renderPdf(id) {
         _assertClass(id, FileId);
-        wasm.typststate_setPixelPerPt(this.__wbg_ptr, id.__wbg_ptr, size);
-    }
-    /**
-     * @param {FileId} id
-     * @param {ThemeColors} theme
-     */
-    setTheme(id, theme) {
-        _assertClass(id, FileId);
-        _assertClass(theme, ThemeColors);
-        var ptr0 = theme.__destroy_into_raw();
-        wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
-    }
-    /**
-     * @param {FileId} id
-     * @param {string} font
-     */
-    setFont(id, font) {
-        _assertClass(id, FileId);
-        const ptr0 = passStringToWasm0(font, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.typststate_setFont(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {FileId} id
-     * @param {string | null} [math_font]
-     */
-    setMathFont(id, math_font) {
-        _assertClass(id, FileId);
-        var ptr0 = isLikeNone(math_font) ? 0 : passStringToWasm0(math_font, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        var len0 = WASM_VECTOR_LEN;
-        wasm.typststate_setMathFont(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
+        return takeObject(ret);
     }
     /**
      * @param {FileId} id
@@ -409,36 +374,6 @@ export class TypstState {
         const ptr0 = passStringToWasm0(locale, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
         wasm.typststate_setLocale(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string} path
-     * @returns {FileId}
-     */
-    createSourceId(path) {
-        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_createSourceId(this.__wbg_ptr, ptr0, len0);
-        return FileId.__wrap(ret);
-    }
-    /**
-     * @param {string} path
-     * @returns {FileId}
-     */
-    createFileId(path) {
-        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_createFileId(this.__wbg_ptr, ptr0, len0);
-        return FileId.__wrap(ret);
-    }
-    /**
-     * @param {FileId} id
-     * @param {string} text
-     */
-    insertSource(id, text) {
-        _assertClass(id, FileId);
-        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.typststate_insertSource(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
     }
     /**
      * @param {FileId} id
@@ -456,6 +391,55 @@ export class TypstState {
     removeFile(id) {
         _assertClass(id, FileId);
         wasm.typststate_removeFile(this.__wbg_ptr, id.__wbg_ptr);
+    }
+    /**
+     * @param {FileId} id
+     * @param {number} aux_cursor_utf16
+     * @param {boolean} explicit
+     * @returns {Autocomplete | undefined}
+     */
+    autocomplete(id, aux_cursor_utf16, explicit) {
+        _assertClass(id, FileId);
+        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, explicit);
+        return takeObject(ret);
+    }
+    /**
+     * @param {Uint8Array} bytes
+     */
+    installFont(bytes) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_export_0);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_installFont(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {FileId} id
+     * @param {string} text
+     */
+    insertSource(id, text) {
+        _assertClass(id, FileId);
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_insertSource(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {FileId} id
+     * @param {string | null} [math_font]
+     */
+    setMathFont(id, math_font) {
+        _assertClass(id, FileId);
+        var ptr0 = isLikeNone(math_font) ? 0 : passStringToWasm0(math_font, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.typststate_setMathFont(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} path
+     * @returns {FileId}
+     */
+    createFileId(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.typststate_createFileId(this.__wbg_ptr, ptr0, len0);
+        return FileId.__wrap(ret);
     }
     /**
      * @param {string} spec
@@ -479,27 +463,28 @@ export class TypstState {
         }
     }
     /**
-     * @param {Uint8Array} bytes
+     * @param {string} path
+     * @returns {FileId}
      */
-    installFont(bytes) {
-        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_export_0);
+    createSourceId(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
-        wasm.typststate_installFont(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.typststate_createSourceId(this.__wbg_ptr, ptr0, len0);
+        return FileId.__wrap(ret);
     }
     /**
      * @param {FileId} id
-     * @param {string} text
-     * @param {string} prelude
-     * @returns {CompileResult}
+     * @param {number} size
      */
-    compile(id, text, prelude) {
+    setPixelPerPt(id, size) {
         _assertClass(id, FileId);
-        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.typststate_compile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
-        return takeObject(ret);
+        wasm.typststate_setPixelPerPt(this.__wbg_ptr, id.__wbg_ptr, size);
+    }
+    constructor() {
+        const ret = wasm.typststate_new();
+        this.__wbg_ptr = ret >>> 0;
+        TypstStateFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @param {FileId} id
@@ -518,27 +503,6 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
-     * @param {string} text
-     * @returns {TypstHighlight[]}
-     */
-    highlight(id, text) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            _assertClass(id, FileId);
-            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.typststate_highlight(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
-            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
-            return v2;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @param {FileId} id
      * @param {number} x
      * @param {number} y
      * @returns {TypstJump | undefined}
@@ -546,17 +510,6 @@ export class TypstState {
     click(id, x, y) {
         _assertClass(id, FileId);
         const ret = wasm.typststate_click(this.__wbg_ptr, id.__wbg_ptr, x, y);
-        return takeObject(ret);
-    }
-    /**
-     * @param {FileId} id
-     * @param {number} aux_cursor_utf16
-     * @param {boolean} explicit
-     * @returns {Autocomplete | undefined}
-     */
-    autocomplete(id, aux_cursor_utf16, explicit) {
-        _assertClass(id, FileId);
-        const ret = wasm.typststate_autocomplete(this.__wbg_ptr, id.__wbg_ptr, aux_cursor_utf16, explicit);
         return takeObject(ret);
     }
     /**
@@ -595,12 +548,59 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
-     * @returns {RenderPdfResult}
+     * @param {string} text
+     * @param {string} prelude
+     * @returns {CompileResult}
      */
-    renderPdf(id) {
+    compile(id, text, prelude) {
         _assertClass(id, FileId);
-        const ret = wasm.typststate_renderPdf(this.__wbg_ptr, id.__wbg_ptr);
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(prelude, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.typststate_compile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0, ptr1, len1);
         return takeObject(ret);
+    }
+    /**
+     * @param {FileId} id
+     * @param {string} font
+     */
+    setFont(id, font) {
+        _assertClass(id, FileId);
+        const ptr0 = passStringToWasm0(font, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_setFont(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {FileId} id
+     * @param {string} text
+     * @returns {TypstHighlight[]}
+     */
+    highlight(id, text) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(id, FileId);
+            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.typststate_highlight(retptr, this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export_2(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @param {FileId} id
+     * @param {ThemeColors} theme
+     */
+    setTheme(id, theme) {
+        _assertClass(id, FileId);
+        _assertClass(theme, ThemeColors);
+        var ptr0 = theme.__destroy_into_raw();
+        wasm.typststate_setTheme(this.__wbg_ptr, id.__wbg_ptr, ptr0);
     }
 }
 
