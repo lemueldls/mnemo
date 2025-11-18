@@ -3,8 +3,7 @@ import { decodeTime, ulid } from "ulid";
 
 export interface DailyNote {
   id: string;
-  // name?: string;
-  // datetime: [number, number, number, number, number];
+  // title?: string;
   datesReviewed?: string[];
 }
 
