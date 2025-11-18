@@ -188,6 +188,9 @@ impl TypstState {
                         #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
                         #show list:set block(above:0.25em,below:0.125em)
                         #show enum:set block(above:0.25em,below:0.125em)
+                        #show table:set block(inset:2pt)
+
+                        #show:d=>box(d,width:100%)
                     "#,
                     width = context.width,
                 )

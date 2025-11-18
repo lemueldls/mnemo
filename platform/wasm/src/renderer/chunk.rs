@@ -74,15 +74,15 @@ pub fn render_by_chunk(
                         .sum::<Abs>()
                         .to_pt();
 
-                    let height = document_height - offset_height;
+                    let height = document_height - offset_height - 1.0;
 
-                    if height == 0_f64 {
+                    if height <= 0_f64 {
                         return None;
                     }
 
                     let ranged_height = Some((aux_range_utf16, height, offset_height));
 
-                    offset_height = document_height;
+                    offset_height = document_height - 1.0;
                     last_document = Some(document);
 
                     ranged_height

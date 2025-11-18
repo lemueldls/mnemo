@@ -84,7 +84,7 @@ pub fn sync_file_context(
                         | SyntaxKind::BlockComment,
                     ) => {}
                     _ => {
-                        ir += "\n#block(above:0pt,below:0pt)";
+                        ir += "\n#block(above:1pt,below:0pt)";
                         last_block.is_inline = true
                     }
                 }

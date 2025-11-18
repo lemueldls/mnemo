@@ -649,9 +649,6 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_error_1481099ce6e8ca33 = function(arg0, arg1) {
-        console.error(getStringFromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -662,6 +659,9 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_export_2(deferred0_0, deferred0_1, 1);
         }
+    };
+    imports.wbg.__wbg_error_c969849be6d32ac3 = function(arg0, arg1) {
+        console.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_from_2a5d3e218e67aa85 = function(arg0) {
         const ret = Array.from(getObject(arg0));
