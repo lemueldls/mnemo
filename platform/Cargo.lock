@@ -3103,7 +3103,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "once_cell",
  "serde",
@@ -3123,7 +3123,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo-wasm"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "console_error_panic_hook",
  "criterion",
