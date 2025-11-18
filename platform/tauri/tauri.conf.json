@@ -63,7 +63,7 @@
                     "scheme": [
                         "https"
                     ],
-                    "host": "mnemo.world",
+                    "host": "notes.lemueldls.workers.dev",
                     "pathPrefix": [
                         "/auth/confirm"
                     ],

@@ -35,7 +35,7 @@ build() {
     # building will bail out with something like: undefined reference to 'ring_core_0_17_8_OPENSSL_ia32cap_P' when -flto=auto is set
     export CFLAGS="\${CFLAGS//-flto=auto//}"
     export NODE_OPTIONS=--max-old-space-size=8192
-    export NUXT_PUBLIC_API_BASE_URL="https://mnemo.world"
+    export NUXT_PUBLIC_API_BASE_URL="https://notes.lemueldls.workers.dev"
     pnpm tauri build -b deb -c "\${srcdir}/\${_builddir}/tauri/tauri.package.conf.json" || true
 }
 package() {
