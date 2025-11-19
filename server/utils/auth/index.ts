@@ -14,7 +14,10 @@ const { password } = runtimeConfig.session;
 const { github } = runtimeConfig.oauth;
 const { apiBaseUrl } = runtimeConfig.public;
 
-const polarClient = new Polar({ accessToken: runtimeConfig.polar.accessToken });
+const polarClient = new Polar({
+  accessToken: runtimeConfig.polar.accessToken,
+  server: import.meta.dev ? "sandbox" : "production",
+});
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
