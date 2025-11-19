@@ -76,8 +76,9 @@ pub fn sync_file_context(
                         | SyntaxKind::ModuleImport
                         | SyntaxKind::ModuleInclude
                         | SyntaxKind::Contextual
-                        // | SyntaxKind::ListItem
-                        // | SyntaxKind::EnumItem
+                        | SyntaxKind::ListItem
+                        | SyntaxKind::EnumItem
+                        | SyntaxKind::TermItem
                         | SyntaxKind::Linebreak
                         | SyntaxKind::Semicolon
                         | SyntaxKind::LineComment
