@@ -48,6 +48,8 @@ export default defineWebSocketHandler({
 
     const headers = new Headers();
     const token = peer.context.token;
+    console.log("CRDT CONTEXT", JSON.stringify(peer.context));
+    console.log("CRDT TOKEN", token);
     headers.set("cookie", `mnemo.session_token=${token}`);
 
     const auth = serverAuth();
