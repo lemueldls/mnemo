@@ -41,6 +41,22 @@ const screenshotOpen = ref(false);
 
 const router = useRouter();
 
+const editorWrapper = ref<HTMLElement | null>(null);
+
+function onWrapperWheel(event: WheelEvent) {
+  if (event.target !== editorWrapper.value) return;
+
+  const scroller = document.querySelector("#editor .cm-scroller");
+  if (!scroller) return;
+
+  // event.preventDefault();
+  scroller.scrollBy({
+    top: event.deltaY,
+    left: event.deltaX,
+    behavior: "auto",
+  });
+}
+
 function deleteSpace() {
   spaces.delete(spaceId.value);
 
@@ -262,6 +278,8 @@ whenever(idle, async () => {
           </mx-top-app-bar>
 
           <div
+            ref="editorWrapper"
+            @wheel="onWrapperWheel"
             class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
