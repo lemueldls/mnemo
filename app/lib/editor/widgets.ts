@@ -154,11 +154,13 @@ function decorate(
     //   const { diagnostics, requests } = typstState.check(fileId, text, prelude);
     //   dispatchDiagnostics(diagnostics, update.state, update.view);
 
-    //   if (requests.length > 0)
-    //     handleTypstRequests(requests, spaceId).then(() => {
+    // if (requests.length > 0)
+    //   handleTypstRequests(requests, spaceId).then((update) => {
+    //     if (update) {
     //       view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
     //       view.dispatch({ changes: [{ from: 0, to: 1 }] });
-    //     });
+    //     }
+    //   });
 
     //   return;
     // } else {
@@ -169,9 +171,11 @@ function decorate(
     dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
     if (compileResult.requests.length > 0)
-      handleTypstRequests(compileResult.requests, spaceId).then(() => {
-        view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-        view.dispatch({ changes: [{ from: 0, to: 1 }] });
+      handleTypstRequests(compileResult.requests, spaceId).then((update) => {
+        if (update) {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        }
       });
 
     frames = compileResult.frames;

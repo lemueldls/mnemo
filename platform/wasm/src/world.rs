@@ -145,6 +145,7 @@ impl IdeWorld for MnemoWorld {
     }
 }
 
+#[derive(Debug)]
 pub enum FileSlot {
     Source(Source),
     Bytes(Bytes),

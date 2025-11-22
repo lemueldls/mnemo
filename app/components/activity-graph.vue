@@ -23,7 +23,7 @@ const activityGraph = await useActivityGraph(amount);
 
 const weightedMax = ref(12);
 
-const { d, locale } = useI18n();
+const { d, locale } = useSharedI18n();
 
 const leftFade = ref(0);
 const rightFade = ref(0);
@@ -75,17 +75,17 @@ const weekdays = computed(() =>
           <div v-if="i > startWeekday" />
         </template>
 
-        <template v-for="node in activityGraph" :key="node.date">
+        <div
+          v-for="node in activityGraph"
+          :key="node.date"
+          :title="node.date?.toString()"
+          class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
+        >
           <div
-            class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
-            :title="node.date.toString()"
-          >
-            <div
-              :style="{ opacity: node.activity / weightedMax }"
-              class="bg-primary size-full"
-            />
-          </div>
-        </template>
+            :style="{ opacity: node.activity / weightedMax }"
+            class="bg-primary size-full"
+          />
+        </div>
       </div>
     </div>
   </div>

@@ -3,13 +3,13 @@ import { getLocalTimeZone } from "@internationalized/date";
 export const useTimeZone = createSharedComposable(() => getLocalTimeZone());
 
 export function useShortDate(date: Date) {
-  const { d } = useI18n();
+  const { d } = useSharedI18n();
 
   return d(date, { month: "short", weekday: "short", day: "numeric" });
 }
 
 export function useLongDate(date: Date) {
-  const { d } = useI18n();
+  const { d } = useSharedI18n();
 
   return d(date, { weekday: "long", month: "long", day: "numeric" });
 }
@@ -17,7 +17,7 @@ export function useLongDate(date: Date) {
 export function useRelativeTime(time: number) {
   const now = useNow({ interval: 60000 });
 
-  const { locale } = useI18n();
+  const { locale } = useSharedI18n();
   const relativeTimeFormat = new Intl.RelativeTimeFormat(locale.value, {
     numeric: "auto",
   });

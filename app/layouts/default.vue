@@ -17,7 +17,7 @@ interface Page {
   icon: MaterialSymbol;
 }
 
-const { t } = useI18n();
+const { t } = useSharedI18n();
 
 const pages: Page[] = [
   { path: "/", name: t("layouts.default.nav.home"), icon: "home" },

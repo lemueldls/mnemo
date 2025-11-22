@@ -77,7 +77,7 @@ const prelude = computed(() =>
     .otherwise(() => preludeItem.value),
 );
 
-const { t, locale } = useI18n();
+const { t, locale } = useSharedI18n();
 
 const typstState = await useTypst();
 // const idsToCleanup = new Set<FileId>();
@@ -115,7 +115,7 @@ onMounted(async () => {
   );
 
   watchImmediate(fullPath, (fullPath, oldFullPath) => {
-    const fileId = typstState.createFileId(fullPath);
+    const fileId = typstState.createSourceId(fullPath);
     // idsToCleanup.add(fileId);
 
     typstState.setPixelPerPt(fileId, window.devicePixelRatio);
@@ -167,7 +167,7 @@ onMounted(async () => {
     watch(
       text,
       (text) => {
-        typstState.insertFile(fileId, text);
+        typstState.insertSource(fileId, text);
 
         if (oldFullPath)
           stateCache.set(

@@ -16,7 +16,7 @@ defineProps<{
 
 const visible = defineModel<boolean>();
 
-const { d, locale } = useI18n();
+const { d, locale } = useSharedI18n();
 
 const timeZone = useTimeZone();
 const calendarToday = today(timeZone);

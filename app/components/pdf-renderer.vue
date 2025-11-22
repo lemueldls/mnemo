@@ -7,21 +7,19 @@ import type { Rgba } from "~~/modules/mx/types";
 
 const spaceId = usePageRouteQuery("space");
 
-const { d } = useI18n();
+const { d } = useSharedI18n();
 
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
 const dailyNotesItem = await getStorageItem<DailyNote[]>(
   `spaces/${spaceId.value}/daily/notes.json`,
-  [],
 );
 
 const dailyNotes = await Promise.all(
-  dailyNotesItem.map(async (note) => {
+  dailyNotesItem!.map(async (note) => {
     const item = await getStorageItem<string>(
       `spaces/${spaceId.value}/daily/${note.id}.typ`,
-      "",
     );
 
     return { note, item };
@@ -40,12 +38,10 @@ const dailyNotes = await Promise.all(
     }),
 );
 
-const prelude = await getStorageItem(
+const prelude = await getStorageItem<string>(
   `spaces/${spaceId.value}/prelude/main.typ`,
-  "",
 );
-
-dailyNotes.unshift(prelude);
+if (prelude) dailyNotes.unshift();
 
 const typstState = await useTypst();
 
@@ -59,7 +55,7 @@ function parseColor(color: Rgba): Rgb {
 }
 
 const path = `spaces/${spaceId.value}/export.typ`;
-const fileId = typstState.createFileId(path);
+const fileId = typstState.createSourceId(path);
 
 watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
   typstState.setPixelPerPt(fileId, pixelPerPoint);
@@ -97,14 +93,16 @@ watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
 
 try {
   const packages = await useInstalledPackages(spaceId.value);
-  await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg)));
+  await Promise.all(
+    packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)),
+  );
 } catch (err) {
   console.error("Error installing packages:", err);
 }
 
 typstState.resize(fileId, 800);
 
-typstState.insertFile(fileId, dailyNotes.join("\n"));
+typstState.insertSource(fileId, dailyNotes.join("\n"));
 
 const { bytes, diagnostics } = typstState.renderPdf(fileId);
 const pdf = bytes ? new Uint8Array(bytes) : null;

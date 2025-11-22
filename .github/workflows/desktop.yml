@@ -44,7 +44,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
@@ -70,11 +70,11 @@ jobs:
           components: rustfmt, clippy
           targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin,wasm32-unknown-unknown' || 'wasm32-unknown-unknown' }}
 
-      - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-          workspaces: platform
+      # - name: 📦 Rust cache
+      #   uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+      #   with:
+      #     save-if: ${{ github.ref == 'refs/heads/main' }}
+      #     workspaces: platform
 
       - name: 📦 Run sccache
         if: ${{ !inputs.publish }}
@@ -136,7 +136,7 @@ jobs:
         run: pnpm install
 
       - name: 🔨 Build using tauri action (publish artifacts on release)
-        uses: tauri-apps/tauri-action@v0.5.24
+        uses: tauri-apps/tauri-action@v0.6.0
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

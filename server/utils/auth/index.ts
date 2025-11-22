@@ -3,13 +3,21 @@ import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import { betterAuth } from "better-auth";
 
+import { createSharedComposable } from "@vueuse/core";
+
 import { bearer } from "./bearer";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
 const runtimeConfig = useRuntimeConfig();
+const { password } = runtimeConfig.session;
+const { github } = runtimeConfig.oauth;
+const { apiBaseUrl } = runtimeConfig.public;
 
-const polarClient = new Polar({ accessToken: runtimeConfig.polar.accessToken });
+const polarClient = new Polar({
+  accessToken: runtimeConfig.polar.accessToken,
+  server: import.meta.dev ? "sandbox" : "production",
+});
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
@@ -21,13 +29,8 @@ export async function requireUser(headers: Headers) {
   return session.user;
 }
 
-let _auth: ReturnType<typeof betterAuth>;
-
-export function serverAuth() {
-  const { password } = runtimeConfig.session;
-  const { github } = runtimeConfig.oauth;
-
-  _auth ||= betterAuth({
+export const serverAuth = createSharedComposable(() =>
+  betterAuth({
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
@@ -87,14 +90,11 @@ export function serverAuth() {
           usage(),
         ],
       }),
-    ],
-  });
-
-  return _auth;
-}
+    ] as const,
+  }),
+);
 
 export function getBaseURL() {
-  const { apiBaseUrl } = runtimeConfig.public;
   const url = apiBaseUrl ? new URL(apiBaseUrl) : getRequestURL(useEvent());
 
   return url.origin;

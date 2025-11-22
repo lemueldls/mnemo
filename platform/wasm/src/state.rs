@@ -70,8 +70,8 @@ impl TypstState {
         self.source_contexts.get_mut(id).unwrap().locale = locale;
     }
 
-    #[wasm_bindgen(js_name = "createFileId")]
-    pub fn create_file_id(&mut self, path: String) -> TypstFileId {
+    #[wasm_bindgen(js_name = "createSourceId")]
+    pub fn create_source_id(&mut self, path: String) -> TypstFileId {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
         let id_wrapper = TypstFileId::new(id);
 
@@ -82,9 +82,22 @@ impl TypstState {
         id_wrapper
     }
 
-    #[wasm_bindgen(js_name = "insertFile")]
-    pub fn insert_file(&mut self, id: &TypstFileId, text: String) {
+    #[wasm_bindgen(js_name = "createFileId")]
+    pub fn create_file_id(&mut self, path: String) -> TypstFileId {
+        let id = FileId::new(None, VirtualPath::new(&path));
+        let id_wrapper = TypstFileId::new(id);
+
+        id_wrapper
+    }
+
+    #[wasm_bindgen(js_name = "insertSource")]
+    pub fn insert_source(&mut self, id: &TypstFileId, text: String) {
         self.world.insert_source(id.inner(), text);
+    }
+
+    #[wasm_bindgen(js_name = "insertFile")]
+    pub fn insert_file(&mut self, id: &TypstFileId, bytes: Vec<u8>) {
+        self.world.insert_file(id.inner(), Bytes::new(bytes));
     }
 
     #[wasm_bindgen(js_name = "removeFile")]
@@ -170,6 +183,9 @@ impl TypstState {
                         #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
                         #show list:set block(above:0.25em,below:0.125em)
                         #show enum:set block(above:0.25em,below:0.125em)
+                        #show table:set block(inset:2pt)
+
+                        #show:d=>box(d,width:100%)
                     "#,
                     width = context.width,
                 )

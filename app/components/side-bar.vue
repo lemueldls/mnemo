@@ -9,7 +9,7 @@ import type { MaterialSymbol } from "material-symbols";
 
 defineProps<{ direction: "horizontal" | "vertical" }>();
 
-const { t } = useI18n();
+const { t } = useSharedI18n();
 
 interface Item {
   name: string;

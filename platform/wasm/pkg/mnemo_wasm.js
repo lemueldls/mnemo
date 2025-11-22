@@ -414,6 +414,16 @@ export class TypstState {
      * @param {string} path
      * @returns {FileId}
      */
+    createSourceId(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.typststate_createSourceId(this.__wbg_ptr, ptr0, len0);
+        return FileId.__wrap(ret);
+    }
+    /**
+     * @param {string} path
+     * @returns {FileId}
+     */
     createFileId(path) {
         const ptr0 = passStringToWasm0(path, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
@@ -424,9 +434,19 @@ export class TypstState {
      * @param {FileId} id
      * @param {string} text
      */
-    insertFile(id, text) {
+    insertSource(id, text) {
         _assertClass(id, FileId);
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.typststate_insertSource(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {FileId} id
+     * @param {Uint8Array} bytes
+     */
+    insertFile(id, bytes) {
+        _assertClass(id, FileId);
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_export_0);
         const len0 = WASM_VECTOR_LEN;
         wasm.typststate_insertFile(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
     }
@@ -625,9 +645,6 @@ function __wbg_get_imports() {
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
-    imports.wbg.__wbg_error_1481099ce6e8ca33 = function(arg0, arg1) {
-        console.error(getStringFromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -638,6 +655,17 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_export_2(deferred0_0, deferred0_1, 1);
         }
+    };
+    imports.wbg.__wbg_error_9b26091973deca3d = function(arg0, arg1) {
+        console.error(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbg_getTime_46267b1c24877e30 = function(arg0) {
+        const ret = getObject(arg0).getTime();
+        return ret;
+    };
+    imports.wbg.__wbg_new0_f788a2397c7ca929 = function() {
+        const ret = new Date();
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_405e22f390576ce2 = function() {
         const ret = new Object();

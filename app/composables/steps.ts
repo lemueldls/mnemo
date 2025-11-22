@@ -9,7 +9,7 @@ interface UseStepsOptions {
 }
 
 export function useSteps({ initialSteps, onComplete }: UseStepsOptions) {
-  const { t } = useI18n();
+  const { t } = useSharedI18n();
 
   const steps = ref<Step[]>(
     initialSteps.map((id) => ({

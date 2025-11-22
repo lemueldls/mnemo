@@ -3,7 +3,7 @@ import { decodeTime, ulid } from "ulid";
 
 export interface DailyNote {
   id: string;
-  // name?: string;
+  // title?: string;
   datesReviewed?: string[];
 }
 
@@ -34,7 +34,6 @@ export async function loadDailyNotes(
       else {
         const item = await getStorageItem<string>(
           `spaces/${spaceId}/daily/${note.id}.typ`,
-          "",
         );
 
         if (!item) return;

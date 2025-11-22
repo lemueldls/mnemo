@@ -20,7 +20,7 @@ export const useReviewStages = () => REVIEW_STAGES;
 
 export const useReview = createSharedComposable(
   async (amount: MaybeRefOrGetter<number>) => {
-    const { d } = useI18n();
+    const { d } = useSharedI18n();
     const spaces = await useSpaces();
 
     const review = await useStorageItem<Review[]>("review.json", []);
@@ -78,7 +78,6 @@ export const useReview = createSharedComposable(
 
               const content = await getStorageItem(
                 `spaces/${spaceId}/daily/${noteId}.typ`,
-                "",
               );
 
               if (content) {

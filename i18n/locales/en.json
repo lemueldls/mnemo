@@ -137,5 +137,12 @@
     "tasks": {
       "title": "Tasks"
     }
+  },
+  "composables": {
+    "typst": {
+      "package-request": "{space} is requesting to install the package: `{package}`",
+      "installing": "Installing `{package}`...",
+      "error-installing": "Error installing `{package}`: {error}"
+    }
   }
 }

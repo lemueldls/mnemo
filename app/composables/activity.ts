@@ -13,7 +13,7 @@ interface ActivityNode {
 
 export const useActivityGraph = createSharedComposable(
   async (amount: MaybeRefOrGetter<number>) => {
-    const { locale } = useI18n();
+    const { locale } = useSharedI18n();
 
     const activityGraph = await useStorageItem<ActivityNode[]>(
       "activity.json",

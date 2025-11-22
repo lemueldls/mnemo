@@ -30,7 +30,7 @@ if (isTauri()) {
   });
 }
 
-const { t, te } = useI18n();
+const { t, te } = useSharedI18n();
 
 const route = useRoute();
 const head = useLocaleHead({
@@ -105,6 +105,8 @@ onMounted(() => {
     useEventListener(window, "error", (event) => {
       const { createNotification } = useNotifications();
       createNotification(event.message, { type: "error" });
+
+      console.error(event.error);
     });
 });
 

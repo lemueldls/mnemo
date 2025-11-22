@@ -15,7 +15,9 @@ const review = await useReview(amount);
 <template>
   <div ref="container">
     <div v-if="review.length > 0" id="review">
-      <review-card v-for="review in review" :key="review.noteId" :review />
+      <template v-for="(review, i) in review" :key="review.noteId">
+        <review-card v-if="i < amount" :review />
+      </template>
     </div>
     <span v-else class="text-on-surface-varient body-large">
       {{ $t("components.review.no-review") }}

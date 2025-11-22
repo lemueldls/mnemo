@@ -96,8 +96,10 @@ export class TypstState {
   setFont(id: FileId, font: string): void;
   setMathFont(id: FileId, math_font?: string | null): void;
   setLocale(id: FileId, locale: string): void;
+  createSourceId(path: string): FileId;
   createFileId(path: string): FileId;
-  insertFile(id: FileId, text: string): void;
+  insertSource(id: FileId, text: string): void;
+  insertFile(id: FileId, bytes: Uint8Array): void;
   removeFile(id: FileId): void;
   installPackage(spec: string, data: Uint8Array): void;
   installFont(bytes: Uint8Array): void;
@@ -122,7 +124,9 @@ export interface InitOutput {
   readonly typststate_setFont: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_createSourceId: (a: number, b: number, c: number) => number;
   readonly typststate_createFileId: (a: number, b: number, c: number) => number;
+  readonly typststate_insertSource: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_removeFile: (a: number, b: number) => void;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;

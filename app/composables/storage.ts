@@ -15,10 +15,12 @@ const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
 });
 
-type CustomRef<T> = Ref<T> & { setLocal(value: T): void };
+type StorageRef<T> = Ref<T> & { setLocal(value: T): void };
 
-const itemRefs: { [key: string]: Promise<CustomRef<unknown>> | undefined } = {};
-const itemRefCount: { [key: string]: number } = {};
+const itemsRefs: {
+  [key: string]: Promise<StorageRef<unknown>> | undefined;
+} = {};
+const itemRefsCount: { [key: string]: number } = {};
 
 declare global {
   interface Uint8Array {
@@ -100,7 +102,7 @@ export const useCrdt = createSharedComposable(async () => {
       await localDb.setItem(key, item);
       await localDb.setMeta(key, { updatedAt: Date.now() });
 
-      const itemRef = await itemRefs[key];
+      const itemRef = await itemsRefs[key];
       if (itemRef) itemRef.setLocal(item);
     }
 
@@ -165,7 +167,7 @@ const useSync = createSharedComposable(() => {
         await localDb.setItem(key, value);
         await localDb.setMeta(key, { updatedAt });
 
-        const itemRef = await itemRefs[key];
+        const itemRef = await itemsRefs[key];
         if (itemRef) itemRef.setLocal(value);
       }
     },
@@ -200,7 +202,7 @@ function shallowComputed<T, S = T>(
 
 async function useSharedAsyncData<T>(
   key: MaybeRefOrGetter<string>,
-  handler: (key: string, scope: EffectScope) => Promise<CustomRef<T>>,
+  handler: (key: string, scope: EffectScope) => Promise<StorageRef<T>>,
 ) {
   let item: Ref<T>;
   const data = shallowRef<T>();
@@ -217,26 +219,26 @@ async function useSharedAsyncData<T>(
   let stopSync: WatchStopHandle;
   await new Promise<void>((resolve) =>
     watchImmediate(keyRef, async (key) => {
-      itemRefCount[key] ??= 0;
-      itemRefCount[key]++;
+      itemRefsCount[key] ??= 0;
+      itemRefsCount[key]++;
 
       const scope = effectScope(true);
 
       onWatcherCleanup(() => {
         stopSync?.();
 
-        if (!itemRefCount[key] || itemRefCount[key] <= 1) {
+        if (!itemRefsCount[key] || itemRefsCount[key] <= 1) {
           scope.stop();
 
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete itemRefs[key];
+          delete itemsRefs[key];
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete itemRefCount[key];
-        } else itemRefCount[key]--;
+          delete itemRefsCount[key];
+        } else itemRefsCount[key]--;
       });
 
-      itemRefs[key] ??= handler(key, scope);
-      item = (await itemRefs[key]) as CustomRef<T>;
+      itemsRefs[key] ??= handler(key, scope);
+      item = (await itemsRefs[key]) as StorageRef<T>;
 
       scope.run(() => {
         stopSync = watchImmediate(item, (item) => {
@@ -257,13 +259,13 @@ function createStorageItem<T extends StorageValue>(
   initialValue: T,
   itemHook?: (
     key: string,
-    item: CustomRef<T>,
+    item: StorageRef<T>,
     runNextSync: Ref<boolean>,
   ) => void,
 ) {
   return useSharedAsyncData(key, async (key, scope) => {
-    const storageItem = await getStorageItem<T>(key, initialValue);
-    const item = ref(storageItem) as Ref<T>;
+    const storageItem = await getStorageItem<T>(key);
+    const item = ref(storageItem || initialValue) as Ref<T>;
 
     const customRef = scope.run(() => {
       const runNextSync = ref(true);
@@ -544,10 +546,7 @@ export async function useStorageBytes(
   });
 }
 
-export async function getStorageItem<T extends StorageValue>(
-  key: string,
-  initialValue: T,
-) {
+export async function getStorageItem<T extends StorageValue>(key: string) {
   const localItem = await localDb.getItem<T>(key);
 
   const localMeta = localDb.getMeta(key) as Promise<
@@ -558,7 +557,7 @@ export async function getStorageItem<T extends StorageValue>(
     useSync().updateItem(key, localItem, meta?.updatedAt ?? 0);
   });
 
-  return localItem ?? initialValue;
+  return localItem;
 }
 
 export interface StorageDirPath {

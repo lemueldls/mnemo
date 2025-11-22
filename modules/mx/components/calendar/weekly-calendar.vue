@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { isToday, today, type CalendarDate } from "@internationalized/date";
 
-const { d } = useI18n();
+const { d } = useSharedI18n();
 
 const timeZone = useTimeZone();
 const activeDate = ref(today(timeZone)) as Ref<CalendarDate>;
