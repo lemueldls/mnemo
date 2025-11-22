@@ -114,7 +114,7 @@ export const installTypstPackage = useMemoize(
   },
 );
 
-async function loadTypstPackage(pkg: TypstPackageSpec) {
+export async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { $api } = useNuxtApp();
 
   const data = await $api("/api/download-package", {
