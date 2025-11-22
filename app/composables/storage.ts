@@ -443,37 +443,52 @@ export async function useStorageSet<
     initialValue ?? ([] as unknown as T),
     async (key, item, runNextSync) => {
       const doc = await useCrdt();
-      const list = doc.getList(key);
+      const list = doc.getMovableList(key);
 
       watchImmediate(item, (itemList) => {
         if (!runNextSync.value) return;
 
-        const syncList = list.getShallowValue() as T;
         const syncKeys = new Set<string>();
-        const deleteQueue: number[] = [];
 
-        for (let i = 0; i < syncList.length; i++) {
-          const item = syncList[i] as Exclude<T[number], Container>;
-          const key = item[setKey];
+        for (let i = 0; i < list.length; i++) {
+          const item = list.get(i) as Exclude<T[number], Container>;
+          const key: string = item[setKey];
 
-          if (syncKeys.has(key)) {
-            if (!deleteQueue.includes(i)) deleteQueue.push(i);
-          } else {
-            syncKeys.add(key);
+          syncKeys.add(key);
+
+          let moveIndex;
+
+          for (let j = i + 1; j < list.length; j++) {
+            const otherItem = list.get(j) as Exclude<T[number], Container>;
+            const otherKey: string = otherItem[setKey];
+
+            const order = key.localeCompare(otherKey);
+
+            if (order === 0) list.delete(j, 1);
+            else if (order > 0) moveIndex = j;
           }
+
+          if (moveIndex) list.move(i, moveIndex);
         }
 
-        for (let i = 0; i < itemList.length; i++) {
-          const item = itemList[i] as Exclude<T[number], Container>;
-          const key = item[setKey];
+        for (const item of itemList) {
+          const key: string = item[setKey as keyof typeof item];
 
-          if (!syncKeys.has(key)) {
-            list.push(item);
+          if (syncKeys.has(key)) continue;
+
+          let left = 0;
+          let right = list.length;
+
+          while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+            const midItem = list.get(mid) as Exclude<T[number], Container>;
+            const midKey: string = midItem[setKey];
+
+            if (midKey.localeCompare(key) < 0) left = mid + 1;
+            else right = mid;
           }
-        }
 
-        for (let i = deleteQueue.length - 1; i >= 0; i--) {
-          list.delete(deleteQueue[i]!, 1);
+          list.insert(left, item);
         }
 
         void commit();
@@ -482,7 +497,9 @@ export async function useStorageSet<
   );
 
   const doc = await useCrdt();
-  const list = computedWithControl(item, () => doc.getList(keyRef.value));
+  const list = computedWithControl(item, () =>
+    doc.getMovableList(keyRef.value),
+  );
 
   return extendRef(item, {
     async push(value: Exclude<T[keyof T], Container>) {
