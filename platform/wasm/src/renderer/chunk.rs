@@ -10,7 +10,7 @@ use typst::{
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
 use crate::{
-    renderer::{FrameRender, RangedFrame, RenderResult, sync_file_context},
+    renderer::{FrameRender, RangedFrame, RenderResult, sync_source_context},
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
@@ -21,7 +21,7 @@ pub fn render_by_chunk(
     prelude: &str,
     state: &mut TypstState,
 ) -> RenderResult {
-    let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
+    let (ir, ast_blocks) = sync_source_context(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -29,7 +29,7 @@ pub fn render_by_chunk(
     let mut diagnostics = Vec::new();
     let mut compiled_warnings = None;
 
-    let context = state.file_contexts.get_mut(id).unwrap();
+    let context = state.source_contexts.get_mut(id).unwrap();
 
     let ranged_heights = ast_blocks
         .into_iter()

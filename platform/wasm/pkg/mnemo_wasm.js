@@ -625,9 +625,6 @@ function __wbg_get_imports() {
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
-    imports.wbg.__wbg_debug_0a728af78dff204b = function(arg0, arg1) {
-        console.debug(getStringFromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg_error_1481099ce6e8ca33 = function(arg0, arg1) {
         console.error(getStringFromWasm0(arg0, arg1));
     };

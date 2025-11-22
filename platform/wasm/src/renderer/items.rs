@@ -14,8 +14,8 @@ use typst::{
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
 use crate::{
-    renderer::{FrameBlock, FrameRender, RangedFrame, RenderResult, sync_file_context},
-    state::{FileContext, TypstState},
+    renderer::{FrameBlock, FrameRender, RangedFrame, RenderResult, sync_source_context},
+    state::{SourceContext, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
@@ -26,7 +26,7 @@ pub fn render_by_items(
     prelude: &str,
     state: &mut TypstState,
 ) -> RenderResult {
-    let (ir, ast_blocks) = sync_file_context(id, text, prelude, state);
+    let (ir, ast_blocks) = sync_source_context(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -35,7 +35,7 @@ pub fn render_by_items(
 
     // let mut erronous_ranges = Vec::new();
 
-    let context = state.file_contexts.get_mut(id).unwrap();
+    let context = state.source_contexts.get_mut(id).unwrap();
 
     context
         .main_source_mut(&mut state.world)
@@ -88,7 +88,7 @@ pub fn render_by_items(
                         page.frame.items().flat_map(|frame_item| {
                             fn frame_item_range(
                                 item: &FrameItem,
-                                context: &FileContext,
+                                context: &SourceContext,
                                 world: &MnemoWorld,
                             ) -> Option<Range<usize>> {
                                 let span = match item {
@@ -138,7 +138,7 @@ pub fn render_by_items(
 
                             fn frame_with_bounds(
                                 frame_item: &(Point, FrameItem),
-                                context: &FileContext,
+                                context: &SourceContext,
                                 world: &MnemoWorld,
                             ) -> Box<[FrameBlock]> {
                                 let (point, item) = frame_item;

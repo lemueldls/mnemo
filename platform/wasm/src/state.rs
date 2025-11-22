@@ -26,10 +26,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{
     index_mapper::IndexMapper,
-    renderer::{
-        RangedFrame, RenderPdfResult, RenderingMode, render_by_chunk, render_by_elements,
-        render_by_items, sync_file_context,
-    },
+    renderer::{RenderPdfResult, RenderingMode, html, sync_source_context},
     world::MnemoWorld,
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump},
 };
@@ -38,7 +35,7 @@ use crate::{
 #[derive(Default)]
 pub struct TypstState {
     pub(crate) world: MnemoWorld,
-    pub(crate) file_contexts: FxHashMap<TypstFileId, FileContext>,
+    pub(crate) source_contexts: FxHashMap<TypstFileId, SourceContext>,
 }
 
 #[wasm_bindgen]
@@ -50,27 +47,27 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "setPixelPerPt")]
     pub fn set_pixel_per_pt(&mut self, id: &TypstFileId, size: f32) {
-        self.file_contexts.get_mut(id).unwrap().pixel_per_pt = size;
+        self.source_contexts.get_mut(id).unwrap().pixel_per_pt = size;
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
     pub fn set_theme(&mut self, id: &TypstFileId, theme: ThemeColors) {
-        self.file_contexts.get_mut(id).unwrap().theme = theme;
+        self.source_contexts.get_mut(id).unwrap().theme = theme;
     }
 
     #[wasm_bindgen(js_name = "setFont")]
     pub fn set_font(&mut self, id: &TypstFileId, font: String) {
-        self.file_contexts.get_mut(id).unwrap().font = font;
+        self.source_contexts.get_mut(id).unwrap().font = font;
     }
 
     #[wasm_bindgen(js_name = "setMathFont")]
     pub fn set_math_font(&mut self, id: &TypstFileId, math_font: Option<String>) {
-        self.file_contexts.get_mut(id).unwrap().math_font = math_font;
+        self.source_contexts.get_mut(id).unwrap().math_font = math_font;
     }
 
     #[wasm_bindgen(js_name = "setLocale")]
     pub fn set_locale(&mut self, id: &TypstFileId, locale: String) {
-        self.file_contexts.get_mut(id).unwrap().locale = locale;
+        self.source_contexts.get_mut(id).unwrap().locale = locale;
     }
 
     #[wasm_bindgen(js_name = "createFileId")]
@@ -78,9 +75,9 @@ impl TypstState {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
         let id_wrapper = TypstFileId::new(id);
 
-        let context = FileContext::new(id);
+        let context = SourceContext::new(id);
         self.world.insert_source(context.aux_id, String::new());
-        self.file_contexts.insert(id_wrapper.clone(), context);
+        self.source_contexts.insert(id_wrapper.clone(), context);
 
         id_wrapper
     }
@@ -92,7 +89,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "removeFile")]
     pub fn remove_file(&mut self, id: &TypstFileId) {
-        self.file_contexts.remove(id);
+        self.source_contexts.remove(id);
         self.world.remove_source(&id.inner());
     }
 
@@ -152,8 +149,9 @@ impl TypstState {
         requests
     }
 
+    // #[comemo::memoize]
     pub(crate) fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
-        let context = self.file_contexts.get(id).unwrap();
+        let context = self.source_contexts.get(id).unwrap();
 
         let page_config = match rendering_mode {
             RenderingMode::Png => {
@@ -228,22 +226,20 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
-        // let result = render_by_chunk(id, text, prelude, self);
-
-        render_by_elements(id, text, prelude, self);
+        let result = html::render(id, text, prelude, self);
 
         CompileResult {
-            frames: Vec::new(),
-            diagnostics: Vec::new(),
+            frames: result.frames,
+            diagnostics: result.diagnostics,
             requests: self.process_requests(),
         }
     }
 
     #[wasm_bindgen]
     pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_file_context(id, text, prelude, self);
+        let (ir, _) = sync_source_context(id, text, prelude, self);
 
-        let context = self.file_contexts.get_mut(id).unwrap();
+        let context = self.source_contexts.get_mut(id).unwrap();
         context
             .main_source_mut(&mut self.world)
             .unwrap()
@@ -283,7 +279,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn highlight(&mut self, id: &TypstFileId, text: &str) -> Vec<TypstHighlight> {
-        let Some(context) = self.file_contexts.get(id) else {
+        let Some(context) = self.source_contexts.get(id) else {
             return Vec::new();
         };
 
@@ -330,7 +326,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn click(&mut self, id: &TypstFileId, x: f64, mut y: f64) -> Option<TypstJump> {
-        let context = self.file_contexts.get(id)?;
+        let context = self.source_contexts.get(id)?;
         let document = context.document.as_ref()?;
 
         let index = document
@@ -364,7 +360,7 @@ impl TypstState {
         aux_cursor_utf16: usize,
         explicit: bool,
     ) -> Option<Autocomplete> {
-        let context = self.file_contexts.get(id)?;
+        let context = self.source_contexts.get(id)?;
 
         let main_source = context.main_source(&self.world)?;
         let aux_source = context.aux_source(&self.world)?;
@@ -395,7 +391,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn hover(&self, id: &TypstFileId, aux_cursor_utf16: usize, side: i8) -> Option<String> {
-        let context = self.file_contexts.get(id).unwrap();
+        let context = self.source_contexts.get(id).unwrap();
 
         let main_source = context.main_source(&self.world)?;
         let aux_source = context.aux_source(&self.world)?;
@@ -428,7 +424,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn resize(&mut self, id: &TypstFileId, width: Option<f64>, height: Option<f64>) -> bool {
-        let context = self.file_contexts.get_mut(id).unwrap();
+        let context = self.source_contexts.get_mut(id).unwrap();
 
         let width = width
             .map(|width| width.to_string() + "pt")
@@ -447,7 +443,7 @@ impl TypstState {
 
         let mut ir = self.prelude(id, RenderingMode::Pdf);
 
-        let context = self.file_contexts.get_mut(id).unwrap();
+        let context = self.source_contexts.get_mut(id).unwrap();
         let main_source = context.main_source_mut(&mut self.world).unwrap();
         let text = main_source.text().to_string();
         ir += &text;
@@ -491,7 +487,7 @@ impl TypstState {
     }
 }
 
-pub struct FileContext {
+pub struct SourceContext {
     pub main_id: FileId,
     pub aux_id: FileId,
     pub index_mapper: IndexMapper,
@@ -506,7 +502,7 @@ pub struct FileContext {
     pub math_font: Option<String>,
 }
 
-impl FileContext {
+impl SourceContext {
     pub fn new(main_id: FileId) -> Self {
         let aux_id: FileId = main_id.with_extension("$.typ");
 
@@ -567,7 +563,7 @@ impl PackageFile {
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CompileResult {
-    pub frames: Vec<RangedFrame>,
+    pub frames: Vec<html::RangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
     pub requests: Vec<TypstRequest>,
 }

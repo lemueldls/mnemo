@@ -2093,7 +2093,7 @@ dependencies = [
  "log",
  "rustc-hash",
  "smallvec",
- "zune-jpeg",
+ "zune-jpeg 0.4.20",
 ]
 
 [[package]]
@@ -2558,8 +2558,8 @@ dependencies = [
  "image-webp",
  "num-traits",
  "png",
- "zune-core",
- "zune-jpeg",
+ "zune-core 0.4.12",
+ "zune-jpeg 0.4.20",
 ]
 
 [[package]]
@@ -2789,8 +2789,7 @@ dependencies = [
 [[package]]
 name = "krilla"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "199be5f63da6e19b71051fd5276258a8e55449ac48e2e7492c68238f38ca9f3b"
+source = "git+https://github.com/LaurenzV/krilla?rev=e5639c6#e5639c6a22e763cae577212b87074bb3f0ffd3cc"
 dependencies = [
  "base64 0.22.1",
  "bumpalo",
@@ -2814,14 +2813,13 @@ dependencies = [
  "tiny-skia-path",
  "xmp-writer",
  "yoke 0.8.0",
- "zune-jpeg",
+ "zune-jpeg 0.5.5",
 ]
 
 [[package]]
 name = "krilla-svg"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d3eec075c9507dfdbfb4b9bc3b2aeac074ed422b61bcfd93517616d6b3d19c3"
+source = "git+https://github.com/LaurenzV/krilla?rev=e5639c6#e5639c6a22e763cae577212b87074bb3f0ffd3cc"
 dependencies = [
  "flate2",
  "fontdb",
@@ -3125,6 +3123,7 @@ dependencies = [
 name = "mnemo-wasm"
 version = "0.2.2"
 dependencies = [
+ "comemo",
  "console_error_panic_hook",
  "criterion",
  "dashmap",
@@ -4511,7 +4510,7 @@ dependencies = [
  "svgtypes",
  "tiny-skia",
  "usvg",
- "zune-jpeg",
+ "zune-jpeg 0.4.20",
 ]
 
 [[package]]
@@ -6238,9 +6237,9 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 [[package]]
 name = "typst"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d9198018d9acb075f27abe70036e6e24302156c37f0142ea18b5e813ecb8172"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
+ "arrayvec",
  "comemo",
  "ecow",
  "rustc-hash",
@@ -6258,14 +6257,15 @@ dependencies = [
 [[package]]
 name = "typst-assets"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "712f5e2c4134bcf22f292086aa515caff00a21d54c8b30c77c4fc1227442a89a"
+source = "git+https://github.com/mkorje/typst-assets?rev=a92060c#a92060c322677e2b64ca1bd2fd4b4a2d85f329fe"
+dependencies = [
+ "bitflags 2.9.1",
+]
 
 [[package]]
 name = "typst-eval"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bb8965a12371f0ff325dedac06d14fa9dd0d4fa0588034bc99802da7af9362f"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "comemo",
  "ecow",
@@ -6284,8 +6284,7 @@ dependencies = [
 [[package]]
 name = "typst-html"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67d6858f22690a9d105ff2ea1ea38dbf345e1610e30f947d7c3f79da27e1dd0b"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "bumpalo",
  "comemo",
@@ -6300,13 +6299,13 @@ dependencies = [
  "typst-syntax",
  "typst-timing",
  "typst-utils",
+ "unicode-math-class",
 ]
 
 [[package]]
 name = "typst-ide"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "448eba746bcf3d2faefaf465ee9e497f54084a405d37379926c146103adbca34"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "comemo",
  "ecow",
@@ -6321,8 +6320,7 @@ dependencies = [
 [[package]]
 name = "typst-layout"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80e80dfe619a391c79efa7eafbb2530fcc7090daead435a86c2eb5d53c3095ae"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "az",
  "bumpalo",
@@ -6357,9 +6355,9 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be5a858259c340407d93a5af74cad534d92548cfb702f7c8b0ef891e1d9d0d84"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
+ "arrayvec",
  "az",
  "bitflags 2.9.1",
  "bumpalo",
@@ -6423,8 +6421,7 @@ dependencies = [
 [[package]]
 name = "typst-macros"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "207b71ed20ec736c13be07a44443417406c12f0868a6e4c40d67c32c03a599ec"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6435,8 +6432,7 @@ dependencies = [
 [[package]]
 name = "typst-pdf"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99160d071220909c1993d7530abe94c0bceffd6e10be7bb629eae2f73d596f26"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "az",
  "bytemuck",
@@ -6461,8 +6457,7 @@ dependencies = [
 [[package]]
 name = "typst-realize"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2725822b4c5a1a9d7aa46708f7a996a4cb1b15470f077c7ba3e788fb95e495d"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "arrayvec",
  "bumpalo",
@@ -6479,8 +6474,7 @@ dependencies = [
 [[package]]
 name = "typst-render"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "807e2e52c1f0b35ea011a133c4bff23e854e88c8b84a98739a71b6e700bbc02f"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6499,8 +6493,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b53718b9b8f4b4e2454600084eca155530ce9d30cb62fed0799671b8044e40fc"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "base64 0.22.1",
  "comemo",
@@ -6523,8 +6516,7 @@ dependencies = [
 [[package]]
 name = "typst-syntax"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fbfb35d79f3601057518ab5f2e3f6040b51dc098310245eee35d43b2d17fabc"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -6542,8 +6534,7 @@ dependencies = [
 [[package]]
 name = "typst-timing"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f1db8164cb04d48fce0190d4a0f2fd14f3d967a456facb5dd590ba2d4158c08"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "parking_lot",
  "serde",
@@ -6553,8 +6544,7 @@ dependencies = [
 [[package]]
 name = "typst-utils"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c268017d7102a752be28ea74792eedc40a35fa13a61e34b97a67de559dc4eb88"
+source = "git+https://github.com/mkorje/typst.git?branch=mathml#399df54129814d7bfea060b97d69d5d38d0e750e"
 dependencies = [
  "once_cell",
  "portable-atomic",
@@ -8002,12 +7992,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f423a2c17029964870cfaabb1f13dfab7d092a62a29a89264f4d36990ca414a"
 
 [[package]]
+name = "zune-core"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "111f7d9820f05fd715df3144e254d6fc02ee4088b0644c0ffd0efc9e6d9d2773"
+
+[[package]]
 name = "zune-jpeg"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc1f7e205ce79eb2da3cd71c5f55f3589785cb7c79f6a03d1c8d1491bda5d089"
 dependencies = [
- "zune-core",
+ "zune-core 0.4.12",
+]
+
+[[package]]
+name = "zune-jpeg"
+version = "0.5.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc6fb7703e32e9a07fb3f757360338b3a567a5054f21b5f52a666752e333d58e"
+dependencies = [
+ "zune-core 0.5.0",
 ]
 
 [[package]]

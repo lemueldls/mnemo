@@ -1,12 +1,9 @@
-mod chunk;
-mod html;
-mod items;
+// pub mod chunk;
+pub mod html;
+// pub mod items;
 
 use std::ops::Range;
 
-pub use chunk::render_by_chunk;
-pub use html::render_by_elements;
-pub use items::render_by_items;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::{
@@ -24,7 +21,7 @@ use crate::{
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
-pub fn sync_file_context(
+pub fn sync_source_context(
     id: &TypstFileId,
     text: &str,
     prelude: &str,
@@ -32,7 +29,7 @@ pub fn sync_file_context(
 ) -> (String, Vec<AstBlock>) {
     let mut ir = state.prelude(id, RenderingMode::Png) + prelude + "\n";
 
-    let context = state.file_contexts.get_mut(id).unwrap();
+    let context = state.source_contexts.get_mut(id).unwrap();
 
     context.index_mapper = IndexMapper::default();
     context.index_mapper.add_main_to_aux(0, ir.len());
@@ -80,13 +77,14 @@ pub fn sync_file_context(
                         | SyntaxKind::Contextual
                         // | SyntaxKind::ListItem
                         // | SyntaxKind::EnumItem
+                        // | SyntaxKind::TermItem
                         | SyntaxKind::Linebreak
                         | SyntaxKind::Semicolon
                         | SyntaxKind::LineComment
                         | SyntaxKind::BlockComment,
                     ) => {}
                     _ => {
-                        ir += "\n#block(above:0pt,below:0pt)";
+                        ir += "\n#parbreak()";
                         last_block.is_inline = true
                     }
                 }
@@ -128,12 +126,12 @@ pub fn sync_file_context(
     (ir, ast_blocks)
 }
 
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderResult {
-    pub frames: Vec<RangedFrame>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
+// pub struct RenderResult {
+//     pub frames: Vec<RangedFrame>,
+//     pub diagnostics: Vec<TypstDiagnostic>,
+// }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -155,38 +153,38 @@ pub struct AstBlock {
     is_inline: bool,
 }
 
-#[derive(Debug, Clone)]
-pub struct FrameBlock {
-    range: Option<Range<usize>>,
-    start_height: Abs,
-    end_height: Abs,
-    item: FrameItem,
-}
+// #[derive(Debug, Clone)]
+// pub struct FrameBlock {
+//     range: Option<Range<usize>>,
+//     start_height: Abs,
+//     end_height: Abs,
+//     item: FrameItem,
+// }
 
-#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RangedFrame {
-    pub range: Range<usize>,
-    pub render: FrameRender,
-}
+// #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
+// pub struct RangedFrame {
+//     pub range: Range<usize>,
+//     pub render: FrameRender,
+// }
 
-impl RangedFrame {
-    pub fn new(range: Range<usize>, render: FrameRender) -> Self {
-        Self { range, render }
-    }
-}
+// impl RangedFrame {
+//     pub fn new(range: Range<usize>, render: FrameRender) -> Self {
+//         Self { range, render }
+//     }
+// }
 
-#[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct FrameRender {
-    #[tsify(type = "Uint8Array")]
-    #[serde(with = "serde_bytes")]
-    encoding: Vec<u8>,
-    hash: u32,
-    height: u32,
-    #[serde(rename = "offsetHeight")]
-    offset_height: f64,
-}
+// #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
+// pub struct FrameRender {
+//     #[tsify(type = "Uint8Array")]
+//     #[serde(with = "serde_bytes")]
+//     encoding: Vec<u8>,
+//     hash: u32,
+//     height: u32,
+//     #[serde(rename = "offsetHeight")]
+//     offset_height: f64,
+// }
 
 pub enum RenderingMode {
     Png,

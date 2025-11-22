@@ -578,11 +578,39 @@ const renderHoverBackground = computed(() => {
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
+
+    p {
+      @apply inline;
+    }
+
+    ul {
+      @apply list-inside list-disc;
+    }
+
+    ol {
+      @apply list-inside list-decimal;
+    }
+
+    // math {
+    //   @apply block w-full;
+    // }
+
+    // dl {
+    //   display: block;
+    // }
+
+    dt {
+      @apply inline font-bold;
+    }
+
+    dd {
+      @apply ml-12;
+    }
   }
 
   .cm-content[contenteditable="true"] {
     .typst-render {
-      @apply cursor-text transition-colors hover:rounded;
+      @apply rounded transition-colors;
 
       &:hover {
         background-color: v-bind(renderHoverBackground);
@@ -672,6 +700,26 @@ const renderHoverBackground = computed(() => {
 
   .typ-error {
     @apply text-error;
+  }
+
+  h2 {
+    @apply text-primary headline-large;
+  }
+
+  h3 {
+    @apply text-secondary headline-medium;
+  }
+
+  h4 {
+    @apply text-tertiary headline-small;
+  }
+
+  h5 {
+    @apply text-on-primary-container title-large font-semibold;
+  }
+
+  h6 {
+    @apply text-on-secondary-container title-medium font-semibold;
   }
 }
 </style>

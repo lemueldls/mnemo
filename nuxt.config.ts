@@ -1,8 +1,10 @@
 import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 
+import type { LocaleObject } from "@nuxtjs/i18n";
+
 const defaultLocale = "en";
-const locales = [
+const locales: LocaleObject<"en" | "es" | "de" | "he" | "zh" | "ja">[] = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
   { code: "es", dir: "ltr", language: "es-ES", file: "es.json" },
   { code: "de", dir: "ltr", language: "de-DE", file: "de.json" },
@@ -117,13 +119,13 @@ export default defineNuxtConfig({
     families: [
       { name: "Maple Mono", provider: "local", global: true },
       { name: "Maple Mono CN", provider: "local", global: true },
+      { name: "New CM Math", provider: "local", global: true },
     ],
   },
   i18n: {
     locales,
     defaultLocale,
     langDir: "locales",
-    lazy: true,
     strategy: "no_prefix",
     baseUrl: siteUrl,
   },

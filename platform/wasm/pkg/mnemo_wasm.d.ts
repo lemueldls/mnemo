@@ -1,11 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export interface RenderResult {
-    frames: RangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
 export interface RenderPdfResult {
     bytes: number[] | undefined;
     diagnostics: TypstDiagnostic[];
@@ -14,18 +9,6 @@ export interface RenderPdfResult {
 export interface RenderHtmlResult {
     document: string | undefined;
     diagnostics: TypstDiagnostic[];
-}
-
-export interface RangedFrame {
-    range: { start: number; end: number };
-    render: FrameRender;
-}
-
-export interface FrameRender {
-    encoding: Uint8Array;
-    hash: number;
-    height: number;
-    offsetHeight: number;
 }
 
 export interface CompileResult {
@@ -71,6 +54,21 @@ export interface TypstCompletion {
     label: string;
     apply: string | undefined;
     detail: string | undefined;
+}
+
+export interface FrameRender {
+    html: string;
+    hash: number;
+}
+
+export interface RangedFrame {
+    range: { start: number; end: number };
+    render: FrameRender;
+}
+
+export interface RenderResult {
+    frames: RangedFrame[];
+    diagnostics: TypstDiagnostic[];
 }
 
 export class FileId {
