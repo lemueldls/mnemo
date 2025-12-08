@@ -39,7 +39,7 @@ tsify = { version = "0.5.5", features = ["js"] }
 typst = { version = "0.14.0" }
 # typst-html = { version = "0.14.0" }
 typst-ide = { version = "0.14.0" }
-typst-pdf = { version = "0.14.0" }
+typst-pdf = { version = "0.14.1" }
 typst-render = { version = "0.14.0" }
 # typst-svg = { version = "0.14.0" }
 typst-syntax = { version = "0.14.0" }
