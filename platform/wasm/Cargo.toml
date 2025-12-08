@@ -47,7 +47,7 @@ wasm-bindgen = "0.2.100"
 # web-sys = "0.3.69"
 
 [dev-dependencies]
-criterion = { version = "0.7.0", features = ["html_reports"] }
+criterion = { version = "0.8.1", features = ["html_reports"] }
 wasm-bindgen-test = "0.3.50"
 
 [package.metadata.wasm-pack.profile.release]
