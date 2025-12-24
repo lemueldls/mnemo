@@ -4,8 +4,47 @@ html,
 body {
   background-color: #4c4d72;
   font-family: var(--font-sans);
+  scroll-behavior: smooth;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 math {
   font-family: var(--font-math);
+}
+
+.typst-document {
+  @apply font-mono;
+
+  h2 {
+    @apply text-primary headline-large mb-1;
+  }
+
+  h3 {
+    @apply text-secondary headline-medium mt-3 mb-1;
+  }
+
+  h4 {
+    @apply text-tertiary headline-small mt-3 mb-1;
+  }
+
+  h5 {
+    @apply text-on-primary-container title-large font-semibold mt-3 mb-1;
+  }
+
+  h6 {
+    @apply text-on-secondary-container title-medium font-semibold mt-3 mb-1;
+  }
+
+  p {
+    @apply mb-3;
+  }
+
+  a {
+    @apply text-primary underline;
+  }
 }
