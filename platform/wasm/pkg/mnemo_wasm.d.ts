@@ -1,16 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export interface RenderPdfResult {
-    bytes: number[] | undefined;
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface RenderHtmlResult {
-    document: string | undefined;
-    diagnostics: TypstDiagnostic[];
-}
-
 export interface CompileResult {
     frames: RangedFrame[];
     diagnostics: TypstDiagnostic[];
@@ -29,6 +19,16 @@ export type TypstError = EcoString;
 export interface Autocomplete {
     offset: number;
     completions: TypstCompletion[];
+}
+
+export interface RenderPdfResult {
+    bytes: number[] | undefined;
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface RenderHtmlResult {
+    document: string | undefined;
+    diagnostics: TypstDiagnostic[];
 }
 
 export interface TypstDiagnostic {
@@ -56,9 +56,9 @@ export interface TypstCompletion {
     detail: string | undefined;
 }
 
-export interface FrameRender {
-    html: string;
-    hash: number;
+export interface RenderResult {
+    frames: RangedFrame[];
+    diagnostics: TypstDiagnostic[];
 }
 
 export interface RangedFrame {
@@ -66,18 +66,14 @@ export interface RangedFrame {
     render: FrameRender;
 }
 
-export interface RenderResult {
-    frames: RangedFrame[];
-    diagnostics: TypstDiagnostic[];
+export interface FrameRender {
+    html: string;
+    hash: number;
 }
 
 export class FileId {
   private constructor();
   free(): void;
-}
-export class PackageFile {
-  free(): void;
-  constructor(path: string, content: Uint8Array);
 }
 export class Rgb {
   free(): void;
@@ -90,77 +86,75 @@ export class ThemeColors {
 }
 export class TypstState {
   free(): void;
-  constructor();
-  setPixelPerPt(id: FileId, size: number): void;
-  setTheme(id: FileId, theme: ThemeColors): void;
-  setFont(id: FileId, font: string): void;
-  setMathFont(id: FileId, math_font?: string | null): void;
+  renderPdf(id: FileId): RenderPdfResult;
   setLocale(id: FileId, locale: string): void;
-  createSourceId(path: string): FileId;
-  createFileId(path: string): FileId;
-  insertSource(id: FileId, text: string): void;
   insertFile(id: FileId, bytes: Uint8Array): void;
   removeFile(id: FileId): void;
-  installPackage(spec: string, data: Uint8Array): void;
-  installFont(bytes: Uint8Array): void;
-  compile(id: FileId, text: string, prelude: string): CompileResult;
-  check(id: FileId, text: string, prelude: string): CheckResult;
-  highlight(id: FileId, text: string): TypstHighlight[];
-  click(id: FileId, x: number, y: number): TypstJump | undefined;
+  renderHtml(id: FileId, text: string, prelude: string): RenderHtmlResult;
   autocomplete(id: FileId, aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
+  installFont(bytes: Uint8Array): void;
+  insertSource(id: FileId, text: string): void;
+  setMathFont(id: FileId, math_font?: string | null): void;
+  createFileId(path: string): FileId;
+  installPackage(spec: string, data: Uint8Array): void;
+  createSourceId(path: string, space_id: string): FileId;
+  constructor();
+  check(id: FileId, text: string, prelude: string): CheckResult;
+  click(id: FileId, element: Uint32Array): TypstJump | undefined;
   hover(id: FileId, aux_cursor_utf16: number, side: number): string | undefined;
   resize(id: FileId, width?: number | null, height?: number | null): boolean;
-  renderPdf(id: FileId): RenderPdfResult;
+  compile(id: FileId, text: string, prelude: string): CompileResult;
+  setFont(id: FileId, font: string): void;
+  highlight(id: FileId, text: string): TypstHighlight[];
+  setTheme(id: FileId, theme: ThemeColors): void;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_typststate_free: (a: number, b: number) => void;
-  readonly typststate_new: () => number;
-  readonly typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
-  readonly typststate_setTheme: (a: number, b: number, c: number) => void;
-  readonly typststate_setFont: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_createSourceId: (a: number, b: number, c: number) => number;
-  readonly typststate_createFileId: (a: number, b: number, c: number) => number;
-  readonly typststate_insertSource: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_removeFile: (a: number, b: number) => void;
-  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly typststate_installFont: (a: number, b: number, c: number) => void;
-  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly typststate_highlight: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_hover: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly typststate_renderPdf: (a: number, b: number) => number;
-  readonly __wbg_packagefile_free: (a: number, b: number) => void;
-  readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly __wbg_themecolors_free: (a: number, b: number) => void;
-  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
+  readonly __wbg_typststate_free: (a: number, b: number) => void;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number, b: number) => void;
-  readonly __wbg_fileid_free: (a: number, b: number) => void;
   readonly start: () => void;
+  readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
+  readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => number;
+  readonly typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
+  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_createFileId: (a: number, b: number, c: number) => number;
+  readonly typststate_createSourceId: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly typststate_highlight: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_hover: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_insertSource: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_installFont: (a: number, b: number, c: number) => void;
+  readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly typststate_new: () => number;
+  readonly typststate_removeFile: (a: number, b: number) => void;
+  readonly typststate_renderHtml: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_renderPdf: (a: number, b: number) => number;
+  readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_setFont: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
+  readonly typststate_setTheme: (a: number, b: number, c: number) => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
-  readonly qcms_profile_is_bogus: (a: number) => number;
-  readonly qcms_white_point_sRGB: (a: number) => void;
   readonly qcms_profile_precache_output_transform: (a: number) => void;
-  readonly qcms_transform_data_rgb_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
-  readonly qcms_transform_data_rgba_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
+  readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+  readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
+  readonly qcms_enable_iccv4: () => void;
+  readonly qcms_profile_is_bogus: (a: number) => number;
+  readonly qcms_transform_data_bgra_out_lut: (a: number, b: number, c: number, d: number) => void;
   readonly qcms_transform_data_bgra_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
   readonly qcms_transform_data_rgb_out_lut: (a: number, b: number, c: number, d: number) => void;
+  readonly qcms_transform_data_rgb_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
   readonly qcms_transform_data_rgba_out_lut: (a: number, b: number, c: number, d: number) => void;
-  readonly qcms_transform_data_bgra_out_lut: (a: number, b: number, c: number, d: number) => void;
+  readonly qcms_transform_data_rgba_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
   readonly qcms_transform_release: (a: number) => void;
-  readonly qcms_enable_iccv4: () => void;
-  readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
-  readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+  readonly qcms_white_point_sRGB: (a: number) => void;
   readonly __wbindgen_export_0: (a: number, b: number) => number;
   readonly __wbindgen_export_1: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: (a: number, b: number, c: number) => void;

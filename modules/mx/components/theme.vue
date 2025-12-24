@@ -135,7 +135,7 @@ const selectionBackground = computed(() => {
   }
 
   ::selection {
-    @apply text-tertiary;
+    // @apply text-tertiary;
 
     background-color: v-bind(selectionBackground);
   }

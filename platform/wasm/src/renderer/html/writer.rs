@@ -1,45 +1,27 @@
-use std::{
-    cmp,
-    fmt::Write,
-    hash::{BuildHasher, Hash, Hasher},
-    iter,
-    ops::Range,
-};
+use std::fmt::Write;
 
-use ecow::{EcoString, eco_format, eco_vec};
-use itertools::Itertools;
-use rustc_hash::{FxBuildHasher, FxHashSet};
-use serde::{Deserialize, Serialize};
-use tiny_skia::IntRect;
-use tsify::Tsify;
+use ecow::{EcoString, eco_format};
 use typst::{
-    __bail as bail, World, WorldExt, compile,
-    diag::{At, Severity, SourceResult, StrResult},
+    diag::{At, SourceResult, StrResult, bail},
     foundations::Repr,
-    introspection::{Introspector, Tag},
-    layout::{Abs, FrameItem, PagedDocument, Point},
-    syntax::Span,
+    introspection::Introspector,
 };
-// use ecow::{EcoString, eco_format};
-// use typst_library::diag::{At, SourceResult, StrResult, bail};
-// use typst_library::foundations::Repr;
-// use typst_library::introspection::Introspector;
-// use typst_syntax::Span;
 use typst_html::{HtmlDocument, HtmlElement, HtmlFrame, HtmlNode, HtmlTag};
+use typst_syntax::Span;
 
-pub use super::{attr, charsets, tag};
+use super::{attr, charsets, tag};
 
-// /// Encodes an HTML document into a string.
-// pub fn html(document: &HtmlDocument) -> SourceResult<String> {
-//     let mut w = Writer::new(&document.introspector, true);
-//     w.buf.push_str("<!DOCTYPE html>");
-//     write_indent(&mut w);
-//     write_element(&mut w, &document.root)?;
-//     if w.pretty {
-//         w.buf.push('\n');
-//     }
-//     Ok(w.buf)
-// }
+/// Encodes an HTML document into a string.
+pub fn html(document: &HtmlDocument) -> SourceResult<String> {
+    let mut w = Writer::new(&document.introspector, true);
+    w.buf.push_str("<!DOCTYPE html>");
+    write_indent(&mut w);
+    write_element(&mut w, &document.root)?;
+    if w.pretty {
+        w.buf.push('\n');
+    }
+    Ok(w.buf)
+}
 
 /// Encodes HTML.
 pub struct Writer<'a> {
@@ -209,7 +191,7 @@ fn write_raw(w: &mut Writer, element: &HtmlElement) -> SourceResult<()> {
         bail!(
             element.span,
             "HTML raw text element cannot contain its own closing tag";
-            hint: "the sequence `{closing}` appears in the raw text",
+            hint: "the sequence `{closing}` appears in the raw text";
         )
     }
 

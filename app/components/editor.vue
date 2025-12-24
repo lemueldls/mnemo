@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+import { history, historyField } from "@codemirror/commands";
 
 import {
   bracketMatching,
@@ -11,12 +12,12 @@ import {
 
 import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
+
 import {
+  Compartment,
   EditorState,
   type EditorStateConfig,
-  Compartment,
 } from "@codemirror/state";
-import { history, historyField } from "@codemirror/commands";
 
 import {
   crosshairCursor,
@@ -30,6 +31,7 @@ import {
 
 // import { LoroExtensions } from "loro-codemirror";
 // import { EphemeralStore } from "loro-crdt";
+import { LRUCache } from "lru-cache";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId } from "mnemo-wasm";
 import { match } from "ts-pattern";
@@ -39,7 +41,6 @@ import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
 import { typstPlugin } from "~/lib/editor/plugin";
-import { LRUCache } from "lru-cache";
 
 const props = defineProps<{
   spaceId: string;
@@ -115,13 +116,15 @@ onMounted(async () => {
   );
 
   watchImmediate(fullPath, (fullPath, oldFullPath) => {
-    const fileId = typstState.createSourceId(fullPath);
+    console.log({ fullPath, spaceId: props.spaceId });
+
+    const fileId = typstState.createSourceId(fullPath, props.spaceId);
     // idsToCleanup.add(fileId);
 
-    typstState.setPixelPerPt(fileId, window.devicePixelRatio);
-    useEventListener(window, "resize", () => {
-      typstState.setPixelPerPt(fileId, window.devicePixelRatio);
-    });
+    // typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    // useEventListener(window, "resize", () => {
+    //   typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    // });
 
     watchImmediate(palette, (palette) => {
       typstState.setTheme(
@@ -308,7 +311,10 @@ const renderHoverBackground = computed(() => {
 
 <template>
   <div class="size-full overflow-hidden">
-    <div ref="container" :class="['editor', { editor__locked: locked }]" />
+    <div
+      ref="container"
+      :class="['editor typst-document', { editor__locked: locked }]"
+    />
   </div>
 </template>
 
@@ -357,7 +363,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-selectionBackground {
-    @apply text-tertiary;
+    // @apply text-tertiary;
 
     background-color: v-bind(selectionBackground) !important;
   }
@@ -388,7 +394,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-selectionMatch {
-    @apply text-tertiary;
+    // @apply text-tertiary;
 
     background-color: v-bind(selectionMatchBackground) !important;
   }
@@ -418,7 +424,9 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest max-w-1/3 m-0 overflow-hidden rounded-lg border-none p-0 font-mono shadow;
+    @apply bg-surface-container-lowest max-w-1/3 max-h-1/3 m-0 overflow-auto rounded-lg border-none p-0 font-mono shadow;
+
+    font-family: var(--font-mono), var(--font-math);
 
     li[aria-selected="true"] {
       @apply bg-secondary-container! text-on-secondary-container!;
@@ -658,6 +666,26 @@ const renderHoverBackground = computed(() => {
     @apply text-on-secondary-container;
   }
 
+  .typ-heading-level-1 {
+    @apply text-primary headline-large;
+  }
+
+  .typ-heading-level-2 {
+    @apply text-secondary headline-medium;
+  }
+
+  .typ-heading-level-3 {
+    @apply text-tertiary headline-small;
+  }
+
+  .typ-heading-level-4 {
+    @apply text-on-primary-container title-large font-semibold;
+  }
+
+  .typ-heading-level-5 {
+    @apply text-on-secondary-container title-medium font-semibold;
+  }
+
   .typ-marker {
     @apply text-on-surface-variant font-bold;
   }
@@ -700,26 +728,6 @@ const renderHoverBackground = computed(() => {
 
   .typ-error {
     @apply text-error;
-  }
-
-  h2 {
-    @apply text-primary headline-large;
-  }
-
-  h3 {
-    @apply text-secondary headline-medium;
-  }
-
-  h4 {
-    @apply text-tertiary headline-small;
-  }
-
-  h5 {
-    @apply text-on-primary-container title-large font-semibold;
-  }
-
-  h6 {
-    @apply text-on-secondary-container title-medium font-semibold;
   }
 }
 </style>

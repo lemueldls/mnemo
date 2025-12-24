@@ -11,7 +11,7 @@ use std::{
     ops::{Deref, Range},
 };
 
-use ecow::{EcoString, eco_format, eco_vec};
+use ecow::{EcoString, EcoVec, eco_format, eco_vec};
 use itertools::Itertools;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -21,8 +21,8 @@ use typst::{
     __bail as bail, World, WorldExt, compile,
     diag::{At, Severity, SourceResult, StrResult},
     foundations::{Element, NativeRuleMap, Repr, Selector, Target},
-    introspection::{Introspector, Tag},
-    layout::{Abs, BlockElem, FrameItem, PagedDocument, Point},
+    introspection::{Introspector, Location, Tag},
+    layout::BlockElem,
     syntax::Span,
 };
 // use ecow::{EcoString, eco_format};
@@ -30,7 +30,7 @@ use typst::{
 // use typst_library::foundations::Repr;
 // use typst_library::introspection::Introspector;
 // use typst_syntax::Span;
-use typst_html::{HtmlDocument, HtmlElement, HtmlFrame, HtmlNode, HtmlTag};
+use typst_html::{HtmlDocument, HtmlElement, HtmlFrame, HtmlNode, HtmlSliceExt, HtmlTag};
 use writer::{Writer, write_node};
 
 use crate::{
@@ -50,7 +50,7 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
 
     // let mut erronous_ranges = Vec::new();
 
-    let context = state.source_contexts.get_mut(id).unwrap();
+    let context = state.source_context_map.get_mut(id).unwrap();
 
     context
         .main_source_mut(&mut state.world)
@@ -78,10 +78,6 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                     unreachable!()
                 };
 
-                let blocks = document
-                    .introspector
-                    .query(&Selector::Elem(Element::of::<BlockElem>(), None));
-
                 let mut blocks = Vec::with_capacity(ast_blocks.len());
 
                 let mut ast_blocks = ast_blocks.iter().peekable();
@@ -91,9 +87,27 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                     .into_iter()
                     .flat_map(flatten_node)
                     .filter_map(|node| {
+                        let location = match &node {
+                            HtmlNode::Tag(tag) => {
+                                match tag {
+                                    Tag::Start(content, ..) => content.location(),
+                                    Tag::End(location, ..) => Some(location.clone()),
+                                }
+                            }
+                            HtmlNode::Text(..) => None,
+                            HtmlNode::Element(element) => element.parent,
+                            HtmlNode::Frame(..) => None,
+                        };
+
+                        let position = location.and_then(|location| {
+                            document.introspector.position(location).as_html()
+                        });
+
+                        crate::debug!("position: {position:?}");
+
                         let range = flat_node_range(&node, context, &state.world)?;
 
-                        Some((node, range))
+                        Some((node, range, position))
                     })
                     // .sorted_by_key(|(_, range)| range.start)
                     .peekable();
@@ -115,12 +129,12 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                     let main_range_end = context.map_aux_to_main(aux_range.end);
                     let main_range = main_range_start..main_range_end;
 
-                    while let Some((node, range)) = children.peek() {
-                        // crate::debug!("comparing ast {main_range:?} with node {range:?}");
-                        // crate::debug!("node {node:?}");
+                    while let Some((node, range, position)) = children.peek() {
+                        crate::debug!("comparing ast {main_range:?} with node {range:?}");
+                        crate::debug!("node {node:?}");
 
                         if range.end <= main_range_end {
-                            let (node, _) = children.next().unwrap();
+                            let (node, ..) = children.next().unwrap();
 
                             write_node(&mut w, &node, body.pre_span).unwrap();
                             node.hash(&mut hasher);
@@ -212,7 +226,7 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
         }
     }
 
-    // crate::debug!("FRAMES: {frames:?}");
+    crate::debug!("FRAMES: {frames:?}");
 
     if let Some(warnings) = compiled_warnings {
         diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -221,12 +235,6 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
             &state.world,
         ));
     }
-
-    // context.document = last_document;
-    context
-        .main_source_mut(&mut state.world)
-        .unwrap()
-        .replace(&ir);
 
     RenderResult {
         frames,
@@ -350,4 +358,26 @@ pub struct RangedFrame {
 pub struct FrameRender {
     html: String,
     hash: u32,
+}
+
+fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
+    let mut cursor = 0;
+    let mut was_text = false;
+
+    nodes.into_iter().map(move |child| {
+        let mut i = cursor;
+
+        match child {
+            HtmlNode::Tag(_) => {}
+            HtmlNode::Text(..) => was_text = true,
+            _ => {
+                cursor += usize::from(was_text);
+                i = cursor;
+                cursor += 1;
+                was_text = false;
+            }
+        }
+
+        (child, i)
+    })
 }

@@ -27,9 +27,9 @@ pub fn sync_source_context(
     prelude: &str,
     state: &mut TypstState,
 ) -> (String, Vec<AstBlock>) {
-    let mut ir = state.prelude(id, RenderingMode::Png) + prelude + "\n";
+    let mut ir = state.prelude(id) + prelude + "\n";
 
-    let context = state.source_contexts.get_mut(id).unwrap();
+    let context = state.source_context_map.get_mut(id).unwrap();
 
     context.index_mapper = IndexMapper::default();
     context.index_mapper.add_main_to_aux(0, ir.len());
@@ -149,8 +149,8 @@ pub struct RenderHtmlResult {
 
 #[derive(Debug, Clone)]
 pub struct AstBlock {
-    range: Range<usize>,
-    is_inline: bool,
+    pub range: Range<usize>,
+    pub is_inline: bool,
 }
 
 // #[derive(Debug, Clone)]
@@ -185,9 +185,3 @@ pub struct AstBlock {
 //     #[serde(rename = "offsetHeight")]
 //     offset_height: f64,
 // }
-
-pub enum RenderingMode {
-    Png,
-    Pdf,
-    // Html,
-}

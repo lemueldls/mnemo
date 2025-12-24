@@ -5,7 +5,7 @@ import { decodeTime } from "ulid";
 
 import type { StickyNote } from "~/composables/sticky";
 
-definePageMeta({ layout: "empty" });
+definePageMeta({ layout: "blank" });
 
 const { d } = useSharedI18n();
 
