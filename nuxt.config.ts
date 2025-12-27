@@ -12,7 +12,7 @@ const locales = [
 ];
 
 const isDev = process.env.NODE_ENV === "development";
-const apiBaseUrl = JSON.parse(import.meta.env.NUXT_PUBLIC_API_BASE_URL);
+const apiBaseUrl = import.meta.env.NUXT_PUBLIC_API_BASE_URL;
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 // const internalHost = import.meta.env.TAURI_DEV_HOST || "localhost";
 
