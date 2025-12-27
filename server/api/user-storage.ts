@@ -27,7 +27,7 @@ export default defineWebSocketHandler({
     const item = parse(StorageItemSchema, message.json());
     const { key, value, updatedAt } = item;
 
-    const userStorage = prefixStorage(hubKV(), peer.namespace);
+    const userStorage = prefixStorage(kv, peer.namespace);
 
     const hasItem = await userStorage.hasItem(key);
     const meta = hasItem ? await userStorage.getMeta(key) : undefined;

@@ -27,8 +27,8 @@ export default defineWebSocketHandler({
   async open(peer) {
     peer.subscribe(peer.namespace);
 
-    const blob = await hubBlob().get(peer.namespace);
-    if (blob?.size) peer.send(import.meta.dev ? blob : await blob.bytes());
+    const crdt = await blob.get(peer.namespace);
+    if (crdt?.size) peer.send(import.meta.dev ? crdt : await crdt.bytes());
   },
 
   async message(peer, message) {
@@ -36,15 +36,15 @@ export default defineWebSocketHandler({
 
     peer.publish(peer.namespace, import.meta.dev ? message.blob() : bytes);
 
-    const blob = await hubBlob().get(peer.namespace);
-    const doc = blob?.size
-      ? LoroDoc.fromSnapshot(await blob.bytes())
+    const crdt = await blob.get(peer.namespace);
+    const doc = crdt?.size
+      ? LoroDoc.fromSnapshot(await crdt.bytes())
       : new LoroDoc();
 
     doc.import(bytes);
 
     const snapshot = doc.export({ mode: "snapshot" });
-    await hubBlob().put(peer.namespace, snapshot);
+    await blob.put(peer.namespace, snapshot);
 
     const headers = new Headers();
     const token = peer.context.token;
