@@ -14,19 +14,15 @@ const locales: LocaleObject<"en" | "es" | "de" | "he" | "zh" | "ja">[] = [
 ];
 
 const isDev = process.env.NODE_ENV === "development";
+const apiBaseUrl = import.meta.env.NUXT_PUBLIC_API_BASE_URL;
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
-
-const remoteProjectType = import.meta.env.REMOTE_PROJECT_TYPE;
-const isWorkers = remoteProjectType !== "pages";
-
-// const internalHost = process.env.TAURI_DEV_HOST || "localhost";
+// const internalHost = import.meta.env.TAURI_DEV_HOST || "localhost";
 
 const siteUrl = platform
   ? "http://tauri.localhost"
   : isDev
     ? "http://localhost:3000"
-    : "https://mnemo.nuxt.dev";
-// const apiBaseUrl = new URL(import.meta.env.NUXT_PUBLIC_API_BASE_URL || siteUrl);
+    : apiBaseUrl;
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -45,7 +41,6 @@ export default defineNuxtConfig({
     timeline: { enabled: true },
   },
   app: {
-    // pageTransition: { name: "conjure" },
     layoutTransition: { name: "conjure" },
     head: {
       templateParams: { separator: "•" },
@@ -81,27 +76,27 @@ export default defineNuxtConfig({
     },
   },
   sourcemap: true,
-  future: { compatibilityVersion: 4 },
   experimental: {
     typedPages: true,
     viewTransition: true,
     asyncContext: true,
   },
-  compatibilityDate: "2025-07-17",
+  compatibilityDate: "2025-12-25",
   nitro: {
+    preset: "cloudflare-durable",
+    cloudflare: { deployConfig: true },
     esbuild: { options: { target: "esnext" } },
     prerender: {
       routes: ["/", "/calendar", "/space"],
       crawlLinks: true,
     },
-    experimental: { websocket: isWorkers, wasm: true },
+    experimental: { websocket: true, wasm: true },
   },
   hub: {
-    workers: isWorkers,
-    cache: !isDev,
-    database: true,
-    kv: true,
-    blob: true,
+    db: { dialect: "sqlite", driver: "d1" },
+    kv: { driver: "cloudflare-kv-binding", binding: "KV" },
+    cache: { driver: "cloudflare-kv-binding", binding: "CACHE" },
+    blob: { driver: "cloudflare-r2", binding: "BLOB" },
   },
   vite: {
     plugins: [topLevelAwait(), wasm()],

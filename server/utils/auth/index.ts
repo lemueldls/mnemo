@@ -1,13 +1,11 @@
-import { D1Dialect } from "@atinux/kysely-d1";
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { createSharedComposable } from "@vueuse/core";
 
 import { bearer } from "./bearer";
-
-import type { D1Database } from "@cloudflare/workers-types";
 
 const runtimeConfig = useRuntimeConfig();
 const { password } = runtimeConfig.session;
@@ -34,25 +32,24 @@ export const serverAuth = createSharedComposable(() =>
     appName: "Mnemo",
     baseURL: getBaseURL(),
     secret: password || undefined,
-    database: {
-      dialect: new D1Dialect({
-        database: hubDatabase() as D1Database,
-      }),
-      type: "sqlite",
-    },
+    database: drizzleAdapter(db, {
+      schema,
+      provider: "sqlite",
+      usePlural: true,
+    }),
     secondaryStorage: {
       async get(key) {
-        const hasItem = await hubKV().hasItem(`_auth:${key}`);
+        const hasItem = await kv.hasItem(`_auth:${key}`);
 
         return hasItem
-          ? JSON.stringify(await hubKV().getItem(`_auth:${key}`))
+          ? JSON.stringify(await kv.getItem(`_auth:${key}`))
           : null;
       },
       async set(key, value, ttl) {
-        await hubKV().setItem(`_auth:${key}`, value, { ttl });
+        await kv.setItem(`_auth:${key}`, value, { ttl });
       },
       async delete(key) {
-        await hubKV().removeItem(`_auth:${key}`);
+        await kv.removeItem(`_auth:${key}`);
       },
     },
     socialProviders: {

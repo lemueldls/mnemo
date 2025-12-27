@@ -1,28 +1,14 @@
-compatibility_date = "2025-07-19"
-compatibility_flags = ["nodejs_compat"]
-main = "dist/server/index.mjs"
 name = "notes"
+
+compatibility_date = "2025-12-25"
+compatibility_flags = ["nodejs_compat"]
 
 [observability]
 enabled = true
 
-[assets]
-binding = "ASSETS"
-directory = "./dist/public/"
-
-[durable_objects]
-
-[[durable_objects.bindings]]
-class_name = "$DurableObject"
-name = "$DurableObject"
-
-# [[migrations]]
-# new_classes = ["$DurableObject"]
-# tag = "v1"
-
-[[migrations]]
-new_sqlite_classes = ["$DurableObject"]
-tag = "v2"
+[[d1_databases]]
+binding = "DB"
+database_id = "c1bf201a-d77d-40f1-8e49-50d1c4de8795"
 
 [[r2_buckets]]
 binding = "BLOB"
@@ -36,9 +22,10 @@ id = "b76ffa2cabdb464bbc37f16dbda3d7c4"
 binding = "CACHE"
 id = "c2d874e3cb8b4f879e86628fbdc3a9e3"
 
-[[d1_databases]]
-binding = "DB"
-database_id = "c1bf201a-d77d-40f1-8e49-50d1c4de8795"
-database_name = "mnemo"
-migrations_dir = "dist/database/migrations"
-migrations_table = "_hub_migrations"
+[[durable_objects.bindings]]
+class_name = "$DurableObject"
+name = "$DurableObject"
+
+[[migrations]]
+new_sqlite_classes = ["$DurableObject"]
+tag = "v2"
