@@ -44,8 +44,8 @@ const stages = useReviewStages().length;
         </div>
 
         <div
-          class="text-on-primary-container flex gap-3 p-2 pt-0 font-mono"
           v-if="review.lastReviewed"
+          class="text-on-primary-container flex gap-3 p-2 pt-0 font-mono"
         >
           <div class="m-1.5 flex h-2 flex-1 gap-1 self-end">
             <div

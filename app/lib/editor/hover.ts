@@ -1,6 +1,8 @@
 import { hoverTooltip } from "@codemirror/view";
-import { TypstState, FileId } from "mnemo-wasm";
+
 import { parseBackticks } from "./highlight";
+
+import type { FileId, TypstState } from "mnemo-wasm";
 
 export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
   hoverTooltip((_, pos, side) => {

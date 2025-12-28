@@ -66,8 +66,8 @@ function withCodeBlocks(message: string) {
 
         <md-icon-button
           v-if="notification.dismissible"
-          @click="dismiss(notification.id)"
           aria-label="Dismiss notification"
+          @click="dismiss(notification.id)"
         >
           <md-icon>close</md-icon>
         </md-icon-button>

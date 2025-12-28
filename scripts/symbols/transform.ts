@@ -5,7 +5,7 @@ import symbols from "./symbols.json";
 
 const filePath = fileURLToPath(new URL("../../app/assets/symbols.json", import.meta.url));
 
-function titleCaseId(id) {
+function titleCaseId(id: string) {
   return id
     .replace(/_/g, " ")
     .replace(/\b([a-z])/g, (m) => m.toUpperCase())
@@ -14,7 +14,7 @@ function titleCaseId(id) {
 
 const subjectSynonyms = [
   {
-    re: /book|library|bookmark|page|article|document/i,
+    re: /book|library|page|article|document/i,
     syn: ["reading", "literature", "textbook", "course"],
   },
   {
@@ -30,11 +30,11 @@ const subjectSynonyms = [
     syn: ["history", "historical", "humanities"],
   },
   {
-    re: /language|translate|g_translate|language_/i,
+    re: /language|translate|g_translate/i,
     syn: ["language", "linguistics", "english", "spanish"],
   },
   {
-    re: /music|audio|mic|media|headphones|music_note/i,
+    re: /music|audio|mic|media|headphones/i,
     syn: ["music", "audio", "sound", "composition"],
   },
   {
@@ -63,7 +63,7 @@ const subjectSynonyms = [
   },
 ];
 
-function generateSynonyms(id) {
+function generateSynonyms(id: string) {
   const syns = new Set();
   for (const m of subjectSynonyms) {
     if (m.re.test(id)) {

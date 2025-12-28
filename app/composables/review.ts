@@ -1,5 +1,7 @@
-import { CalendarDate, parseDate } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 import { decodeTime } from "ulid";
+
+import type { CalendarDate } from "@internationalized/date";
 
 export interface Review {
   spaceId: string;

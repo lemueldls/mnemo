@@ -24,7 +24,7 @@ const expanded = ref(false);
     </div>
   </div>
 
-  <div class="pl-1" v-if="expanded && path.kind === 'directory'">
+  <div v-if="expanded && path.kind === 'directory'" class="pl-1">
     <storage-root :keys="path.children" />
   </div>
 </template>

@@ -1,13 +1,16 @@
-import { FileId, TypstState } from "mnemo-wasm";
-import { typstStateField, typstViewPlugin } from "./widgets";
-import { autocomplete, typstLanguageData } from "./language";
-import { typstSyntaxHighlighting } from "./highlight";
 import { autocompletion } from "@codemirror/autocomplete";
+import { indentService } from "@codemirror/language";
 import { EditorView } from "@codemirror/view";
-import { type Extension } from "@codemirror/state";
+
+import { typstSyntaxHighlighting } from "./highlight";
 import { typstHoverTooltip } from "./hover";
-import { IndentContext, indentService } from "@codemirror/language";
 import { typstKeymap } from "./keymap";
+import { autocomplete, typstLanguageData } from "./language";
+import { typstStateField, typstViewPlugin } from "./widgets";
+
+import type { IndentContext } from "@codemirror/language";
+import type { Extension } from "@codemirror/state";
+import type { FileId, TypstState } from "mnemo-wasm";
 
 export const typstPlugin = (
   fileId: FileId,

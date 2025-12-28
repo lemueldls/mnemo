@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+import { history, historyField } from "@codemirror/commands";
 
 import {
   bracketMatching,
@@ -11,8 +12,7 @@ import {
 
 import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
-import { EditorState, type EditorStateConfig, Compartment } from "@codemirror/state";
-import { history, historyField } from "@codemirror/commands";
+import { Compartment, EditorState, type EditorStateConfig } from "@codemirror/state";
 
 import {
   crosshairCursor,
@@ -26,6 +26,7 @@ import {
 
 // import { LoroExtensions } from "loro-codemirror";
 // import { EphemeralStore } from "loro-crdt";
+import { LRUCache } from "lru-cache";
 import { Rgb } from "mnemo-wasm";
 import { ThemeColors, type FileId } from "mnemo-wasm";
 import { match } from "ts-pattern";
@@ -35,7 +36,6 @@ import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
 
 import { typstPlugin } from "~/lib/editor/plugin";
-import { LRUCache } from "lru-cache";
 
 const props = defineProps<{
   spaceId: string;

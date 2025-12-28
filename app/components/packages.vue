@@ -154,14 +154,16 @@ const virtualPackages = computed(() => packagesVirtualizer.value.getVirtualItems
     </div>
 
     <form ref="container" slot="content" method="dialog" class="flex h-full flex-col gap-4">
-      <template v-if="filteredPackages.length > 0" v-for="{ key, index } in virtualPackages" :key>
-        <package-card
-          v-if="filteredPackages[index]"
-          :space-id
-          :namespace
-          :versioned-package="filteredPackages[index]"
-          class="flex flex-col gap-2"
-        />
+      <template v-if="filteredPackages.length > 0">
+        <template v-for="{ key, index } in virtualPackages" :key>
+          <package-card
+            v-if="filteredPackages[index]"
+            :space-id
+            :namespace
+            :versioned-package="filteredPackages[index]"
+            class="flex flex-col gap-2"
+          />
+        </template>
       </template>
 
       <md-filled-card v-else class="label-large p-3">

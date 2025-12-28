@@ -1,14 +1,13 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import { EditorState, StateEffect, StateField, type Range } from "@codemirror/state";
-
+import { StateEffect, StateField, type Range } from "@codemirror/state";
 import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
-
 import { LRUCache } from "lru-cache";
 
-import type { DecorationSet, ViewUpdate } from "@codemirror/view";
-
-import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 import { parseBackticks } from "./highlight";
+
+import type { EditorState } from "@codemirror/state";
+import type { DecorationSet, ViewUpdate } from "@codemirror/view";
+import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 
 const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
 

@@ -1,10 +1,9 @@
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
+import { createSharedComposable } from "@vueuse/core";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer } from "better-auth/plugins/bearer";
-
-import { createSharedComposable } from "@vueuse/core";
 
 const runtimeConfig = useRuntimeConfig();
 const { password } = runtimeConfig.session;

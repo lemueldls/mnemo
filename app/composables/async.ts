@@ -1,5 +1,4 @@
 import type { MapOldSources, MapSources } from "@vueuse/shared";
-
 import type { WatchCallback, WatchOptions, WatchSource, WatchStopHandle } from "vue";
 
 export function watchImmediateAsync<T extends Readonly<WatchSource<unknown>[]>>(

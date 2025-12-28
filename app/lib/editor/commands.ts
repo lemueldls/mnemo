@@ -1,13 +1,15 @@
 import { startCompletion } from "@codemirror/autocomplete";
 import { indentMore } from "@codemirror/commands";
+
 import {
   ChangeSet,
   countColumn,
   EditorSelection,
   EditorState,
   findColumn,
-  SelectionRange,
 } from "@codemirror/state";
+
+import type { SelectionRange } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 
 export function toggleStrong(view: EditorView) {
@@ -61,14 +63,14 @@ export function toggleCode(view: EditorView) {
       [
         "`",
         {
-          regex: /(`{3,}([a-zA-Z0-9][a-zA-Z0-9-]*)?(\s*\n*)*)/,
+          regex: /(`{3,}([a-z0-9][a-z0-9-]*)?(\s*)*)/i,
           replacement: "```\n",
         },
       ],
       [
         "`",
         {
-          regex: /((\s*\n*)*`{3,})/,
+          regex: /((\s*)*`{3,})/,
           replacement: "\n```",
         },
       ],

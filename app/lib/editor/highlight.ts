@@ -1,6 +1,8 @@
-import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
+import { RangeSetBuilder, StateField } from "@codemirror/state";
 import { Decoration, EditorView, type DecorationSet } from "@codemirror/view";
-import { FileId, TypstState } from "mnemo-wasm";
+
+import type { EditorState } from "@codemirror/state";
+import type { FileId, TypstState } from "mnemo-wasm";
 
 export const typstSyntaxHighlighting = (fileId: FileId, typstState: TypstState) =>
   StateField.define<DecorationSet>({

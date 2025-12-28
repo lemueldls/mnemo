@@ -75,7 +75,7 @@ function selectDate() {
 </script>
 
 <template>
-  <PopoverRoot modal v-model:open="visible">
+  <PopoverRoot v-model:open="visible" modal>
     <PopoverTrigger>
       <slot />
     </PopoverTrigger>
@@ -151,11 +151,11 @@ function selectDate() {
               <div v-for="date in week" :key="date?.day" class="flex flex-1 justify-center">
                 <mx-modal-date-picker-day
                   v-if="date"
+                  v-model="selectedDate"
                   :date
                   :calendar-today
                   :marked-dates
                   :disable-unmarked-dates
-                  v-model="selectedDate"
                 />
               </div>
             </div>

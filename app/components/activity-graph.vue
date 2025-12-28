@@ -57,19 +57,18 @@ const weekdays = computed(() =>
   <div class="flex flex-col gap-3 overflow-hidden">
     <div class="flex items-stretch justify-between gap-1">
       <div class="flex flex-col">
-        <div class="label-small flex-1" v-for="i in totalWeekdays">
+        <div v-for="i in totalWeekdays" :key="i" class="label-small flex-1">
           <span v-if="(i + startWeekday) % 2 == 0">
             {{ weekdays[startWeekday + i - 1] }}
           </span>
         </div>
       </div>
 
-      <div class="activity-graph" ref="container">
-        <template
-          v-if="activityGraph[0]"
-          v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)"
-        >
-          <div v-if="i > startWeekday" />
+      <div ref="container" class="activity-graph">
+        <template v-if="activityGraph[0]">
+          <template v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)">
+            <div v-if="i > startWeekday" :key="i" />
+          </template>
         </template>
 
         <div
