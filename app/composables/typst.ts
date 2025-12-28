@@ -53,74 +53,69 @@ export interface TypstPackageSpec {
 }
 
 export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
-  await useStorageList<TypstPackageSpec[]>(
-    () => `spaces/${toValue(spaceId)}/packages.json`,
-  );
+  await useStorageList<TypstPackageSpec[]>(() => `spaces/${toValue(spaceId)}/packages.json`);
 
-export const installTypstPackage = useMemoize(
-  (pkg: TypstPackageSpec, spaceId: string) => {
-    const { createNotification } = useNotifications();
+export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: string) => {
+  const { createNotification } = useNotifications();
 
-    const spec = usePackageSpec(pkg);
+  const spec = usePackageSpec(pkg);
 
-    // oxlint-disable-next-line no-async-promise-executor
-    return new Promise<void>(async (resolve, reject) => {
-      const spaces = await useSpaces();
-      const space = spaces.value[spaceId]!;
+  // oxlint-disable-next-line no-async-promise-executor
+  return new Promise<void>(async (resolve, reject) => {
+    const spaces = await useSpaces();
+    const space = spaces.value[spaceId]!;
 
-      const installedPackages = await useInstalledPackages(spaceId);
-      const hasPackage = installedPackages.value.some(
-        (p) =>
-          // p.namespace === pkg.namespace &&
-          p.name === pkg.name && p.version === pkg.version,
-      );
+    const installedPackages = await useInstalledPackages(spaceId);
+    const hasPackage = installedPackages.value.some(
+      (p) =>
+        // p.namespace === pkg.namespace &&
+        p.name === pkg.name && p.version === pkg.version,
+    );
 
-      if (hasPackage) {
-        await loadTypstPackage(pkg).catch(reject);
+    if (hasPackage) {
+      await loadTypstPackage(pkg).catch(reject);
 
-        return resolve();
-      }
+      return resolve();
+    }
 
-      const { t } = useSharedI18n();
+    const { t } = useSharedI18n();
 
-      createNotification(
-        t("composables.typst.package-request", {
-          space: space.name,
-          package: spec,
-        }),
-        {
-          actions: [
-            {
-              label: "Install",
-              variant: "primary",
-              async onClick() {
-                try {
-                  await loadTypstPackage(pkg);
+    createNotification(
+      t("composables.typst.package-request", {
+        space: space.name,
+        package: spec,
+      }),
+      {
+        actions: [
+          {
+            label: "Install",
+            variant: "primary",
+            async onClick() {
+              try {
+                await loadTypstPackage(pkg);
 
-                  const installedPackages = await useInstalledPackages(spaceId);
-                  installedPackages.push(pkg);
+                const installedPackages = await useInstalledPackages(spaceId);
+                installedPackages.push(pkg);
 
-                  resolve();
-                } catch (error) {
-                  createNotification(
-                    t("composables.typst.error-installing", {
-                      package: spec,
-                      error:
-                        error instanceof Error ? error.message : String(error),
-                    }),
-                    { type: "error" },
-                  );
+                resolve();
+              } catch (error) {
+                createNotification(
+                  t("composables.typst.error-installing", {
+                    package: spec,
+                    error: error instanceof Error ? error.message : String(error),
+                  }),
+                  { type: "error" },
+                );
 
-                  reject(error);
-                }
-              },
+                reject(error);
+              }
             },
-          ],
-        },
-      );
-    });
-  },
-);
+          },
+        ],
+      },
+    );
+  });
+});
 
 async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { $api } = useNuxtApp();
@@ -129,9 +124,7 @@ async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { createNotification, dismiss } = useNotifications();
 
   const spec = usePackageSpec(pkg);
-  const notifId = createNotification(
-    t("composables.typst.installing", { package: spec }),
-  );
+  const notifId = createNotification(t("composables.typst.installing", { package: spec }));
 
   const data = await $api("/api/download-package", {
     query: pkg,
@@ -152,10 +145,7 @@ export function usePackageSpec(pkg: TypstPackageSpec) {
 }
 
 /** @returns `true` if the typst state has been updated */
-export async function handleTypstRequests(
-  requests: TypstRequest[],
-  spaceId: string,
-) {
+export async function handleTypstRequests(requests: TypstRequest[], spaceId: string) {
   const resolvedRequests = await Promise.all(
     requests.map((request) => handleTypstRequest(request, spaceId)),
   );
@@ -164,54 +154,52 @@ export async function handleTypstRequests(
 }
 
 /** @returns `true` if the typst state has been updated */
-const handleTypstRequest = useMemoize(
-  async (request: TypstRequest, spaceId: string) => {
-    switch (request.type) {
-      case "source": {
-        const path = request.value;
+const handleTypstRequest = useMemoize(async (request: TypstRequest, spaceId: string) => {
+  switch (request.type) {
+    case "source": {
+      const path = request.value;
 
-        const item = await getStorageItem<string>(path);
+      const item = await getStorageItem<string>(path);
 
-        if (item) {
-          const typstState = await useTypst();
-          const fileId = typstState.createSourceId(path);
+      if (item) {
+        const typstState = await useTypst();
+        const fileId = typstState.createSourceId(path);
 
-          typstState.insertSource(fileId, item);
-
-          return true;
-        }
-
-        return false;
-      }
-
-      case "file": {
-        const path = request.value;
-
-        const item = await getStorageItem<string>(path);
-
-        if (item) {
-          const typstState = await useTypst();
-          const fileId = typstState.createFileId(path);
-
-          try {
-            typstState.insertFile(fileId, Uint8Array.fromBase64(item));
-          } catch {
-            const encoder = new TextEncoder();
-            typstState.insertFile(fileId, encoder.encode(JSON.stringify(item)));
-          }
-
-          return true;
-        }
-
-        return false;
-      }
-
-      case "package": {
-        const pkg = request.value;
-        await installTypstPackage(pkg, spaceId);
+        typstState.insertSource(fileId, item);
 
         return true;
       }
+
+      return false;
     }
-  },
-);
+
+    case "file": {
+      const path = request.value;
+
+      const item = await getStorageItem<string>(path);
+
+      if (item) {
+        const typstState = await useTypst();
+        const fileId = typstState.createFileId(path);
+
+        try {
+          typstState.insertFile(fileId, Uint8Array.fromBase64(item));
+        } catch {
+          const encoder = new TextEncoder();
+          typstState.insertFile(fileId, encoder.encode(JSON.stringify(item)));
+        }
+
+        return true;
+      }
+
+      return false;
+    }
+
+    case "package": {
+      const pkg = request.value;
+      await installTypstPackage(pkg, spaceId);
+
+      return true;
+    }
+  }
+});

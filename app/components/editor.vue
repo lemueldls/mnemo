@@ -11,11 +11,7 @@ import {
 
 import { lintGutter } from "@codemirror/lint";
 import { highlightSelectionMatches } from "@codemirror/search";
-import {
-  EditorState,
-  type EditorStateConfig,
-  Compartment,
-} from "@codemirror/state";
+import { EditorState, type EditorStateConfig, Compartment } from "@codemirror/state";
 import { history, historyField } from "@codemirror/commands";
 
 import {
@@ -51,9 +47,7 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: "ready"): void }>();
 
 const pathId = defineModel<string>({ required: true });
-const fullPath = computed(
-  () => `spaces/${props.spaceId}/${props.kind}/${pathId.value}.typ`,
-);
+const fullPath = computed(() => `spaces/${props.spaceId}/${props.kind}/${pathId.value}.typ`);
 
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
@@ -68,9 +62,7 @@ const topFade = ref(0);
 const bottomFade = ref(0);
 const maxFade = 32;
 
-const preludeItem = await useStorageText(
-  () => `spaces/${props.spaceId}/prelude/main.typ`,
-);
+const preludeItem = await useStorageText(() => `spaces/${props.spaceId}/prelude/main.typ`);
 const prelude = computed(() =>
   match(props.kind)
     .with("prelude", "task", () => "")
@@ -203,15 +195,12 @@ onMounted(async () => {
   const { y: scrollY } = useScroll(scrollDOM);
   const { height } = useElementSize(scrollDOM);
 
-  watchImmediate(
-    [scrollHeight, scrollY, height],
-    ([scrollHeight, scrollY, height]) => {
-      if (!scrollDOM) return;
+  watchImmediate([scrollHeight, scrollY, height], ([scrollHeight, scrollY, height]) => {
+    if (!scrollDOM) return;
 
-      topFade.value = Math.min(scrollY, maxFade);
-      bottomFade.value = Math.min(scrollHeight - scrollY - height, maxFade);
-    },
-  );
+    topFade.value = Math.min(scrollY, maxFade);
+    bottomFade.value = Math.min(scrollHeight - scrollY - height, maxFade);
+  });
 });
 
 // onUnmounted(() => {
@@ -224,10 +213,7 @@ onMounted(async () => {
 // const doc = await useCrdt();
 // const undoManager = await useCrdtUndoManager();
 
-function createStateConfig(
-  fileId: FileId,
-  view: EditorView,
-): EditorStateConfig {
+function createStateConfig(fileId: FileId, view: EditorView): EditorStateConfig {
   const path = normalizeKey(fullPath.value);
 
   return {
@@ -242,23 +228,13 @@ function createStateConfig(
         });
       }),
 
-      typstPlugin(
-        fileId,
-        props.spaceId,
-        path,
-        text,
-        prelude,
-        props.locked,
-        typstState,
-      ),
+      typstPlugin(fileId, props.spaceId, path, text, prelude, props.locked, typstState),
 
       EditorView.lineWrapping,
       EditorView.editable.of(!props.readonly),
       EditorState.readOnly.of(props.readonly),
 
-      placeholderCompartment.of(
-        placeholder(t("components.editor.placeholder")),
-      ),
+      placeholderCompartment.of(placeholder(t("components.editor.placeholder"))),
 
       highlightSpecialChars(),
       // foldGutter(),

@@ -11,11 +11,7 @@ onClickOutside(element, () => {
 </script>
 
 <template>
-  <mx-container
-    ref="element"
-    :elevation="2"
-    :class="['menu', { 'menu--hidden': !visible }]"
-  >
+  <mx-container ref="element" :elevation="2" :class="['menu', { 'menu--hidden': !visible }]">
     <slot />
   </mx-container>
 </template>

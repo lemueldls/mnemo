@@ -37,9 +37,7 @@ export default defineWebSocketHandler({
     peer.publish(peer.namespace, import.meta.dev ? message.blob() : bytes);
 
     const crdt = await blob.get(peer.namespace);
-    const doc = crdt?.size
-      ? LoroDoc.fromSnapshot(await crdt.bytes())
-      : new LoroDoc();
+    const doc = crdt?.size ? LoroDoc.fromSnapshot(await crdt.bytes()) : new LoroDoc();
 
     doc.import(bytes);
 

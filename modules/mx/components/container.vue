@@ -16,26 +16,16 @@ const props = withDefaults(defineProps<ContainerProperties>(), {
 
 const keyBoxShadow = computed(
   () =>
-    [
-      "0px 0px 0px",
-      "1px 2px 0px",
-      "1px 2px 0px",
-      "1px 3px 0px",
-      "2px 3px 0px",
-      "4px 4px 0px",
-    ][props.elevation],
+    ["0px 0px 0px", "1px 2px 0px", "1px 2px 0px", "1px 3px 0px", "2px 3px 0px", "4px 4px 0px"][
+      props.elevation
+    ],
 );
 
 const ambientBoxShadow = computed(
   () =>
-    [
-      "0px 0px 0px",
-      "1px 3px 1px",
-      "2px 6px 2px",
-      "4px 8px 3px",
-      "6px 10px 4px",
-      "8px 12px 6px",
-    ][props.elevation],
+    ["0px 0px 0px", "1px 3px 1px", "2px 6px 2px", "4px 8px 3px", "6px 10px 4px", "8px 12px 6px"][
+      props.elevation
+    ],
 );
 
 const stateLayer = ref<HTMLElement>();
@@ -83,21 +73,14 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
 <template>
   <div
     ref="container"
-    :class="[
-      'container',
-      { 'container--active': active, 'container--disabled': disabled },
-    ]"
+    :class="['container', { 'container--active': active, 'container--disabled': disabled }]"
     :tabindex="ripple && !disabled ? 0 : -1"
     :disabled="disabled"
     :aria-pressed="pressed"
     @click="handleClick"
     @blur="pressed = false"
   >
-    <div
-      v-if="ripple && !disabled"
-      ref="stateLayer"
-      class="container__state-layer"
-    />
+    <div v-if="ripple && !disabled" ref="stateLayer" class="container__state-layer" />
 
     <slot />
   </div>
@@ -127,7 +110,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__state-layer {
-    @apply bg-on-surface rounded-inherit bg-opacity-0 absolute inset-0 overflow-hidden;
+    @apply bg-on-surface rounded-inherit absolute inset-0 overflow-hidden bg-opacity-0;
 
     transition-duration: 50ms;
     transition-property: background-color;
@@ -138,7 +121,7 @@ onKeyStroke(" ", handleKeyStroke, { target: container, eventName: "keyup" });
   }
 
   &__ripple {
-    @apply bg-on-surface absolute inset-0 opacity-12;
+    @apply bg-on-surface opacity-12 absolute inset-0;
 
     transition-property: opacity;
   }

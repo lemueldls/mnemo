@@ -4,12 +4,7 @@ import indexedDbDriver from "unstorage/drivers/indexedb";
 
 import type { Container } from "loro-crdt";
 
-import type {
-  DebuggerOptions,
-  EffectScope,
-  WatchStopHandle,
-  WritableComputedOptions,
-} from "vue";
+import type { DebuggerOptions, EffectScope, WatchStopHandle, WritableComputedOptions } from "vue";
 
 const localDb = createStorage({
   driver: indexedDbDriver({ base: "app:" }),
@@ -257,11 +252,7 @@ async function useSharedAsyncData<T>(
 function createStorageItem<T extends StorageValue>(
   key: MaybeRefOrGetter<string>,
   initialValue: T,
-  itemHook?: (
-    key: string,
-    item: StorageRef<T>,
-    runNextSync: Ref<boolean>,
-  ) => void,
+  itemHook?: (key: string, item: StorageRef<T>, runNextSync: Ref<boolean>) => void,
 ) {
   return useSharedAsyncData(key, async (key, scope) => {
     const storageItem = await getStorageItem<T>(key);
@@ -378,9 +369,7 @@ export async function useStorageMap<T extends Record<string, unknown>>(
   });
 }
 
-export type ListRef<T extends unknown[]> = Awaited<
-  ReturnType<typeof useStorageList<T>>
->;
+export type ListRef<T extends unknown[]> = Awaited<ReturnType<typeof useStorageList<T>>>;
 export async function useStorageList<T extends unknown[]>(
   key: MaybeRefOrGetter<string>,
   initialValue?: T,
@@ -433,11 +422,14 @@ export async function useStorageList<T extends unknown[]>(
   });
 }
 
-export type SetRef<T extends Exclude<{ [key: string]: any }, Container>[]> =
-  Awaited<ReturnType<typeof useStorageSet<T>>>;
-export async function useStorageSet<
-  T extends Exclude<{ [key: string]: any }, Container>[],
->(key: MaybeRefOrGetter<string>, setKey: keyof T[number], initialValue?: T) {
+export type SetRef<T extends Exclude<{ [key: string]: any }, Container>[]> = Awaited<
+  ReturnType<typeof useStorageSet<T>>
+>;
+export async function useStorageSet<T extends Exclude<{ [key: string]: any }, Container>[]>(
+  key: MaybeRefOrGetter<string>,
+  setKey: keyof T[number],
+  initialValue?: T,
+) {
   const keyRef = computed(() => normalizeKey(toValue(key)));
 
   const item = await createStorageItem(
@@ -512,14 +504,8 @@ const commit = useThrottleFn(
   true,
 );
 
-export async function useStorageBytes(
-  key: MaybeRefOrGetter<string>,
-  initialValue?: Uint8Array,
-) {
-  const item = await createStorageItem(
-    key,
-    initialValue ? initialValue.toBase64() : "",
-  );
+export async function useStorageBytes(key: MaybeRefOrGetter<string>, initialValue?: Uint8Array) {
+  const item = await createStorageItem(key, initialValue ? initialValue.toBase64() : "");
 
   return computed({
     get: () => Uint8Array.fromBase64(item.value),
@@ -532,9 +518,7 @@ export async function useStorageBytes(
 export async function getStorageItem<T extends StorageValue>(key: string) {
   const localItem = await localDb.getItem<T>(key);
 
-  const localMeta = localDb.getMeta(key) as Promise<
-    { updatedAt?: number } | undefined
-  >;
+  const localMeta = localDb.getMeta(key) as Promise<{ updatedAt?: number } | undefined>;
 
   localMeta.then((meta) => {
     useSync().updateItem(key, localItem, meta?.updatedAt ?? 0);
@@ -611,12 +595,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
     if (keysA.length !== keysB.length) return false;
 
     for (const key of keysA) {
-      if (
-        !deepEqual(
-          (a as Record<string, unknown>)[key],
-          (b as Record<string, unknown>)[key],
-        )
-      )
+      if (!deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]))
         return false;
     }
 

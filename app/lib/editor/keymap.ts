@@ -1,8 +1,4 @@
-import {
-  acceptCompletion,
-  closeBracketsKeymap,
-  completionKeymap,
-} from "@codemirror/autocomplete";
+import { acceptCompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
 import {
   copyLineDown,
   copyLineUp,

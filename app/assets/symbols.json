@@ -432,13 +432,7 @@
   {
     "id": "adaptive_audio_mic_off",
     "title": "Adaptive Audio Mic Off",
-    "synonyms": [
-      "music",
-      "audio",
-      "sound",
-      "composition",
-      "adaptive audio mic off"
-    ]
+    "synonyms": ["music", "audio", "sound", "composition", "adaptive audio mic off"]
   },
   {
     "id": "adb",
@@ -1474,13 +1468,7 @@
   {
     "id": "audio_video_receiver",
     "title": "Audio Video Receiver",
-    "synonyms": [
-      "music",
-      "audio",
-      "sound",
-      "composition",
-      "audio video receiver"
-    ]
+    "synonyms": ["music", "audio", "sound", "composition", "audio video receiver"]
   },
   {
     "id": "auto_awesome_mosaic",
@@ -1718,38 +1706,17 @@
   {
     "id": "barcode",
     "title": "Barcode",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "barcode"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "barcode"]
   },
   {
     "id": "barcode_reader",
     "title": "Barcode Reader",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "barcode reader"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "barcode reader"]
   },
   {
     "id": "barcode_scanner",
     "title": "Barcode Scanner",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "barcode scanner"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "barcode scanner"]
   },
   {
     "id": "barefoot",
@@ -2179,24 +2146,12 @@
   {
     "id": "bookmark_added",
     "title": "Bookmark Added",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "bookmark added"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "bookmark added"]
   },
   {
     "id": "bookmark_check",
     "title": "Bookmark Check",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "bookmark check"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "bookmark check"]
   },
   {
     "id": "bookmark_flag",
@@ -2220,24 +2175,12 @@
   {
     "id": "bookmark_manager",
     "title": "Bookmark Manager",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "bookmark manager"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "bookmark manager"]
   },
   {
     "id": "bookmark_remove",
     "title": "Bookmark Remove",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "bookmark remove"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "bookmark remove"]
   },
   {
     "id": "bookmark_star",
@@ -3374,38 +3317,17 @@
   {
     "id": "code",
     "title": "Code",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "code"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "code"]
   },
   {
     "id": "code_blocks",
     "title": "Code Blocks",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "code blocks"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "code blocks"]
   },
   {
     "id": "code_off",
     "title": "Code Off",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "code off"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "code off"]
   },
   {
     "id": "coffee",
@@ -3435,13 +3357,7 @@
   {
     "id": "collections_bookmark",
     "title": "Collections Bookmark",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "collections bookmark"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "collections bookmark"]
   },
   {
     "id": "colorize",
@@ -3536,14 +3452,7 @@
   {
     "id": "computer",
     "title": "Computer",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "computer"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "computer"]
   },
   {
     "id": "concierge",
@@ -3961,14 +3870,7 @@
   {
     "id": "css",
     "title": "Css",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "css"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "css"]
   },
   {
     "id": "csv",
@@ -4038,13 +3940,7 @@
   {
     "id": "custom_typography",
     "title": "Custom Typography",
-    "synonyms": [
-      "math",
-      "calculus",
-      "algebra",
-      "statistics",
-      "custom typography"
-    ]
+    "synonyms": ["math", "calculus", "algebra", "statistics", "custom typography"]
   },
   {
     "id": "cycle",
@@ -4234,14 +4130,7 @@
   {
     "id": "deployed_code",
     "title": "Deployed Code",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "deployed code"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "deployed code"]
   },
   {
     "id": "deployed_code_account",
@@ -4258,14 +4147,7 @@
   {
     "id": "deployed_code_alert",
     "title": "Deployed Code Alert",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "deployed code alert"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "deployed code alert"]
   },
   {
     "id": "deployed_code_history",
@@ -4284,14 +4166,7 @@
   {
     "id": "deployed_code_update",
     "title": "Deployed Code Update",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "deployed code update"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "deployed code update"]
   },
   {
     "id": "dermatology",
@@ -4406,62 +4281,27 @@
   {
     "id": "developer_board",
     "title": "Developer Board",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "developer board"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "developer board"]
   },
   {
     "id": "developer_board_off",
     "title": "Developer Board Off",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "developer board off"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "developer board off"]
   },
   {
     "id": "developer_guide",
     "title": "Developer Guide",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "developer guide"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "developer guide"]
   },
   {
     "id": "developer_mode",
     "title": "Developer Mode",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "developer mode"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "developer mode"]
   },
   {
     "id": "developer_mode_tv",
     "title": "Developer Mode Tv",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "developer mode tv"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "developer mode tv"]
   },
   {
     "id": "device_hub",
@@ -4771,13 +4611,7 @@
   {
     "id": "document_scanner",
     "title": "Document Scanner",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "document scanner"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "document scanner"]
   },
   {
     "id": "domain",
@@ -5277,13 +5111,7 @@
   {
     "id": "emoji_language",
     "title": "Emoji Language",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "emoji language"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "emoji language"]
   },
   {
     "id": "emoji_nature",
@@ -5478,13 +5306,7 @@
   {
     "id": "event_available",
     "title": "Event Available",
-    "synonyms": [
-      "science",
-      "biology",
-      "chemistry",
-      "physics",
-      "event available"
-    ]
+    "synonyms": ["science", "biology", "chemistry", "physics", "event available"]
   },
   {
     "id": "event_busy",
@@ -6569,13 +6391,7 @@
   {
     "id": "format_paragraph",
     "title": "Format Paragraph",
-    "synonyms": [
-      "math",
-      "calculus",
-      "algebra",
-      "statistics",
-      "format paragraph"
-    ]
+    "synonyms": ["math", "calculus", "algebra", "statistics", "format paragraph"]
   },
   {
     "id": "format_quote",
@@ -7705,14 +7521,7 @@
   {
     "id": "html",
     "title": "Html",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "html"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "html"]
   },
   {
     "id": "http",
@@ -7757,13 +7566,7 @@
   {
     "id": "humidity_percentage",
     "title": "Humidity Percentage",
-    "synonyms": [
-      "math",
-      "calculus",
-      "algebra",
-      "statistics",
-      "humidity percentage"
-    ]
+    "synonyms": ["math", "calculus", "algebra", "statistics", "humidity percentage"]
   },
   {
     "id": "hvac",
@@ -7952,13 +7755,7 @@
   {
     "id": "insert_page_break",
     "title": "Insert Page Break",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "insert page break"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "insert page break"]
   },
   {
     "id": "insert_text",
@@ -8043,14 +7840,7 @@
   {
     "id": "javascript",
     "title": "Javascript",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "javascript"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "javascript"]
   },
   {
     "id": "join",
@@ -8135,98 +7925,42 @@
   {
     "id": "keyboard",
     "title": "Keyboard",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard"]
   },
   {
     "id": "keyboard_alt",
     "title": "Keyboard Alt",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard alt"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard alt"]
   },
   {
     "id": "keyboard_arrow_down",
     "title": "Keyboard Arrow Down",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard arrow down"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard arrow down"]
   },
   {
     "id": "keyboard_arrow_left",
     "title": "Keyboard Arrow Left",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard arrow left"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard arrow left"]
   },
   {
     "id": "keyboard_arrow_right",
     "title": "Keyboard Arrow Right",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard arrow right"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard arrow right"]
   },
   {
     "id": "keyboard_arrow_up",
     "title": "Keyboard Arrow Up",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard arrow up"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard arrow up"]
   },
   {
     "id": "keyboard_backspace",
     "title": "Keyboard Backspace",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard backspace"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard backspace"]
   },
   {
     "id": "keyboard_capslock",
     "title": "Keyboard Capslock",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard capslock"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard capslock"]
   },
   {
     "id": "keyboard_capslock_badge",
@@ -8243,26 +7977,12 @@
   {
     "id": "keyboard_command_key",
     "title": "Keyboard Command Key",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard command key"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard command key"]
   },
   {
     "id": "keyboard_control_key",
     "title": "Keyboard Control Key",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard control key"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard control key"]
   },
   {
     "id": "keyboard_double_arrow_down",
@@ -8327,98 +8047,42 @@
   {
     "id": "keyboard_full",
     "title": "Keyboard Full",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard full"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard full"]
   },
   {
     "id": "keyboard_hide",
     "title": "Keyboard Hide",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard hide"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard hide"]
   },
   {
     "id": "keyboard_keys",
     "title": "Keyboard Keys",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard keys"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard keys"]
   },
   {
     "id": "keyboard_lock",
     "title": "Keyboard Lock",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard lock"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard lock"]
   },
   {
     "id": "keyboard_lock_off",
     "title": "Keyboard Lock Off",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard lock off"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard lock off"]
   },
   {
     "id": "keyboard_off",
     "title": "Keyboard Off",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard off"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard off"]
   },
   {
     "id": "keyboard_onscreen",
     "title": "Keyboard Onscreen",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard onscreen"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard onscreen"]
   },
   {
     "id": "keyboard_option_key",
     "title": "Keyboard Option Key",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard option key"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard option key"]
   },
   {
     "id": "keyboard_previous_language",
@@ -8437,38 +8101,17 @@
   {
     "id": "keyboard_return",
     "title": "Keyboard Return",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard return"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard return"]
   },
   {
     "id": "keyboard_tab",
     "title": "Keyboard Tab",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard tab"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard tab"]
   },
   {
     "id": "keyboard_tab_rtl",
     "title": "Keyboard Tab Rtl",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "keyboard tab rtl"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "keyboard tab rtl"]
   },
   {
     "id": "kid_star",
@@ -8513,13 +8156,7 @@
   {
     "id": "label_important",
     "title": "Label Important",
-    "synonyms": [
-      "science",
-      "biology",
-      "chemistry",
-      "physics",
-      "label important"
-    ]
+    "synonyms": ["science", "biology", "chemistry", "physics", "label important"]
   },
   {
     "id": "label_off",
@@ -8564,145 +8201,67 @@
   {
     "id": "language_chinese_array",
     "title": "Language Chinese Array",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese array"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese array"]
   },
   {
     "id": "language_chinese_cangjie",
     "title": "Language Chinese Cangjie",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese cangjie"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese cangjie"]
   },
   {
     "id": "language_chinese_dayi",
     "title": "Language Chinese Dayi",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese dayi"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese dayi"]
   },
   {
     "id": "language_chinese_pinyin",
     "title": "Language Chinese Pinyin",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese pinyin"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese pinyin"]
   },
   {
     "id": "language_chinese_quick",
     "title": "Language Chinese Quick",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese quick"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese quick"]
   },
   {
     "id": "language_chinese_wubi",
     "title": "Language Chinese Wubi",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language chinese wubi"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language chinese wubi"]
   },
   {
     "id": "language_french",
     "title": "Language French",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language french"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language french"]
   },
   {
     "id": "language_gb_english",
     "title": "Language Gb English",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language gb english"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language gb english"]
   },
   {
     "id": "language_international",
     "title": "Language International",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language international"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language international"]
   },
   {
     "id": "language_japanese_kana",
     "title": "Language Japanese Kana",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language japanese kana"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language japanese kana"]
   },
   {
     "id": "language_korean_latin",
     "title": "Language Korean Latin",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language korean latin"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language korean latin"]
   },
   {
     "id": "language_pinyin",
     "title": "Language Pinyin",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language pinyin"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language pinyin"]
   },
   {
     "id": "language_spanish",
     "title": "Language Spanish",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language spanish"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language spanish"]
   },
   {
     "id": "language_us",
@@ -8712,24 +8271,12 @@
   {
     "id": "language_us_colemak",
     "title": "Language Us Colemak",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language us colemak"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language us colemak"]
   },
   {
     "id": "language_us_dvorak",
     "title": "Language Us Dvorak",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "language us dvorak"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "language us dvorak"]
   },
   {
     "id": "laps",
@@ -8753,26 +8300,12 @@
   {
     "id": "laptop_mac",
     "title": "Laptop Mac",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "laptop mac"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "laptop mac"]
   },
   {
     "id": "laptop_windows",
     "title": "Laptop Windows",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "laptop windows"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "laptop windows"]
   },
   {
     "id": "lasso_select",
@@ -8857,13 +8390,7 @@
   {
     "id": "library_add_check",
     "title": "Library Add Check",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "library add check"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "library add check"]
   },
   {
     "id": "library_books",
@@ -9572,13 +9099,7 @@
   {
     "id": "media_bluetooth_off",
     "title": "Media Bluetooth Off",
-    "synonyms": [
-      "music",
-      "audio",
-      "sound",
-      "composition",
-      "media bluetooth off"
-    ]
+    "synonyms": ["music", "audio", "sound", "composition", "media bluetooth off"]
   },
   {
     "id": "media_bluetooth_on",
@@ -9638,26 +9159,12 @@
   {
     "id": "memory",
     "title": "Memory",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "memory"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "memory"]
   },
   {
     "id": "memory_alt",
     "title": "Memory Alt",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "memory alt"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "memory alt"]
   },
   {
     "id": "menstrual_health",
@@ -10530,12 +10037,7 @@
   {
     "id": "network_intelligence_history",
     "title": "Network Intelligence History",
-    "synonyms": [
-      "history",
-      "historical",
-      "humanities",
-      "network intelligence history"
-    ]
+    "synonyms": ["history", "historical", "humanities", "network intelligence history"]
   },
   {
     "id": "network_intelligence_update",
@@ -12277,50 +11779,22 @@
   {
     "id": "qr_code",
     "title": "Qr Code",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "qr code"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "qr code"]
   },
   {
     "id": "qr_code_2",
     "title": "Qr Code 2",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "qr code 2"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "qr code 2"]
   },
   {
     "id": "qr_code_2_add",
     "title": "Qr Code 2 Add",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "qr code 2 add"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "qr code 2 add"]
   },
   {
     "id": "qr_code_scanner",
     "title": "Qr Code Scanner",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "qr code scanner"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "qr code scanner"]
   },
   {
     "id": "query_stats",
@@ -13254,14 +12728,7 @@
   {
     "id": "screenshot_keyboard",
     "title": "Screenshot Keyboard",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "screenshot keyboard"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "screenshot keyboard"]
   },
   {
     "id": "screenshot_monitor",
@@ -13286,13 +12753,7 @@
   {
     "id": "scrollable_header",
     "title": "Scrollable Header",
-    "synonyms": [
-      "science",
-      "biology",
-      "chemistry",
-      "physics",
-      "scrollable header"
-    ]
+    "synonyms": ["science", "biology", "chemistry", "physics", "scrollable header"]
   },
   {
     "id": "scuba_diving",
@@ -13956,13 +13417,7 @@
   {
     "id": "sign_language",
     "title": "Sign Language",
-    "synonyms": [
-      "language",
-      "linguistics",
-      "english",
-      "spanish",
-      "sign language"
-    ]
+    "synonyms": ["language", "linguistics", "english", "spanish", "sign language"]
   },
   {
     "id": "signal_cellular_0_bar",
@@ -15609,14 +15064,7 @@
   {
     "id": "terminal",
     "title": "Terminal",
-    "synonyms": [
-      "computer science",
-      "programming",
-      "coding",
-      "chip",
-      "cpu",
-      "terminal"
-    ]
+    "synonyms": ["computer science", "programming", "coding", "chip", "cpu", "terminal"]
   },
   {
     "id": "text_ad",
@@ -16456,13 +15904,7 @@
   {
     "id": "unknown_document",
     "title": "Unknown Document",
-    "synonyms": [
-      "reading",
-      "literature",
-      "textbook",
-      "course",
-      "unknown document"
-    ]
+    "synonyms": ["reading", "literature", "textbook", "course", "unknown document"]
   },
   {
     "id": "unknown_med",

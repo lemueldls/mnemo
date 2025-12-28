@@ -2,11 +2,7 @@
 
 <template>
   <div class="top-app-bar" data-tauri-drag-region>
-    <div
-      v-if="$slots.leading"
-      class="top-app-bar__leading"
-      data-tauri-drag-region
-    >
+    <div v-if="$slots.leading" class="top-app-bar__leading" data-tauri-drag-region>
       <slot name="leading" />
     </div>
 
@@ -14,11 +10,7 @@
       <slot />
     </div>
 
-    <div
-      v-if="$slots.trailing"
-      class="top-app-bar__trailing"
-      data-tauri-drag-region
-    >
+    <div v-if="$slots.trailing" class="top-app-bar__trailing" data-tauri-drag-region>
       <slot name="trailing" />
     </div>
   </div>

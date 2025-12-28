@@ -47,9 +47,7 @@ const filteredPackages = computed(() => {
     let entries = Object.entries(packageList);
 
     if (installedFilter.value !== "all") {
-      const installedNames = new Set(
-        installedPackages.value.map((p) => p.name),
-      );
+      const installedNames = new Set(installedPackages.value.map((p) => p.name));
 
       if (installedFilter.value === "installed") {
         entries = entries.filter(([name]) => installedNames.has(name));
@@ -72,9 +70,7 @@ const filteredPackages = computed(() => {
     .filter(([name]) => {
       if (installedFilter.value === "all") return true;
 
-      const installedNames = new Set(
-        installedPackages.value.map((p) => p.name),
-      );
+      const installedNames = new Set(installedPackages.value.map((p) => p.name));
 
       return installedFilter.value === "installed"
         ? installedNames.has(name)
@@ -97,9 +93,7 @@ const packagesVirtualizer = useVirtualizer(
   })),
 );
 
-const virtualPackages = computed(() =>
-  packagesVirtualizer.value.getVirtualItems(),
-);
+const virtualPackages = computed(() => packagesVirtualizer.value.getVirtualItems());
 </script>
 
 <template>
@@ -139,10 +133,7 @@ const virtualPackages = computed(() =>
           >
             {{ $t("components.packages.form.filters.installed") }}
           </md-filled-tonal-button>
-          <md-outlined-button
-            v-else
-            @click.prevent="installedFilter = 'installed'"
-          >
+          <md-outlined-button v-else @click.prevent="installedFilter = 'installed'">
             {{ $t("components.packages.form.filters.installed") }}
           </md-outlined-button>
 
@@ -162,17 +153,8 @@ const virtualPackages = computed(() =>
       </div>
     </div>
 
-    <form
-      ref="container"
-      slot="content"
-      method="dialog"
-      class="flex h-full flex-col gap-4"
-    >
-      <template
-        v-if="filteredPackages.length > 0"
-        v-for="{ key, index } in virtualPackages"
-        :key
-      >
+    <form ref="container" slot="content" method="dialog" class="flex h-full flex-col gap-4">
+      <template v-if="filteredPackages.length > 0" v-for="{ key, index } in virtualPackages" :key>
         <package-card
           v-if="filteredPackages[index]"
           :space-id

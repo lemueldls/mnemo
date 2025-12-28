@@ -12,10 +12,7 @@ const variantToButtonComponentMap: { [V in NotificationVariant]: string } = {
 const notificationList = computed(() => Array.from(notifications.values()));
 const loadingActions = reactive(new Set<string>());
 
-async function handleAction(
-  notificationId: string,
-  onClick: () => void | Promise<void>,
-) {
+async function handleAction(notificationId: string, onClick: () => void | Promise<void>) {
   const actionKey = `${notificationId}`;
   loadingActions.add(actionKey);
 
@@ -49,10 +46,7 @@ function withCodeBlocks(message: string) {
         :aria-live="notification.type === 'error' ? 'assertive' : 'polite'"
       >
         <div class="notification-body">
-          <span
-            class="notification-message flex-1"
-            v-html="withCodeBlocks(notification.message)"
-          />
+          <span class="notification-message flex-1" v-html="withCodeBlocks(notification.message)" />
 
           <div
             v-if="notification.actions && notification.actions.length > 0"

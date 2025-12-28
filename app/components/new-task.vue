@@ -42,16 +42,8 @@ function createTask() {
       class="grid grid-cols-2 gap-3"
       @submit="createTask"
     >
-      <mx-theme
-        v-for="(space, id) in spaces"
-        :key="id"
-        :color="space.color"
-        harmonize
-      >
-        <md-outlined-card
-          class="flex flex-col gap-2 p-3"
-          @click="selectedSpaceId = id as string"
-        >
+      <mx-theme v-for="(space, id) in spaces" :key="id" :color="space.color" harmonize>
+        <md-outlined-card class="flex flex-col gap-2 p-3" @click="selectedSpaceId = id as string">
           <md-ripple />
 
           <div class="flex flex-row items-center justify-between gap-2">
@@ -61,12 +53,7 @@ function createTask() {
               </md-icon>
             </div>
 
-            <md-radio
-              name="space"
-              :value="id"
-              :checked="id === selectedSpaceId"
-              required
-            />
+            <md-radio name="space" :value="id" :checked="id === selectedSpaceId" required />
           </div>
           <span class="title-large line-clamp-1 flex-1" :title="space.name">
             {{ space.name }}

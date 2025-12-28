@@ -10,9 +10,7 @@ const visible = defineModel<boolean>();
 
 const { extraLarge } = useBreakpoints(breakpointsM3);
 
-const modal = computed(() =>
-  props.type === "auto" ? !extraLarge.value : props.type === "modal",
-);
+const modal = computed(() => (props.type === "auto" ? !extraLarge.value : props.type === "modal"));
 
 const route = useRoute();
 watch(
@@ -62,18 +60,12 @@ watchEffect(() => {
 
   padding-top: env(safe-area-inset-top);
 
-  transition-timing-function: map.get(
-    tokens.md-sys-motion-values(),
-    "easing-emphasized"
-  );
-  transition-duration: map.get(
-    tokens.md-sys-motion-values(),
-    "duration-medium4"
-  );
+  transition-timing-function: map.get(tokens.md-sys-motion-values(), "easing-emphasized");
+  transition-duration: map.get(tokens.md-sys-motion-values(), "duration-medium4");
   transition-property: transform, translate;
 
   &__inner {
-    @apply flex h-full w-90 flex-col p-3;
+    @apply w-90 flex h-full flex-col p-3;
   }
 
   &__content {

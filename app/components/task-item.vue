@@ -28,10 +28,7 @@ defineExpose({
 });
 
 const showContent = computed(
-  () =>
-    task.value.id !== editingTask.value?.id ||
-    !containerWidth.value ||
-    !containerHeight.value,
+  () => task.value.id !== editingTask.value?.id || !containerWidth.value || !containerHeight.value,
 );
 
 const spaces = await useSpaces();
@@ -56,10 +53,7 @@ watchImmediate(space, (space) => {
       "
     >
       <mx-filled-card
-        :class="[
-          'relative size-full cursor-pointer p-3',
-          { 'border-primary border': task.pinned },
-        ]"
+        :class="['relative size-full cursor-pointer p-3', { 'border-primary border': task.pinned }]"
         @click="editingTask = task"
       >
         <md-ripple />

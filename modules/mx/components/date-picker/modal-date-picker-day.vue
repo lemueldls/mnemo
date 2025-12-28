@@ -10,33 +10,23 @@ const props = defineProps<{
 
 const selectedDate = defineModel<CalendarDate>({ required: true });
 
-const isDateToday = computed(
-  () => props.date.compare(props.calendarToday) === 0,
-);
+const isDateToday = computed(() => props.date.compare(props.calendarToday) === 0);
 
 const dateMarks = computed(() =>
   props.markedDates
-    ? props.markedDates.filter(
-        (enabledDate) => props.date.compare(enabledDate) === 0,
-      ).length
+    ? props.markedDates.filter((enabledDate) => props.date.compare(enabledDate) === 0).length
     : 0,
 );
 
 const isDateMarked = computed(() =>
   props.markedDates
-    ? props.markedDates.some(
-        (enabledDate) => props.date.compare(enabledDate) === 0,
-      )
+    ? props.markedDates.some((enabledDate) => props.date.compare(enabledDate) === 0)
     : false,
 );
 
-const isDateEnabled = computed(() =>
-  props.disableUnmarkedDates ? isDateMarked.value : true,
-);
+const isDateEnabled = computed(() => (props.disableUnmarkedDates ? isDateMarked.value : true));
 
-const isDateSelected = computed(
-  () => props.date.compare(selectedDate.value) === 0,
-);
+const isDateSelected = computed(() => props.date.compare(selectedDate.value) === 0);
 </script>
 
 <template>
@@ -55,16 +45,11 @@ const isDateSelected = computed(
       {{ date.day }}
     </span>
 
-    <div
-      class="absolute -bottom-3.5 left-0 flex w-10 w-full justify-center gap-1"
-    >
+    <div class="absolute -bottom-3.5 left-0 flex w-10 w-full justify-center gap-1">
       <div
         v-for="i in dateMarks"
         :key="i"
-        :class="[
-          'size-1 rounded',
-          isDateSelected ? 'bg-on-primary' : 'bg-primary',
-        ]"
+        :class="['size-1 rounded', isDateSelected ? 'bg-on-primary' : 'bg-primary']"
       />
     </div>
   </component>

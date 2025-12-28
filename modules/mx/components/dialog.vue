@@ -10,9 +10,7 @@ const visible = defineModel<boolean>();
 
 const { medium } = useBreakpoints(breakpointsM3);
 
-const basic = computed(() =>
-  props.type === "auto" ? medium.value : props.type === "basic",
-);
+const basic = computed(() => (props.type === "auto" ? medium.value : props.type === "basic"));
 </script>
 
 <template>
@@ -55,7 +53,7 @@ const basic = computed(() =>
   // &--fullscreen {}
 
   &--basic &__inner {
-    @apply bg-surface-container-high flex max-w-140 min-w-70 flex-col rounded-xl p-6 opacity-100;
+    @apply bg-surface-container-high max-w-140 min-w-70 flex flex-col rounded-xl p-6 opacity-100;
 
     transform-origin: center -1rem;
     transform: scaleY(1) translateY(0);

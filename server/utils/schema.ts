@@ -73,10 +73,7 @@ export async function validatedFormData<
 >(event: H3Event, schema: TSchema) {
   const formData = await readFormData(event);
 
-  const { success, output, issues } = await safeParseAsync(
-    schema,
-    Object.fromEntries(formData),
-  );
+  const { success, output, issues } = await safeParseAsync(schema, Object.fromEntries(formData));
 
   if (success) return output;
 

@@ -51,10 +51,7 @@ const stages = useReviewStages().length;
             <div
               v-for="i in stages"
               :key="i"
-              :class="[
-                'flex-1 rounded',
-                i > review.stage ? 'bg-surface' : 'bg-primary',
-              ]"
+              :class="['flex-1 rounded', i > review.stage ? 'bg-surface' : 'bg-primary']"
             />
           </div>
 

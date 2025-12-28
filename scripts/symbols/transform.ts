@@ -3,9 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import symbols from "./symbols.json";
 
-const filePath = fileURLToPath(
-  new URL("../../app/assets/symbols.json", import.meta.url),
-);
+const filePath = fileURLToPath(new URL("../../app/assets/symbols.json", import.meta.url));
 
 function titleCaseId(id) {
   return id

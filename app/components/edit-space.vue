@@ -129,11 +129,7 @@ const groupedSymbols = computed(() => {
       <template #default="{ data: symbolGroup }">
         <div class="mb-4 flex gap-4">
           <component
-            :is="
-              space.icon === symbol.id
-                ? 'md-filled-tonal-icon-button'
-                : 'md-icon-button'
-            "
+            :is="space.icon === symbol.id ? 'md-filled-tonal-icon-button' : 'md-icon-button'"
             v-for="symbol in symbolGroup"
             :key="symbol.id"
             :title="symbol.title"

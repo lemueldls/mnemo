@@ -47,9 +47,7 @@ const pages: Page[] = [
           <mx-nav-drawer-item
             :active="route.path === page.path"
             :style="{
-              fontVariationSettings: `'FILL' ${
-                page.path === route.path ? 1 : 0
-              }`,
+              fontVariationSettings: `'FILL' ${page.path === route.path ? 1 : 0}`,
             }"
           >
             <template #leading>
@@ -76,20 +74,12 @@ const pages: Page[] = [
           </md-icon-button>
         </h3>
 
-        <nuxt-link
-          v-for="(space, id) in spaces"
-          :key="id"
-          :to="`/space?id=${id}`"
-        >
+        <nuxt-link v-for="(space, id) in spaces" :key="id" :to="`/space?id=${id}`">
           <mx-theme :color="space.color" harmonize>
             <mx-nav-drawer-item>
               <template #leading>
                 <div class="size-6">
-                  <mx-icon
-                    v-if="space.icon"
-                    :name="space.icon"
-                    class="text-primary"
-                  />
+                  <mx-icon v-if="space.icon" :name="space.icon" class="text-primary" />
                 </div>
               </template>
 

@@ -29,13 +29,9 @@ export default defineCachedEventHandler(
   async (event) => {
     const { namespace } = getQuery(event);
 
-    let allPackages = await $fetch<Package[]>(
-      `https://packages.typst.org/${namespace}/index.json`,
-    );
+    let allPackages = await $fetch<Package[]>(`https://packages.typst.org/${namespace}/index.json`);
     allPackages = allPackages.filter(
-      (pkg) =>
-        !pkg.categories?.length ||
-        notPackage.isDisjointFrom(new Set(pkg.categories)),
+      (pkg) => !pkg.categories?.length || notPackage.isDisjointFrom(new Set(pkg.categories)),
     );
     allPackages.sort((a, b) => b.version.localeCompare(a.version));
 

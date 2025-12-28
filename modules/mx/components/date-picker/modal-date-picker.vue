@@ -50,8 +50,7 @@ const calendar = computed(() => {
     const week = [];
 
     for (; index < 7; index++, day++)
-      week[index] =
-        day > monthEndDay ? undefined : new CalendarDate(year, month, day);
+      week[index] = day > monthEndDay ? undefined : new CalendarDate(year, month, day);
 
     index = 0;
     calendar.push(week);
@@ -61,9 +60,7 @@ const calendar = computed(() => {
 });
 
 const months = computed(() =>
-  Array.from({ length: 12 }).map((_, month) =>
-    d(Date.UTC(0, month + 1), { month: "long" }),
-  ),
+  Array.from({ length: 12 }).map((_, month) => d(Date.UTC(0, month + 1), { month: "long" })),
 );
 const weekdays = computed(() =>
   Array.from({ length: 7 }).map((_, weekday) =>
@@ -130,14 +127,10 @@ function selectDate() {
             </md-outlined-select>
 
             <div class="flex">
-              <md-icon-button
-                @click="viewingDate = viewingDate.subtract({ months: 1 })"
-              >
+              <md-icon-button @click="viewingDate = viewingDate.subtract({ months: 1 })">
                 <md-icon>keyboard_arrow_left</md-icon>
               </md-icon-button>
-              <md-icon-button
-                @click="viewingDate = viewingDate.add({ months: 1 })"
-              >
+              <md-icon-button @click="viewingDate = viewingDate.add({ months: 1 })">
                 <md-icon>keyboard_arrow_right</md-icon>
               </md-icon-button>
             </div>
@@ -154,16 +147,8 @@ function selectDate() {
               </div>
             </div>
 
-            <div
-              v-for="(week, i) in calendar"
-              :key="i"
-              class="grid grid-cols-7"
-            >
-              <div
-                v-for="date in week"
-                :key="date?.day"
-                class="flex flex-1 justify-center"
-              >
+            <div v-for="(week, i) in calendar" :key="i" class="grid grid-cols-7">
+              <div v-for="date in week" :key="date?.day" class="flex flex-1 justify-center">
                 <mx-modal-date-picker-day
                   v-if="date"
                   :date

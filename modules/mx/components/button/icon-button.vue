@@ -3,9 +3,7 @@ import AbstractButton, { type ButtonProperties } from "./abstract.vue";
 
 import type { IconProperties } from "../icon.vue";
 
-export interface IconButtonProperties
-  extends IconProperties,
-    ButtonProperties {}
+export interface IconButtonProperties extends IconProperties, ButtonProperties {}
 
 const props = defineProps<IconButtonProperties>();
 </script>

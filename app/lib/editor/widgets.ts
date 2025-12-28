@@ -1,28 +1,13 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import {
-  EditorState,
-  StateEffect,
-  StateField,
-  type Range,
-} from "@codemirror/state";
+import { EditorState, StateEffect, StateField, type Range } from "@codemirror/state";
 
-import {
-  Decoration,
-  EditorView,
-  ViewPlugin,
-  WidgetType,
-} from "@codemirror/view";
+import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 
 import { LRUCache } from "lru-cache";
 
 import type { DecorationSet, ViewUpdate } from "@codemirror/view";
 
-import type {
-  FileId,
-  RangedFrame,
-  TypstDiagnostic,
-  TypstState,
-} from "mnemo-wasm";
+import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 import { parseBackticks } from "./highlight";
 
 const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
@@ -55,14 +40,8 @@ class TypstWidget extends WidgetType {
       image.height = frame.render.height;
 
       if (!locked) {
-        this.container.addEventListener(
-          "click",
-          this.handleMouseEvent.bind(this),
-        );
-        this.container.addEventListener(
-          "mousedown",
-          this.handleMouseEvent.bind(this),
-        );
+        this.container.addEventListener("click", this.handleMouseEvent.bind(this));
+        this.container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
         // this.#container.addEventListener(
         //   "touchstart",
         //   this.handleTouchEvent.bind(this),
@@ -95,11 +74,7 @@ class TypstWidget extends WidgetType {
     const x = clientX - left;
     const y = clientY - top;
 
-    const jump = typstState.click(
-      this.fileId,
-      x,
-      y + frame.render.offsetHeight,
-    );
+    const jump = typstState.click(this.fileId, x, y + frame.render.offsetHeight);
     const position = jump ? jump.position : frame.range.end;
 
     view.focus();
@@ -139,12 +114,7 @@ function decorate(
 
   let frames: RangedFrame[];
 
-  if (
-    update.docChanged ||
-    widthChanged ||
-    !framesCache.has(path) ||
-    isFlaggedForUpdate
-  ) {
+  if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
     if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
       const { diagnostics, requests } = typstState.check(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
@@ -206,17 +176,12 @@ function decorate(
         const { number: startLine } = state.doc.lineAt(start);
         const { number: endLine } = state.doc.lineAt(end);
 
-        for (
-          let currentLine = startLine;
-          currentLine <= endLine;
-          currentLine++
-        ) {
+        for (let currentLine = startLine; currentLine <= endLine; currentLine++) {
           const line = state.doc.line(currentLine);
 
           let style = "";
           if (currentLine == startLine)
-            style +=
-              "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
+            style += "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
             style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
           else {
@@ -245,9 +210,7 @@ export const typstStateField = StateField.define({
     return Decoration.none;
   },
   update(decorations, transaction) {
-    const effect = transaction.effects.find((effect) =>
-      effect.is(typstStateEffect),
-    );
+    const effect = transaction.effects.find((effect) => effect.is(typstStateEffect));
 
     if (effect) return effect.value.decorations;
     return decorations.map(transaction.changes);
@@ -278,12 +241,7 @@ export const typstViewPlugin = (
           );
         }
 
-        if (
-          update.docChanged ||
-          update.selectionSet ||
-          update.focusChanged ||
-          widthChanged
-        ) {
+        if (update.docChanged || update.selectionSet || update.focusChanged || widthChanged) {
           const state = update.state;
           const currentDecorations = state.field(typstStateField);
 

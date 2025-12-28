@@ -2,10 +2,7 @@ export const useNotifications = createSharedComposable(() => {
   const notifications = reactive(new Map<string, Notification>());
   let counter = 0;
 
-  const createNotification = (
-    message: string,
-    options: NotificationOptions = {},
-  ): string => {
+  const createNotification = (message: string, options: NotificationOptions = {}): string => {
     const {
       type = "info",
       actions,

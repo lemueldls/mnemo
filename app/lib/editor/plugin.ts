@@ -40,30 +40,22 @@ export const typstPlugin = (
   }),
 ];
 
-const addSpaceBeforeClosingBracket = EditorView.inputHandler.of(
-  (view, from, to, text) => {
-    if (text === " ") {
-      const state = view.state;
-      const pos = from;
-      const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
-      const before = state.doc.sliceString(
-        pos - 1,
-        pos,
-      ) as keyof typeof bracketPairs;
-      const after = state.doc.sliceString(
-        pos,
-        pos + 1,
-      ) as keyof typeof bracketPairs;
+const addSpaceBeforeClosingBracket = EditorView.inputHandler.of((view, from, to, text) => {
+  if (text === " ") {
+    const state = view.state;
+    const pos = from;
+    const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
+    const before = state.doc.sliceString(pos - 1, pos) as keyof typeof bracketPairs;
+    const after = state.doc.sliceString(pos, pos + 1) as keyof typeof bracketPairs;
 
-      if (bracketPairs[before] && after === bracketPairs[before]) {
-        // Insert a space before the closing bracket
-        view.dispatch({
-          changes: { from: pos, to: pos, insert: " " },
-          selection: { anchor: pos + 1 },
-        });
-      }
+    if (bracketPairs[before] && after === bracketPairs[before]) {
+      // Insert a space before the closing bracket
+      view.dispatch({
+        changes: { from: pos, to: pos, insert: " " },
+        selection: { anchor: pos + 1 },
+      });
     }
+  }
 
-    return false;
-  },
-);
+  return false;
+});

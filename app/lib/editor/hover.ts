@@ -15,10 +15,7 @@ export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
           if (tooltip.startsWith("<code>"))
             div.innerHTML =
               "<pre>" +
-              tooltip.replace(
-                /span data-tag=(\w+)/g,
-                (_, tag) => `span class="${"typ-" + tag}"`,
-              ) +
+              tooltip.replace(/span data-tag=(\w+)/g, (_, tag) => `span class="${"typ-" + tag}"`) +
               "</pre>";
           else parseBackticks(tooltip, div);
 

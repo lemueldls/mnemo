@@ -1,14 +1,8 @@
 <script setup lang="ts">
-import {
-  getDayOfWeek,
-  today,
-  type CalendarDate,
-} from "@internationalized/date";
+import { getDayOfWeek, today, type CalendarDate } from "@internationalized/date";
 
 const timeZone = useTimeZone();
-const calendarDate = useState<CalendarDate>("today:calendar-date", () =>
-  today(timeZone),
-);
+const calendarDate = useState<CalendarDate>("today:calendar-date", () => today(timeZone));
 
 const containerRef = useTemplateRef("container");
 const caretRef = useTemplateRef("caret");
@@ -47,9 +41,7 @@ onMounted(() => {
     () => {
       const now = new Date();
 
-      caret.style.top = `${
-        ((now.getHours() + now.getMinutes() / 60) / 24) * scrollHeight.value
-      }px`;
+      caret.style.top = `${((now.getHours() + now.getMinutes() / 60) / 24) * scrollHeight.value}px`;
     },
     1000 * 60,
     { immediateCallback: true },
@@ -117,12 +109,7 @@ function previousDay() {
 
       <div class="relative flex-1">
         <template v-for="({ spaceId, from, to }, i) in todaysSchedule" :key="i">
-          <mx-theme
-            v-if="spaces![spaceId]"
-            :color="spaces[spaceId].color"
-            harmonize
-            as-child
-          >
+          <mx-theme v-if="spaces![spaceId]" :color="spaces[spaceId].color" harmonize as-child>
             <nuxt-link
               :to="`/space?id=${spaceId}`"
               :style="{
@@ -133,10 +120,7 @@ function previousDay() {
             >
               <md-ripple />
 
-              <span
-                class="w-full truncate font-semibold"
-                :title="spaces[spaceId].name"
-              >
+              <span class="w-full truncate font-semibold" :title="spaces[spaceId].name">
                 {{ spaces[spaceId].name }}
               </span>
 

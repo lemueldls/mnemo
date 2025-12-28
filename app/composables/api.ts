@@ -11,6 +11,4 @@ export const useApiBaseUrl = createSharedComposable(() => {
   return url.origin;
 });
 
-export const useApiToken = createSharedComposable(() =>
-  useLocalStorage("bearer_token", ""),
-);
+export const useApiToken = createSharedComposable(() => useLocalStorage("bearer_token", ""));

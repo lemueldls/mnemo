@@ -29,15 +29,12 @@ const leftFade = ref(0);
 const rightFade = ref(0);
 const maxFade = 32;
 
-watchImmediate(
-  [scrollWidth, scrollX, width],
-  ([scrollWidth, scrollX, width]) => {
-    if (!container.value) return;
+watchImmediate([scrollWidth, scrollX, width], ([scrollWidth, scrollX, width]) => {
+  if (!container.value) return;
 
-    leftFade.value = Math.min(scrollX, maxFade);
-    rightFade.value = Math.min(scrollWidth - scrollX - width, maxFade);
-  },
-);
+  leftFade.value = Math.min(scrollX, maxFade);
+  rightFade.value = Math.min(scrollWidth - scrollX - width, maxFade);
+});
 
 watchImmediate([scrollWidth, width], ([scrollWidth]) => {
   scrollX.value = scrollWidth;
@@ -81,10 +78,7 @@ const weekdays = computed(() =>
           :title="node.date?.toString()"
           class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
         >
-          <div
-            :style="{ opacity: node.activity / weightedMax }"
-            class="bg-primary size-full"
-          />
+          <div :style="{ opacity: node.activity / weightedMax }" class="bg-primary size-full" />
         </div>
       </div>
     </div>
