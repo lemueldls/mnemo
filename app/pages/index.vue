@@ -47,9 +47,7 @@ const newSpaceOpen = useNewSpaceOpen();
             </h1>
 
             <span class="text-on-surface-variant title-large">
-              {{
-                t("pages.index.date", { date: d(now, { dateStyle: "full" }) })
-              }}
+              {{ t("pages.index.date", { date: d(now, { dateStyle: "full" }) }) }}
             </span>
           </div>
 
@@ -60,11 +58,7 @@ const newSpaceOpen = useNewSpaceOpen();
 
         <div class="flex-shrink-0">
           <div id="spaces">
-            <nuxt-link
-              v-for="(space, id) in spaces"
-              :key="id"
-              :to="`/space?id=${id}`"
-            >
+            <nuxt-link v-for="(space, id) in spaces" :key="id" :to="`/space?id=${id}`">
               <mx-theme :color="space.color" harmonize>
                 <md-outlined-card class="relative p-3">
                   <md-ripple />

@@ -153,7 +153,7 @@ jobs:
 
       - name: 📤 Upload build artifacts (push or pr builds only)
         if: ${{ !inputs.publish }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: "bundles-${{matrix.os}}${{matrix.args}}"
           path: |
@@ -162,7 +162,7 @@ jobs:
 
       - name: 📤 Upload debug symbols (windows only)
         if: ${{ contains(matrix.os, 'windows') }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: "debug-symbols-${{matrix.os}}${{matrix.args}}"
           path: |
@@ -178,7 +178,7 @@ jobs:
 
       - name: 🛡️ Attest build provenance (publish release only)
         if: ${{ inputs.publish }}
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
         with:
           subject-path: |
             platform/target/release/bundle/nsis/*
@@ -191,7 +191,7 @@ jobs:
             platform/target/release/mnemo.pdb
 
       - name: 📜 Create SBOM
-        uses: anchore/sbom-action@8e94d75ddd33f69f691467e42275782e4bfefe84 # v0.20.9
+        uses: anchore/sbom-action@a930d0ac434e3182448fe678398ba5713717112a # v0.21.0
         with:
           format: "spdx-json"
           output-file: "sbom.spdx.json"

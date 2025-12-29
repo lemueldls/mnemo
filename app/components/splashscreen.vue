@@ -61,9 +61,7 @@ onMounted(async () => {
         <div class="flex items-baseline justify-between">
           <span class="title-large font-bold tracking-tight">
             {{ currentStep || $t("components.splashscreen.loading") }}
-            <span v-if="currentLoadingId === 'fonts'">
-              ({{ fontLoaded }}/{{ fontTotal }})
-            </span>
+            <span v-if="currentLoadingId === 'fonts'"> ({{ fontLoaded }}/{{ fontTotal }}) </span>
           </span>
           <span class="text-primary-fixed/80 font-mono text-sm">
             {{ completedSteps }}/{{ steps.length }}
@@ -77,17 +75,14 @@ onMounted(async () => {
             class="flex-1 rounded transition-all duration-300 ease-out"
             :class="{
               'bg-primary-fixed scale-y-100': step.status === 'done',
-              'bg-primary-fixed/80 scale-y-100 animate-pulse':
-                step.status === 'loading',
+              'bg-primary-fixed/80 scale-y-100 animate-pulse': step.status === 'loading',
               'bg-on-primary-fixed/30 scale-y-75': step.status === 'pending',
             }"
           />
         </div>
       </div>
 
-      <div
-        class="border-primary-fixed/20 label-large flex flex-col border-l-2 pl-4 font-mono"
-      >
+      <div class="border-primary-fixed/20 label-large flex flex-col border-l-2 pl-4 font-mono">
         <div
           v-for="step in steps"
           :key="step.id"
@@ -109,9 +104,7 @@ onMounted(async () => {
             />
             <span>
               {{ $t(`components.splashscreen.steps.${step.id}`) }}
-              <span v-if="step.id === 'fonts'">
-                ({{ fontLoaded }}/{{ fontTotal }})
-              </span>
+              <span v-if="step.id === 'fonts'"> ({{ fontLoaded }}/{{ fontTotal }}) </span>
             </span>
           </div>
         </div>

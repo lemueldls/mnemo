@@ -1,6 +1,4 @@
-export function useScrollWidth(
-  element: MaybeRefOrGetter<Element | null | undefined>,
-) {
+export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefined>) {
   const scrollWidth = ref(0);
 
   let observer: ResizeObserver;
@@ -57,9 +55,7 @@ export function useScrollWidth(
   return scrollWidth;
 }
 
-export function useScrollHeight(
-  element: MaybeRefOrGetter<Element | null | undefined>,
-) {
+export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undefined>) {
   const scrollHeight = ref(0);
 
   let observer: ResizeObserver;

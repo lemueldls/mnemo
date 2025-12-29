@@ -67,8 +67,7 @@ const taskPositions = computed(() => {
     positions[id] = { x, y, width: columnWidth };
 
     // Update column height
-    columnHeights[shortestColumn] =
-      columnHeights[shortestColumn]! + taskRef.height + rowGap;
+    columnHeights[shortestColumn] = columnHeights[shortestColumn]! + taskRef.height + rowGap;
   }
 
   return positions;
@@ -83,8 +82,7 @@ const containerHeight = computed(() => {
 
   let maxHeight = 0;
   for (const pos of Object.values(positions)) {
-    const taskRef =
-      taskRefs.value[positionIds.find((id) => positions[id] === pos)!];
+    const taskRef = taskRefs.value[positionIds.find((id) => positions[id] === pos)!];
 
     if (taskRef) {
       const totalHeight = pos.y + taskRef.height;
@@ -119,16 +117,11 @@ const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
         transform: taskPositions[task.id]
           ? `translate(${taskPositions[task.id]!.x}px, ${taskPositions[task.id]!.y}px)`
           : undefined,
-        width: taskPositions[task.id]?.width
-          ? `${taskPositions[task.id]!.width}px`
-          : '100%',
+        width: taskPositions[task.id]?.width ? `${taskPositions[task.id]!.width}px` : '100%',
         opacity: taskPositions[task.id] ? 1 : 0,
       }"
     >
-      <task-item
-        :ref="(el) => handleTaskRef(task.id, el as any)"
-        :task="task"
-      />
+      <task-item :ref="(el) => handleTaskRef(task.id, el as any)" :task="task" />
     </div>
 
     <!-- Loading placeholder when no tasks positioned yet -->

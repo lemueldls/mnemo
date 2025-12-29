@@ -29,15 +29,12 @@ const leftFade = ref(0);
 const rightFade = ref(0);
 const maxFade = 32;
 
-watchImmediate(
-  [scrollWidth, scrollX, width],
-  ([scrollWidth, scrollX, width]) => {
-    if (!container.value) return;
+watchImmediate([scrollWidth, scrollX, width], ([scrollWidth, scrollX, width]) => {
+  if (!container.value) return;
 
-    leftFade.value = Math.min(scrollX, maxFade);
-    rightFade.value = Math.min(scrollWidth - scrollX - width, maxFade);
-  },
-);
+  leftFade.value = Math.min(scrollX, maxFade);
+  rightFade.value = Math.min(scrollWidth - scrollX - width, maxFade);
+});
 
 watchImmediate([scrollWidth, width], ([scrollWidth]) => {
   scrollX.value = scrollWidth;
@@ -60,19 +57,18 @@ const weekdays = computed(() =>
   <div class="flex flex-col gap-3 overflow-hidden">
     <div class="flex items-stretch justify-between gap-1">
       <div class="flex flex-col">
-        <div class="label-small flex-1" v-for="i in totalWeekdays">
+        <div v-for="i in totalWeekdays" :key="i" class="label-small flex-1">
           <span v-if="(i + startWeekday) % 2 == 0">
             {{ weekdays[startWeekday + i - 1] }}
           </span>
         </div>
       </div>
 
-      <div class="activity-graph" ref="container">
-        <template
-          v-if="activityGraph[0]"
-          v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)"
-        >
-          <div v-if="i > startWeekday" />
+      <div ref="container" class="activity-graph">
+        <template v-if="activityGraph[0]">
+          <template v-for="i in getDayOfWeek(parseDate(activityGraph[0].date!), locale)">
+            <div v-if="i > startWeekday" :key="i" />
+          </template>
         </template>
 
         <div
@@ -81,10 +77,7 @@ const weekdays = computed(() =>
           :title="node.date?.toString()"
           class="bg-surface-container-low size-3 overflow-hidden rounded-sm"
         >
-          <div
-            :style="{ opacity: node.activity / weightedMax }"
-            class="bg-primary size-full"
-          />
+          <div :style="{ opacity: node.activity / weightedMax }" class="bg-primary size-full" />
         </div>
       </div>
     </div>

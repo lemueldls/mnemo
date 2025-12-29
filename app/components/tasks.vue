@@ -25,10 +25,6 @@ onMounted(() => {
       New Task
     </md-filled-tonal-button>
 
-    <task-item
-      v-for="(task, i) in sortedTasks"
-      :key="task.id"
-      v-model:task="sortedTasks[i]!"
-    />
+    <task-item v-for="(task, i) in sortedTasks" :key="task.id" v-model:task="sortedTasks[i]!" />
   </div>
 </template>

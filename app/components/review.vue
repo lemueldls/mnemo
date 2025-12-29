@@ -5,9 +5,7 @@ const { width } = useElementSize(container);
 const reviewCardWidth = 352;
 const gapSize = 12;
 
-const amount = computed(() =>
-  Math.floor((width.value + gapSize) / (reviewCardWidth + gapSize)),
-);
+const amount = computed(() => Math.floor((width.value + gapSize) / (reviewCardWidth + gapSize)));
 
 const review = await useReview(amount);
 </script>

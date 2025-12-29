@@ -28,8 +28,7 @@ onMounted(() => {
     }
 
     if (parentHeight) {
-      if (note.ry)
-        note.y = Math.max(note.ry * parentHeight - note.height / 2, 0);
+      if (note.ry) note.y = Math.max(note.ry * parentHeight - note.height / 2, 0);
       note.y = Math.min(note.y, parentHeight - note.height);
     }
 
@@ -129,9 +128,7 @@ const selectionBackground = computed(() => {
 });
 
 const stickyNoteContainer = computed(() =>
-  dark.value
-    ? theme!.value.palette.onTertiaryContainer
-    : theme!.value.palette.tertiaryContainer,
+  dark.value ? theme!.value.palette.onTertiaryContainer : theme!.value.palette.tertiaryContainer,
 );
 // const onStickyNoteContainer = computed(() =>
 //   dark.value
@@ -145,10 +142,7 @@ function encodeColor({ r, g, b, a }: Rgba) {
 </script>
 
 <template>
-  <div
-    ref="root"
-    :class="['sticky-note', { 'sticky-note--dragging': isDragging }]"
-  >
+  <div ref="root" :class="['sticky-note', { 'sticky-note--dragging': isDragging }]">
     <md-elevation />
 
     <mx-filled-card
@@ -160,24 +154,14 @@ function encodeColor({ r, g, b, a }: Rgba) {
     >
       <div class="flex h-full flex-1 flex-col">
         <div ref="header" class="flex items-center p-2">
-          <input
-            v-model="note.title"
-            type="text"
-            class="sticky-note__title"
-            placeholder="Title"
-          />
+          <input v-model="note.title" type="text" class="sticky-note__title" placeholder="Title" />
 
           <md-icon-button @click.prevent="$emit('close')">
             <md-icon>close</md-icon>
           </md-icon-button>
         </div>
 
-        <editor
-          v-model="note.id"
-          :space-id="spaceId"
-          kind="sticky"
-          class="h-full flex-1"
-        />
+        <editor v-model="note.id" :space-id="spaceId" kind="sticky" class="h-full flex-1" />
       </div>
     </mx-filled-card>
   </div>

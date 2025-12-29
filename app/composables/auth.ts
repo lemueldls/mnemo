@@ -2,7 +2,7 @@ import { polarClient } from "@polar-sh/better-auth";
 import { createAuthClient } from "better-auth/client";
 
 import type {
-  ClientOptions,
+  BetterAuthClientOptions,
   InferSessionFromClient,
   InferUserFromClient,
 } from "better-auth/client";
@@ -20,8 +20,12 @@ export const useAuth = createSharedComposable(() => {
     plugins: [polarClient()],
   });
 
-  const session = ref<InferSessionFromClient<ClientOptions> | null>(null);
-  const user = ref<InferUserFromClient<ClientOptions> | null>(null);
+  type Session = InferSessionFromClient<BetterAuthClientOptions>;
+  const session = ref<Session | null>(null);
+
+  type User = InferUserFromClient<BetterAuthClientOptions>;
+  const user = ref<User | null>(null);
+
   const sessionFetching = ref(false);
 
   const fetchSession = async (force = false) => {

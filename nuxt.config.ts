@@ -18,11 +18,7 @@ const apiBaseUrl = import.meta.env.NUXT_PUBLIC_API_BASE_URL;
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 // const internalHost = import.meta.env.TAURI_DEV_HOST || "localhost";
 
-const siteUrl = platform
-  ? "http://tauri.localhost"
-  : isDev
-    ? "http://localhost:3000"
-    : apiBaseUrl;
+const siteUrl = platform ? "http://tauri.localhost" : isDev ? "http://localhost:3000" : apiBaseUrl;
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -47,8 +43,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: "viewport",
-          content:
-            "width=device-width, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover",
+          content: "width=device-width, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover",
         },
       ],
     },

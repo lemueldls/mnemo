@@ -13,10 +13,7 @@ import {
 import type { Theme, ThemeKeys } from "../types";
 
 const dynamicColors = Object.keys(MaterialDynamicColors).filter(
-  (key) =>
-    key !== "contentAccentToneDelta" &&
-    key !== "colorSpec" &&
-    key !== "highestSurface",
+  (key) => key !== "contentAccentToneDelta" && key !== "colorSpec" && key !== "highestSurface",
 ) as ThemeKeys[];
 
 export const createTheme = useMemoize(
@@ -32,20 +29,13 @@ export const createTheme = useMemoize(
       const argbColor = argbFromHex(source);
       const argbHarmonize = harmonize && argbFromHex(harmonize);
 
-      const scheme = new SchemeTonalSpot(
-        Hct.fromInt(argbColor),
-        dark,
-        0,
-        "2025",
-      );
+      const scheme = new SchemeTonalSpot(Hct.fromInt(argbColor), dark, 0, "2025");
 
       for (const key of keys) {
         const color = MaterialDynamicColors[key];
         const designColor = color.getArgb(scheme);
 
-        const argb = argbHarmonize
-          ? Blend.harmonize(designColor, argbHarmonize)
-          : designColor;
+        const argb = argbHarmonize ? Blend.harmonize(designColor, argbHarmonize) : designColor;
 
         palette[key] = {
           r: redFromArgb(argb),

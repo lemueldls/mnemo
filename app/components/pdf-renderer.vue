@@ -18,9 +18,7 @@ const dailyNotesItem = await getStorageItem<DailyNote[]>(
 
 const dailyNotes = await Promise.all(
   dailyNotesItem!.map(async (note) => {
-    const item = await getStorageItem<string>(
-      `spaces/${spaceId.value}/daily/${note.id}.typ`,
-    );
+    const item = await getStorageItem<string>(`spaces/${spaceId.value}/daily/${note.id}.typ`);
 
     return { note, item };
   }),
@@ -31,16 +29,11 @@ const dailyNotes = await Promise.all(
       const time = decodeTime(note.id);
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-      return (
-        `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
-        item
-      );
+      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` + item;
     }),
 );
 
-const prelude = await getStorageItem<string>(
-  `spaces/${spaceId.value}/prelude/main.typ`,
-);
+const prelude = await getStorageItem<string>(`spaces/${spaceId.value}/prelude/main.typ`);
 if (prelude) dailyNotes.unshift();
 
 const typstState = await useTypst();
@@ -93,9 +86,7 @@ watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
 
 try {
   const packages = await useInstalledPackages(spaceId.value);
-  await Promise.all(
-    packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)),
-  );
+  await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)));
 } catch (err) {
   console.error("Error installing packages:", err);
 }
@@ -107,29 +98,19 @@ typstState.insertSource(fileId, dailyNotes.join("\n"));
 const { bytes, diagnostics } = typstState.renderPdf(fileId);
 const pdf = bytes ? new Uint8Array(bytes) : null;
 
-const errors = diagnostics.filter(
-  (diagnostic) => diagnostic.severity === "error",
-);
+const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 </script>
 
 <template>
-  <div
-    class="flex size-full items-center justify-center overflow-hidden px-4 pb-4"
-  >
-    <div
-      v-if="errors.length > 0"
-      class="bg-error-container text-on-error-container rounded-lg p-4"
-    >
+  <div class="flex size-full items-center justify-center overflow-hidden px-4 pb-4">
+    <div v-if="errors.length > 0" class="bg-error-container text-on-error-container rounded-lg p-4">
       <pre
         v-for="(error, i) in errors"
         :key="i"
       ><strong>{{ error.severity }}</strong> {{ error.message }}</pre>
     </div>
 
-    <md-outlined-card
-      v-if="pdf"
-      class="max-w-180 m-4 h-full w-full overflow-hidden bg-white"
-    >
+    <md-outlined-card v-if="pdf" class="max-w-180 m-4 h-full w-full overflow-hidden bg-white">
       <LazyEmbededPdf v-model="pdf" :filename="space.name" />
     </md-outlined-card>
   </div>

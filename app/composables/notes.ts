@@ -18,11 +18,7 @@ export async function useDailyNotes(spaceId: MaybeRefOrGetter<string>) {
   return notes;
 }
 
-export async function loadDailyNotes(
-  spaceId: string,
-  notes: DailyNote[],
-  archived?: boolean,
-) {
+export async function loadDailyNotes(spaceId: string, notes: DailyNote[], archived?: boolean) {
   let addToday = true;
 
   const timeZone = useTimeZone();
@@ -32,9 +28,7 @@ export async function loadDailyNotes(
 
       if (isToday(date, timeZone) && !archived) addToday = false;
       else {
-        const item = await getStorageItem<string>(
-          `spaces/${spaceId}/daily/${note.id}.typ`,
-        );
+        const item = await getStorageItem<string>(`spaces/${spaceId}/daily/${note.id}.typ`);
 
         if (!item) return;
       }

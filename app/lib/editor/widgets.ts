@@ -1,34 +1,17 @@
 import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import {
-  EditorState,
-  StateEffect,
-  StateField,
-  type Range,
-} from "@codemirror/state";
-
-import {
-  Decoration,
-  EditorView,
-  ViewPlugin,
-  WidgetType,
-} from "@codemirror/view";
-
+import { StateEffect, StateField, type Range } from "@codemirror/state";
+import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { LRUCache } from "lru-cache";
 
-import type { DecorationSet, ViewUpdate } from "@codemirror/view";
-
-import type {
-  FileId,
-  RangedFrame,
-  TypstDiagnostic,
-  TypstState,
-} from "mnemo-wasm";
 import { parseBackticks } from "./highlight";
 
-const widgetCache = new LRUCache<
-  number,
-  { container: HTMLDivElement; height: number }
->({ max: 128 });
+import type { EditorState } from "@codemirror/state";
+import type { DecorationSet, ViewUpdate } from "@codemirror/view";
+import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
+
+const widgetCache = new LRUCache<number, { container: HTMLDivElement; height: number }>({
+  max: 128,
+});
 
 class TypstWidget extends WidgetType {
   container!: HTMLDivElement;
@@ -65,11 +48,8 @@ class TypstWidget extends WidgetType {
       // image.height = frame.render.height;
 
       if (!locked) {
-        container.addEventListener("click", this.handleMouseEvent.bind(this));
-        container.addEventListener(
-          "mousedown",
-          this.handleMouseEvent.bind(this),
-        );
+        this.container.addEventListener("click", this.handleMouseEvent.bind(this));
+        this.container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
         // this.#container.addEventListener(
         //   "touchstart",
         //   this.handleTouchEvent.bind(this),
@@ -144,12 +124,7 @@ function decorate(
 
   let frames: RangedFrame[];
 
-  if (
-    update.docChanged ||
-    widthChanged ||
-    !framesCache.has(path) ||
-    isFlaggedForUpdate
-  ) {
+  if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
     // if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
     //   const { diagnostics, requests } = typstState.check(fileId, text, prelude);
     //   dispatchDiagnostics(diagnostics, update.state, update.view);
@@ -222,16 +197,11 @@ function decorate(
           height = cache?.height;
         }
 
-        for (
-          let currentLine = startLine;
-          currentLine <= endLine;
-          currentLine++
-        ) {
+        for (let currentLine = startLine; currentLine <= endLine; currentLine++) {
           const line = state.doc.line(currentLine);
           let style = "";
           if (currentLine == startLine)
-            style +=
-              "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
+            style += "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
             style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${
               height ? height - lineHeight : lineHeight
@@ -261,9 +231,7 @@ export const typstStateField = StateField.define({
     return Decoration.none;
   },
   update(decorations, transaction) {
-    const effect = transaction.effects.find((effect) =>
-      effect.is(typstStateEffect),
-    );
+    const effect = transaction.effects.find((effect) => effect.is(typstStateEffect));
 
     if (effect) return effect.value.decorations;
     return decorations.map(transaction.changes);
@@ -294,12 +262,7 @@ export const typstViewPlugin = (
           );
         }
 
-        if (
-          update.docChanged ||
-          update.selectionSet ||
-          update.focusChanged ||
-          widthChanged
-        ) {
+        if (update.docChanged || update.selectionSet || update.focusChanged || widthChanged) {
           const state = update.state;
           const currentDecorations = state.field(typstStateField);
 

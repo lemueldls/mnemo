@@ -1,11 +1,5 @@
 import type { MapOldSources, MapSources } from "@vueuse/shared";
-
-import type {
-  WatchCallback,
-  WatchOptions,
-  WatchSource,
-  WatchStopHandle,
-} from "vue";
+import type { WatchCallback, WatchOptions, WatchSource, WatchStopHandle } from "vue";
 
 export function watchImmediateAsync<T extends Readonly<WatchSource<unknown>[]>>(
   source: [...T],
@@ -47,9 +41,7 @@ export async function watchImmediateAsync<T = any>(
 
 export type MaybePromise<T> = T | Promise<T>;
 
-export function eagerComputedAsync<T>(
-  fn: () => MaybePromise<T>,
-): Promise<Ref<T>> {
+export function eagerComputedAsync<T>(fn: () => MaybePromise<T>): Promise<Ref<T>> {
   return new Promise((resolve) => {
     const item = ref();
     watchEffect(async () => {

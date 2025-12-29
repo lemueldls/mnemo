@@ -1,11 +1,9 @@
 import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
+import { createSharedComposable } from "@vueuse/core";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
-import { createSharedComposable } from "@vueuse/core";
-
-import { bearer } from "./bearer";
+import { bearer } from "better-auth/plugins/bearer";
 
 const runtimeConfig = useRuntimeConfig();
 const { password } = runtimeConfig.session;
@@ -21,8 +19,7 @@ export async function requireUser(headers: Headers) {
   const auth = serverAuth();
 
   const session = await auth.api.getSession({ headers });
-  if (!session)
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+  if (!session) throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
   return session.user;
 }
@@ -41,9 +38,7 @@ export const serverAuth = createSharedComposable(() =>
       async get(key) {
         const hasItem = await kv.hasItem(`_auth:${key}`);
 
-        return hasItem
-          ? JSON.stringify(await kv.getItem(`_auth:${key}`))
-          : null;
+        return hasItem ? JSON.stringify(await kv.getItem(`_auth:${key}`)) : null;
       },
       async set(key, value, ttl) {
         await kv.setItem(`_auth:${key}`, value, { ttl });
@@ -59,6 +54,7 @@ export const serverAuth = createSharedComposable(() =>
         redirectURI: github.redirectURL,
       },
     },
+    account: { skipStateCookieCheck: true },
     advanced: {
       cookiePrefix: "mnemo",
       useSecureCookies: false,
@@ -88,6 +84,7 @@ export const serverAuth = createSharedComposable(() =>
         ],
       }),
     ] as const,
+    logger: { level: import.meta.dev ? "debug" : "warn" },
   }),
 );
 

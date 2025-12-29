@@ -64,24 +64,16 @@ export function useApiWebSocket(
   url: MaybeRefOrGetter<string | URL>,
   options: WebSocketOptions = {},
 ): WebSocketReturn {
-  const {
-    immediate,
-    protocols,
-    onOpen,
-    onMessage,
-    onError,
-    onClose,
-    heartbeat,
-    autoReconnect,
-  } = defu(options, {
-    immediate: true,
-    protocols: [],
-    autoReconnect: {
-      retries: 5,
-      delay: 1000,
-      onFailed() {},
-    },
-  });
+  const { immediate, protocols, onOpen, onMessage, onError, onClose, heartbeat, autoReconnect } =
+    defu(options, {
+      immediate: true,
+      protocols: [],
+      autoReconnect: {
+        retries: 5,
+        delay: 1000,
+        onFailed() {},
+      },
+    });
 
   const urlRef = toRef(url);
   // const data = ref<string | ArrayBuffer | null>(null);
@@ -140,8 +132,7 @@ export function useApiWebSocket(
     explicitlyClosed = false;
 
     const resolvedUrl = unref(urlRef);
-    const wsUrl =
-      resolvedUrl instanceof URL ? resolvedUrl.toString() : resolvedUrl;
+    const wsUrl = resolvedUrl instanceof URL ? resolvedUrl.toString() : resolvedUrl;
 
     try {
       // if (tauri) {
@@ -192,10 +183,7 @@ export function useApiWebSocket(
       // } else {
       // Use native WebSocket
       status.value = "CONNECTING";
-      ws.value = new WebSocket(
-        wsUrl,
-        protocols.length > 0 ? protocols : undefined,
-      );
+      ws.value = new WebSocket(wsUrl, protocols.length > 0 ? protocols : undefined);
 
       ws.value.addEventListener("open", (event: Event) => {
         status.value = "OPEN";
@@ -204,20 +192,17 @@ export function useApiWebSocket(
         startHeartbeat();
       });
 
-      ws.value.addEventListener(
-        "message",
-        async (event: MessageEvent<string | Blob>) => {
-          const wrappedMessage = new WebSocketMessageWrapper(
-            typeof event.data === "string"
-              ? event.data
-              : new Uint8Array(await event.data.arrayBuffer()),
-          );
+      ws.value.addEventListener("message", async (event: MessageEvent<string | Blob>) => {
+        const wrappedMessage = new WebSocketMessageWrapper(
+          typeof event.data === "string"
+            ? event.data
+            : new Uint8Array(await event.data.arrayBuffer()),
+        );
 
-          // data.value = event.data;
+        // data.value = event.data;
 
-          onMessage?.(ws.value as WS, wrappedMessage);
-        },
-      );
+        onMessage?.(ws.value as WS, wrappedMessage);
+      });
 
       ws.value.addEventListener("error", (event: Event) => {
         onError?.(ws.value as WS, event);
@@ -255,9 +240,7 @@ export function useApiWebSocket(
     status.value = "CLOSED";
   };
 
-  const send = async (
-    messageData: string | ArrayBuffer | Uint8Array,
-  ): Promise<boolean> => {
+  const send = async (messageData: string | ArrayBuffer | Uint8Array): Promise<boolean> => {
     await until(ws).toBeTruthy();
     await until(status).toBe("OPEN");
 

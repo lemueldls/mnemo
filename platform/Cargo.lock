@@ -39,6 +39,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "alloca"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5a7d05ea6aea7e9e64d25b9156ba2fee3fdd659e34e41063cd2fc7cd020d7f4"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -897,10 +906,11 @@ dependencies = [
 
 [[package]]
 name = "criterion"
-version = "0.7.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1c047a62b0cc3e145fa84415a3191f628e980b194c2755aa12300a4e6cbd928"
+checksum = "4d883447757bb0ee46f233e9dc22eb84d93a9508c9b868687b274fc431d886bf"
 dependencies = [
+ "alloca",
  "anes",
  "cast",
  "ciborium",
@@ -909,6 +919,7 @@ dependencies = [
  "itertools 0.13.0",
  "num-traits",
  "oorandom",
+ "page_size",
  "plotters",
  "rayon",
  "regex",
@@ -920,9 +931,9 @@ dependencies = [
 
 [[package]]
 name = "criterion-plot"
-version = "0.6.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b1bcc0dc7dfae599d84ad0b1a55f80cde8af3725da8313b528da95ef783e338"
+checksum = "ed943f81ea2faa8dcecbbfa50164acf95d555afec96a27871663b300e387b2e4"
 dependencies = [
  "cast",
  "itertools 0.13.0",
@@ -3651,6 +3662,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "page_size"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30d5b2194ed13191c1999ae0704b7839fb18384fa22e49b57eeaa97d79ce40da"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "palette"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4874,14 +4895,15 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.143"
+version = "1.0.148"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d401abef1d108fbd9cbaebc3e46611f4b1021f714a0597a71f41ee463f5f4a5a"
+checksum = "3084b546a1dd6289475996f182a22aba973866ea8e8b02c51d9f46b1336a22da"
 dependencies = [
  "itoa",
  "memchr",
- "ryu",
  "serde",
+ "serde_core",
+ "zmij",
 ]
 
 [[package]]
@@ -5431,9 +5453,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.9.3"
+version = "2.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e492485dd390b35f7497401f67694f46161a2a00ffd800938d5dd3c898fb9d8"
+checksum = "8a3868da5508446a7cd08956d523ac3edf0a8bc20bf7e4038f9a95c2800d2033"
 dependencies = [
  "anyhow",
  "bytes",
@@ -5482,9 +5504,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.5.2"
+version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87d6f8cafe6a75514ce5333f115b7b1866e8e68d9672bf4ca89fc0f35697ea9d"
+checksum = "17fcb8819fd16463512a12f531d44826ce566f486d7ccd211c9c8cebdaec4e08"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -5504,9 +5526,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7ef707148f0755110ca54377560ab891d722de4d53297595380a748026f139f"
+checksum = "9fa9844cefcf99554a16e0a278156ae73b0d8680bbc0e2ad1e4287aadd8489cf"
 dependencies = [
  "base64 0.22.1",
  "brotli",
@@ -5531,9 +5553,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71664fd715ee6e382c05345ad258d6d1d50f90cf1b58c0aa726638b33c2a075d"
+checksum = "3764a12f886d8245e66b7ee9b43ccc47883399be2019a61d80cf0f4117446fde"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -5678,9 +5700,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.9.1"
+version = "2.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9368f09358496f2229313fccb37682ad116b7f46fa76981efe116994a0628926"
+checksum = "87f766fe9f3d1efc4b59b17e7a891ad5ed195fa8d23582abb02e6c9a01137892"
 dependencies = [
  "cookie",
  "dpi",
@@ -5703,9 +5725,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.9.1"
+version = "2.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "929f5df216f5c02a9e894554401bcdab6eec3e39ec6a4a7731c7067fc8688a93"
+checksum = "187a3f26f681bdf028f796ccf57cf478c1ee422c50128e5a0a6ebeb3f5910065"
 dependencies = [
  "gtk",
  "http",
@@ -5730,9 +5752,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.8.0"
+version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6b8bbe426abdbf52d050e52ed693130dbd68375b9ad82a3fb17efb4c8d85673"
+checksum = "76a423c51176eb3616ee9b516a9fa67fed5f0e78baaba680e44eb5dd2cc37490"
 dependencies = [
  "anyhow",
  "brotli",
@@ -6282,8 +6304,8 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "typst"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "arrayvec",
  "comemo",
@@ -6302,13 +6324,13 @@ dependencies = [
 
 [[package]]
 name = "typst-assets"
-version = "0.14.1"
-source = "git+https://github.com/typst/typst-assets?rev=48b6cf4#48b6cf4ee1bb8ad2b0a1bff5c06335ee31640f06"
+version = "0.14.2"
+source = "git+https://github.com/typst/typst-assets?rev=0bbb3f7#0bbb3f7ebe775b980a3ca4ae9c49d9ecdb7e021a"
 
 [[package]]
 name = "typst-eval"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "comemo",
  "ecow",
@@ -6326,8 +6348,8 @@ dependencies = [
 
 [[package]]
 name = "typst-html"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "bumpalo",
  "comemo",
@@ -6346,8 +6368,8 @@ dependencies = [
 
 [[package]]
 name = "typst-ide"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "comemo",
  "ecow",
@@ -6362,8 +6384,8 @@ dependencies = [
 
 [[package]]
 name = "typst-layout"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "az",
  "bumpalo",
@@ -6397,8 +6419,8 @@ dependencies = [
 
 [[package]]
 name = "typst-library"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "arrayvec",
  "az",
@@ -6463,8 +6485,8 @@ dependencies = [
 
 [[package]]
 name = "typst-macros"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6474,8 +6496,8 @@ dependencies = [
 
 [[package]]
 name = "typst-pdf"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "az",
  "bytemuck",
@@ -6499,8 +6521,8 @@ dependencies = [
 
 [[package]]
 name = "typst-realize"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "arrayvec",
  "bumpalo",
@@ -6516,8 +6538,8 @@ dependencies = [
 
 [[package]]
 name = "typst-render"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6535,8 +6557,8 @@ dependencies = [
 
 [[package]]
 name = "typst-svg"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "base64 0.22.1",
  "comemo",
@@ -6558,8 +6580,8 @@ dependencies = [
 
 [[package]]
 name = "typst-syntax"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -6576,8 +6598,8 @@ dependencies = [
 
 [[package]]
 name = "typst-timing"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "parking_lot",
  "serde",
@@ -6586,13 +6608,14 @@ dependencies = [
 
 [[package]]
 name = "typst-utils"
-version = "0.14.1"
-source = "git+https://github.com/mkorje/typst.git?rev=4c1db395#4c1db395be2ea8090658b172b8493adfa4f55cf7"
+version = "0.14.2"
+source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
 dependencies = [
  "once_cell",
  "portable-atomic",
  "rayon",
  "rustc-hash",
+ "semver",
  "siphasher 1.0.1",
  "thin-vec",
  "unicode-math-class",
@@ -8033,6 +8056,12 @@ name = "zlib-rs"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "626bd9fa9734751fc50d6060752170984d7053f5a39061f524cda68023d4db8a"
+
+[[package]]
+name = "zmij"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6d6085d62852e35540689d1f97ad663e3971fc19cf5eceab364d62c646ea167"
 
 [[package]]
 name = "zune-core"

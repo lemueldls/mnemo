@@ -1,9 +1,4 @@
-import {
-  fromAbsolute,
-  getDayOfWeek,
-  toCalendarDate,
-  today,
-} from "@internationalized/date";
+import { fromAbsolute, getDayOfWeek, toCalendarDate, today } from "@internationalized/date";
 import { decodeTime } from "ulid";
 
 interface ActivityNode {
@@ -11,86 +6,77 @@ interface ActivityNode {
   activity: number;
 }
 
-export const useActivityGraph = createSharedComposable(
-  async (amount: MaybeRefOrGetter<number>) => {
-    const { locale } = useSharedI18n();
+export const useActivityGraph = createSharedComposable(async (amount: MaybeRefOrGetter<number>) => {
+  const { locale } = useSharedI18n();
 
-    const activityGraph = await useStorageItem<ActivityNode[]>(
-      "activity.json",
-      [],
+  const activityGraph = await useStorageItem<ActivityNode[]>("activity.json", []);
+
+  setTimeout(async () => {
+    const spaces = await useSpaces();
+    const spaceIds = computed(() => Object.keys(spaces.value));
+
+    const timeZone = useTimeZone();
+
+    const notes = await eagerComputedAsync(() =>
+      Promise.all(
+        spaceIds.value.map(async (spaceId) => {
+          const notes = await useDailyNotes(spaceId);
+
+          return notes.value.map((note) => {
+            const createdAt = toCalendarDate(fromAbsolute(decodeTime(note.id), timeZone));
+
+            return { note, createdAt };
+          });
+        }),
+      ),
     );
 
-    setTimeout(async () => {
-      const spaces = await useSpaces();
-      const spaceIds = computed(() => Object.keys(spaces.value));
+    const { startWeekday, endWeekday } = useWeekdays();
+    const recentActivity = computed<{ [date: string]: number }>(() => {
+      const days = toValue(amount);
 
-      const timeZone = useTimeZone();
+      let deltaDate = today(timeZone).add({ days: 1 });
 
-      const notes = await eagerComputedAsync(() =>
-        Promise.all(
-          spaceIds.value.map(async (spaceId) => {
-            const notes = await useDailyNotes(spaceId);
+      const start = startWeekday.value;
+      const end = endWeekday.value;
 
-            return notes.value.map((note) => {
-              const createdAt = toCalendarDate(
-                fromAbsolute(decodeTime(note.id), timeZone),
-              );
+      return Object.fromEntries(
+        Array.from({ length: days })
+          .map(() => {
+            deltaDate = deltaDate.subtract({ days: 1 });
 
-              return { note, createdAt };
-            });
-          }),
-        ),
+            const dayOfWeek = getDayOfWeek(deltaDate, locale.value);
+
+            const startDelta = start - dayOfWeek;
+            if (startDelta > 0) deltaDate = deltaDate.subtract({ days: 2 });
+
+            const endDelta = dayOfWeek - end;
+            if (endDelta > 0) deltaDate = deltaDate.subtract({ days: 1 });
+
+            return [deltaDate.toString(), 0];
+          })
+          .reverse(),
       );
+    });
 
-      const { startWeekday, endWeekday } = useWeekdays();
-      const recentActivity = computed<{ [date: string]: number }>(() => {
-        const days = toValue(amount);
+    watchImmediate([() => notes.value.flat(), recentActivity], ([notes, recentActivity]) => {
+      for (const { note, createdAt } of notes) {
+        const date = createdAt.toString();
+        if (recentActivity[date] !== undefined) recentActivity[date]++;
 
-        let deltaDate = today(timeZone).add({ days: 1 });
-
-        const start = startWeekday.value;
-        const end = endWeekday.value;
-
-        return Object.fromEntries(
-          Array.from({ length: days })
-            .map(() => {
-              deltaDate = deltaDate.subtract({ days: 1 });
-
-              const dayOfWeek = getDayOfWeek(deltaDate, locale.value);
-
-              const startDelta = start - dayOfWeek;
-              if (startDelta > 0) deltaDate = deltaDate.subtract({ days: 2 });
-
-              const endDelta = dayOfWeek - end;
-              if (endDelta > 0) deltaDate = deltaDate.subtract({ days: 1 });
-
-              return [deltaDate.toString(), 0];
-            })
-            .reverse(),
-        );
-      });
-
-      watchImmediate(
-        [() => notes.value.flat(), recentActivity],
-        ([notes, recentActivity]) => {
-          for (const { note, createdAt } of notes) {
-            const date = createdAt.toString();
+        if (note.datesReviewed?.length) {
+          for (const date of note.datesReviewed) {
             if (recentActivity[date] !== undefined) recentActivity[date]++;
-
-            if (note.datesReviewed?.length) {
-              for (const date of note.datesReviewed) {
-                if (recentActivity[date] !== undefined) recentActivity[date]++;
-              }
-            }
           }
+        }
+      }
 
-          activityGraph.value = Object.entries(recentActivity).map(
-            ([date, activity]) => ({ date, activity }),
-          );
-        },
-      );
-    }, 1000);
+      activityGraph.value = Object.entries(recentActivity).map(([date, activity]) => ({
+        date,
+        activity,
+      }));
+    });
+  }, 1000);
 
-    return activityGraph;
-  },
-);
+  return activityGraph;
+});

@@ -43,7 +43,7 @@ jobs:
           echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
       - name: ☕ Setup Java
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           distribution: "zulu"
           java-version: "17"
@@ -105,7 +105,7 @@ jobs:
 
       - name: 📤 Upload build artifacts (push or pr builds only)
         if: ${{ !inputs.publish }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: "signed-apk"
           path: |
@@ -128,7 +128,7 @@ jobs:
 
       - name: 🛡️ Attest build provenance (publish only)
         if: ${{ inputs.publish }}
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
         with:
           subject-path: |
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk

@@ -89,9 +89,7 @@ async function screenshot() {
 }
 
 function copyScreenshot() {
-  window.navigator.clipboard.write([
-    new ClipboardItem({ "image/png": screenshotBlob.value! }),
-  ]);
+  window.navigator.clipboard.write([new ClipboardItem({ "image/png": screenshotBlob.value! })]);
 }
 
 const dailyNotes = ref<DailyNote[]>([]);
@@ -127,8 +125,7 @@ const currentNote = computed(() => {
     ? notes.value.findLastIndex((note) => note.id === currentNoteId.value)
     : -1;
 
-  const currentNoteIndex =
-    noteIndexById === -1 ? notes.value.length - 1 : noteIndexById;
+  const currentNoteIndex = noteIndexById === -1 ? notes.value.length - 1 : noteIndexById;
 
   return notes.value[currentNoteIndex]!;
 });
@@ -140,18 +137,12 @@ watchImmediate(currentNote, (note) => {
 const deferredSpaceId = computedWithControl(currentNote, () => spaceId.value);
 
 const nextDayId = computed(() => {
-  const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
-  );
+  const index = notes.value.findIndex((note) => note.id === currentNote.value!.id);
 
-  return index === notes.value.length - 1
-    ? undefined
-    : notes.value[index + 1]!.id;
+  return index === notes.value.length - 1 ? undefined : notes.value[index + 1]!.id;
 });
 const previousDayId = computed(() => {
-  const index = notes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
-  );
+  const index = notes.value.findIndex((note) => note.id === currentNote.value!.id);
 
   return index === 0 ? undefined : notes.value[index - 1]!.id;
 });
@@ -206,9 +197,7 @@ async function createStickyNote() {
 
 const { idle } = useIdle(5 * 1000); // 5 seconds
 whenever(idle, async () => {
-  const index = dailyNotes.value.findIndex(
-    (note) => note.id === currentNote.value!.id,
-  );
+  const index = dailyNotes.value.findIndex((note) => note.id === currentNote.value!.id);
 
   const note = dailyNotes.value[index]!;
   note.datesReviewed ||= [];
@@ -241,9 +230,7 @@ whenever(idle, async () => {
           // }
         }
       "
-      @close="
-        activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)
-      "
+      @close="activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)"
     />
 
     <mx-page>
@@ -290,10 +277,7 @@ whenever(idle, async () => {
               <div class="absolute left--6 pb-8 pt-16">
                 <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
-                    <div
-                      class="sidebar-button__inner"
-                      @click="preludeOpen = true"
-                    >
+                    <div class="sidebar-button__inner" @click="preludeOpen = true">
                       <md-ripple />
                       <md-icon>code</md-icon>
                     </div>
@@ -308,41 +292,25 @@ whenever(idle, async () => {
                       <md-icon>av_timer</md-icon>
                     </div>
                   </div> -->
-                  <div
-                    class="sidebar-button"
-                    title="Sticky Notes"
-                    @click="stickyNotesOpen = true"
-                  >
+                  <div class="sidebar-button" title="Sticky Notes" @click="stickyNotesOpen = true">
                     <div class="sidebar-button__inner">
                       <md-ripple />
                       <md-icon>sticky_note_2</md-icon>
                     </div>
                   </div>
-                  <div
-                    class="sidebar-button"
-                    title="Packages"
-                    @click="packagesOpen = true"
-                  >
+                  <div class="sidebar-button" title="Packages" @click="packagesOpen = true">
                     <div class="sidebar-button__inner">
                       <md-ripple />
                       <md-icon>package_2</md-icon>
                     </div>
                   </div>
-                  <div
-                    class="sidebar-button"
-                    title="Screenshot"
-                    @click="screenshot"
-                  >
+                  <div class="sidebar-button" title="Screenshot" @click="screenshot">
                     <div class="sidebar-button__inner">
                       <md-ripple />
                       <md-icon>camera</md-icon>
                     </div>
                   </div>
-                  <nuxt-link
-                    class="sidebar-button"
-                    title="Export"
-                    :to="`/export?space=${spaceId}`"
-                  >
+                  <nuxt-link class="sidebar-button" title="Export" :to="`/export?space=${spaceId}`">
                     <div class="sidebar-button__inner">
                       <md-ripple />
                       <md-icon>export_notes</md-icon>
@@ -375,10 +343,7 @@ whenever(idle, async () => {
                   >
                     <md-icon>keyboard_arrow_left</md-icon>
                   </md-icon-button>
-                  <md-icon-button
-                    :disabled="!nextDayId"
-                    @click="currentNoteId = nextDayId!"
-                  >
+                  <md-icon-button :disabled="!nextDayId" @click="currentNoteId = nextDayId!">
                     <md-icon>keyboard_arrow_right</md-icon>
                   </md-icon-button>
                 </div>
@@ -398,46 +363,27 @@ whenever(idle, async () => {
         </div>
       </div>
 
-      <md-dialog
-        :open="infoOpen"
-        class="w-full max-w-xl"
-        @closed="infoOpen = false"
-      >
+      <md-dialog :open="infoOpen" class="w-full max-w-xl" @closed="infoOpen = false">
         <span slot="headline" class="flex items-center gap-2">
           <md-icon>{{ space.icon }}</md-icon>
 
           {{ space.name }}
         </span>
 
-        <form
-          id="edit-space-form"
-          slot="content"
-          method="dialog"
-          class="flex flex-col gap-8"
-        >
+        <form id="edit-space-form" slot="content" method="dialog" class="flex flex-col gap-8">
           <edit-space v-model="space" />
         </form>
 
         <div slot="actions">
-          <md-text-button
-            class="text-error"
-            form="edit-space-form"
-            @click.prevent="deleteSpace"
-          >
+          <md-text-button class="text-error" form="edit-space-form" @click.prevent="deleteSpace">
             Delete
           </md-text-button>
           <md-text-button form="edit-space-form">Confirm</md-text-button>
         </div>
       </md-dialog>
 
-      <md-dialog
-        :open="preludeOpen"
-        class="w-full max-w-2xl"
-        @closed="preludeOpen = false"
-      >
-        <span slot="headline" class="flex items-center justify-between">
-          Prelude
-        </span>
+      <md-dialog :open="preludeOpen" class="w-full max-w-2xl" @closed="preludeOpen = false">
+        <span slot="headline" class="flex items-center justify-between"> Prelude </span>
 
         <div slot="content" class="h-md">
           <editor v-model="preludePath" :space-id="spaceId" kind="prelude" />

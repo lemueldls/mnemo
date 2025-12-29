@@ -6,10 +6,7 @@ const { y } = useWindowScroll();
 
 <template>
   <header
-    :class="[
-      'top-app-bar',
-      { 'top-app-bar--compress': compress, 'top-app-bar--on-scroll': y > 0 },
-    ]"
+    :class="['top-app-bar', { 'top-app-bar--compress': compress, 'top-app-bar--on-scroll': y > 0 }]"
     data-tauri-drag-region
   >
     <md-elevation />
@@ -22,7 +19,7 @@ const { y } = useWindowScroll();
       <slot />
     </div>
 
-    <div class="top-app-bar__trailing" data-tauri-drag-region>
+    <div v-if="$slots.trailing" class="top-app-bar__trailing" data-tauri-drag-region>
       <slot name="trailing" />
     </div>
   </header>

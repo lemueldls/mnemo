@@ -19,9 +19,7 @@ const installedPackageByName = computed(() => {
 const installedPackage = computed(() => {
   const { version } = pkg.value;
 
-  return installedPackageByName.value.find(
-    (pkgItem) => version === pkgItem.version,
-  );
+  return installedPackageByName.value.find((pkgItem) => version === pkgItem.version);
 });
 
 const loading = ref(false);
@@ -77,13 +75,7 @@ function uninstallPackage(pkg: Package) {
           <span slot="headline">
             v{{ version }}
 
-            <template
-              v-if="
-                installedPackageByName.find(
-                  (pkgItem) => version === pkgItem.version,
-                )
-              "
-            >
+            <template v-if="installedPackageByName.find((pkgItem) => version === pkgItem.version)">
               {{ $t("components.package-card.installed") }}
             </template>
           </span>
@@ -133,9 +125,7 @@ function uninstallPackage(pkg: Package) {
         @click.prevent="installPackage(pkg)"
       >
         {{
-          loading
-            ? $t("components.package-card.installing")
-            : $t("components.package-card.install")
+          loading ? $t("components.package-card.installing") : $t("components.package-card.install")
         }}
       </md-filled-button>
     </div>

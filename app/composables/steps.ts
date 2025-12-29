@@ -24,13 +24,9 @@ export function useSteps({ initialSteps, onComplete }: UseStepsOptions) {
     return t(`components.splashscreen.steps.${loadingStep.id}`);
   });
 
-  const completedSteps = computed(
-    () => steps.value.filter((s) => s.status === "done").length,
-  );
+  const completedSteps = computed(() => steps.value.filter((s) => s.status === "done").length);
 
-  const isComplete = computed(
-    () => completedSteps.value === steps.value.length,
-  );
+  const isComplete = computed(() => completedSteps.value === steps.value.length);
 
   // Watch for completion and call the callback if provided
   whenever(isComplete, () => {

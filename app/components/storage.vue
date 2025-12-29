@@ -78,9 +78,7 @@ const keys = await getStorageKeys();
       <div class="flex justify-between">
         <h4 class="title-large">Sync</h4>
 
-        <div
-          class="bg-surface-container flex items-center gap-2 rounded-full px-2"
-        >
+        <div class="bg-surface-container flex items-center gap-2 rounded-full px-2">
           <UseOnline v-slot="{ isOnline }">
             <template v-if="isOnline">
               <div class="bg-lime size-2 rounded-full" />

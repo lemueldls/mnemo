@@ -168,11 +168,7 @@ function timeToMinutes(time: string) {
         </span>
       </div>
 
-      <div
-        v-for="day in days.length"
-        :key="day - 1 + startWeekday"
-        class="calendar__body-column"
-      >
+      <div v-for="day in days.length" :key="day - 1 + startWeekday" class="calendar__body-column">
         <div
           v-for="hour in 24"
           :key="hour"
@@ -184,10 +180,7 @@ function timeToMinutes(time: string) {
           <div class="border-(b outline-variant) b-b-dashed w-full" />
         </div>
 
-        <template
-          v-for="({ spaceId, from, to }, i) in schedule[day - 1 + startWeekday]"
-          :key="i"
-        >
+        <template v-for="({ spaceId, from, to }, i) in schedule[day - 1 + startWeekday]" :key="i">
           <mx-theme
             v-if="spaces![spaceId]"
             :color="spaces[spaceId].color"
@@ -201,10 +194,7 @@ function timeToMinutes(time: string) {
           >
             <md-ripple />
 
-            <span
-              class="w-full truncate font-semibold"
-              :title="spaces[spaceId].name"
-            >
+            <span class="w-full truncate font-semibold" :title="spaces[spaceId].name">
               {{ spaces[spaceId].name }}
             </span>
 
@@ -247,16 +237,8 @@ function timeToMinutes(time: string) {
       <span class="label-large">Space</span>
 
       <div class="grid grid-cols-2 gap-4">
-        <mx-theme
-          v-for="(space, id) in spaces"
-          :key="id"
-          :color="space.color"
-          harmonize
-        >
-          <md-outlined-card
-            class="flex flex-col gap-2 p-3"
-            @click="newSpaceId = id as string"
-          >
+        <mx-theme v-for="(space, id) in spaces" :key="id" :color="space.color" harmonize>
+          <md-outlined-card class="flex flex-col gap-2 p-3" @click="newSpaceId = id as string">
             <md-ripple />
 
             <div class="flex flex-row items-center justify-between gap-2">
@@ -266,12 +248,7 @@ function timeToMinutes(time: string) {
                 </md-icon>
               </div>
 
-              <md-radio
-                name="space"
-                :value="id"
-                :checked="id === newSpaceId"
-                required
-              />
+              <md-radio name="space" :value="id" :checked="id === newSpaceId" required />
             </div>
             <span class="title-large line-clamp-1 flex-1" :title="space.name">
               {{ space.name }}
@@ -304,9 +281,7 @@ function timeToMinutes(time: string) {
               :value="i + 1"
               :checked="newSpaceDays.has(i + 1)"
               @change="
-                newSpaceDays.has(i + 1)
-                  ? newSpaceDays.delete(i + 1)
-                  : newSpaceDays.add(i + 1)
+                newSpaceDays.has(i + 1) ? newSpaceDays.delete(i + 1) : newSpaceDays.add(i + 1)
               "
             />
             <span class="label-large">{{ day }}</span>
@@ -339,9 +314,7 @@ function timeToMinutes(time: string) {
 
     <div slot="actions" class="mt-4 flex gap-2">
       <div class="flex-[2]" />
-      <md-filled-button form="weekly-calendar-new-form" class="flex-[3]">
-        Create
-      </md-filled-button>
+      <md-filled-button form="weekly-calendar-new-form" class="flex-[3]"> Create </md-filled-button>
     </div>
   </md-dialog>
 
@@ -385,9 +358,7 @@ function timeToMinutes(time: string) {
       >
         Delete
       </md-filled-tonal-button>
-      <md-filled-button form="weekly-calendar-edit-form" class="flex-[3]">
-        Save
-      </md-filled-button>
+      <md-filled-button form="weekly-calendar-edit-form" class="flex-[3]"> Save </md-filled-button>
     </div>
   </md-dialog>
 </template>

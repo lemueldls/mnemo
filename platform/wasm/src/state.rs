@@ -17,7 +17,6 @@ use typst::{
     ecow::EcoString,
     foundations::Bytes,
     introspection::HtmlPosition,
-    layout::{Abs, Point},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
 use typst_html::HtmlDocument;

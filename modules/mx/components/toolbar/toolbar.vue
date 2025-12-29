@@ -18,12 +18,7 @@ const floating = computed(() => props.type === "floating");
 </script>
 
 <template>
-  <div
-    :class="[
-      'toolbar',
-      { 'toolbar--floating': floating, 'toolbar--vibrant': vibrant },
-    ]"
-  >
+  <div :class="['toolbar', { 'toolbar--floating': floating, 'toolbar--vibrant': vibrant }]">
     <div class="toolbar__inner">
       <md-elevation />
 

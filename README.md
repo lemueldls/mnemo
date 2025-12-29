@@ -1,14 +1,6 @@
 # mnemo
 
-<a href="https://hub.nuxt.com/new?repo=lemueldls/mnemo">
-  <img src="https://hub.nuxt.com/button.svg" alt="Deploy to NuxtHub" width="184" />
-</a>
-
-<br />
-
-<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/lemueldls/mnemo">
-  <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" width="184" />
-</a>
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lemueldls/mnemo)
 
 ## Inspirations
 

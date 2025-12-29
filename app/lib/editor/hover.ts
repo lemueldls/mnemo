@@ -1,6 +1,8 @@
 import { hoverTooltip } from "@codemirror/view";
-import { TypstState, FileId } from "mnemo-wasm";
+
 import { parseBackticks } from "./highlight";
+
+import type { FileId, TypstState } from "mnemo-wasm";
 
 export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
   hoverTooltip((_, pos, side) => {
@@ -15,10 +17,7 @@ export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
           if (tooltip.startsWith("<code>"))
             div.innerHTML =
               "<pre>" +
-              tooltip.replace(
-                /span data-tag=(\w+)/g,
-                (_, tag) => `span class="${"typ-" + tag}"`,
-              ) +
+              tooltip.replace(/span data-tag=(\w+)/g, (_, tag) => `span class="${"typ-" + tag}"`) +
               "</pre>";
           else parseBackticks(tooltip, div);
 

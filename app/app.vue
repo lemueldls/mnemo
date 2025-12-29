@@ -19,8 +19,7 @@ if (isTauri()) {
     const token = callbackUrl.searchParams.get("token")!;
     const redirect = callbackUrl.searchParams.get("redirect")!;
 
-    if (token)
-      await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
+    if (token) await navigateTo({ path: "/auth/confirm", query: { token, redirect } });
   });
 
   await checkForAppUpdates();
@@ -92,7 +91,7 @@ function resize() {
   y.value = window.innerHeight / 2;
 }
 
-onMounted(() => {
+onMounted(async () => {
   resize();
 
   useEventListener(window, "resize", resize);
@@ -108,6 +107,12 @@ onMounted(() => {
 
       console.error(event.error);
     });
+
+  // Request persistent storage for site
+  if (navigator.storage && navigator.storage.persist) {
+    const isPersisted = await navigator.storage.persist();
+    console.log(`Persisted storage granted: ${isPersisted}`);
+  }
 });
 
 const ready = ref(false);
