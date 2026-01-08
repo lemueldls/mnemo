@@ -67,20 +67,19 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
 
         frames = match compiled.output {
             Ok(document) => {
-                let HtmlNode::Element(body) = document
+                let body = document
                     .root
                     .children
                     .iter()
                     .find(|node| matches!(node, HtmlNode::Element(el) if el.tag == tag::body))
-                    .unwrap()
-                    .clone()
-                else {
+                    .unwrap();
+                let HtmlNode::Element(body) = body.clone() else {
                     unreachable!()
                 };
 
-                let mut blocks = Vec::with_capacity(ast_blocks.len());
+                // let mut blocks = Vec::with_capacity(ast_blocks.len());
 
-                let mut ast_blocks = ast_blocks.iter().peekable();
+                // let mut ast_blocks = ast_blocks.iter().peekable();
 
                 let mut children = body
                     .children
@@ -103,8 +102,6 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                             document.introspector.position(location).as_html()
                         });
 
-                        crate::debug!("position: {position:?}");
-
                         let range = flat_node_range(&node, context, &state.world)?;
 
                         Some((node, range, position))
@@ -112,47 +109,62 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                     // .sorted_by_key(|(_, range)| range.start)
                     .peekable();
 
-                while let Some(ast_block) = ast_blocks.next() {
-                    let mut w = Writer::new(&document.introspector, false);
+                let blocks = children
+                    .filter_map(|(node, range, position)| {
+                        let mut w = Writer::new(&document.introspector, false);
 
-                    let mut hasher = FxBuildHasher::default().build_hasher();
+                        let mut hasher = FxBuildHasher::default().build_hasher();
 
-                    let aux_source = context.aux_source(&state.world).unwrap();
+                        let aux_source = context.aux_source(&state.world).unwrap();
 
-                    let aux_range = &ast_block.range;
-                    let aux_lines = aux_source.lines();
-                    let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
-                    let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
-                    let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+                        // let aux_range = &ast_block.range;
+                        // let aux_lines = aux_source.lines();
+                        // let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
+                        // let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
+                        // let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                    let main_range_start = context.map_aux_to_main(aux_range.start);
-                    let main_range_end = context.map_aux_to_main(aux_range.end);
-                    let main_range = main_range_start..main_range_end;
+                        // let main_range_start = context.map_aux_to_main(aux_range.start);
+                        // let main_range_end = context.map_aux_to_main(aux_range.end);
+                        // let main_range = main_range_start..main_range_end;
 
-                    while let Some((node, range, position)) = children.peek() {
-                        crate::debug!("comparing ast {main_range:?} with node {range:?}");
-                        crate::debug!("node {node:?}");
+                        // while let Some((node, range, position)) = children.peek() {
+                        //     crate::debug!("comparing ast {main_range:?} with node {range:?}");
+                        //     crate::debug!("node {node:?}");
+                        //     crate::debug!("position: {position:?}");
 
-                        if range.end <= main_range_end {
-                            let (node, ..) = children.next().unwrap();
+                        //     if range.end <= main_range_end {
+                        //         let (node, ..) = children.next().unwrap();
 
-                            write_node(&mut w, &node, body.pre_span).unwrap();
-                            node.hash(&mut hasher);
+                        //         write_node(&mut w, &node, body.pre_span).unwrap();
+                        //         node.hash(&mut hasher);
+                        //     } else {
+                        //         break;
+                        //     }
+                        // }
+
+                        let aux_start = context.map_main_to_aux(range.start);
+                        let aux_end = context.map_main_to_aux(range.end);
+                        let aux_lines = aux_source.lines();
+                        let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start).unwrap();
+                        let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end).unwrap();
+                        let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+
+                        write_node(&mut w, &node, body.pre_span).unwrap();
+                        node.hash(&mut hasher);
+
+                        if !w.buf.is_empty() {
+                            Some(RangedFrame {
+                                render: FrameRender {
+                                    html: w.buf,
+                                    hash: hasher.finish() as u32,
+                                },
+                                range: aux_range_utf16.clone(),
+                            })
                         } else {
-                            break;
+                            None
                         }
-                    }
-
-                    if !w.buf.is_empty() {
-                        blocks.push(RangedFrame {
-                            render: FrameRender {
-                                html: w.buf,
-                                hash: hasher.finish() as u32,
-                            },
-                            range: aux_range_utf16.clone(),
-                        })
-                    }
-                }
+                    })
+                    .collect::<Vec<_>>();
 
                 last_document = Some(document);
 

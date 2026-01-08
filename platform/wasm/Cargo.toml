@@ -36,13 +36,13 @@ tar = { version = "0.4.44" }
 time = { version = "0.3", features = ["serde", "wasm-bindgen"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
-typst = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-html = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-ide = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-pdf = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-render = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-svg = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
-typst-syntax = { git = "https://github.com/mkorje/typst.git", rev = "c801f94e" }
+typst = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-html = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-ide = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-pdf = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-render = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-svg = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst-syntax = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
 wasm-bindgen = "0.2.100"
 
 [dev-dependencies]

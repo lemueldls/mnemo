@@ -6305,7 +6305,7 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 [[package]]
 name = "typst"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "arrayvec",
  "comemo",
@@ -6325,12 +6325,15 @@ dependencies = [
 [[package]]
 name = "typst-assets"
 version = "0.14.2"
-source = "git+https://github.com/typst/typst-assets?rev=0bbb3f7#0bbb3f7ebe775b980a3ca4ae9c49d9ecdb7e021a"
+source = "git+https://github.com/mkorje/typst-assets?rev=94711f3#94711f35a1cfedd0aa5f62e2c3b0fb11d3621ff2"
+dependencies = [
+ "bitflags 2.9.1",
+]
 
 [[package]]
 name = "typst-eval"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "comemo",
  "ecow",
@@ -6349,7 +6352,7 @@ dependencies = [
 [[package]]
 name = "typst-html"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "bumpalo",
  "comemo",
@@ -6364,12 +6367,13 @@ dependencies = [
  "typst-syntax",
  "typst-timing",
  "typst-utils",
+ "unicode-math-class",
 ]
 
 [[package]]
 name = "typst-ide"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "comemo",
  "ecow",
@@ -6385,7 +6389,7 @@ dependencies = [
 [[package]]
 name = "typst-layout"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "az",
  "bumpalo",
@@ -6420,7 +6424,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "arrayvec",
  "az",
@@ -6486,7 +6490,7 @@ dependencies = [
 [[package]]
 name = "typst-macros"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -6497,7 +6501,7 @@ dependencies = [
 [[package]]
 name = "typst-pdf"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "az",
  "bytemuck",
@@ -6522,7 +6526,7 @@ dependencies = [
 [[package]]
 name = "typst-realize"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "arrayvec",
  "bumpalo",
@@ -6539,7 +6543,7 @@ dependencies = [
 [[package]]
 name = "typst-render"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -6558,7 +6562,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "base64 0.22.1",
  "comemo",
@@ -6581,7 +6585,7 @@ dependencies = [
 [[package]]
 name = "typst-syntax"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -6599,7 +6603,7 @@ dependencies = [
 [[package]]
 name = "typst-timing"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "parking_lot",
  "serde",
@@ -6609,7 +6613,7 @@ dependencies = [
 [[package]]
 name = "typst-utils"
 version = "0.14.2"
-source = "git+https://github.com/mkorje/typst.git?rev=c801f94e#c801f94e17081290e9ec9a83cca54d5d6c5ac26c"
+source = "git+https://github.com/mkorje/typst.git?rev=f6b9f6fb#f6b9f6fbbbeea19ac3b033ecfcc8cb3dc1615e66"
 dependencies = [
  "once_cell",
  "portable-atomic",

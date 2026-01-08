@@ -40,7 +40,6 @@ class TypstWidget extends WidgetType {
       // container.style.height = `${frame.render.height}px`;
 
       // const image = document.createElement("img");
-
       container.setHTMLUnsafe(frame.render.html);
 
       // image.draggable = false;
@@ -48,9 +47,9 @@ class TypstWidget extends WidgetType {
       // image.height = frame.render.height;
 
       if (!locked) {
-        this.container.addEventListener("click", this.handleMouseEvent.bind(this));
-        this.container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
-        // this.#container.addEventListener(
+        container.addEventListener("click", this.handleMouseEvent.bind(this));
+        container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
+        // container.addEventListener(
         //   "touchstart",
         //   this.handleTouchEvent.bind(this),
         // );
@@ -173,10 +172,10 @@ function decorate(
         !view.hasFocus ||
         state.selection.ranges.every(
           (range) =>
-            (range.from < from || range.from > to) &&
-            (range.to < from || range.to > to) &&
-            (from < range.from || from > range.to) &&
-            (to < range.from || to > range.to),
+            (range.from < start || range.from > end) &&
+            (range.to < start || range.to > end) &&
+            (start < range.from || start > range.to) &&
+            (end < range.from || end > range.to),
         );
 
       if (inactive) {
@@ -221,7 +220,7 @@ function decorate(
     }
   }
 
-  return Decoration.set(decorations);
+  return Decoration.set(decorations, true);
 }
 
 const typstStateEffect = StateEffect.define<{ decorations: DecorationSet }>({});

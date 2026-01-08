@@ -18,9 +18,7 @@ const dailyNotesItem = await getStorageItem<DailyNote[]>(
 
 const dailyNotes = await Promise.all(
   dailyNotesItem!.map(async (note) => {
-    const item = await getStorageItem<string>(
-      `spaces/${spaceId.value}/daily/${note.id}.typ`,
-    );
+    const item = await getStorageItem<string>(`spaces/${spaceId.value}/daily/${note.id}.typ`);
 
     return { note, item };
   }),
@@ -31,16 +29,11 @@ const dailyNotes = await Promise.all(
       const time = decodeTime(note.id);
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-      return (
-        `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
-        item
-      );
+      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` + item;
     }),
 );
 
-const prelude = await getStorageItem<string>(
-  `spaces/${spaceId.value}/prelude/main.typ`,
-);
+const prelude = await getStorageItem<string>(`spaces/${spaceId.value}/prelude/main.typ`);
 
 const typstState = await useTypst();
 
@@ -54,7 +47,7 @@ function parseColor(color: Rgba): Rgb {
 }
 
 const path = `spaces/${spaceId.value}/export.typ`;
-const fileId = typstState.createSourceId(path,spaceId.value);
+const fileId = typstState.createSourceId(path, spaceId.value);
 
 watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
   typstState.setTheme(
@@ -91,9 +84,7 @@ watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
 
 try {
   const packages = await useInstalledPackages(spaceId.value);
-  await Promise.all(
-    packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)),
-  );
+  await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)));
 } catch (err) {
   console.error("Error installing packages:", err);
 }
@@ -108,9 +99,7 @@ const { document, diagnostics } = typstState.renderHtml(
   prelude || "",
 );
 
-const errors = diagnostics.filter(
-  (diagnostic) => diagnostic.severity === "error",
-);
+const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 
 const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
   () => `spaces/${spaceId.value}/sticky/notes.json`,
@@ -120,12 +109,8 @@ const activeStickyNotes = ref<StickyNote[]>([]);
 </script>
 
 <template>
-  <div
-    class="expanded:grid mx-auto flex max-w-[100rem] grid-cols-12 items-center justify-center gap-6 p-3"
-  >
-    <aside
-      class="expanded:flex max-h-80vh sticky top-16 col-span-4 hidden size-full self-start p-3"
-    >
+  <div class="flex gap-6 p-3">
+    <aside class="expanded:flex max-h-80vh sticky top-16 hidden size-full max-w-80 self-start p-3">
       <md-outlined-card class="size-full">
         <span class="label-large m-3">Sticky Notes</span>
 
@@ -151,7 +136,7 @@ const activeStickyNotes = ref<StickyNote[]>([]);
       </md-outlined-card>
     </aside>
 
-    <main class="typst-document col-span-8 m-4 mx-auto space-y-3">
+    <main class="typst-document m-4 w-full flex-1 space-y-3 overflow-hidden">
       <section class="display-small flex items-center justify-between gap-2">
         <h1>{{ space.name }}</h1>
         <md-icon v-if="space.icon">{{ space.icon }}</md-icon>

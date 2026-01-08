@@ -328,6 +328,9 @@ const renderHoverBackground = computed(() => {
     @apply caret-primary p-0;
 
     font-family: var(--font-mono);
+
+    container-name: content;
+    container-type: inline-size;
   }
 
   .cm-placeholder {
@@ -554,38 +557,10 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-render {
-    @apply inline-block w-full align-top;
+    @apply inline-block max-w-full align-top;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
-
-    p {
-      @apply inline;
-    }
-
-    ul {
-      @apply list-inside list-disc;
-    }
-
-    ol {
-      @apply list-inside list-decimal;
-    }
-
-    // math {
-    //   @apply block w-full;
-    // }
-
-    // dl {
-    //   display: block;
-    // }
-
-    dt {
-      @apply inline font-bold;
-    }
-
-    dd {
-      @apply ml-12;
-    }
   }
 
   .cm-content[contenteditable="true"] {
