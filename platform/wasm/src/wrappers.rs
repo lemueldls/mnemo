@@ -140,8 +140,8 @@ pub fn map_aux_span(
     let main_range = map_main_span(span, is_error, trace, context, world);
 
     let aux_range = if let Some(main_range) = main_range {
-        let aux_start = context.map_main_to_aux(main_range.start);
-        let aux_end = context.rmap_main_to_aux(main_range.end);
+        let aux_start = context.map_main_to_aux_from_right(main_range.start);
+        let aux_end = context.map_main_to_aux_from_left(main_range.end);
 
         aux_start..aux_end
     } else {
@@ -211,7 +211,7 @@ impl TypstJump {
                 }
 
                 let aux_source = context.aux_source(&world)?;
-                let aux_position = context.map_main_to_aux(main_position);
+                let aux_position = context.map_main_to_aux_from_right(main_position);
                 let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 
                 Some(Self::File {

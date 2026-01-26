@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 #[derive(Debug, Default)]
 pub struct IndexMapper {
     inflections: Vec<(usize, usize)>,
@@ -8,7 +10,7 @@ impl IndexMapper {
         self.inflections.push((aux, main));
     }
 
-    pub fn main_to_aux(&self, main_idx: usize) -> usize {
+    pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
         let inflection = self
             .inflections
             .iter()
@@ -20,7 +22,7 @@ impl IndexMapper {
         }
     }
 
-    pub fn aux_to_main(&self, aux_idx: usize) -> usize {
+    pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
         let inflection = self
             .inflections
             .iter()
@@ -32,7 +34,7 @@ impl IndexMapper {
         }
     }
 
-    pub fn rmain_to_aux(&self, main_idx: usize) -> usize {
+    pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
         let inflection = self
             .inflections
             .iter()
@@ -45,12 +47,11 @@ impl IndexMapper {
         }
     }
 
-    pub fn raux_to_main(&self, aux_idx: usize) -> usize {
+    pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
         let inflection = self
             .inflections
             .iter()
-            .take_while(|(mapped_idx, _)| aux_idx >= *mapped_idx)
-            .last();
+            .find(|(mapped_idx, _)| aux_idx <= *mapped_idx);
 
         match inflection {
             Some((mapped_idx, main_idx)) => main_idx + (aux_idx - mapped_idx),

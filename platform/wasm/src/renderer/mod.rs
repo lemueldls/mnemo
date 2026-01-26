@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{
     index_mapper::IndexMapper,
-    state::TypstState,
+    state::{SourceContext, TypstState},
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
@@ -63,46 +63,7 @@ pub fn sync_source_context(
 
             if let Some(last_block) = ast_blocks.last_mut() {
                 last_block.range.end += until_newline;
-
-                match last_kind {
-                    Some(
-                        SyntaxKind::LetBinding
-                        | SyntaxKind::SetRule
-                        | SyntaxKind::ShowRule
-                        | SyntaxKind::ModuleImport
-                        | SyntaxKind::ModuleInclude
-                        | SyntaxKind::Contextual
-                        | SyntaxKind::ListItem
-                        | SyntaxKind::EnumItem
-                        | SyntaxKind::TermItem
-                        | SyntaxKind::Linebreak
-                        | SyntaxKind::Semicolon
-                        | SyntaxKind::LineComment
-                        | SyntaxKind::BlockComment,
-                    ) => {
-                        ir += &text[last_block.range.clone()];
-                    }
-                    _ => {
-                        ir += "#block(stroke:red,width:100%)[";
-                        context
-                            .index_mapper
-                            .add_aux_to_main(last_block.range.start, ir.len());
-                        ir += &text[last_block.range.clone()];
-                        context
-                            .index_mapper
-                            .add_aux_to_main(last_block.range.end, ir.len());
-                        ir += "]";
-
-                        last_block.is_inline = true
-                    }
-                }
-
-                // crate::log!("[LAST_KIND]: {last_kind:?}");
-
-                ir += "\n";
-                context
-                    .index_mapper
-                    .add_aux_to_main(last_block.range.end, ir.len());
+                wrap_block(&mut ir, text, last_block, last_kind, context);
             }
         } else {
             last_kind = Some(node.kind());
@@ -123,21 +84,64 @@ pub fn sync_source_context(
 
     if let Some(last_block) = ast_blocks.last_mut() {
         if in_block {
-            ir += &text[last_block.range.clone()];
-            context
-                .index_mapper
-                .add_aux_to_main(last_block.range.end, ir.len());
+            wrap_block(&mut ir, text, last_block, last_kind, context);
         }
     }
 
     // crate::log!("[RANGES]: {block_ranges:?}");
 
-    crate::log!(
-        "[SOURCE]:\n{}",
-        &ir[(state.prelude(id, RenderTarget::Png) + prelude + "\n").len()..]
-    );
+    // crate::log!(
+    //     "[SOURCE]:\n{}",
+    //     &ir[(state.prelude(id, RenderTarget::Png) + prelude + "\n").len()..]
+    // );
 
     (ir, ast_blocks)
+}
+
+fn wrap_block(
+    ir: &mut String,
+    text: &str,
+    last_block: &mut AstBlock,
+    last_kind: Option<SyntaxKind>,
+    context: &mut SourceContext,
+) {
+    match last_kind {
+        Some(
+            SyntaxKind::LetBinding
+            | SyntaxKind::SetRule
+            | SyntaxKind::ShowRule
+            | SyntaxKind::ModuleImport
+            | SyntaxKind::ModuleInclude
+            | SyntaxKind::Contextual
+            | SyntaxKind::ListItem
+            | SyntaxKind::EnumItem
+            | SyntaxKind::TermItem
+            | SyntaxKind::Linebreak
+            | SyntaxKind::Semicolon
+            | SyntaxKind::LineComment
+            | SyntaxKind::BlockComment,
+        ) => {
+            *ir += &text[last_block.range.clone()];
+        }
+        _ => {
+            *ir += "#block(stroke:0pt,width:100%)[";
+            context
+                .index_mapper
+                .add_aux_to_main(last_block.range.start, ir.len());
+            *ir += &text[last_block.range.clone()];
+            context
+                .index_mapper
+                .add_aux_to_main(last_block.range.end, ir.len());
+            *ir += "]";
+
+            last_block.is_inline = true
+        }
+    }
+
+    *ir += "\n";
+    context
+        .index_mapper
+        .add_aux_to_main(last_block.range.end, ir.len());
 }
 
 #[derive(Tsify, Serialize, Deserialize)]

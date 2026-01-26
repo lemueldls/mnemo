@@ -512,7 +512,7 @@ impl TypstState {
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main(aux_cursor);
+        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
@@ -522,7 +522,7 @@ impl TypstState {
             explicit,
         )?;
 
-        let aux_offset = context.map_main_to_aux(main_offset);
+        let aux_offset = context.map_main_to_aux_from_right(main_offset);
         let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
 
         Some(Autocomplete {
@@ -543,7 +543,7 @@ impl TypstState {
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main(aux_cursor);
+        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
 
         let side = if side == -1 {
             Side::Before
@@ -687,8 +687,8 @@ impl TypstState {
                     let Some(block) = ast_blocks.iter().find(|block| {
                         let aux_range = &block.range;
 
-                        let main_range_start = context.map_aux_to_main(aux_range.start);
-                        let main_range_end = context.map_aux_to_main(aux_range.end);
+                        let main_range_start = context.map_aux_to_main_from_right(aux_range.start);
+                        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
                         // let main_range = main_range_start..main_range_end;
 
                         // crate::log!("[BLOCK RANGE]: {main_range_start} - {main_range_end}");
@@ -705,7 +705,7 @@ impl TypstState {
 
                     let aux_range = &block.range;
 
-                    let mut end_byte = context.map_aux_to_main(aux_range.end);
+                    let mut end_byte = context.map_aux_to_main_from_right(aux_range.end);
                     if block.is_inline {
                         end_byte += 12;
                     }
@@ -718,7 +718,7 @@ impl TypstState {
 
                     crate::error!("[ERRORS]: {diagnostics:?}");
 
-                    let start_byte = context.map_aux_to_main(aux_range.start);
+                    let start_byte = context.map_aux_to_main_from_right(aux_range.start);
 
                     let source = context.main_source_mut(&mut self.world).unwrap();
                     source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
@@ -805,20 +805,20 @@ impl SourceContext {
         world.files.get_mut(&self.aux_id)?.source_mut()
     }
 
-    pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
-        self.index_mapper.main_to_aux(main_idx)
+    pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
+        self.index_mapper.map_main_to_aux_from_right(main_idx)
     }
 
-    pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
-        self.index_mapper.aux_to_main(aux_idx)
+    pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
+        self.index_mapper.map_aux_to_main_from_right(aux_idx)
     }
 
-    pub fn rmap_main_to_aux(&self, main_idx: usize) -> usize {
-        self.index_mapper.rmain_to_aux(main_idx)
+    pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
+        self.index_mapper.map_main_to_aux_from_left(main_idx)
     }
 
-    pub fn rmap_aux_to_main(&self, aux_idx: usize) -> usize {
-        self.index_mapper.raux_to_main(aux_idx)
+    pub fn map_aux_to_main_left(&self, aux_idx: usize) -> usize {
+        self.index_mapper.map_aux_to_main_from_left(aux_idx)
     }
 }
 

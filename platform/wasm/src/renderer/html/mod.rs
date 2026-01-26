@@ -147,8 +147,8 @@ pub fn render(
                         //     }
                         // }
 
-                        let aux_start = context.map_main_to_aux(range.start);
-                        let aux_end = context.map_main_to_aux(range.end);
+                        let aux_start = context.map_main_to_aux_from_right(range.start);
+                        let aux_end = context.map_main_to_aux_from_right(range.end);
                         let aux_lines = aux_source.lines();
                         let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start).unwrap();
                         let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end).unwrap();
@@ -196,8 +196,8 @@ pub fn render(
                 let Some(block) = ast_blocks.iter().find(|block| {
                     let aux_range = &block.range;
 
-                    let main_range_start = context.map_aux_to_main(aux_range.start);
-                    let main_range_end = context.map_aux_to_main(aux_range.end);
+                    let main_range_start = context.map_aux_to_main_from_right(aux_range.start);
+                    let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
                     // let main_range = main_range_start..main_range_end;
 
                     // crate::log!("[BLOCK RANGE]: {main_range_start} - {main_range_end}");
@@ -220,7 +220,7 @@ pub fn render(
                 // let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                 // let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                let mut end_byte = context.map_aux_to_main(aux_range.end);
+                let mut end_byte = context.map_aux_to_main_from_right(aux_range.end);
                 if block.is_inline {
                     end_byte += 12;
                 }
@@ -233,7 +233,7 @@ pub fn render(
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let start_byte = context.map_aux_to_main(aux_range.start);
+                let start_byte = context.map_aux_to_main_from_right(aux_range.start);
 
                 let source = context.main_source_mut(&mut state.world).unwrap();
                 source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));

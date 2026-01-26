@@ -1,7 +1,7 @@
 // pub mod chunk;
 pub mod items;
 
-use std::ops::Range;
+use std::{hash::Hash, ops::Range};
 
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -24,6 +24,16 @@ pub struct FrameBlock {
     end_height: Abs,
     item: FrameItem,
     point: Point,
+}
+
+impl Hash for FrameBlock {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        // self.range.hash(state);
+        // self.start_height.hash(state);
+        // self.end_height.hash(state);
+        self.item.hash(state);
+        // self.point.hash(state);
+    }
 }
 
 #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
