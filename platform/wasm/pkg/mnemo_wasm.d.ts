@@ -1,19 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
-export interface CompilePagedResult {
-    frames: PagedRangedFrame[];
-    diagnostics: TypstDiagnostic[];
-    requests: TypstRequest[];
-}
-
 export interface CompileHTMLResult {
     frames: HTMLRangedFrame[];
     diagnostics: TypstDiagnostic[];
     requests: TypstRequest[];
 }
 
-export interface CheckResult {
+export interface CompilePagedResult {
+    frames: PagedRangedFrame[];
     diagnostics: TypstDiagnostic[];
     requests: TypstRequest[];
 }
@@ -27,6 +22,11 @@ export interface Autocomplete {
     completions: TypstCompletion[];
 }
 
+export interface CheckResult {
+    diagnostics: TypstDiagnostic[];
+    requests: TypstRequest[];
+}
+
 export interface RenderPdfResult {
     bytes: number[] | undefined;
     diagnostics: TypstDiagnostic[];
@@ -37,6 +37,52 @@ export interface RenderHtmlResult {
     diagnostics: TypstDiagnostic[];
 }
 
+export interface HTMLRenderResult {
+    frames: HTMLRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface HTMLFrameRender {
+    html: string;
+    hash: number;
+}
+
+export interface HTMLRangedFrame {
+    range: { start: number; end: number };
+    render: HTMLFrameRender;
+}
+
+export interface PagedRenderResult {
+    frames: PagedRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface PagedFrameRender {
+    svg: string;
+    hash: number;
+    height: number;
+    offsetHeight: number;
+}
+
+export interface PagedRangedFrame {
+    range: { start: number; end: number };
+    render: PagedFrameRender;
+}
+
+export interface TypstHighlight {
+    tag: string;
+    range: { start: number; end: number };
+}
+
+export interface TypstCompletion {
+    type: TypstCompletionKind;
+    label: string;
+    apply: string | undefined;
+    detail: string | undefined;
+}
+
+export type TypstJump = { type: "File"; position: number };
+
 export interface TypstDiagnostic {
     range: { start: number; end: number };
     severity: TypstDiagnosticSeverity;
@@ -46,53 +92,7 @@ export interface TypstDiagnostic {
 
 export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
 
-export interface TypstHighlight {
-    tag: string;
-    range: { start: number; end: number };
-}
-
-export type TypstJump = { type: "File"; position: number };
-
 export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
-
-export interface TypstCompletion {
-    type: TypstCompletionKind;
-    label: string;
-    apply: string | undefined;
-    detail: string | undefined;
-}
-
-export interface HTMLRenderResult {
-    frames: HTMLRangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface HTMLRangedFrame {
-    range: { start: number; end: number };
-    render: HTMLFrameRender;
-}
-
-export interface HTMLFrameRender {
-    html: string;
-    hash: number;
-}
-
-export interface PagedRenderResult {
-    frames: PagedRangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface PagedRangedFrame {
-    range: { start: number; end: number };
-    render: PagedFrameRender;
-}
-
-export interface PagedFrameRender {
-    svg: string;
-    hash: number;
-    height: number;
-    offsetHeight: number;
-}
 
 export class FileId {
   private constructor();
@@ -171,8 +171,8 @@ export interface InitOutput {
   readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_setTheme: (a: number, b: number, c: number) => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
-  readonly qcms_profile_precache_output_transform: (a: number) => void;
   readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+  readonly qcms_profile_precache_output_transform: (a: number) => void;
   readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
   readonly qcms_enable_iccv4: () => void;
   readonly qcms_profile_is_bogus: (a: number) => number;
