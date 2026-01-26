@@ -10,7 +10,7 @@ use typst::{
 };
 use wasm_bindgen::prelude::*;
 
-use crate::{state::FileContext, world::MnemoWorld};
+use crate::{state::SourceContext, world::MnemoWorld};
 
 #[wasm_bindgen(js_name = "FileId")]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -38,7 +38,7 @@ pub struct TypstDiagnostic {
 impl TypstDiagnostic {
     pub fn from_errors(
         errors: EcoVec<SyntaxError>,
-        context: &FileContext,
+        context: &SourceContext,
         world: &MnemoWorld,
     ) -> Box<[Self]> {
         errors
@@ -58,7 +58,7 @@ impl TypstDiagnostic {
 
     pub fn from_diagnostics(
         diagnostics: EcoVec<SourceDiagnostic>,
-        context: &FileContext,
+        context: &SourceContext,
         world: &MnemoWorld,
     ) -> Box<[Self]> {
         diagnostics
@@ -89,7 +89,7 @@ impl TypstDiagnostic {
                         hints: diagnostic
                             .hints
                             .into_iter()
-                            .map(|s| s.to_string())
+                            .map(|s| s.v.to_string())
                             .collect(),
                     }
                 })
@@ -102,7 +102,7 @@ pub fn map_main_span(
     span: Span,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
-    context: &FileContext,
+    context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
     let mut main_range = if Some(context.main_id) == span.id() {
@@ -132,7 +132,7 @@ pub fn map_aux_span(
     span: Span,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
-    context: &FileContext,
+    context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
     let aux_source = context.aux_source(&world)?;
@@ -140,8 +140,8 @@ pub fn map_aux_span(
     let main_range = map_main_span(span, is_error, trace, context, world);
 
     let aux_range = if let Some(main_range) = main_range {
-        let aux_start = context.map_main_to_aux(main_range.start);
-        let aux_end = context.map_main_to_aux(main_range.end);
+        let aux_start = context.map_main_to_aux_from_right(main_range.start);
+        let aux_end = context.map_main_to_aux_from_left(main_range.end);
 
         aux_start..aux_end
     } else {
@@ -201,7 +201,7 @@ pub enum TypstJump {
 impl TypstJump {
     pub fn from_mapped(
         jump: typst_ide::Jump,
-        context: &FileContext,
+        context: &SourceContext,
         world: &MnemoWorld,
     ) -> Option<Self> {
         match jump {
@@ -211,7 +211,7 @@ impl TypstJump {
                 }
 
                 let aux_source = context.aux_source(&world)?;
-                let aux_position = context.map_main_to_aux(main_position);
+                let aux_position = context.map_main_to_aux_from_right(main_position);
                 let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 
                 Some(Self::File {

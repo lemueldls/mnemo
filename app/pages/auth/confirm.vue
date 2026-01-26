@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { match } from "ts-pattern";
 
-definePageMeta({ layout: "empty" });
+definePageMeta({ layout: "blank" });
 
 const token = usePageRouteQuery("token").value as string;
 const redirect = usePageRouteQuery("redirect").value as string;
@@ -15,12 +15,6 @@ if (token) {
 }
 
 const bearerToken = useApiToken().value!;
-
-const x = ref("");
-
-onMounted(() => {
-  x.value = window.location.href;
-});
 
 const { idle } = useIdle();
 
@@ -53,7 +47,5 @@ match(platform)
 </script>
 
 <template>
-  <div>
-    <span>{{ x }}</span>
-  </div>
+  <div />
 </template>

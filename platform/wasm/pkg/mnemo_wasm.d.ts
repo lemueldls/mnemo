@@ -1,6 +1,25 @@
 /* tslint:disable */
 /* eslint-disable */
 export function start(): void;
+export interface CompilePagedResult {
+    frames: PagedRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+    requests: TypstRequest[];
+}
+
+export interface CompileHTMLResult {
+    frames: HTMLRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+    requests: TypstRequest[];
+}
+
+export interface CheckResult {
+    diagnostics: TypstDiagnostic[];
+    requests: TypstRequest[];
+}
+
+export type TypstRequest = { type: "source"; value: string } | { type: "file"; value: string } | { type: "package"; value: { namespace: string; name: string; version: string } };
+
 export type TypstError = EcoString;
 
 export interface Autocomplete {
@@ -8,24 +27,9 @@ export interface Autocomplete {
     completions: TypstCompletion[];
 }
 
-export interface CompileResult {
-    frames: RangedFrame[];
+export interface RenderPdfResult {
+    bytes: number[] | undefined;
     diagnostics: TypstDiagnostic[];
-    requests: TypstRequest[];
-}
-
-export type TypstRequest = { type: "source"; value: string } | { type: "file"; value: string } | { type: "package"; value: { namespace: string; name: string; version: string } };
-
-export interface CheckResult {
-    diagnostics: TypstDiagnostic[];
-    requests: TypstRequest[];
-}
-
-export interface FrameRender {
-    encoding: Uint8Array;
-    hash: number;
-    height: number;
-    offsetHeight: number;
 }
 
 export interface RenderHtmlResult {
@@ -33,29 +37,14 @@ export interface RenderHtmlResult {
     diagnostics: TypstDiagnostic[];
 }
 
-export interface RenderResult {
-    frames: RangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface RangedFrame {
+export interface TypstDiagnostic {
     range: { start: number; end: number };
-    render: FrameRender;
-}
-
-export interface RenderPdfResult {
-    bytes: number[] | undefined;
-    diagnostics: TypstDiagnostic[];
+    severity: TypstDiagnosticSeverity;
+    message: string;
+    hints: string[];
 }
 
 export type TypstDiagnosticSeverity = "error" | "warning" | "info" | "hint";
-
-export interface TypstCompletion {
-    type: TypstCompletionKind;
-    label: string;
-    apply: string | undefined;
-    detail: string | undefined;
-}
 
 export interface TypstHighlight {
     tag: string;
@@ -66,20 +55,48 @@ export type TypstJump = { type: "File"; position: number };
 
 export type TypstCompletionKind = "syntax" | "func" | "type" | "param" | "constant" | "path" | "package" | "label" | "font" | "symbol";
 
-export interface TypstDiagnostic {
+export interface TypstCompletion {
+    type: TypstCompletionKind;
+    label: string;
+    apply: string | undefined;
+    detail: string | undefined;
+}
+
+export interface HTMLRenderResult {
+    frames: HTMLRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface HTMLRangedFrame {
     range: { start: number; end: number };
-    severity: TypstDiagnosticSeverity;
-    message: string;
-    hints: string[];
+    render: HTMLFrameRender;
+}
+
+export interface HTMLFrameRender {
+    html: string;
+    hash: number;
+}
+
+export interface PagedRenderResult {
+    frames: PagedRangedFrame[];
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface PagedRangedFrame {
+    range: { start: number; end: number };
+    render: PagedFrameRender;
+}
+
+export interface PagedFrameRender {
+    svg: string;
+    hash: number;
+    height: number;
+    offsetHeight: number;
 }
 
 export class FileId {
   private constructor();
   free(): void;
-}
-export class PackageFile {
-  free(): void;
-  constructor(path: string, content: Uint8Array);
 }
 export class Rgb {
   free(): void;
@@ -92,26 +109,29 @@ export class ThemeColors {
 }
 export class TypstState {
   free(): void;
+  checkHTML(id: FileId, text: string, prelude: string): CheckResult;
+  jumpPaged(id: FileId, x: number, y: number): TypstJump | undefined;
   renderPdf(id: FileId): RenderPdfResult;
   setLocale(id: FileId, locale: string): void;
+  checkPaged(id: FileId, text: string, prelude: string): CheckResult;
   insertFile(id: FileId, bytes: Uint8Array): void;
   removeFile(id: FileId): void;
+  renderHtml(id: FileId, text: string, prelude: string): RenderHtmlResult;
   autocomplete(id: FileId, aux_cursor_utf16: number, explicit: boolean): Autocomplete | undefined;
+  compileHTML(id: FileId, text: string, prelude: string): CompileHTMLResult;
   installFont(bytes: Uint8Array): void;
+  compilePaged(id: FileId, text: string, prelude: string): CompilePagedResult;
   insertSource(id: FileId, text: string): void;
   setMathFont(id: FileId, math_font?: string | null): void;
   createFileId(path: string): FileId;
   installPackage(spec: string, data: Uint8Array): void;
-  createSourceId(path: string): FileId;
-  setPixelPerPt(id: FileId, size: number): void;
+  createSourceId(path: string, space_id: string): FileId;
   constructor();
-  check(id: FileId, text: string, prelude: string): CheckResult;
-  click(id: FileId, x: number, y: number): TypstJump | undefined;
   hover(id: FileId, aux_cursor_utf16: number, side: number): string | undefined;
   resize(id: FileId, width?: number | null, height?: number | null): boolean;
-  compile(id: FileId, text: string, prelude: string): CompileResult;
   setFont(id: FileId, font: string): void;
   highlight(id: FileId, text: string): TypstHighlight[];
+  jumpHTML(id: FileId, element: Uint32Array): TypstJump | undefined;
   setTheme(id: FileId, theme: ThemeColors): void;
 }
 
@@ -120,38 +140,39 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_fileid_free: (a: number, b: number) => void;
-  readonly __wbg_packagefile_free: (a: number, b: number) => void;
   readonly __wbg_themecolors_free: (a: number, b: number) => void;
   readonly __wbg_typststate_free: (a: number, b: number) => void;
-  readonly packagefile_new: (a: number, b: number, c: number, d: number) => number;
   readonly rgb_new: (a: number, b: number, c: number) => number;
   readonly rgb_toString: (a: number, b: number) => void;
   readonly start: () => void;
   readonly themecolors_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number, t: number) => number;
   readonly typststate_autocomplete: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_check: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly typststate_click: (a: number, b: number, c: number, d: number) => number;
-  readonly typststate_compile: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_checkHTML: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_checkPaged: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_compileHTML: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly typststate_compilePaged: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly typststate_createFileId: (a: number, b: number, c: number) => number;
-  readonly typststate_createSourceId: (a: number, b: number, c: number) => number;
+  readonly typststate_createSourceId: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly typststate_highlight: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly typststate_hover: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly typststate_insertFile: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_insertSource: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_installFont: (a: number, b: number, c: number) => void;
   readonly typststate_installPackage: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly typststate_jumpHTML: (a: number, b: number, c: number, d: number) => number;
+  readonly typststate_jumpPaged: (a: number, b: number, c: number, d: number) => number;
   readonly typststate_new: () => number;
   readonly typststate_removeFile: (a: number, b: number) => void;
+  readonly typststate_renderHtml: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly typststate_renderPdf: (a: number, b: number) => number;
   readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly typststate_setFont: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
   readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
-  readonly typststate_setPixelPerPt: (a: number, b: number, c: number) => void;
   readonly typststate_setTheme: (a: number, b: number, c: number) => void;
   readonly __wbg_rgb_free: (a: number, b: number) => void;
-  readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
   readonly qcms_profile_precache_output_transform: (a: number) => void;
+  readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
   readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
   readonly qcms_enable_iccv4: () => void;
   readonly qcms_profile_is_bogus: (a: number) => number;

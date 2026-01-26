@@ -4,4 +4,79 @@ html,
 body {
   background-color: #4c4d72;
   font-family: var(--font-sans);
+  scroll-behavior: smooth;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+math {
+  font-family: var(--font-math);
+}
+
+.typst-document {
+  @apply font-mono;
+
+  container-name: document;
+  container-type: size scroll-state;
+
+  h2 {
+    @apply text-primary headline-large mb-1;
+  }
+
+  h3 {
+    @apply text-secondary headline-medium mb-1 mt-3;
+  }
+
+  h4 {
+    @apply text-tertiary headline-small mb-1 mt-3;
+  }
+
+  h5 {
+    @apply text-on-primary-container title-large mb-1 mt-3 font-semibold;
+  }
+
+  h6 {
+    @apply text-on-secondary-container title-medium mb-1 mt-3 font-semibold;
+  }
+
+  p {
+    @apply mb-3;
+  }
+
+  a {
+    @apply text-primary underline;
+  }
+
+  p {
+    @apply inline;
+  }
+
+  ul {
+    @apply ml-4 list-outside list-disc;
+  }
+
+  ol {
+    @apply ml-4 list-outside list-decimal;
+  }
+
+  math[display="block"] {
+    @apply block align-top;
+
+    width: 100cqw;
+  }
+  // dl {
+  //   display: block;
+  // }
+
+  dt {
+    @apply inline font-bold;
+  }
+
+  dd {
+    @apply ml-12;
+  }
 }

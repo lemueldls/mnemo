@@ -5,7 +5,7 @@ import { decodeTime } from "ulid";
 
 import type { StickyNote } from "~/composables/sticky";
 
-definePageMeta({ layout: "empty" });
+definePageMeta({ layout: "blank" });
 
 const { d } = useSharedI18n();
 
@@ -41,6 +41,22 @@ const screenshotOpen = ref(false);
 
 const router = useRouter();
 
+const editorWrapper = ref<HTMLElement | null>(null);
+
+function onWrapperWheel(event: WheelEvent) {
+  if (event.target !== editorWrapper.value) return;
+
+  const scroller = document.querySelector("#editor .cm-scroller");
+  if (!scroller) return;
+
+  // event.preventDefault();
+  scroller.scrollBy({
+    top: event.deltaY,
+    left: event.deltaX,
+    behavior: "auto",
+  });
+}
+
 function deleteSpace() {
   spaces.delete(spaceId.value);
 
@@ -73,6 +89,7 @@ async function screenshot() {
 }
 
 function copyScreenshot() {
+  window.navigator.clipboard.write([new ClipboardItem({ "image/png": screenshotBlob.value! })]);
   window.navigator.clipboard.write([new ClipboardItem({ "image/png": screenshotBlob.value! })]);
 }
 
@@ -248,7 +265,11 @@ whenever(idle, async () => {
             </template>
           </mx-top-app-bar>
 
-          <div class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3">
+          <div
+            ref="editorWrapper"
+            @wheel="onWrapperWheel"
+            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
+          >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="csc104.pdf" monochrome />
             </md-outlined-card> -->

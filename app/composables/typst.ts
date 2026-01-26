@@ -15,8 +15,9 @@ export function getTypstFontImports() {
       import("~~/public/fonts/maple/cn/MapleMono-CN-BoldItalic.ttf?url"),
     ],
     [
-      // import("~~/public/fonts/NewCMMath-Book.otf?url"),
-      import("~~/public/fonts/NewCMMath-Regular.otf?url"),
+      import("~~/public/fonts/new-cm/otf/NewCMMath-Regular.otf?url"),
+      import("~~/public/fonts/new-cm/otf/NewCMMath-Bold.otf?url"),
+      // import("~~/public/fonts/new-cm/otf/NewCMSansMath-Regular.otf?url"),
     ],
   ];
 }
@@ -117,7 +118,7 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
   });
 });
 
-async function loadTypstPackage(pkg: TypstPackageSpec) {
+export async function loadTypstPackage(pkg: TypstPackageSpec) {
   const { $api } = useNuxtApp();
   const { t } = useSharedI18n();
 
@@ -163,7 +164,7 @@ const handleTypstRequest = useMemoize(async (request: TypstRequest, spaceId: str
 
       if (item) {
         const typstState = await useTypst();
-        const fileId = typstState.createSourceId(path);
+        const fileId = typstState.createSourceId(path, spaceId);
 
         typstState.insertSource(fileId, item);
 

@@ -7,16 +7,16 @@ import { parseBackticks } from "./highlight";
 
 import type { EditorState } from "@codemirror/state";
 import type { DecorationSet, ViewUpdate } from "@codemirror/view";
-import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
+import type { FileId, PagedRangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 
-const containerCache = new LRUCache<number, HTMLDivElement>({ max: 128 });
+const containerCache = new LRUCache<number, HTMLElement>({ max: 128 });
 
 class TypstWidget extends WidgetType {
-  container = document.createElement("div");
+  container!: HTMLElement;
 
   public constructor(
     private readonly view: EditorView,
-    private readonly frame: RangedFrame,
+    private readonly frame: PagedRangedFrame,
     locked: boolean,
     private readonly fileId: FileId,
     private readonly typstState: TypstState,
@@ -25,18 +25,24 @@ class TypstWidget extends WidgetType {
 
     const container = containerCache.get(frame.render.hash);
 
-    if (container && container.isConnected) {
+    if (container?.isConnected) {
       this.container = container;
     } else {
-      this.container.dataset.hash = frame.render.hash.toString();
-      this.container.classList.add("typst-render");
-      this.container.style.height = `${frame.render.height}px`;
+      const container = document.createElement("div");
 
-      const image = document.createElement("img");
+      // container.attachShadow({ mode: "open" });
+      // const shadow = container.shadowRoot!;
 
-      image.draggable = false;
-      image.src = `data:image/png;base64,${frame.render.encoding.toBase64()}`;
-      image.height = frame.render.height;
+      container.dataset.hash = frame.render.hash.toString();
+      container.classList.add("typst-render");
+      // container.style.height = `${frame.render.height}px`;
+
+      // const image = document.createElement("img");
+      container.setHTMLUnsafe(frame.render.svg);
+
+      // image.draggable = false;
+      // image.src = `data:image/png;base64,${frame.render.encoding.toBase64()}`;
+      // image.height = frame.render.height;
 
       if (!locked) {
         this.container.addEventListener("click", this.handleMouseEvent.bind(this));
@@ -47,9 +53,10 @@ class TypstWidget extends WidgetType {
         // );
       }
 
-      this.container.append(image);
+      // container.append(image);
 
-      containerCache.set(frame.render.hash, this.container);
+      containerCache.set(frame.render.hash, container);
+      this.container = container;
     }
   }
 
@@ -59,12 +66,12 @@ class TypstWidget extends WidgetType {
     this.handleJump(clientX, clientY);
   }
 
-  // private handleTouchEvent(event: TouchEvent) {
-  //   event.preventDefault();
-  //   const [touch] = event.touches;
-  //   const { clientX, clientY } = touch!;
-  //   this.handleJump(clientX, clientY);
-  // }
+  private handleTouchEvent(event: TouchEvent) {
+    event.preventDefault();
+    const [touch] = event.touches;
+    const { clientX, clientY } = touch!;
+    this.handleJump(clientX, clientY);
+  }
 
   private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
@@ -73,7 +80,7 @@ class TypstWidget extends WidgetType {
     const x = clientX - left;
     const y = clientY - top;
 
-    const jump = typstState.click(this.fileId, x, y + frame.render.offsetHeight);
+    const jump = typstState.jumpPaged(this.fileId, x, y + frame.render.offsetHeight);
     const position = jump ? jump.position : frame.range.end;
 
     view.focus();
@@ -87,13 +94,9 @@ class TypstWidget extends WidgetType {
   public toDOM() {
     return this.container;
   }
-
-  public override get estimatedHeight() {
-    return this.frame.render.height;
-  }
 }
 
-const framesCache = new LRUCache<string, RangedFrame[]>({ max: 8 });
+const framesCache = new LRUCache<string, PagedRangedFrame[]>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 
@@ -111,39 +114,41 @@ function decorate(
   const text = update.state.doc.toString();
   const isFlaggedForUpdate = updateFlagStore.has(path);
 
-  let frames: RangedFrame[];
+  let frames: PagedRangedFrame[];
 
   if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
     if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
-      const { diagnostics, requests } = typstState.check(fileId, text, prelude);
+      const { diagnostics, requests } = typstState.checkPaged(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
-      if (requests.length > 0)
-        handleTypstRequests(requests, spaceId).then((update) => {
-          if (update) {
-            view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-            view.dispatch({ changes: [{ from: 0, to: 1 }] });
-          }
-        });
+    if (requests.length > 0)
+      handleTypstRequests(requests, spaceId).then((update) => {
+        if (update) {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        }
+      });
 
       return;
     } else {
-      if (isFlaggedForUpdate) updateFlagStore.delete(path);
-      else updateFlagStore.add(path);
+    if (isFlaggedForUpdate) updateFlagStore.delete(path);
+    else updateFlagStore.add(path);
 
-      const compileResult = typstState.compile(fileId, text, prelude);
-      dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+    const compileResult = typstState.compilePaged(fileId, text, prelude);
+    dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
-      if (compileResult.requests.length > 0)
-        handleTypstRequests(compileResult.requests, spaceId).then((update) => {
-          if (update) {
-            view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-            view.dispatch({ changes: [{ from: 0, to: 1 }] });
-          }
-        });
+    console.log(compileResult);
 
-      frames = compileResult.frames;
-      framesCache.set(path, compileResult.frames);
+    if (compileResult.requests.length > 0)
+      handleTypstRequests(compileResult.requests, spaceId).then((update) => {
+        if (update) {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        }
+      });
+
+    frames = compileResult.frames;
+    framesCache.set(path, compileResult.frames);
     }
   } else frames = framesCache.get(path)!;
 
@@ -154,7 +159,10 @@ function decorate(
   for (const frame of frames) {
     const { start, end } = frame.range;
 
-    if (frame.render && end <= state.doc.length) {
+    const { from, number: startLine } = state.doc.lineAt(start);
+    const { to, number: endLine } = state.doc.lineAt(end);
+
+    if (frame.render) {
       const inactive =
         !view.hasFocus ||
         state.selection.ranges.every(
@@ -177,15 +185,15 @@ function decorate(
 
         for (let currentLine = startLine; currentLine <= endLine; currentLine++) {
           const line = state.doc.line(currentLine);
-
           let style = "";
           if (currentLine == startLine)
             style += "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
-            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
+            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${
+              height ? height - lineHeight : lineHeight
+            }px`;
           else {
-            // lineHeight += view.lineBlockAt(line.from).height;
-            lineHeight += 22.39; // TODO: don't hardcode (fix when font size is configurable)
+            lineHeight += view.lineBlockAt(line.from).height;
           }
 
           decorations.push(
@@ -199,7 +207,7 @@ function decorate(
     }
   }
 
-  return Decoration.set(decorations);
+  return Decoration.set(decorations, true);
 }
 
 const typstStateEffect = StateEffect.define<{ decorations: DecorationSet }>({});

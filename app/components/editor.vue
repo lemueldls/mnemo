@@ -107,13 +107,13 @@ onMounted(async () => {
   );
 
   watchImmediate(fullPath, (fullPath, oldFullPath) => {
-    const fileId = typstState.createSourceId(fullPath);
+    const fileId = typstState.createSourceId(fullPath, props.spaceId);
     // idsToCleanup.add(fileId);
 
-    typstState.setPixelPerPt(fileId, window.devicePixelRatio);
-    useEventListener(window, "resize", () => {
-      typstState.setPixelPerPt(fileId, window.devicePixelRatio);
-    });
+    // typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    // useEventListener(window, "resize", () => {
+    //   typstState.setPixelPerPt(fileId, window.devicePixelRatio);
+    // });
 
     watchImmediate(palette, (palette) => {
       typstState.setTheme(
@@ -284,7 +284,7 @@ const renderHoverBackground = computed(() => {
 
 <template>
   <div class="size-full overflow-hidden">
-    <div ref="container" :class="['editor', { editor__locked: locked }]" />
+    <div ref="container" :class="['editor typst-document', { editor__locked: locked }]" />
   </div>
 </template>
 
@@ -326,6 +326,9 @@ const renderHoverBackground = computed(() => {
     @apply caret-primary p-0;
 
     font-family: var(--font-mono);
+
+    container-name: content;
+    container-type: inline-size;
   }
 
   .cm-placeholder {
@@ -333,7 +336,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-selectionBackground {
-    @apply text-tertiary;
+    // @apply text-tertiary;
 
     background-color: v-bind(selectionBackground) !important;
   }
@@ -364,7 +367,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .cm-selectionMatch {
-    @apply text-tertiary;
+    // @apply text-tertiary;
 
     background-color: v-bind(selectionMatchBackground) !important;
   }
@@ -394,7 +397,9 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest max-w-1/3 m-0 overflow-hidden rounded-lg border-none p-0 font-mono shadow;
+    @apply bg-surface-container-lowest max-w-1/3 max-h-1/3 m-0 overflow-auto rounded-lg border-none p-0 font-mono shadow;
+
+    font-family: var(--font-mono), var(--font-math);
 
     li[aria-selected="true"] {
       @apply bg-secondary-container! text-on-secondary-container!;
@@ -550,15 +555,19 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-render {
-    @apply inline-block w-full align-top;
+    @apply inline-block max-w-full align-top;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
+
+    .typst-doc {
+      @apply inline-block w-full;
+    }
   }
 
   .cm-content[contenteditable="true"] {
     .typst-render {
-      @apply cursor-text transition-colors hover:rounded;
+      @apply rounded transition-colors;
 
       &:hover {
         background-color: v-bind(renderHoverBackground);
@@ -604,6 +613,26 @@ const renderHoverBackground = computed(() => {
 
   .typ-heading {
     @apply text-on-secondary-container;
+  }
+
+  .typ-heading-level-1 {
+    @apply text-primary headline-large;
+  }
+
+  .typ-heading-level-2 {
+    @apply text-secondary headline-medium;
+  }
+
+  .typ-heading-level-3 {
+    @apply text-tertiary headline-small;
+  }
+
+  .typ-heading-level-4 {
+    @apply text-on-primary-container title-large font-semibold;
+  }
+
+  .typ-heading-level-5 {
+    @apply text-on-secondary-container title-medium font-semibold;
   }
 
   .typ-marker {

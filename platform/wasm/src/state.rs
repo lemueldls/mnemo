@@ -1,47 +1,50 @@
 use std::{
     fmt,
     io::{Cursor, Read},
+    num::NonZeroUsize,
     path::PathBuf,
     str::FromStr,
 };
 
+use ecow::EcoVec;
 use indoc::formatdoc;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 use tar::Archive;
 use tsify::Tsify;
 use typst::{
     compile,
+    diag::Severity,
     ecow::EcoString,
     foundations::Bytes,
-    layout::{Abs, PagedDocument, Point},
+    introspection::HtmlPosition,
+    layout::{Abs, PagedDocument, Point, Position},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
+use typst_html::HtmlDocument;
 use typst_ide::Tooltip;
 // use typst_html::html;
 use typst_pdf::{PdfOptions, pdf};
-use typst_syntax::{LinkedNode, Side};
+use typst_syntax::{LinkedNode, Side, Tag};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
-use super::{
-    index_mapper::IndexMapper,
-    world::MnemoWorld,
-    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstJump},
-};
+// type Doc = Document + Jump
 use crate::{
-    renderer::{
-        RangedFrame, RenderPdfResult, RenderResult, RenderingMode, render_by_chunk,
-        render_by_items, sync_file_context,
+    index_mapper::IndexMapper,
+    renderer::{RenderHtmlResult, RenderPdfResult, RenderTarget, html, paged, sync_source_context},
+    world::MnemoWorld,
+    wrappers::{
+        TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump, map_main_span,
     },
-    wrappers::TypstHighlight,
 };
 
 #[wasm_bindgen]
 #[derive(Default)]
 pub struct TypstState {
     pub(crate) world: MnemoWorld,
-    pub(crate) file_contexts: FxHashMap<TypstFileId, FileContext>,
+    pub(crate) space_context_map: FxHashMap<String, SpaceContext>,
+    pub(crate) source_context_map: FxHashMap<TypstFileId, SourceContext>,
 }
 
 #[wasm_bindgen]
@@ -51,39 +54,60 @@ impl TypstState {
         Self::default()
     }
 
-    #[wasm_bindgen(js_name = "setPixelPerPt")]
-    pub fn set_pixel_per_pt(&mut self, id: &TypstFileId, size: f32) {
-        self.file_contexts.get_mut(id).unwrap().pixel_per_pt = size;
+    pub(crate) fn get_source_context(&self, id: &TypstFileId) -> &SourceContext {
+        self.source_context_map.get(id).unwrap()
+    }
+
+    pub(crate) fn get_source_context_mut(&mut self, id: &TypstFileId) -> &mut SourceContext {
+        self.source_context_map.get_mut(id).unwrap()
+    }
+
+    pub(crate) fn get_space_context(&self, id: &TypstFileId) -> &SpaceContext {
+        let space_id = &self.get_source_context(id).space_id;
+        let space_ctx = self.space_context_map.get(space_id).unwrap();
+
+        space_ctx
+    }
+
+    pub(crate) fn get_space_context_mut(&mut self, id: &TypstFileId) -> &mut SpaceContext {
+        let space_id = self.get_source_context(id).space_id.clone();
+        let space_ctx = self.space_context_map.get_mut(&space_id).unwrap();
+
+        space_ctx
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
     pub fn set_theme(&mut self, id: &TypstFileId, theme: ThemeColors) {
-        self.file_contexts.get_mut(id).unwrap().theme = theme;
+        self.get_space_context_mut(id).theme = theme;
     }
 
     #[wasm_bindgen(js_name = "setFont")]
     pub fn set_font(&mut self, id: &TypstFileId, font: String) {
-        self.file_contexts.get_mut(id).unwrap().font = font;
+        self.get_space_context_mut(id).font = font;
     }
 
     #[wasm_bindgen(js_name = "setMathFont")]
     pub fn set_math_font(&mut self, id: &TypstFileId, math_font: Option<String>) {
-        self.file_contexts.get_mut(id).unwrap().math_font = math_font;
+        self.get_space_context_mut(id).math_font = math_font;
     }
 
     #[wasm_bindgen(js_name = "setLocale")]
     pub fn set_locale(&mut self, id: &TypstFileId, locale: String) {
-        self.file_contexts.get_mut(id).unwrap().locale = locale;
+        self.get_space_context_mut(id).locale = locale;
     }
 
     #[wasm_bindgen(js_name = "createSourceId")]
-    pub fn create_source_id(&mut self, path: String) -> TypstFileId {
+    pub fn create_source_id(&mut self, path: String, space_id: String) -> TypstFileId {
         let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
         let id_wrapper = TypstFileId::new(id);
 
-        let context = FileContext::new(id);
-        self.world.insert_source(context.aux_id, String::new());
-        self.file_contexts.insert(id_wrapper.clone(), context);
+        let source_ctx = SourceContext::new(id, space_id.clone());
+        self.world.insert_source(source_ctx.aux_id, String::new());
+        self.source_context_map
+            .insert(id_wrapper.clone(), source_ctx);
+
+        let space_ctx = SpaceContext::new();
+        self.space_context_map.insert(space_id, space_ctx);
 
         id_wrapper
     }
@@ -108,7 +132,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "removeFile")]
     pub fn remove_file(&mut self, id: &TypstFileId) {
-        self.file_contexts.remove(id);
+        self.source_context_map.remove(id);
         self.world.remove_source(&id.inner());
     }
 
@@ -168,11 +192,128 @@ impl TypstState {
         requests
     }
 
-    pub(crate) fn prelude(&self, id: &TypstFileId, rendering_mode: RenderingMode) -> String {
-        let context = self.file_contexts.get(id).unwrap();
+    #[wasm_bindgen(js_name = "compilePaged")]
+    pub fn compile_paged(
+        &mut self,
+        id: &TypstFileId,
+        text: &str,
+        prelude: &str,
+    ) -> CompilePagedResult {
+        let result = paged::items::render_by_items(id, text, prelude, self);
 
-        let page_config = match rendering_mode {
-            RenderingMode::Png => {
+        CompilePagedResult {
+            frames: result.frames,
+            diagnostics: result.diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "compileHTML")]
+    pub fn compile_html(
+        &mut self,
+        id: &TypstFileId,
+        text: &str,
+        prelude: &str,
+    ) -> CompileHTMLResult {
+        let result = html::render(id, text, prelude, self);
+
+        CompileHTMLResult {
+            frames: result.frames,
+            diagnostics: result.diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "checkPaged")]
+    pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
+        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Png, self);
+
+        let context = self.source_context_map.get_mut(id).unwrap();
+        context
+            .main_source_mut(&mut self.world)
+            .unwrap()
+            .replace(&ir);
+
+        let compiled = compile::<PagedDocument>(&self.world);
+        let compiled_warnings = Some(compiled.warnings);
+
+        let mut diagnostics = Vec::new();
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                warnings,
+                &context,
+                &self.world,
+            ));
+        }
+
+        match compiled.output {
+            Ok(document) => {
+                context.paged_document = Some(document);
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &context,
+                    &self.world,
+                ));
+            }
+        }
+
+        CheckResult {
+            diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "checkHTML")]
+    pub fn check_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
+        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
+
+        let context = self.source_context_map.get_mut(id).unwrap();
+        context
+            .main_source_mut(&mut self.world)
+            .unwrap()
+            .replace(&ir);
+
+        let compiled = compile::<HtmlDocument>(&self.world);
+        let compiled_warnings = Some(compiled.warnings);
+
+        let mut diagnostics = Vec::new();
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                warnings,
+                &context,
+                &self.world,
+            ));
+        }
+
+        match compiled.output {
+            Ok(document) => {
+                context.html_document = Some(document);
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &context,
+                    &self.world,
+                ));
+            }
+        }
+
+        CheckResult {
+            diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    pub(crate) fn prelude(&self, id: &TypstFileId, render_target: RenderTarget) -> String {
+        let source_ctx = self.source_context_map.get(id).unwrap();
+        let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
+
+        let page_config = match render_target {
+            RenderTarget::Png => {
                 formatdoc!(
                     r#"
                         #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
@@ -180,29 +321,31 @@ impl TypstState {
                         #set text(top-edge:"ascender",bottom-edge:"descender")
                         #set par(leading:0.125em)
 
-                        #set list(spacing:0.125em)
-                        #set enum(spacing:0.125em)
+                        // #set list(spacing:0.125em)
+                        // #set enum(spacing:0.125em)
 
-                        #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
-                        #show heading:set block(above:0.25em,below:0.125em)
-                        #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
-                        #show list:set block(above:0.25em,below:0.125em)
-                        #show enum:set block(above:0.25em,below:0.125em)
-                        #show table:set block(inset:2pt)
+                        // #show math.equation:it=>box(it,stroke:0pt)
+                        // #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
+                        // #show heading:set block(above:0.25em,below:0.125em)
+                        // #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
+                        // #show list:set block(above:0.25em,below:0.125em)
+                        // #show enum:set block(above:0.25em,below:0.125em)
+                        // #show table:set block(inset:2pt)
 
-                        #show:d=>box(d,width:100%)
+                        // #show:d=>box(d,width:100%)
                     "#,
-                    width = context.width,
+                    width = source_ctx.width,
                 )
             }
-            RenderingMode::Pdf => {
+            RenderTarget::Pdf => {
                 formatdoc!(
                     r#"
                         #set page(width:{width},height:auto,margin:16pt)
                     "#,
-                    width = context.width,
+                    width = source_ctx.width,
                 )
-            } // RenderingMode::Html => formatdoc!(""),
+            }
+            RenderTarget::Html => formatdoc!(""),
         };
 
         formatdoc!(
@@ -238,69 +381,16 @@ impl TypstState {
 
                 {page_config}
             "#,
-            theme = context.theme,
-            locale = context.locale,
-            font = context.font,
-            math_font = context.math_font.as_ref().unwrap_or(&context.font),
+            theme = space_ctx.theme,
+            locale = space_ctx.locale,
+            font = space_ctx.font,
+            math_font = space_ctx.math_font.as_ref().unwrap_or(&space_ctx.font),
         )
     }
 
     #[wasm_bindgen]
-    pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
-        let result = render_by_chunk(id, text, prelude, self);
-
-        CompileResult {
-            frames: result.frames,
-            diagnostics: result.diagnostics,
-            requests: self.process_requests(),
-        }
-    }
-
-    #[wasm_bindgen]
-    pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_file_context(id, text, prelude, self);
-
-        let context = self.file_contexts.get_mut(id).unwrap();
-        context
-            .main_source_mut(&mut self.world)
-            .unwrap()
-            .replace(&ir);
-
-        let compiled = compile::<PagedDocument>(&self.world);
-        let compiled_warnings = Some(compiled.warnings);
-
-        let mut diagnostics = Vec::new();
-
-        if let Some(warnings) = compiled_warnings {
-            diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                warnings,
-                &context,
-                &self.world,
-            ));
-        }
-
-        match compiled.output {
-            Ok(document) => {
-                context.document = Some(document);
-            }
-            Err(source_diagnostics) => {
-                diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                    source_diagnostics,
-                    &context,
-                    &self.world,
-                ));
-            }
-        }
-
-        CheckResult {
-            diagnostics,
-            requests: self.process_requests(),
-        }
-    }
-
-    #[wasm_bindgen]
     pub fn highlight(&mut self, id: &TypstFileId, text: &str) -> Vec<TypstHighlight> {
-        let Some(context) = self.file_contexts.get(id) else {
+        let Some(context) = self.source_context_map.get(id) else {
             return Vec::new();
         };
 
@@ -325,14 +415,38 @@ impl TypstState {
                 let aux_range_end_utf16 = aux_lines.byte_to_utf16(range.end)?;
                 let aux_range_utf16 = aux_range_start_utf16..aux_range_end_utf16;
 
+                let mut css_class = tag.css_class().to_string();
+
+                match tag {
+                    Tag::Heading => {
+                        let node = curr.get();
+
+                        let Some(marker_node) = node.children().next() else {
+                            unreachable!()
+                        };
+                        let level = marker_node.text().len();
+
+                        css_class += " typ-heading-level-";
+                        css_class += level.to_string().as_str();
+                    }
+                    _ => {}
+                }
+
                 Some(TypstHighlight {
-                    tag: tag.css_class().to_string(),
+                    tag: css_class,
                     range: aux_range_utf16,
                 })
             });
 
             if let Some(highlight) = highlight {
-                highlights.push(highlight);
+                let idx = highlights
+                    .binary_search_by_key(&highlight.range.start, |highlight: &TypstHighlight| {
+                        highlight.range.start
+                    });
+
+                match idx {
+                    Ok(idx) | Err(idx) => highlights.insert(idx, highlight),
+                }
             }
 
             for child in curr.children() {
@@ -340,22 +454,19 @@ impl TypstState {
             }
         }
 
-        highlights.sort_unstable_by_key(|highlight| highlight.range.start);
-
         highlights
     }
 
-    #[wasm_bindgen]
-    pub fn click(&mut self, id: &TypstFileId, x: f64, mut y: f64) -> Option<TypstJump> {
-        let context = self.file_contexts.get(id)?;
-        let document = context.document.as_ref()?;
+    #[wasm_bindgen(js_name = "jumpPaged")]
+    pub fn jump_paged(&mut self, id: &TypstFileId, x: f64, mut y: f64) -> Option<TypstJump> {
+        let context = self.source_context_map.get(id)?;
+        let document = context.paged_document.as_ref()?;
 
         let index = document
             .pages
             .iter()
             .rposition(|page| y >= page.frame.height().to_pt())
             .unwrap_or_default();
-        let page = &document.pages[index];
 
         let page_offset = document
             .pages
@@ -365,11 +476,24 @@ impl TypstState {
             .unwrap_or_default();
         y -= page_offset;
 
+        let position = Position {
+            page: NonZeroUsize::new(index + 1).unwrap(),
+            point: Point::new(Abs::pt(x), Abs::pt(y)),
+        };
+
+        typst_ide::jump_from_click(&self.world, document, &position)
+            .and_then(|jump| TypstJump::from_mapped(jump, context, &self.world))
+    }
+
+    #[wasm_bindgen(js_name = "jumpHTML")]
+    pub fn jump_html(&mut self, id: &TypstFileId, element: Vec<usize>) -> Option<TypstJump> {
+        let context = self.source_context_map.get(id)?;
+        let document = context.html_document.as_ref()?;
+
         typst_ide::jump_from_click(
             &self.world,
             document,
-            &page.frame,
-            Point::new(Abs::pt(x), Abs::pt(y)),
+            &HtmlPosition::new(EcoVec::from(element)),
         )
         .and_then(|jump| TypstJump::from_mapped(jump, context, &self.world))
     }
@@ -381,24 +505,24 @@ impl TypstState {
         aux_cursor_utf16: usize,
         explicit: bool,
     ) -> Option<Autocomplete> {
-        let context = self.file_contexts.get(id)?;
+        let context = self.source_context_map.get(id)?;
 
         let main_source = context.main_source(&self.world)?;
         let aux_source = context.aux_source(&self.world)?;
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main(aux_cursor);
+        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
-            context.document.as_ref(),
+            context.html_document.as_ref(),
             main_source,
             main_cursor,
             explicit,
         )?;
 
-        let aux_offset = context.map_main_to_aux(main_offset);
+        let aux_offset = context.map_main_to_aux_from_right(main_offset);
         let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
 
         Some(Autocomplete {
@@ -412,14 +536,14 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn hover(&self, id: &TypstFileId, aux_cursor_utf16: usize, side: i8) -> Option<String> {
-        let context = self.file_contexts.get(id).unwrap();
+        let context = self.source_context_map.get(id).unwrap();
 
         let main_source = context.main_source(&self.world)?;
         let aux_source = context.aux_source(&self.world)?;
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main(aux_cursor);
+        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
 
         let side = if side == -1 {
             Side::Before
@@ -429,7 +553,7 @@ impl TypstState {
 
         let tooltip = typst_ide::tooltip(
             &self.world,
-            context.document.as_ref(),
+            context.html_document.as_ref(),
             main_source,
             main_cursor,
             side,
@@ -445,7 +569,7 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn resize(&mut self, id: &TypstFileId, width: Option<f64>, height: Option<f64>) -> bool {
-        let context = self.file_contexts.get_mut(id).unwrap();
+        let context = self.source_context_map.get_mut(id).unwrap();
 
         let width = width
             .map(|width| width.to_string() + "pt")
@@ -462,9 +586,9 @@ impl TypstState {
     pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
         self.world.main_id = Some(id.inner());
 
-        let mut ir = self.prelude(id, RenderingMode::Pdf);
+        let mut ir = self.prelude(id, RenderTarget::Pdf);
 
-        let context = self.file_contexts.get_mut(id).unwrap();
+        let context = self.source_context_map.get_mut(id).unwrap();
         let main_source = context.main_source_mut(&mut self.world).unwrap();
         let text = main_source.text().to_string();
         ir += &text;
@@ -506,39 +630,162 @@ impl TypstState {
 
         RenderPdfResult { bytes, diagnostics }
     }
+
+    #[wasm_bindgen(js_name = renderHtml)]
+    pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
+        let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
+
+        let mut diagnostics = Vec::new();
+        let mut compiled_warnings = None;
+
+        let context = self.source_context_map.get_mut(id).unwrap();
+
+        context
+            .main_source_mut(&mut self.world)
+            .unwrap()
+            .replace(&ir);
+
+        let mut document = None;
+
+        while document.is_none() {
+            let compiled = compile::<HtmlDocument>(&self.world);
+            compiled_warnings = Some(compiled.warnings);
+
+            document = match compiled.output {
+                Ok(document) => {
+                    let html = typst_html::html(&document);
+
+                    match html {
+                        Ok(html) => Some(html),
+                        Err(source_diagnostics) => {
+                            crate::error!("[HTML ERRORS]: {source_diagnostics:?}");
+
+                            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                                source_diagnostics,
+                                &context,
+                                &self.world,
+                            ));
+
+                            None
+                        }
+                    }
+                }
+                Err(source_diagnostics) => {
+                    let error_ranges = source_diagnostics
+                        .iter()
+                        .filter_map(|diagnostic| {
+                            map_main_span(
+                                diagnostic.span,
+                                diagnostic.severity == Severity::Error,
+                                &diagnostic.trace,
+                                &context,
+                                &self.world,
+                            )
+                        })
+                        .collect::<FxHashSet<_>>();
+
+                    let Some(block) = ast_blocks.iter().find(|block| {
+                        let aux_range = &block.range;
+
+                        let main_range_start = context.map_aux_to_main_from_right(aux_range.start);
+                        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
+                        // let main_range = main_range_start..main_range_end;
+
+                        // crate::log!("[BLOCK RANGE]: {main_range_start} - {main_range_end}");
+
+                        error_ranges.iter().any(|error_range| {
+                            (main_range_start <= error_range.start
+                                && main_range_end >= error_range.start)
+                                || (main_range_start <= error_range.end
+                                    && main_range_end >= error_range.end)
+                        })
+                    }) else {
+                        break;
+                    };
+
+                    let aux_range = &block.range;
+
+                    let mut end_byte = context.map_aux_to_main_from_right(aux_range.end);
+                    if block.is_inline {
+                        end_byte += 12;
+                    }
+
+                    diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                        source_diagnostics,
+                        &context,
+                        &self.world,
+                    ));
+
+                    crate::error!("[ERRORS]: {diagnostics:?}");
+
+                    let start_byte = context.map_aux_to_main_from_right(aux_range.start);
+
+                    let source = context.main_source_mut(&mut self.world).unwrap();
+                    source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
+
+                    None
+                }
+            };
+        }
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                warnings,
+                &context,
+                &self.world,
+            ));
+        }
+
+        RenderHtmlResult {
+            document,
+            diagnostics,
+        }
+    }
 }
 
-pub struct FileContext {
-    pub main_id: FileId,
-    pub aux_id: FileId,
-    pub index_mapper: IndexMapper,
-    pub document: Option<PagedDocument>,
-
-    pub width: String,
-    pub height: Option<f64>,
-    pub pixel_per_pt: f32,
+#[derive(Hash)]
+pub struct SpaceContext {
     pub theme: ThemeColors,
     pub locale: String,
     pub font: String,
     pub math_font: Option<String>,
 }
 
-impl FileContext {
-    pub fn new(main_id: FileId) -> Self {
+impl SpaceContext {
+    pub fn new() -> Self {
+        Self {
+            theme: ThemeColors::default(),
+            locale: String::from("en"),
+            font: String::from("Maple Mono"),
+            math_font: Some(String::from("New Computer Modern Math")),
+        }
+    }
+}
+
+pub struct SourceContext {
+    pub main_id: FileId,
+    pub aux_id: FileId,
+    pub space_id: String,
+    pub index_mapper: IndexMapper,
+    pub paged_document: Option<PagedDocument>,
+    pub html_document: Option<HtmlDocument>,
+    pub width: String,
+    pub height: Option<f64>,
+}
+
+impl SourceContext {
+    pub fn new(main_id: FileId, space_id: String) -> Self {
         let aux_id: FileId = main_id.with_extension("$.typ");
 
         Self {
             main_id,
             aux_id,
+            space_id,
             index_mapper: IndexMapper::default(),
-            document: None,
+            paged_document: None,
+            html_document: None,
             width: String::from("auto"),
             height: None,
-            pixel_per_pt: 1_f32,
-            theme: ThemeColors::default(),
-            locale: String::from("en"),
-            font: String::from("Maple Mono"),
-            math_font: Some(String::from("New Computer Modern Math")),
         }
     }
 
@@ -558,33 +805,35 @@ impl FileContext {
         world.files.get_mut(&self.aux_id)?.source_mut()
     }
 
-    pub fn map_main_to_aux(&self, main_idx: usize) -> usize {
-        self.index_mapper.main_to_aux(main_idx)
+    pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
+        self.index_mapper.map_main_to_aux_from_right(main_idx)
     }
 
-    pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
-        self.index_mapper.aux_to_main(aux_idx)
+    pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
+        self.index_mapper.map_aux_to_main_from_right(aux_idx)
     }
-}
 
-#[wasm_bindgen]
-pub struct PackageFile {
-    path: String,
-    content: Vec<u8>,
-}
+    pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
+        self.index_mapper.map_main_to_aux_from_left(main_idx)
+    }
 
-#[wasm_bindgen]
-impl PackageFile {
-    #[wasm_bindgen(constructor)]
-    pub fn new(path: String, content: Vec<u8>) -> Self {
-        Self { path, content }
+    pub fn map_aux_to_main_left(&self, aux_idx: usize) -> usize {
+        self.index_mapper.map_aux_to_main_from_left(aux_idx)
     }
 }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileResult {
-    pub frames: Vec<RangedFrame>,
+pub struct CompilePagedResult {
+    pub frames: Vec<paged::PagedRangedFrame>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+    pub requests: Vec<TypstRequest>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CompileHTMLResult {
+    pub frames: Vec<html::HTMLRangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
     pub requests: Vec<TypstRequest>,
 }
@@ -610,7 +859,7 @@ pub enum TypstRequest {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Hash, Serialize, Deserialize)]
 pub struct ThemeColors {
     background: Rgb,
     on_background: Rgb,
@@ -761,7 +1010,7 @@ impl fmt::Display for ThemeColors {
 }
 
 #[wasm_bindgen]
-#[derive(Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Default, Clone, Copy, Hash, Serialize, Deserialize)]
 pub struct Rgb(u8, u8, u8);
 
 impl Rgb {
