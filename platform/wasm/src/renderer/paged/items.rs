@@ -164,6 +164,14 @@ pub fn render_by_items(
                     })
                     .collect::<FxHashSet<_>>();
 
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &context,
+                    &state.world,
+                ));
+
+                crate::error!("[ERRORS]: {diagnostics:?}");
+
                 let Some(main_range) = ast_blocks.iter().find_map(|block| {
                     let aux_range = &block.range;
 
@@ -183,20 +191,8 @@ pub fn render_by_items(
                     break;
                 };
 
-                diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                    source_diagnostics,
-                    &context,
-                    &state.world,
-                ));
-
-                crate::error!("[ERRORS]: {diagnostics:?}");
-
                 let start_byte = main_range.start;
                 let end_byte = main_range.end;
-
-                // let range_delta = end_byte - start_byte;
-                // let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
-
                 let source = context.main_source_mut(&mut state.world).unwrap();
                 // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
                 source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));

@@ -101,6 +101,10 @@ const { document, diagnostics } = typstState.renderHtml(
 
 const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 
+for (const error of errors) {
+  console.error(error)
+}
+
 const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
   () => `spaces/${spaceId.value}/sticky/notes.json`,
   {},

@@ -144,12 +144,12 @@ fn wrap_block(
         .add_aux_to_main(last_block.range.end, ir.len());
 }
 
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderPdfResult {
-    pub bytes: Option<Vec<u8>>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
+// #[derive(Tsify, Serialize, Deserialize)]
+// #[tsify(into_wasm_abi, from_wasm_abi)]
+// pub struct RenderPdfResult {
+//     pub bytes: Option<Vec<u8>>,
+//     pub diagnostics: Vec<TypstDiagnostic>,
+// }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]

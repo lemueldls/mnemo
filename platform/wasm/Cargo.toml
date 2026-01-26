@@ -19,19 +19,14 @@ wasm-simd = []
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 
 [dependencies]
-base64 = "*"
 comemo = { version = "0.5.0" }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 dashmap = { version = "6.1.0" }
 ecow = { version = "0.2.6" }
 flate2 = { version = "1.1.5" }
-hayro = "*"
-hayro-svg = "*"
-image = "*"
 indoc = { version = "2.0.7" }
 itertools = { version = "0.14.0" }
 js-sys = { version = "0.3", default-features = false }
-ouroboros = { version = "0.18.5" }
 rustc-hash = { version = "2.1" }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
@@ -40,18 +35,14 @@ tar = { version = "0.4" }
 time = { version = "0.3", features = ["serde", "wasm-bindgen"] }
 tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.5", features = ["js"] }
-ttf-parser = "*"
-typst = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-assets = "*"
-typst-html = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-ide = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-pdf = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-render = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-svg = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
-typst-syntax = { git = "https://github.com/mkorje/typst.git", rev = "f6b9f6fb" }
+typst = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-html = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-ide = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+# typst-pdf = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-render = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-svg = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-syntax = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 wasm-bindgen = "0.2"
-xmlparser = "*"
-xmlwriter = "*"
 
 [dev-dependencies]
 criterion = { version = "0.8.1", features = ["html_reports"] }

@@ -24,15 +24,21 @@ use typst::{
 use typst_html::HtmlDocument;
 use typst_ide::Tooltip;
 // use typst_html::html;
-use typst_pdf::{PdfOptions, pdf};
+// use typst_pdf::{PdfOptions, pdf};
 use typst_syntax::{LinkedNode, Side, Tag};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
-// type Doc = Document + Jump
 use crate::{
     index_mapper::IndexMapper,
-    renderer::{RenderHtmlResult, RenderPdfResult, RenderTarget, html, paged, sync_source_context},
+    renderer::{
+        RenderHtmlResult,
+        // RenderPdfResult,
+        RenderTarget,
+        html,
+        paged,
+        sync_source_context,
+    },
     world::MnemoWorld,
     wrappers::{
         TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump, map_main_span,
@@ -553,7 +559,7 @@ impl TypstState {
 
         let tooltip = typst_ide::tooltip(
             &self.world,
-            context.html_document.as_ref(),
+            context.paged_document.as_ref(),
             main_source,
             main_cursor,
             side,
@@ -582,54 +588,54 @@ impl TypstState {
         width_changed
     }
 
-    #[wasm_bindgen(js_name = renderPdf)]
-    pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
-        self.world.main_id = Some(id.inner());
+    // #[wasm_bindgen(js_name = renderPdf)]
+    // pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
+    //     self.world.main_id = Some(id.inner());
 
-        let mut ir = self.prelude(id, RenderTarget::Pdf);
+    //     let mut ir = self.prelude(id, RenderTarget::Pdf);
 
-        let context = self.source_context_map.get_mut(id).unwrap();
-        let main_source = context.main_source_mut(&mut self.world).unwrap();
-        let text = main_source.text().to_string();
-        ir += &text;
+    //     let context = self.source_context_map.get_mut(id).unwrap();
+    //     let main_source = context.main_source_mut(&mut self.world).unwrap();
+    //     let text = main_source.text().to_string();
+    //     ir += &text;
 
-        main_source.replace(&ir);
+    //     main_source.replace(&ir);
 
-        self.world.insert_source(context.aux_id, text);
-        self.world.aux_id = Some(context.aux_id);
+    //     self.world.insert_source(context.aux_id, text);
+    //     self.world.aux_id = Some(context.aux_id);
 
-        let compiled = compile(&self.world);
-        let mut diagnostics =
-            TypstDiagnostic::from_diagnostics(compiled.warnings, &context, &self.world).into_vec();
+    //     let compiled = compile(&self.world);
+    //     let mut diagnostics =
+    //         TypstDiagnostic::from_diagnostics(compiled.warnings, &context, &self.world).into_vec();
 
-        let bytes = match compiled.output {
-            Ok(document) => {
-                match pdf(&document, &PdfOptions::default()) {
-                    Ok(pdf) => Some(pdf),
-                    Err(source_diagnostics) => {
-                        diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                            source_diagnostics,
-                            &context,
-                            &self.world,
-                        ));
+    //     let bytes = match compiled.output {
+    //         Ok(document) => {
+    //             match pdf(&document, &PdfOptions::default()) {
+    //                 Ok(pdf) => Some(pdf),
+    //                 Err(source_diagnostics) => {
+    //                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
+    //                         source_diagnostics,
+    //                         &context,
+    //                         &self.world,
+    //                     ));
 
-                        None
-                    }
-                }
-            }
-            Err(source_diagnostics) => {
-                diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                    source_diagnostics,
-                    &context,
-                    &self.world,
-                ));
+    //                     None
+    //                 }
+    //             }
+    //         }
+    //         Err(source_diagnostics) => {
+    //             diagnostics.extend(TypstDiagnostic::from_diagnostics(
+    //                 source_diagnostics,
+    //                 &context,
+    //                 &self.world,
+    //             ));
 
-                None
-            }
-        };
+    //             None
+    //         }
+    //     };
 
-        RenderPdfResult { bytes, diagnostics }
-    }
+    //     RenderPdfResult { bytes, diagnostics }
+    // }
 
     #[wasm_bindgen(js_name = renderHtml)]
     pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
@@ -684,32 +690,6 @@ impl TypstState {
                         })
                         .collect::<FxHashSet<_>>();
 
-                    let Some(block) = ast_blocks.iter().find(|block| {
-                        let aux_range = &block.range;
-
-                        let main_range_start = context.map_aux_to_main_from_right(aux_range.start);
-                        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
-                        // let main_range = main_range_start..main_range_end;
-
-                        // crate::log!("[BLOCK RANGE]: {main_range_start} - {main_range_end}");
-
-                        error_ranges.iter().any(|error_range| {
-                            (main_range_start <= error_range.start
-                                && main_range_end >= error_range.start)
-                                || (main_range_start <= error_range.end
-                                    && main_range_end >= error_range.end)
-                        })
-                    }) else {
-                        break;
-                    };
-
-                    let aux_range = &block.range;
-
-                    let mut end_byte = context.map_aux_to_main_from_right(aux_range.end);
-                    if block.is_inline {
-                        end_byte += 12;
-                    }
-
                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
                         source_diagnostics,
                         &context,
@@ -718,8 +698,27 @@ impl TypstState {
 
                     crate::error!("[ERRORS]: {diagnostics:?}");
 
-                    let start_byte = context.map_aux_to_main_from_right(aux_range.start);
+                    let Some(main_range) = ast_blocks.iter().find_map(|block| {
+                        let aux_range = &block.range;
 
+                        let main_range_start = context.map_aux_to_main_left(aux_range.start);
+                        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
+                        let main_range = main_range_start..main_range_end;
+
+                        let in_block = error_ranges.iter().any(|error_range| {
+                            (main_range_start <= error_range.start
+                                && main_range_end >= error_range.start)
+                                || (main_range_start <= error_range.end
+                                    && main_range_end >= error_range.end)
+                        });
+
+                        in_block.then_some(main_range)
+                    }) else {
+                        break;
+                    };
+
+                    let start_byte = main_range.start;
+                    let end_byte = main_range.end;
                     let source = context.main_source_mut(&mut self.world).unwrap();
                     source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
 

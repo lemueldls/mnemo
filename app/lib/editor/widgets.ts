@@ -137,7 +137,6 @@ function decorate(
     const compileResult = typstState.compilePaged(fileId, text, prelude);
     dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
-    console.log(compileResult);
 
     if (compileResult.requests.length > 0)
       handleTypstRequests(compileResult.requests, spaceId).then((update) => {
