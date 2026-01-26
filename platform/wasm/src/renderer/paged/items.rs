@@ -198,10 +198,11 @@ pub fn render_by_items(
                 // let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
                 let source = context.main_source_mut(&mut state.world).unwrap();
-                crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
+                // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
                 source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
+                // crate::log!("[NEW SOURCE]:\n{}", &source.text());
 
-                break;
+                // break;
 
                 Vec::new()
             }

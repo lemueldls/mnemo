@@ -563,6 +563,10 @@ const renderHoverBackground = computed(() => {
     .typst-doc {
       @apply inline-block w-full;
     }
+
+    .typst-frame {
+      @apply cursor-text;
+    }
   }
 
   .cm-content[contenteditable="true"] {

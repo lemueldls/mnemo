@@ -62,6 +62,7 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
   const spec = usePackageSpec(pkg);
 
   // oxlint-disable-next-line no-async-promise-executor
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise<void>(async (resolve, reject) => {
     const spaces = await useSpaces();
     const space = spaces.value[spaceId]!;

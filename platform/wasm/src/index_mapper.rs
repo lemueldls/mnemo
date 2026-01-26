@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 #[derive(Debug, Default)]
 pub struct IndexMapper {
     inflections: Vec<(usize, usize)>,
@@ -35,27 +33,54 @@ impl IndexMapper {
     }
 
     pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
-        let inflection = self
-            .inflections
-            .iter()
-            .take_while(|(_, mapped_idx)| main_idx >= *mapped_idx)
-            .last();
+        let mut mapped_idx = None;
 
-        match inflection {
-            Some((aux_idx, mapped_idx)) => aux_idx + (main_idx - mapped_idx),
-            None => 0,
+        let mut inflections = self.inflections.iter().peekable();
+        while let Some((aux_idx, mapped_main_idx)) = inflections.next() {
+            let mapped_aux_idx = aux_idx + (main_idx - mapped_main_idx);
+
+            if main_idx == *mapped_main_idx {
+                mapped_idx = Some(mapped_aux_idx);
+                break;
+            }
+
+            if let Some((_, next_mapped_main_idx)) = inflections.peek() {
+                if main_idx < *next_mapped_main_idx {
+                    mapped_idx = Some(mapped_aux_idx);
+                    break;
+                }
+            } else {
+                mapped_idx = Some(mapped_aux_idx);
+                break;
+            }
         }
+
+        mapped_idx.unwrap_or_default()
     }
 
     pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
-        let inflection = self
-            .inflections
-            .iter()
-            .find(|(mapped_idx, _)| aux_idx <= *mapped_idx);
+        let mut mapped_idx = None;
 
-        match inflection {
-            Some((mapped_idx, main_idx)) => main_idx + (aux_idx - mapped_idx),
-            None => 0,
+        let mut inflections = self.inflections.iter().peekable();
+        while let Some((mapped_aux_idx, main_idx)) = inflections.next() {
+            let mapped_main_idx = main_idx + (aux_idx - mapped_aux_idx);
+
+            if aux_idx == *mapped_aux_idx {
+                mapped_idx = Some(mapped_main_idx);
+                break;
+            }
+
+            if let Some((next_mapped_aux_idx, _)) = inflections.peek() {
+                if aux_idx < *next_mapped_aux_idx {
+                    mapped_idx = Some(mapped_main_idx);
+                    break;
+                }
+            } else {
+                mapped_idx = Some(mapped_main_idx);
+                break;
+            }
         }
+
+        mapped_idx.unwrap_or_default()
     }
 }

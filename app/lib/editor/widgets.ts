@@ -45,8 +45,8 @@ class TypstWidget extends WidgetType {
       // image.height = frame.render.height;
 
       if (!locked) {
-        this.container.addEventListener("click", this.handleMouseEvent.bind(this));
-        this.container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
+        container.addEventListener("click", this.handleMouseEvent.bind(this));
+        container.addEventListener("mousedown", this.handleMouseEvent.bind(this));
         // this.#container.addEventListener(
         //   "touchstart",
         //   this.handleTouchEvent.bind(this),
@@ -189,9 +189,7 @@ function decorate(
           if (currentLine == startLine)
             style += "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
-            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${
-              height ? height - lineHeight : lineHeight
-            }px`;
+            style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
           else {
             lineHeight += view.lineBlockAt(line.from).height;
           }

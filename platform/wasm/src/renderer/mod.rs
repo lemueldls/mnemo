@@ -31,13 +31,13 @@ pub fn sync_source_context(
     let context = state.source_context_map.get_mut(id).unwrap();
 
     context.index_mapper = IndexMapper::default();
-    context.index_mapper.add_aux_to_main(0, ir.len());
+    // context.index_mapper.add_aux_to_main(0, ir.len());
 
-    state.world.main_id = Some(context.main_id);
     context
         .main_source_mut(&mut state.world)
         .unwrap()
         .replace(&ir);
+    state.world.main_id = Some(context.main_id);
 
     context
         .aux_source_mut(&mut state.world)
