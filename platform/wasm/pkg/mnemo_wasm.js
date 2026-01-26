@@ -701,12 +701,6 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).getTime();
         return ret;
     };
-    imports.wbg.__wbg_groupEnd_2e46852069c86c6d = function(arg0, arg1) {
-        console.groupEnd(getStringFromWasm0(arg0, arg1));
-    };
-    imports.wbg.__wbg_group_6410ddb3a35059a5 = function(arg0, arg1) {
-        console.group(getStringFromWasm0(arg0, arg1));
-    };
     imports.wbg.__wbg_log_72ae7d649933552f = function(arg0, arg1) {
         console.log(getStringFromWasm0(arg0, arg1));
     };

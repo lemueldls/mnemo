@@ -31,7 +31,7 @@ pub fn sync_source_context(
     let context = state.source_context_map.get_mut(id).unwrap();
 
     context.index_mapper = IndexMapper::default();
-    context.index_mapper.add_main_to_aux(0, ir.len());
+    context.index_mapper.add_aux_to_main(0, ir.len());
 
     state.world.main_id = Some(context.main_id);
     context
@@ -84,7 +84,13 @@ pub fn sync_source_context(
                     }
                     _ => {
                         ir += "#block(stroke:red,width:100%)[";
+                        context
+                            .index_mapper
+                            .add_aux_to_main(last_block.range.start, ir.len());
                         ir += &text[last_block.range.clone()];
+                        context
+                            .index_mapper
+                            .add_aux_to_main(last_block.range.end, ir.len());
                         ir += "]";
 
                         last_block.is_inline = true
@@ -96,7 +102,7 @@ pub fn sync_source_context(
                 ir += "\n";
                 context
                     .index_mapper
-                    .add_main_to_aux(last_block.range.end, ir.len());
+                    .add_aux_to_main(last_block.range.end, ir.len());
             }
         } else {
             last_kind = Some(node.kind());
@@ -106,7 +112,7 @@ pub fn sync_source_context(
             } else {
                 in_block = true;
 
-                context.index_mapper.add_main_to_aux(range.start, ir.len());
+                context.index_mapper.add_aux_to_main(range.start, ir.len());
                 ast_blocks.push(AstBlock {
                     range,
                     is_inline: false,
@@ -120,7 +126,7 @@ pub fn sync_source_context(
             ir += &text[last_block.range.clone()];
             context
                 .index_mapper
-                .add_main_to_aux(last_block.range.end, ir.len());
+                .add_aux_to_main(last_block.range.end, ir.len());
         }
     }
 

@@ -141,7 +141,7 @@ pub fn map_aux_span(
 
     let aux_range = if let Some(main_range) = main_range {
         let aux_start = context.map_main_to_aux(main_range.start);
-        let aux_end = context.map_main_to_aux(main_range.end);
+        let aux_end = context.rmap_main_to_aux(main_range.end);
 
         aux_start..aux_end
     } else {

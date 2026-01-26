@@ -48,8 +48,6 @@ pub fn render_by_items(
 
     let mut ranged_heights = Vec::new();
 
-    crate::log!("[AST BLOCKS]: {ast_blocks:?}");
-
     while last_document.is_none() {
         let compiled = compile::<PagedDocument>(&state.world);
         compiled_warnings = Some(compiled.warnings);
@@ -75,8 +73,6 @@ pub fn render_by_items(
                 let mut deferred_items = Vec::<FrameBlock>::new();
 
                 while let Some(ast_block) = ast_blocks.next() {
-                    // let mut index = 0;
-
                     let aux_source = context.aux_source(&state.world).unwrap();
 
                     let aux_range = &ast_block.range;
@@ -85,29 +81,18 @@ pub fn render_by_items(
                     let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                     let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                    let main_range_start = context.map_aux_to_main(aux_range.start);
+                    // let main_range_start = context.map_aux_to_main(aux_range.start);
                     let main_range_end = context.map_aux_to_main(aux_range.end);
-                    let main_range = main_range_start..main_range_end;
+                    // let main_range = main_range_start..main_range_end;
 
                     let mut items = deferred_items.drain(..).collect::<Vec<_>>();
-
-                    crate::log!("[MAIN RANGE]: {main_range:?}");
 
                     let mut block_start_height = None;
                     let mut block_end_height = None;
 
-                    // while let Some(frame_block) = frame_blocks.peek() {
-                    //     if frame_block.range.is_none() {
-                    //         let frame_block = frame_blocks.next().unwrap();
-                    //         items.push(frame_block);
-                    //     } else {
-                    //         break;
-                    //     }
-                    // }
-
                     while let Some(frame_block) = frame_blocks.peek() {
                         if let Some(range) = &frame_block.range {
-                            if range.end <= main_range_end + 1 {
+                            if range.end <= main_range_end {
                                 let frame_block = frame_blocks.next().unwrap();
 
                                 match block_start_height {
@@ -134,95 +119,6 @@ pub fn render_by_items(
                     let block_start_height = block_start_height.unwrap_or_default().to_pt();
                     let block_end_height = block_end_height.unwrap_or_default().to_pt();
 
-                    // let items = frame_blocks
-                    //     .peeking_take_while(|frame_block| {
-                    //         crate::log!("[{index} ITEM_RANGE]: {:?}", &frame_block.range);
-                    //         crate::log!("[{index} BLOCK_RANGE]: {:?}", &main_range);
-
-                    //         index += 1;
-
-                    //         if let Some(range) = &frame_block.range {
-                    //             range.end <= main_range_end + 1
-                    //             // range.start < main_range_end
-                    //         } else {
-                    //             true
-                    //         }
-                    //     })
-                    //     .collect_vec();
-
-                    for (i, frame_block) in items.iter().enumerate() {
-                        crate::group!("{i} [ITEMS]");
-
-                        crate::log!("[BLOCK_RANGE]: {:?}", frame_block.range);
-                        crate::log!("[BLOCK_START]: {:?}", frame_block.start_height);
-                        crate::log!("[BLOCK_END]: {:?}", frame_block.end_height);
-
-                        match &frame_block.item {
-                            FrameItem::Group(..) => {
-                                crate::log!("[GROUP]: {:?}", &frame_block.item)
-                            }
-                            FrameItem::Text(..) => {
-                                crate::log!("[TEXT]: {:?}", &frame_block.item)
-                            }
-                            FrameItem::Shape(..) => {
-                                crate::log!("[SHAPE]: {:?}", &frame_block.item)
-                            }
-                            FrameItem::Image(..) => {
-                                crate::log!("[IMAGE]: {:?}", &frame_block.item)
-                            }
-                            FrameItem::Link(..) => {
-                                crate::log!("[LINK]: {:?}", &frame_block.item)
-                            }
-                            FrameItem::Tag(..) => {
-                                crate::log!("[TAG]: {:?}", &frame_block.item)
-                            }
-                        }
-
-                        crate::group_end!("{i} [ITEMS]");
-                    }
-
-                    // crate::log!(
-                    //     "[1 ITEMS]: {:?}",
-                    //     items
-                    //         .iter()
-                    //         .map(|frame_block| {
-                    //             match &frame_block.item {
-                    //                 FrameItem::Group(..) => {
-                    //                     format!("[GROUP]: {:?}", &frame_block.item)
-                    //                 }
-                    //                 FrameItem::Text(..) => {
-                    //                     format!("[TEXT]: {:?}", &frame_block.item)
-                    //                 }
-                    //                 FrameItem::Shape(..) => {
-                    //                     format!("[SHAPE]: {:?}", &frame_block.item)
-                    //                 }
-                    //                 FrameItem::Image(..) => {
-                    //                     format!("[IMAGE]: {:?}", &frame_block.item)
-                    //                 }
-                    //                 FrameItem::Link(..) => {
-                    //                     format!("[LINK]: {:?}", &frame_block.item)
-                    //                 }
-                    //                 FrameItem::Tag(..) => {
-                    //                     format!("[TAG]: {:?}", &frame_block.item)
-                    //                 }
-                    //             }
-                    //         })
-                    //         .collect_vec()
-                    // );
-
-                    // let block_starts = items
-                    //     .iter()
-                    //     // .filter(|frame_block| frame_block.range.is_some())
-                    //     .map(|frame_block| frame_block.start_height);
-                    // // crate::log!("[BLOCK_STARTS]: {:?}", block_starts.clone().collect_vec());
-                    // let block_start_height = block_starts.min().unwrap_or_default().to_pt();
-                    // let block_ends = items
-                    //     .iter()
-                    //     // .filter(|frame_block| frame_block.range.is_some())
-                    //     .map(|frame_block| frame_block.end_height);
-                    // // crate::log!("[BLOCK_ENDS]: {:?}", block_ends.clone().collect_vec());
-                    // let block_end_height = block_ends.max().unwrap_or_default().to_pt();
-
                     match context.height {
                         Some(height) if block_start_height >= height => {
                             continue;
@@ -230,63 +126,24 @@ pub fn render_by_items(
                         _ => {}
                     }
 
-                    // let previous_height = ranged_items.last().unwrap();
-                    // let delta = (previous_height - block_end_height - 1.0).max(0.0);
-
                     let height = block_end_height - block_start_height;
 
                     if height <= 0_f64 {
                         continue;
                     }
 
-                    ranged_items.push((
-                        items,
-                        aux_range_utf16.clone(),
-                        block_start_height,
-                        block_end_height,
-                    ));
+                    ranged_items.push((items, aux_range_utf16.clone(), height, block_start_height));
                 }
 
-                let document_height = document
-                    .pages
-                    .iter()
-                    .map(|page| page.frame.height())
-                    .sum::<Abs>()
-                    .to_pt();
+                if !deferred_items.is_empty()
+                    && let Some((last_items, ..)) = ranged_items.last_mut()
+                {
+                    last_items.extend(deferred_items.drain(..));
+                }
 
                 last_document = Some(document);
 
-                let mut previous_height = document_height;
-
                 ranged_items
-                    .into_iter()
-                    .rev()
-                    .filter_map(|(items, range, block_start_height, block_end_height)| {
-                        // crate::log!("PREV HEIGHT: {previous_height}");
-                        // crate::log!("ITEM RANGE: {range:?}");
-                        // crate::log!("ITEM START HEIGHT: {block_start_height:?}");
-                        // crate::log!("ITEM END HEIGHT: {block_end_height:?}");
-
-                        let delta = (previous_height - block_end_height - 1.0).max(0.0);
-
-                        let height = block_end_height - block_start_height;
-
-                        if height <= 0_f64 {
-                            return None;
-                        }
-
-                        previous_height = block_start_height;
-
-                        // crate::log!("[INDEX]: {i}");
-                        // crate::log!("[HEIGHT]: {height:?}");
-                        // crate::log!("[DELTA]: {delta:?}");
-
-                        Some((items, range, height, block_start_height))
-                    })
-                    .collect_vec()
-                    .into_iter()
-                    .rev()
-                    .collect_vec()
             }
             Err(source_diagnostics) => {
                 let error_ranges = source_diagnostics
@@ -309,7 +166,7 @@ pub fn render_by_items(
                 let Some(block) = ast_blocks.iter().find(|block| {
                     let aux_range = &block.range;
 
-                    let main_range_start = context.map_aux_to_main(aux_range.start);
+                    let main_range_start = context.rmap_aux_to_main(aux_range.start);
                     let main_range_end = context.map_aux_to_main(aux_range.end);
                     // let main_range = main_range_start..main_range_end;
 
@@ -333,8 +190,6 @@ pub fn render_by_items(
                 // let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
                 // let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-                let mut end_byte = context.map_aux_to_main(aux_range.end);
-
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
                     &context,
@@ -343,14 +198,17 @@ pub fn render_by_items(
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let start_byte = context.map_aux_to_main(aux_range.start);
+                let start_byte = context.rmap_aux_to_main(aux_range.start);
+                let end_byte = context.map_aux_to_main(aux_range.end);
 
-                let range_delta = end_byte - start_byte;
-                let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
+                // let range_delta = end_byte - start_byte;
+                // let repeat_range = range_delta - if range_delta > 2 { 2 } else { 1 };
 
                 let source = context.main_source_mut(&mut state.world).unwrap();
                 crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
-                source.edit(start_byte..end_byte, &(" ".repeat(repeat_range) + "\\ "));
+                source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
+
+                // break;
 
                 Vec::new()
             }
@@ -358,15 +216,6 @@ pub fn render_by_items(
     }
 
     let frames = if let Some(document) = &last_document {
-        let width = Abs::pt(
-            context
-                .width
-                .strip_suffix("pt")
-                .unwrap()
-                .parse::<f64>()
-                .unwrap(),
-        );
-
         let width = document
             .pages
             .iter()
@@ -385,7 +234,7 @@ pub fn render_by_items(
             .map(|(frame_blocks, range, height, offset_height)| {
                 let mut frame = Frame::new(Size::new(width, Abs::pt(height)), FrameKind::Soft);
 
-                crate::log!("{range:?} : {offset_height} - {}", offset_height + height);
+                // crate::log!("{range:?} : {offset_height} - {}", offset_height + height);
 
                 // crate::log!(
                 //     "{:?}",

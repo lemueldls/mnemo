@@ -812,6 +812,14 @@ impl SourceContext {
     pub fn map_aux_to_main(&self, aux_idx: usize) -> usize {
         self.index_mapper.aux_to_main(aux_idx)
     }
+
+    pub fn rmap_main_to_aux(&self, main_idx: usize) -> usize {
+        self.index_mapper.rmain_to_aux(main_idx)
+    }
+
+    pub fn rmap_aux_to_main(&self, aux_idx: usize) -> usize {
+        self.index_mapper.raux_to_main(aux_idx)
+    }
 }
 
 #[derive(Tsify, Serialize, Deserialize)]
