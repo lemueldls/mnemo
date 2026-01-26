@@ -561,6 +561,10 @@ const renderHoverBackground = computed(() => {
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
+
+    .typst-doc {
+      @apply inline-block w-full;
+    }
   }
 
   .cm-content[contenteditable="true"] {

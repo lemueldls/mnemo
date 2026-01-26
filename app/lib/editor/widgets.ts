@@ -7,18 +7,18 @@ import { parseBackticks } from "./highlight";
 
 import type { EditorState } from "@codemirror/state";
 import type { DecorationSet, ViewUpdate } from "@codemirror/view";
-import type { FileId, RangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
+import type { FileId, PagedRangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 
-const widgetCache = new LRUCache<number, { container: HTMLDivElement; height: number }>({
+const widgetCache = new LRUCache<number, { container: HTMLElement; height: number }>({
   max: 128,
 });
 
 class TypstWidget extends WidgetType {
-  container!: HTMLDivElement;
+  container!: HTMLElement;
 
   public constructor(
     private readonly view: EditorView,
-    private readonly frame: RangedFrame,
+    private readonly frame: PagedRangedFrame,
     locked: boolean,
     private readonly fileId: FileId,
     private readonly typstState: TypstState,
@@ -40,7 +40,7 @@ class TypstWidget extends WidgetType {
       // container.style.height = `${frame.render.height}px`;
 
       // const image = document.createElement("img");
-      container.setHTMLUnsafe(frame.render.html);
+      container.setHTMLUnsafe(frame.render.svg);
 
       // image.draggable = false;
       // image.src = `data:image/png;base64,${frame.render.encoding.toBase64()}`;
@@ -68,12 +68,12 @@ class TypstWidget extends WidgetType {
     this.handleJump(clientX, clientY);
   }
 
-  // private handleTouchEvent(event: TouchEvent) {
-  //   event.preventDefault();
-  //   const [touch] = event.touches;
-  //   const { clientX, clientY } = touch!;
-  //   this.handleJump(clientX, clientY);
-  // }
+  private handleTouchEvent(event: TouchEvent) {
+    event.preventDefault();
+    const [touch] = event.touches;
+    const { clientX, clientY } = touch!;
+    this.handleJump(clientX, clientY);
+  }
 
   private async handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
@@ -82,13 +82,8 @@ class TypstWidget extends WidgetType {
     const x = clientX - left;
     const y = clientY - top;
 
-    // const jump = typstState.click(
-    //   this.fileId,
-    //   x,
-    //   y + frame.render.offsetHeight,
-    // );
-    // const position = jump ? jump.position : frame.range.end;
-    const position = frame.range.end;
+    const jump = typstState.jumpPaged(this.fileId, x, y + frame.render.offsetHeight);
+    const position = jump ? jump.position : frame.range.end;
 
     view.focus();
     view.dispatch({ selection: { anchor: position } });
@@ -103,7 +98,7 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const framesCache = new LRUCache<string, RangedFrame[]>({ max: 8 });
+const framesCache = new LRUCache<string, PagedRangedFrame[]>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 
@@ -121,7 +116,7 @@ function decorate(
   const text = update.state.doc.toString();
   const isFlaggedForUpdate = updateFlagStore.has(path);
 
-  let frames: RangedFrame[];
+  let frames: PagedRangedFrame[];
 
   if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
     // if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
@@ -141,8 +136,10 @@ function decorate(
     // if (isFlaggedForUpdate) updateFlagStore.delete(path);
     // else updateFlagStore.add(path);
 
-    const compileResult = typstState.compile(fileId, text, prelude);
+    const compileResult = typstState.compilePaged(fileId, text, prelude);
     dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+
+    console.log(compileResult);
 
     if (compileResult.requests.length > 0)
       handleTypstRequests(compileResult.requests, spaceId).then((update) => {

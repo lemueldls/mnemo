@@ -1,16 +1,14 @@
-// pub mod chunk;
 pub mod html;
-// pub mod items;
+pub mod paged;
+// pub mod svg;
 
-use std::ops::Range;
+use std::{collections::VecDeque, iter, ops::Range};
 
+use itertools::{Either, Itertools, MinMaxResult};
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
-use typst::{
-    WorldExt,
-    layout::{Abs, FrameItem},
-    syntax::SyntaxKind,
-};
+use typst::{WorldExt, syntax::SyntaxKind};
+use typst_syntax::{Span, SyntaxNode};
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
@@ -25,9 +23,10 @@ pub fn sync_source_context(
     id: &TypstFileId,
     text: &str,
     prelude: &str,
+    render_target: RenderTarget,
     state: &mut TypstState,
 ) -> (String, Vec<AstBlock>) {
-    let mut ir = state.prelude(id) + prelude + "\n";
+    let mut ir = state.prelude(id, render_target) + prelude + "\n";
 
     let context = state.source_context_map.get_mut(id).unwrap();
 
@@ -65,8 +64,6 @@ pub fn sync_source_context(
             if let Some(last_block) = ast_blocks.last_mut() {
                 last_block.range.end += until_newline;
 
-                ir += &text[last_block.range.clone()];
-
                 match last_kind {
                     Some(
                         SyntaxKind::LetBinding
@@ -75,16 +72,21 @@ pub fn sync_source_context(
                         | SyntaxKind::ModuleImport
                         | SyntaxKind::ModuleInclude
                         | SyntaxKind::Contextual
-                        // | SyntaxKind::ListItem
-                        // | SyntaxKind::EnumItem
-                        // | SyntaxKind::TermItem
+                        | SyntaxKind::ListItem
+                        | SyntaxKind::EnumItem
+                        | SyntaxKind::TermItem
                         | SyntaxKind::Linebreak
                         | SyntaxKind::Semicolon
                         | SyntaxKind::LineComment
                         | SyntaxKind::BlockComment,
-                    ) => {}
+                    ) => {
+                        ir += &text[last_block.range.clone()];
+                    }
                     _ => {
-                        ir += "\n#parbreak()";
+                        ir += "#block(stroke:red,width:100%)[";
+                        ir += &text[last_block.range.clone()];
+                        ir += "]";
+
                         last_block.is_inline = true
                     }
                 }
@@ -92,6 +94,9 @@ pub fn sync_source_context(
                 // crate::log!("[LAST_KIND]: {last_kind:?}");
 
                 ir += "\n";
+                context
+                    .index_mapper
+                    .add_main_to_aux(last_block.range.end, ir.len());
             }
         } else {
             last_kind = Some(node.kind());
@@ -113,25 +118,21 @@ pub fn sync_source_context(
     if let Some(last_block) = ast_blocks.last_mut() {
         if in_block {
             ir += &text[last_block.range.clone()];
+            context
+                .index_mapper
+                .add_main_to_aux(last_block.range.end, ir.len());
         }
     }
 
     // crate::log!("[RANGES]: {block_ranges:?}");
 
-    // crate::log!(
-    //     "[SOURCE]: {:?}",
-    //     &ir[(state.prelude(id, RenderingMode::Png) + prelude + "\n").len()..]
-    // );
+    crate::log!(
+        "[SOURCE]:\n{}",
+        &ir[(state.prelude(id, RenderTarget::Png) + prelude + "\n").len()..]
+    );
 
     (ir, ast_blocks)
 }
-
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-// pub struct RenderResult {
-//     pub frames: Vec<RangedFrame>,
-//     pub diagnostics: Vec<TypstDiagnostic>,
-// }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -153,35 +154,8 @@ pub struct AstBlock {
     pub is_inline: bool,
 }
 
-// #[derive(Debug, Clone)]
-// pub struct FrameBlock {
-//     range: Option<Range<usize>>,
-//     start_height: Abs,
-//     end_height: Abs,
-//     item: FrameItem,
-// }
-
-// #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-// pub struct RangedFrame {
-//     pub range: Range<usize>,
-//     pub render: FrameRender,
-// }
-
-// impl RangedFrame {
-//     pub fn new(range: Range<usize>, render: FrameRender) -> Self {
-//         Self { range, render }
-//     }
-// }
-
-// #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-// pub struct FrameRender {
-//     #[tsify(type = "Uint8Array")]
-//     #[serde(with = "serde_bytes")]
-//     encoding: Vec<u8>,
-//     hash: u32,
-//     height: u32,
-//     #[serde(rename = "offsetHeight")]
-//     offset_height: f64,
-// }
+pub enum RenderTarget {
+    Png,
+    Pdf,
+    Html,
+}

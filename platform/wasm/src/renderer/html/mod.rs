@@ -34,14 +34,19 @@ use typst_html::{HtmlDocument, HtmlElement, HtmlFrame, HtmlNode, HtmlSliceExt, H
 use writer::{Writer, write_node};
 
 use crate::{
-    renderer::sync_source_context,
+    renderer::{RenderTarget, sync_source_context},
     state::{SourceContext, TypstRequest, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
 
-pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstState) -> RenderResult {
-    let (ir, ast_blocks) = sync_source_context(id, text, prelude, state);
+pub fn render(
+    id: &TypstFileId,
+    text: &str,
+    prelude: &str,
+    state: &mut TypstState,
+) -> HTMLRenderResult {
+    let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Html, state);
 
     let mut last_document = None;
 
@@ -153,8 +158,8 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
                         node.hash(&mut hasher);
 
                         if !w.buf.is_empty() {
-                            Some(RangedFrame {
-                                render: FrameRender {
+                            Some(HTMLRangedFrame {
+                                render: HTMLFrameRender {
                                     html: w.buf,
                                     hash: hasher.finish() as u32,
                                 },
@@ -248,7 +253,7 @@ pub fn render(id: &TypstFileId, text: &str, prelude: &str, state: &mut TypstStat
         ));
     }
 
-    RenderResult {
+    HTMLRenderResult {
         frames,
         diagnostics,
     }
@@ -353,21 +358,21 @@ fn flat_node_range(
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderResult {
-    pub frames: Vec<RangedFrame>,
+pub struct HTMLRenderResult {
+    pub frames: Vec<HTMLRangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
 }
 
 #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RangedFrame {
+pub struct HTMLRangedFrame {
     pub range: Range<usize>,
-    pub render: FrameRender,
+    pub render: HTMLFrameRender,
 }
 
 #[derive(Debug, Clone, Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct FrameRender {
+pub struct HTMLFrameRender {
     html: String,
     hash: u32,
 }

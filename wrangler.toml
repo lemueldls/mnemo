@@ -22,10 +22,10 @@ id = "b76ffa2cabdb464bbc37f16dbda3d7c4"
 binding = "CACHE"
 id = "c2d874e3cb8b4f879e86628fbdc3a9e3"
 
-[[durable_objects.bindings]]
-class_name = "$DurableObject"
-name = "$DurableObject"
+# [[durable_objects.bindings]]
+# class_name = "$DurableObject"
+# name = "$DurableObject"
 
-[[migrations]]
-new_sqlite_classes = ["$DurableObject"]
-tag = "v2"
+# [[migrations]]
+# new_sqlite_classes = ["$DurableObject"]
+# tag = "v2"

@@ -1,6 +1,7 @@
 use std::{
     fmt,
     io::{Cursor, Read},
+    num::NonZeroUsize,
     path::PathBuf,
     str::FromStr,
 };
@@ -17,6 +18,7 @@ use typst::{
     ecow::EcoString,
     foundations::Bytes,
     introspection::HtmlPosition,
+    layout::{Abs, PagedDocument, Point, Position},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
 use typst_html::HtmlDocument;
@@ -27,9 +29,10 @@ use typst_syntax::{LinkedNode, Side, Tag};
 // use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
+// type Doc = Document + Jump
 use crate::{
     index_mapper::IndexMapper,
-    renderer::{RenderHtmlResult, RenderPdfResult, html, sync_source_context},
+    renderer::{RenderHtmlResult, RenderPdfResult, RenderTarget, html, paged, sync_source_context},
     world::MnemoWorld,
     wrappers::{
         TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump, map_main_span,
@@ -189,27 +192,83 @@ impl TypstState {
         requests
     }
 
-    pub(crate) fn prelude(&self, id: &TypstFileId) -> String {
-        let source_ctx = self.get_source_context(id);
-        let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
+    #[wasm_bindgen(js_name = "compilePaged")]
+    pub fn compile_paged(
+        &mut self,
+        id: &TypstFileId,
+        text: &str,
+        prelude: &str,
+    ) -> CompilePagedResult {
+        let result = paged::items::render_by_items(id, text, prelude, self);
 
-        space_ctx.prelude()
-    }
-
-    #[wasm_bindgen]
-    pub fn compile(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CompileResult {
-        let result = html::render(id, text, prelude, self);
-
-        CompileResult {
+        CompilePagedResult {
             frames: result.frames,
             diagnostics: result.diagnostics,
             requests: self.process_requests(),
         }
     }
 
-    #[wasm_bindgen]
-    pub fn check(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_context(id, text, prelude, self);
+    #[wasm_bindgen(js_name = "compileHTML")]
+    pub fn compile_html(
+        &mut self,
+        id: &TypstFileId,
+        text: &str,
+        prelude: &str,
+    ) -> CompileHTMLResult {
+        let result = html::render(id, text, prelude, self);
+
+        CompileHTMLResult {
+            frames: result.frames,
+            diagnostics: result.diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "checkPaged")]
+    pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
+        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Png, self);
+
+        let context = self.source_context_map.get_mut(id).unwrap();
+        context
+            .main_source_mut(&mut self.world)
+            .unwrap()
+            .replace(&ir);
+
+        let compiled = compile::<PagedDocument>(&self.world);
+        let compiled_warnings = Some(compiled.warnings);
+
+        let mut diagnostics = Vec::new();
+
+        if let Some(warnings) = compiled_warnings {
+            diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                warnings,
+                &context,
+                &self.world,
+            ));
+        }
+
+        match compiled.output {
+            Ok(document) => {
+                context.paged_document = Some(document);
+            }
+            Err(source_diagnostics) => {
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics,
+                    &context,
+                    &self.world,
+                ));
+            }
+        }
+
+        CheckResult {
+            diagnostics,
+            requests: self.process_requests(),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "checkHTML")]
+    pub fn check_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
+        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -232,7 +291,7 @@ impl TypstState {
 
         match compiled.output {
             Ok(document) => {
-                context.document = Some(document);
+                context.html_document = Some(document);
             }
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -247,6 +306,86 @@ impl TypstState {
             diagnostics,
             requests: self.process_requests(),
         }
+    }
+
+    pub(crate) fn prelude(&self, id: &TypstFileId, render_target: RenderTarget) -> String {
+        let source_ctx = self.source_context_map.get(id).unwrap();
+        let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
+
+        let page_config = match render_target {
+            RenderTarget::Png => {
+                formatdoc!(
+                    r#"
+                        #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
+
+                        #set text(top-edge:"ascender",bottom-edge:"descender")
+                        #set par(leading:0.125em)
+
+                        // #set list(spacing:0.125em)
+                        // #set enum(spacing:0.125em)
+
+                        // #show math.equation:it=>box(it,stroke:0pt)
+                        // #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
+                        // #show heading:set block(above:0.25em,below:0.125em)
+                        // #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
+                        // #show list:set block(above:0.25em,below:0.125em)
+                        // #show enum:set block(above:0.25em,below:0.125em)
+                        // #show table:set block(inset:2pt)
+
+                        // #show:d=>box(d,width:100%)
+                    "#,
+                    width = source_ctx.width,
+                )
+            }
+            RenderTarget::Pdf => {
+                formatdoc!(
+                    r#"
+                        #set page(width:{width},height:auto,margin:16pt)
+                    "#,
+                    width = source_ctx.width,
+                )
+            }
+            RenderTarget::Html => formatdoc!(""),
+        };
+
+        formatdoc!(
+            r#"
+                #let theme={theme}
+                #set text(fill:theme.on-background,size:16pt,lang:"{locale}",font:"{font}")
+
+                #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
+                #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
+                #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
+                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
+                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
+                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
+
+                #show link:set text(fill:theme.primary)
+                #show link:underline
+
+                #set line(stroke:theme.outline)
+                #set table(stroke:theme.outline)
+                #set circle(stroke:theme.outline)
+                #set ellipse(stroke:theme.outline)
+                #set line(stroke:theme.outline)
+                #set curve(stroke:theme.outline)
+                #set polygon(stroke:theme.outline)
+                #set rect(stroke:theme.outline)
+                #set square(stroke:theme.outline)
+
+                #show math.equation:set text(font:"{math_font}")
+                #show math.equation.where(block:true):set text(size:18pt)
+                #show math.equation.where(block:true):set par(leading:9pt)
+
+                #context {{show math.equation:set text(size:text.size*2)}}
+
+                {page_config}
+            "#,
+            theme = space_ctx.theme,
+            locale = space_ctx.locale,
+            font = space_ctx.font,
+            math_font = space_ctx.math_font.as_ref().unwrap_or(&space_ctx.font),
+        )
     }
 
     #[wasm_bindgen]
@@ -318,10 +457,38 @@ impl TypstState {
         highlights
     }
 
-    #[wasm_bindgen]
-    pub fn click(&mut self, id: &TypstFileId, element: Vec<usize>) -> Option<TypstJump> {
+    #[wasm_bindgen(js_name = "jumpPaged")]
+    pub fn jump_paged(&mut self, id: &TypstFileId, x: f64, mut y: f64) -> Option<TypstJump> {
         let context = self.source_context_map.get(id)?;
-        let document = context.document.as_ref()?;
+        let document = context.paged_document.as_ref()?;
+
+        let index = document
+            .pages
+            .iter()
+            .rposition(|page| y >= page.frame.height().to_pt())
+            .unwrap_or_default();
+
+        let page_offset = document
+            .pages
+            .iter()
+            .map(|page| page.frame.height().to_pt())
+            .rfind(|height| y >= *height)
+            .unwrap_or_default();
+        y -= page_offset;
+
+        let position = Position {
+            page: NonZeroUsize::new(index + 1).unwrap(),
+            point: Point::new(Abs::pt(x), Abs::pt(y)),
+        };
+
+        typst_ide::jump_from_click(&self.world, document, &position)
+            .and_then(|jump| TypstJump::from_mapped(jump, context, &self.world))
+    }
+
+    #[wasm_bindgen(js_name = "jumpHTML")]
+    pub fn jump_html(&mut self, id: &TypstFileId, element: Vec<usize>) -> Option<TypstJump> {
+        let context = self.source_context_map.get(id)?;
+        let document = context.html_document.as_ref()?;
 
         typst_ide::jump_from_click(
             &self.world,
@@ -349,7 +516,7 @@ impl TypstState {
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
-            context.document.as_ref(),
+            context.html_document.as_ref(),
             main_source,
             main_cursor,
             explicit,
@@ -386,7 +553,7 @@ impl TypstState {
 
         let tooltip = typst_ide::tooltip(
             &self.world,
-            context.document.as_ref(),
+            context.html_document.as_ref(),
             main_source,
             main_cursor,
             side,
@@ -419,7 +586,7 @@ impl TypstState {
     pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
         self.world.main_id = Some(id.inner());
 
-        let mut ir = self.prelude(id);
+        let mut ir = self.prelude(id, RenderTarget::Pdf);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         let main_source = context.main_source_mut(&mut self.world).unwrap();
@@ -466,7 +633,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = renderHtml)]
     pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
-        let (ir, ast_blocks) = sync_source_context(id, text, prelude, self);
+        let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
 
         let mut diagnostics = Vec::new();
         let mut compiled_warnings = None;
@@ -593,46 +760,6 @@ impl SpaceContext {
             math_font: Some(String::from("New Computer Modern Math")),
         }
     }
-
-    #[comemo::memoize]
-    pub fn prelude(&self) -> String {
-        formatdoc!(
-            r#"
-                #let theme={theme}
-                #set text(fill:theme.on-background,size:16pt,lang:"{locale}",font:"{font}")
-
-                #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
-                #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
-                #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
-                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
-                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
-                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
-
-                #show link:set text(fill:theme.primary)
-                #show link:underline
-
-                #set line(stroke:theme.outline)
-                #set table(stroke:theme.outline)
-                #set circle(stroke:theme.outline)
-                #set ellipse(stroke:theme.outline)
-                #set line(stroke:theme.outline)
-                #set curve(stroke:theme.outline)
-                #set polygon(stroke:theme.outline)
-                #set rect(stroke:theme.outline)
-                #set square(stroke:theme.outline)
-
-                #show math.equation:set text(font:"{math_font}")
-                #show math.equation.where(block:true):set text(size:18pt)
-                #show math.equation.where(block:true):set par(leading:9pt)
-
-                #context {{show math.equation:set text(size:text.size*2)}}
-            "#,
-            theme = self.theme,
-            locale = self.locale,
-            font = self.font,
-            math_font = self.math_font.as_ref().unwrap_or(&self.font),
-        )
-    }
 }
 
 pub struct SourceContext {
@@ -640,7 +767,8 @@ pub struct SourceContext {
     pub aux_id: FileId,
     pub space_id: String,
     pub index_mapper: IndexMapper,
-    pub document: Option<HtmlDocument>,
+    pub paged_document: Option<PagedDocument>,
+    pub html_document: Option<HtmlDocument>,
     pub width: String,
     pub height: Option<f64>,
 }
@@ -654,7 +782,8 @@ impl SourceContext {
             aux_id,
             space_id,
             index_mapper: IndexMapper::default(),
-            document: None,
+            paged_document: None,
+            html_document: None,
             width: String::from("auto"),
             height: None,
         }
@@ -687,8 +816,16 @@ impl SourceContext {
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileResult {
-    pub frames: Vec<html::RangedFrame>,
+pub struct CompilePagedResult {
+    pub frames: Vec<paged::PagedRangedFrame>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+    pub requests: Vec<TypstRequest>,
+}
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CompileHTMLResult {
+    pub frames: Vec<html::HTMLRangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
     pub requests: Vec<TypstRequest>,
 }

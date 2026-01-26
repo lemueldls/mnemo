@@ -29,7 +29,12 @@ pub struct MnemoWorld {
 
 impl Default for MnemoWorld {
     fn default() -> Self {
-        let features = [Feature::Html, Feature::A11yExtras].into_iter().collect();
+        let features = [
+            // Feature::Html,
+            // Feature::A11yExtras
+        ]
+        .into_iter()
+        .collect();
         let library = Library::builder().with_features(features).build();
 
         Self {
