@@ -173,8 +173,8 @@ export interface InitOutput {
     readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setTheme: (a: number, b: number, c: number) => void;
     readonly __wbg_rgb_free: (a: number, b: number) => void;
-    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_is_bogus: (a: number) => number;
