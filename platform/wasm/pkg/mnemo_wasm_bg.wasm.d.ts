@@ -32,8 +32,8 @@ export const typststate_setLocale: (a: number, b: number, c: number, d: number) 
 export const typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
 export const typststate_setTheme: (a: number, b: number, c: number) => void;
 export const __wbg_rgb_free: (a: number, b: number) => void;
-export const qcms_profile_precache_output_transform: (a: number) => void;
 export const lut_inverse_interp16: (a: number, b: number, c: number) => number;
+export const qcms_profile_precache_output_transform: (a: number) => void;
 export const lut_interp_linear16: (a: number, b: number, c: number) => number;
 export const qcms_enable_iccv4: () => void;
 export const qcms_profile_is_bogus: (a: number) => number;
