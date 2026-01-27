@@ -452,10 +452,7 @@ export function toggleListLike(view: EditorView, prefix: string) {
       let fromOffset = 0,
         toOffset = 0;
 
-      const calculateOffset = (
-        pos: number,
-        change: { from: number; to: number; insert: string },
-      ) =>
+      const calculateOffset = (pos: number, change: { from: number; to: number; insert: string }) =>
         change.from <= pos ? change.insert.length - (Math.min(change.to, pos) - change.from) : 0;
 
       const addChange = (change: { from: number; to: number; insert: string }) => {

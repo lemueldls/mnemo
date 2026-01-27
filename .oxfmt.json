@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "experimentalTailwindcss": {},
+  "experimentalSortPackageJson": {},
+  "experimentalSortImports": {
+    "groups": [
+      ["builtin"],
+      ["external"],
+      ["internal"],
+      ["parent"],
+      ["sibling"],
+      ["index"],
+      ["object"],
+      ["type"]
+    ],
+    "newlines-between": "always-and-inside-groups",
+    // "newlines-between-types": "always-and-inside-groups",
+    "consolidateIslands": "inside-groups",
+    "distinctGroup": true,
+    "alphabetize": {
+      "order": "asc",
+      "orderImportKind": "asc",
+      "caseInsensitive": true
+    },
+    "named": { "enabled": true, "types": "types-last" },
+    "warnOnUnassignedImports": true
+  },
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    ".pre-commit-config.yaml",
+    "dist/",
+    "node_modules/",
+    "platform/",
+    "target/",
+    ".output/",
+    ".data/",
+    ".nuxt/",
+    ".nitro/",
+    ".cache/",
+    ".wrangler/",
+    ".devenv*/",
+    ".direnv/",
+    ".android/",
+    ".vercel/",
+    ".netlify/"
+  ]
+}

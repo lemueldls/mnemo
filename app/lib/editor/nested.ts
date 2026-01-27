@@ -218,10 +218,7 @@ class NestedEditorWidget extends WidgetType {
     if (closingIndex === -1) return;
 
     const currentTo = closingIndex + 3;
-    const currentParentContent = docString.substring(
-      currentFrom + 3,
-      currentTo - 3,
-    );
+    const currentParentContent = docString.substring(currentFrom + 3, currentTo - 3);
 
     if (newContent !== currentParentContent) {
       parentView.dispatch({
@@ -291,8 +288,7 @@ function computeDecorations(state: EditorState) {
 
   for (const block of blocks) {
     // FIXED: Inclusive cursor check for bounds (>= and <=)
-    const isCursorInside =
-      selection.head >= block.from && selection.head <= block.to;
+    const isCursorInside = selection.head >= block.from && selection.head <= block.to;
 
     if (isCursorInside) {
       widgets.push(

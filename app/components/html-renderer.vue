@@ -29,7 +29,12 @@ const dailyNotes = await Promise.all(
       const time = decodeTime(note.id);
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` + "#{show block:html.frame;[\n" + item + "\n]}";
+      return (
+        `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
+        "#{show block:html.frame;[\n" +
+        item +
+        "\n]}"
+      );
     }),
 );
 
@@ -102,7 +107,7 @@ const { document, diagnostics } = typstState.renderHtml(
 const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 
 for (const error of errors) {
-  console.error(error)
+  console.error(error);
 }
 
 const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
