@@ -34,7 +34,7 @@ serde_bytes = "0.11"
 tar = { version = "0.4" }
 time = { version = "0.3", features = ["serde", "wasm-bindgen"] }
 tiny-skia = { version = "0.11" }
-tsify = { version = "0.5.5", features = ["js"] }
+tsify = { version = "0.5.6", features = ["js"] }
 typst = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-html = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-ide = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
