@@ -1,5 +1,5 @@
 import { RangeSetBuilder, StateField } from "@codemirror/state";
-import { Decoration, EditorView, type DecorationSet } from "@codemirror/view";
+import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 
 import type { EditorState } from "@codemirror/state";
 import type { FileId, TypstState } from "mnemo-wasm";
@@ -26,9 +26,8 @@ function buildDecorations(
   const builder = new RangeSetBuilder<Decoration>();
   const tokens = typstState.highlight(fileId, state.doc.toString());
 
-  for (const token of tokens) {
+  for (const token of tokens)
     builder.add(token.range.start, token.range.end, Decoration.mark({ class: token.tag }));
-  }
 
   return builder.finish();
 }

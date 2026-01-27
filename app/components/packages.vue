@@ -21,7 +21,7 @@ watch(search, () => {
 
 const namespace = "preview" as const;
 
-const packages = ref<{ [name: string]: Package[] }>();
+const packages = ref<Record<string, Package[]>>();
 const installedPackages = await useInstalledPackages(() => props.spaceId);
 const installedFilter = ref<"all" | "installed" | "not-installed">("all");
 
@@ -49,11 +49,9 @@ const filteredPackages = computed(() => {
     if (installedFilter.value !== "all") {
       const installedNames = new Set(installedPackages.value.map((p) => p.name));
 
-      if (installedFilter.value === "installed") {
+      if (installedFilter.value === "installed")
         entries = entries.filter(([name]) => installedNames.has(name));
-      } else {
-        entries = entries.filter(([name]) => !installedNames.has(name));
-      }
+      else entries = entries.filter(([name]) => !installedNames.has(name));
     }
 
     return entries.map(([, pkgs]) => pkgs);

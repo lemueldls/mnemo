@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ keys: { [key: string]: StoragePath } }>();
+defineProps<{ keys: Record<string, StoragePath> }>();
 </script>
 
 <template>

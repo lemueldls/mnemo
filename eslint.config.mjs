@@ -1,5 +1,5 @@
-import { globalIgnores } from "eslint/config";
 import importPlugin from "eslint-plugin-import-x";
+import { globalIgnores } from "eslint/config";
 
 // @ts-check
 import withNuxt from "./.nuxt/eslint.config.mjs";

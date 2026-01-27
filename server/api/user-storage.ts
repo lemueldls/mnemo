@@ -39,15 +39,16 @@ export default defineWebSocketHandler({
       await userStorage.setMeta(key, { updatedAt });
 
       peer.publish(peer.namespace, item);
-    } else if (meta)
+    } else if (meta) {
       peer.send({
         key,
         value: await userStorage.getItem(key),
         updatedAt: meta.updatedAt,
       });
+    }
 
     const headers = new Headers();
-    const token = peer.context.token;
+    const { token } = peer.context;
     headers.set("cookie", `mnemo.session_token=${token}`);
 
     const auth = serverAuth();

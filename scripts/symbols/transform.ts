@@ -65,11 +65,7 @@ const subjectSynonyms = [
 
 function generateSynonyms(id: string) {
   const syns = new Set();
-  for (const m of subjectSynonyms) {
-    if (m.re.test(id)) {
-      m.syn.forEach((s) => syns.add(s));
-    }
-  }
+  for (const m of subjectSynonyms) if (m.re.test(id)) m.syn.forEach((s) => syns.add(s));
 
   syns.add(id.replace(/_/g, " "));
   // syns.add(titleCaseId(id));
@@ -77,13 +73,11 @@ function generateSynonyms(id: string) {
   return Array.from(syns).slice(0, 8);
 }
 
-const out = symbols.map((id) => {
-  return {
-    id,
-    title: titleCaseId(id),
-    synonyms: generateSynonyms(id),
-  };
-});
+const out = symbols.map((id) => ({
+  id,
+  title: titleCaseId(id),
+  synonyms: generateSynonyms(id),
+}));
 
 await fs.writeFile(filePath, JSON.stringify(out, null, 2) + "\n", "utf8");
 console.log("Wrote", out.length, "symbol objects to", filePath);

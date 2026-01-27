@@ -65,7 +65,7 @@ const pages: Page[] = [
         <md-divider class="my-2 px-4" />
 
         <h3
-          class="text-on-surface-variant title-small flex items-center justify-between p-4 pb-2 pt-0"
+          class="text-on-surface-variant title-small flex items-center justify-between p-4 pt-0 pb-2"
         >
           {{ t("layouts.default.spaces") }}
 
@@ -136,7 +136,7 @@ const pages: Page[] = [
 
 <style>
 #header {
-  @apply px-4 pb-4 pt-2;
+  @apply px-4 pt-2 pb-4;
 
   font-family: var(--font-mono);
 }

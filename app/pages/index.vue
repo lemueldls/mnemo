@@ -38,7 +38,7 @@ const newSpaceOpen = useNewSpaceOpen();
   <div class="flex h-full flex-1">
     <div class="flex size-full flex-1 flex-col gap-3">
       <mx-outlined-card
-        class="medium:border-1! medium:p-3! medium:overflow-auto border-0! p-0! flex h-full flex-1 flex-col gap-3"
+        class="medium:border-1! medium:p-3! medium:overflow-auto flex h-full flex-1 flex-col gap-3 border-0! p-0!"
       >
         <div class="expanded:flex-row flex flex-col gap-3">
           <div class="flex-1">

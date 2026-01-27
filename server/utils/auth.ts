@@ -49,8 +49,8 @@ export const serverAuth = createSharedComposable(() =>
     },
     socialProviders: {
       github: {
-        clientId: github.clientId!,
-        clientSecret: github.clientSecret!,
+        clientId: github.clientId,
+        clientSecret: github.clientSecret,
         redirectURI: github.redirectURL,
       },
     },

@@ -1,13 +1,13 @@
 import {
-  alphaFromArgb,
-  argbFromHex,
   Blend,
-  blueFromArgb,
-  greenFromArgb,
   Hct,
   MaterialDynamicColors,
-  redFromArgb,
   SchemeTonalSpot,
+  alphaFromArgb,
+  argbFromHex,
+  blueFromArgb,
+  greenFromArgb,
+  redFromArgb,
 } from "@material/material-color-utilities";
 
 import type { Theme, ThemeKeys } from "../types";

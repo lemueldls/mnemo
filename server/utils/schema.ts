@@ -1,16 +1,14 @@
 import {
-  safeParseAsync,
   type GenericIssue,
   type GenericSchema,
   type GenericSchemaAsync,
+  safeParseAsync,
 } from "valibot";
 
 import type { H3Event } from "h3";
 
 export async function validatedBody<
-  const TSchema extends
-    | GenericSchema<unknown, unknown, GenericIssue>
-    | GenericSchemaAsync<unknown, unknown, GenericIssue>,
+  const TSchema extends GenericSchema<unknown, unknown> | GenericSchemaAsync<unknown, unknown>,
 >(event: H3Event, schema: TSchema) {
   const { success, output, issues } = await readValidatedBody(event, (body) =>
     safeParseAsync(schema, body),
@@ -27,9 +25,7 @@ export async function validatedBody<
 }
 
 export async function validatedQuery<
-  const TSchema extends
-    | GenericSchema<unknown, unknown, GenericIssue>
-    | GenericSchemaAsync<unknown, unknown, GenericIssue>,
+  const TSchema extends GenericSchema<unknown, unknown> | GenericSchemaAsync<unknown, unknown>,
 >(event: H3Event, schema: TSchema) {
   const { success, output, issues } = await getValidatedQuery(event, (query) =>
     safeParseAsync(schema, query),
@@ -46,9 +42,7 @@ export async function validatedQuery<
 }
 
 export async function validatedRouterParams<
-  const TSchema extends
-    | GenericSchema<unknown, unknown, GenericIssue>
-    | GenericSchemaAsync<unknown, unknown, GenericIssue>,
+  const TSchema extends GenericSchema<unknown, unknown> | GenericSchemaAsync<unknown, unknown>,
 >(event: H3Event, schema: TSchema, options?: { decode?: boolean }) {
   const { success, output, issues } = await getValidatedRouterParams(
     event,
@@ -67,9 +61,7 @@ export async function validatedRouterParams<
 }
 
 export async function validatedFormData<
-  const TSchema extends
-    | GenericSchema<unknown, unknown, GenericIssue>
-    | GenericSchemaAsync<unknown, unknown, GenericIssue>,
+  const TSchema extends GenericSchema<unknown, unknown> | GenericSchemaAsync<unknown, unknown>,
 >(event: H3Event, schema: TSchema) {
   const formData = await readFormData(event);
 

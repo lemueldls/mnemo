@@ -110,7 +110,7 @@ const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error
       ><strong>{{ error.severity }}</strong> {{ error.message }}</pre>
     </div>
 
-    <md-outlined-card v-if="pdf" class="max-w-180 m-4 h-full w-full overflow-hidden bg-white">
+    <md-outlined-card v-if="pdf" class="m-4 h-full w-full max-w-180 overflow-hidden bg-white">
       <LazyEmbededPdf v-model="pdf" :filename="space.name" />
     </md-outlined-card>
   </div>

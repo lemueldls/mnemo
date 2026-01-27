@@ -1,5 +1,3 @@
 import { serverAuth } from "#imports";
 
-export default defineEventHandler((event) => {
-  return serverAuth().handler(toWebRequest(event));
-});
+export default defineEventHandler((event) => serverAuth().handler(toWebRequest(event)));

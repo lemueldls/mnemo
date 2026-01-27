@@ -47,9 +47,8 @@ function uninstallPackage(pkg: Package) {
       // props.namespace === pkgItem.namespace &&
       pkg.name === pkgItem.name &&
       pkg.version === pkgItem.version
-    ) {
+    )
       installedPackages.delete(i, 1);
-    }
   }
 }
 </script>

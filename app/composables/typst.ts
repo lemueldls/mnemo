@@ -1,4 +1,4 @@
-import init, { TypstState, type TypstRequest } from "mnemo-wasm";
+import init, { type TypstRequest, TypstState } from "mnemo-wasm";
 
 export function getTypstFontImports() {
   return [

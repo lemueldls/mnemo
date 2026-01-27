@@ -1,8 +1,8 @@
-import { normalizeKey, type StorageValue } from "unstorage";
+import { type StorageValue, normalizeKey } from "unstorage";
 
 import { commit, useCrdt } from "./crdt";
 import { localDb } from "./db";
-import { useSharedAsyncData, type StorageRef } from "./refs";
+import { type StorageRef, useSharedAsyncData } from "./refs";
 import { useSync } from "./sync";
 import { deepEqual } from "./utils";
 
@@ -117,7 +117,7 @@ export async function useStorageList<T extends unknown[]>(
         const syncList = list.getShallowValue();
         const maxLength = Math.max(itemList.length, syncList.length);
 
-        for (let i = 0; i < maxLength; i++)
+        for (let i = 0; i < maxLength; i++) {
           if (i < itemList.length && i < syncList.length) {
             if (!deepEqual(itemList[i], syncList[i])) {
               list.delete(i, 1);
@@ -125,6 +125,7 @@ export async function useStorageList<T extends unknown[]>(
             }
           } else if (i < itemList.length) list.push(itemList[i]);
           else list.delete(i, 1);
+        }
 
         void commit();
       });
@@ -150,10 +151,10 @@ export async function useStorageList<T extends unknown[]>(
   });
 }
 
-export type SetRef<T extends Exclude<{ [key: string]: any }, Container>[]> = Awaited<
+export type SetRef<T extends Exclude<Record<string, any>, Container>[]> = Awaited<
   ReturnType<typeof useStorageSet<T>>
 >;
-export async function useStorageSet<T extends Exclude<{ [key: string]: any }, Container>[]>(
+export async function useStorageSet<T extends Exclude<Record<string, any>, Container>[]>(
   key: MaybeRefOrGetter<string>,
   setKey: keyof T[number],
   initialValue?: T,
@@ -180,23 +181,17 @@ export async function useStorageSet<T extends Exclude<{ [key: string]: any }, Co
 
           if (syncKeys.has(key)) {
             if (!deleteQueue.includes(i)) deleteQueue.push(i);
-          } else {
-            syncKeys.add(key);
-          }
+          } else syncKeys.add(key);
         }
 
         for (let i = 0; i < itemList.length; i++) {
           const item = itemList[i] as Exclude<T[number], Container>;
           const key = item[setKey];
 
-          if (!syncKeys.has(key)) {
-            list.push(item);
-          }
+          if (!syncKeys.has(key)) list.push(item);
         }
 
-        for (let i = deleteQueue.length - 1; i >= 0; i--) {
-          list.delete(deleteQueue[i]!, 1);
-        }
+        for (let i = deleteQueue.length - 1; i >= 0; i--) list.delete(deleteQueue[i]!, 1);
 
         void commit();
       });

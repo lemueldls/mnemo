@@ -51,7 +51,7 @@ const keys = await getStorageKeys();
 <template>
   <div class="flex h-full flex-col gap-3 overflow-hidden">
     <md-outlined-card class="flex flex-1 flex-col overflow-hidden p-3">
-      <div class="flex-1 overflow-y-auto overflow-x-hidden">
+      <div class="flex-1 overflow-x-hidden overflow-y-auto">
         <storage-root :keys />
       </div>
 

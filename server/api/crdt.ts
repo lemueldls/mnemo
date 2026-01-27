@@ -45,7 +45,7 @@ export default defineWebSocketHandler({
     await blob.put(peer.namespace, snapshot);
 
     const headers = new Headers();
-    const token = peer.context.token;
+    const { token } = peer.context;
     headers.set("cookie", `mnemo.session_token=${token}`);
 
     const auth = serverAuth();

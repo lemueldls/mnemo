@@ -7,9 +7,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
 
-    for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
-    }
+    for (let i = 0; i < a.length; i++) if (!deepEqual(a[i], b[i])) return false;
 
     return true;
   }

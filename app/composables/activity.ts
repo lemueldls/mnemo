@@ -32,7 +32,7 @@ export const useActivityGraph = createSharedComposable(async (amount: MaybeRefOr
     );
 
     const { startWeekday, endWeekday } = useWeekdays();
-    const recentActivity = computed<{ [date: string]: number }>(() => {
+    const recentActivity = computed<Record<string, number>>(() => {
       const days = toValue(amount);
 
       let deltaDate = today(timeZone).add({ days: 1 });
@@ -65,9 +65,8 @@ export const useActivityGraph = createSharedComposable(async (amount: MaybeRefOr
         if (recentActivity[date] !== undefined) recentActivity[date]++;
 
         if (note.datesReviewed?.length) {
-          for (const date of note.datesReviewed) {
+          for (const date of note.datesReviewed)
             if (recentActivity[date] !== undefined) recentActivity[date]++;
-          }
         }
       }
 

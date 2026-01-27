@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isToday, today, type CalendarDate } from "@internationalized/date";
+import { type CalendarDate, isToday, today } from "@internationalized/date";
 
 const { d } = useSharedI18n();
 
@@ -324,7 +324,7 @@ function timeToMinutes(time: string) {
     <form
       id="weekly-calendar-edit-form"
       slot="content"
-      class="min-w-lg flex flex-col gap-4 p-4"
+      class="flex min-w-lg flex-col gap-4 p-4"
       method="dialog"
       @submit.prevent="editScheduleItem"
     >

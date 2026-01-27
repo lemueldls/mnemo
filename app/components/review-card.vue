@@ -10,7 +10,7 @@ const stages = useReviewStages().length;
 <template>
   <nuxt-link :to="`/space?id=${review.spaceId}&note=${review.noteId}`">
     <mx-theme :color="space.color">
-      <md-elevated-card class="h-70 relative flex flex-col">
+      <md-elevated-card class="relative flex h-70 flex-col">
         <md-ripple />
 
         <div

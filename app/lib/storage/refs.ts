@@ -4,10 +4,8 @@ import type { DebuggerOptions, EffectScope, WatchStopHandle, WritableComputedOpt
 
 export type StorageRef<T> = Ref<T> & { setLocal(value: T): void };
 
-export const itemsRefs: {
-  [key: string]: Promise<StorageRef<unknown>> | undefined;
-} = {};
-export const itemRefsCount: { [key: string]: number } = {};
+export const itemsRefs: Record<string, Promise<StorageRef<unknown>> | undefined> = {};
+export const itemRefsCount: Record<string, number> = {};
 
 export async function useSharedAsyncData<T>(
   key: MaybeRefOrGetter<string>,

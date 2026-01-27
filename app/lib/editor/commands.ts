@@ -1,11 +1,10 @@
 import { startCompletion } from "@codemirror/autocomplete";
 import { indentMore } from "@codemirror/commands";
-
 import {
   ChangeSet,
-  countColumn,
   EditorSelection,
   EditorState,
+  countColumn,
   findColumn,
 } from "@codemirror/state";
 
@@ -101,9 +100,8 @@ export function cycleHeading(view: EditorView) {
 
         if (r.empty) {
           const f = state.doc.sliceString(u.from, o).match(/^\s*/);
-          if (f) {
-            o = u.from + f[0].length;
-          } else {
+          if (f) o = u.from + f[0].length;
+          else {
             o = u.from;
             c = u.to;
           }
@@ -163,18 +161,13 @@ export function cycleHeading(view: EditorView) {
               ? M + U
               : U,
         ).join("\n");
-        if (_) {
-          O += "\n" + E + "]";
-        }
+        if (_) O += "\n" + E + "]";
 
         let W = T + O;
         const P = state.doc.length === c ? undefined : state.doc.lineAt(c + 1);
 
-        if (!P || P.from >= c) {
-          if (P && state.sliceDoc(P.from, P.to).match(/^\s*$/) === null) {
-            W += "\n";
-          }
-        }
+        if (!P || P.from >= c)
+          if (P && state.sliceDoc(P.from, P.to).match(/^\s*$/) === null) W += "\n";
 
         return {
           range: r.empty
@@ -212,7 +205,7 @@ export function insertAtCursor(n: EditorView, e: string) {
 export function wrapOrInsert(view: EditorView, prefix: string, suffix: string, insert: string) {
   if (view.state.facet(EditorState.readOnly)) return;
   const c = view.state;
-  if (c.selection.main.empty)
+  if (c.selection.main.empty) {
     view.dispatch(
       c.changeByRange((u) => ({
         range: EditorSelection.cursor(u.from + insert.length),
@@ -224,7 +217,7 @@ export function wrapOrInsert(view: EditorView, prefix: string, suffix: string, i
         ],
       })),
     );
-  else toggleAroundSelection(view, [prefix], [suffix]);
+  } else toggleAroundSelection(view, [prefix], [suffix]);
 }
 
 interface Replacement {
@@ -239,8 +232,8 @@ export function toggleAroundSelection(
   preferNextLevel?: boolean,
 ) {
   if (view.state.facet(EditorState.readOnly)) return null;
-  const state = view.state,
-    doc = state.doc;
+  const { state } = view,
+    { doc } = state;
   let matchIndex = null;
 
   return (
@@ -254,9 +247,8 @@ export function toggleAroundSelection(
           for (const match of wordMatches) {
             const wordStart = line.from + (match.index ?? 0),
               wordEnd = wordStart + match[0].length;
-            if (wordStart <= range.from && range.from <= wordEnd) {
+            if (wordStart <= range.from && range.from <= wordEnd)
               selRange = EditorSelection.range(wordStart, wordEnd);
-            }
           }
         }
 
@@ -293,9 +285,7 @@ export function toggleAroundSelection(
               beforeOffset =
                 beforeContext.length - (beforeText.length + beforeContext.indexOf(beforeText));
               isMatch = true;
-            } else {
-              isMatch = false;
-            }
+            } else isMatch = false;
           }
 
           // Check suffix
@@ -339,9 +329,8 @@ export function toggleAroundSelection(
             matchResults[i]!.match &&
             preferNextLevel &&
             matchResults.slice(i + 1).some((result) => result.match)
-          ) {
+          )
             continue;
-          }
 
           const { before, after, match } = matchResults[i]!;
           if (match) {
@@ -442,7 +431,7 @@ export function toggleEnum(n: EditorView) {
 
 export function toggleListLike(view: EditorView, prefix: string) {
   if (view.state.facet(EditorState.readOnly)) return;
-  const doc = view.state.doc;
+  const { doc } = view.state;
 
   view.dispatch(
     view.state.changeByRange((range) => {
@@ -515,7 +504,7 @@ export function toggleListLike(view: EditorView, prefix: string) {
 }
 
 export function cursorAddVertical(view: EditorView, offset: number) {
-  const state = view.state,
+  const { state } = view,
     newCursors: SelectionRange[] = [];
 
   for (const range of state.selection.ranges) {
@@ -530,9 +519,8 @@ export function cursorAddVertical(view: EditorView, offset: number) {
     }
   }
 
-  if (offset > 0) {
-    newCursors.reverse();
-  }
+  if (offset > 0) newCursors.reverse();
+
   newCursors.push(...state.selection.ranges);
 
   view.dispatch({

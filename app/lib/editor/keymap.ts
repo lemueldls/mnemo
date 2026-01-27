@@ -1,5 +1,4 @@
 import { acceptCompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
-
 import {
   copyLineDown,
   copyLineUp,
@@ -16,9 +15,7 @@ import {
   undo,
   undoSelection,
 } from "@codemirror/commands";
-
 import { nextDiagnostic } from "@codemirror/lint";
-
 import {
   closeSearchPanel,
   findNext,
@@ -28,7 +25,6 @@ import {
   selectNextOccurrence,
   selectSelectionMatches,
 } from "@codemirror/search";
-
 import { keymap } from "@codemirror/view";
 
 import {

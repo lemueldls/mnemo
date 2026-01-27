@@ -1,4 +1,4 @@
-import { parseTarGzip, type ParsedTarFileItem } from "nanotar";
+import { type ParsedTarFileItem, parseTarGzip } from "nanotar";
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -12,14 +12,12 @@ export default defineCachedEventHandler(
     const items = await parseTarGzip(buffer);
 
     const spec = `@${namespace}/${name}:${version}`;
-    const files = (items as ParsedTarFileItem[])
+    const files = items
       .filter((item) => item.type === "file")
-      .map((item) => {
-        return {
-          path: item.name,
-          content: Array.from(item.data!),
-        };
-      });
+      .map((item) => ({
+        path: item.name,
+        content: Array.from(item.data!),
+      }));
 
     return { spec, files };
   },

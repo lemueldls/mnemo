@@ -83,7 +83,7 @@ export const useReview = createSharedComposable(async (amount: MaybeRefOrGetter<
                 day: "numeric",
               });
 
-              if (notesToReview.length < max)
+              if (notesToReview.length < max) {
                 notesToReview.push({
                   spaceId,
                   noteId,
@@ -91,6 +91,7 @@ export const useReview = createSharedComposable(async (amount: MaybeRefOrGetter<
                   stage,
                   lastReviewed,
                 });
+              }
             }
           }
         }),

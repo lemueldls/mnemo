@@ -1,5 +1,5 @@
 import { EditorState, Prec, StateField, Transaction } from "@codemirror/state";
-import { Decoration, EditorView, keymap, WidgetType } from "@codemirror/view";
+import { Decoration, EditorView, WidgetType, keymap } from "@codemirror/view";
 
 // --- 1. Utility: Parse Blocks ---
 function findBlocks(docString: string) {
@@ -93,12 +93,12 @@ class NestedEditorWidget extends WidgetType {
         key: "ArrowUp",
         run: (view) => {
           const { state } = view;
-          const head = state.selection.main.head;
+          const { head } = state.selection.main;
           const line = state.doc.lineAt(head);
 
           // If cursor is on the FIRST line of the nested editor
           if (line.number === 1) {
-            const dom = this.dom;
+            const { dom } = this;
             if (!dom) return false;
 
             const parentPos = parentView.posAtDOM(dom);
@@ -122,12 +122,12 @@ class NestedEditorWidget extends WidgetType {
         key: "ArrowDown",
         run: (view) => {
           const { state } = view;
-          const head = state.selection.main.head;
+          const { head } = state.selection.main;
           const lastLine = state.doc.lineAt(state.doc.length);
           const currentLine = state.doc.lineAt(head);
 
           if (currentLine.number === lastLine.number) {
-            const dom = this.dom;
+            const { dom } = this;
             if (!dom) return false;
 
             const parentPos = parentView.posAtDOM(dom);
@@ -170,9 +170,8 @@ class NestedEditorWidget extends WidgetType {
                   tr.isUserEvent("undo") ||
                   tr.isUserEvent("redo"),
               )
-            ) {
+            )
               this.syncToParent(parentView, update.state.doc.toString());
-            }
           }),
         ],
       }),
@@ -249,9 +248,7 @@ class NestedEditorWidget extends WidgetType {
     }
 
     const headerSpan = dom.querySelector(".cm-nested-header span:last-child");
-    if (headerSpan) {
-      headerSpan.textContent = `Ln ${parentView.state.doc.lineAt(this.from).number}`;
-    }
+    if (headerSpan) headerSpan.textContent = `Ln ${parentView.state.doc.lineAt(this.from).number}`;
 
     this.dom = dom;
     return true;
@@ -272,9 +269,9 @@ const blockHideField = StateField.define({
     return computeDecorations(state);
   },
   update(decorations, transaction) {
-    if (transaction.docChanged || transaction.selection) {
+    if (transaction.docChanged || transaction.selection)
       return computeDecorations(transaction.state);
-    }
+
     return decorations;
   },
   provide: (f) => EditorView.decorations.from(f),

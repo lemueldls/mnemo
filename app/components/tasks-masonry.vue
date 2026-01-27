@@ -13,7 +13,7 @@ interface TaskPosition {
   width: number;
 }
 
-const taskRefs = ref<{ [id: string]: TaskItemRef }>({});
+const taskRefs = ref<Record<string, TaskItemRef>>({});
 
 // Masonry layout configuration
 const columns = ref(3);
@@ -39,7 +39,7 @@ const taskPositions = computed(() => {
   const cols = columns.value;
   if (!taskIds.length || !cols) return {};
 
-  const positions: { [id: string]: TaskPosition } = {};
+  const positions: Record<string, TaskPosition> = {};
   const columnHeights = Array.from({ length: cols }, () => 0);
   const width = containerWidth.value;
   const columnWidth = width ? (width - (cols - 1) * columnGap) / cols : 300;
@@ -94,9 +94,8 @@ const containerHeight = computed(() => {
 });
 
 const handleTaskRef = (taskId: string, ref: TaskItemRef | null) => {
-  if (ref) {
-    taskRefs.value[taskId] = ref;
-  } else {
+  if (ref) taskRefs.value[taskId] = ref;
+  else {
     const { [taskId]: _, ...newRefs } = taskRefs.value;
     taskRefs.value = newRefs;
   }

@@ -4,7 +4,7 @@ import wasm from "vite-plugin-wasm";
 import type { LocaleObject } from "@nuxtjs/i18n";
 
 const defaultLocale = "en";
-const locales: LocaleObject<"en" | "es" | "de" | "he" | "zh" | "ja">[] = [
+const locales: LocaleObject[] = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
   { code: "es", dir: "ltr", language: "es-ES", file: "es.json" },
   { code: "de", dir: "ltr", language: "de-DE", file: "de.json" },

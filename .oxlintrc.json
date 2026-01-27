@@ -1,14 +1,27 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "jsdoc", "node", "promise", "vue"],
+  "plugins": ["typescript", "jsdoc", "node", "vue"],
   "categories": {
-    "nursery": "warn",
     "correctness": "warn",
-    "pedantic": "warn"
-    // "perf": "warn",
+    // "nursery": "warn",
+    "pedantic": "warn",
+    "perf": "warn",
     // "restriction": "warn",
-    // "style": "warn",
-    // "suspicious": "warn"
+    "style": "warn",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "capitalized-comments": "off",
+    "no-inline-comments": "off",
+    "max-lines-per-function": "off",
+    "no-ternary": "off",
+    "max-statements": "off",
+    "sort-keys": "off",
+    "sort-imports": "off",
+    "define-props-destructuring": "off",
+
+    "curly": ["warn", "multi-or-nest"],
+    "func-style": ["warn", "declaration"]
   },
   "ignorePatterns": [
     "pnpm-lock.yaml",

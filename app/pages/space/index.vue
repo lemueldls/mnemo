@@ -163,7 +163,7 @@ const datesWithNotes = useArrayMap(notes, (note) => note.calendarDate);
 const preludePath = ref("main");
 
 // const stickyNotes = ref(await listStickyNotes(spaceId.value));
-const stickyNotes = await useStorageItem<{ [id: string]: StickyNote }>(
+const stickyNotes = await useStorageItem<Record<string, StickyNote>>(
   () => `spaces/${spaceId.value}/sticky/notes.json`,
   {},
 );
@@ -268,14 +268,14 @@ whenever(idle, async () => {
           <div
             ref="editorWrapper"
             @wheel="onWrapperWheel"
-            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pb-3 pl-3 pr-3"
+            class="medium:pr-0 flex min-h-0 flex-1 justify-center gap-4 pr-3 pb-3 pl-3"
           >
             <!-- <md-outlined-card class="p-0! h-full flex-1 overflow-hidden">
               <LazyEmbededPdf model-value="csc104.pdf" monochrome />
             </md-outlined-card> -->
 
-            <div class="medium:ml-3 max-w-180 relative size-full">
-              <div class="absolute left--6 pb-8 pt-16">
+            <div class="medium:ml-3 relative size-full max-w-180">
+              <div class="left--6 absolute pt-16 pb-8">
                 <div id="sidebar" class="flex flex-col gap-4 overflow-auto">
                   <div class="sidebar-button" title="Prelude">
                     <div class="sidebar-button__inner" @click="preludeOpen = true">

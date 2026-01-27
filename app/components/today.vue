@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getDayOfWeek, today, type CalendarDate } from "@internationalized/date";
+import { type CalendarDate, getDayOfWeek, today } from "@internationalized/date";
 
 const timeZone = useTimeZone();
 const calendarDate = useState<CalendarDate>("today:calendar-date", () => today(timeZone));
@@ -72,7 +72,7 @@ function previousDay() {
 <template>
   <div class="flex h-full flex-1 flex-col gap-4 overflow-hidden">
     <div class="flex">
-      <span class="grow-3 flex flex-1 items-center gap-2">
+      <span class="flex flex-1 grow-3 items-center gap-2">
         <span class="text-primary display-small">
           {{ title }}
         </span>
@@ -86,7 +86,7 @@ function previousDay() {
         </div>
       </span>
 
-      <div class="grow-2 flex flex-1">
+      <div class="flex flex-1 grow-2">
         <md-icon-button @click="previousDay">
           <md-icon>chevron_left</md-icon>
         </md-icon-button>

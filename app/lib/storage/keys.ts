@@ -3,7 +3,7 @@ import { localDb } from "./db";
 export interface StorageDirPath {
   kind: "directory";
   key: string;
-  children: { [key: string]: StoragePath };
+  children: Record<string, StoragePath>;
 }
 
 export interface StorageFilePath {
@@ -17,7 +17,7 @@ export type StoragePath = StorageDirPath | StorageFilePath;
 export async function getStorageKeys(base?: string) {
   const localKeys = await localDb.getKeys(base);
 
-  const root: { [key: string]: StoragePath } = {};
+  const root: Record<string, StoragePath> = {};
 
   Promise.all(
     localKeys.map(async (localKey) => {
@@ -38,7 +38,7 @@ export async function getStorageKeys(base?: string) {
 
       const content = await localDb.getItem<string>(key);
 
-      directory[path!] ||= { kind: "file", key, content: content! };
+      directory[path] ??= { kind: "file", key, content: content! };
     }),
   );
 

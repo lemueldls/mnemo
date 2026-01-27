@@ -3,7 +3,7 @@ import { parseBackticks } from "~/lib/editor/highlight";
 
 const { notifications, dismiss } = useNotifications();
 
-const variantToButtonComponentMap: { [V in NotificationVariant]: string } = {
+const variantToButtonComponentMap: Record<NotificationVariant, string> = {
   primary: "md-filled-button",
   secondary: "md-filled-tonal-button",
   destructive: "md-text-button",
@@ -112,7 +112,7 @@ $_md-sys-motion: tokens.md-sys-motion-values();
   overflow-wrap: break-word;
 
   :deep(code) {
-    @apply bg-surface-container text-wrap rounded px-1 font-mono;
+    @apply bg-surface-container rounded px-1 font-mono text-wrap;
   }
 }
 

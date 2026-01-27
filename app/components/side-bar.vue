@@ -17,7 +17,7 @@ interface Item {
   component?: Component;
 }
 
-const items: { [key: string]: Item } = {
+const items: Record<string, Item> = {
   // chat: { name: t("components.side-bar.chat"), icon: "chat", component: Chat },
   today: {
     name: t("components.side-bar.today"),
@@ -50,7 +50,7 @@ const route = useRoute();
 const router = useRouter();
 
 const hash = computed(() => route.hash?.slice(1));
-const sheetOpened = ref(!!items[hash.value]);
+const sheetOpened = ref(Boolean(items[hash.value]));
 
 watchImmediate(hash, (hash) => {
   if (!hash) sheetOpened.value = false;

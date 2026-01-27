@@ -6,7 +6,6 @@ import type {
   InferSessionFromClient,
   InferUserFromClient,
 } from "better-auth/client";
-
 import type { RouteLocationRaw } from "vue-router";
 
 export const useAuth = createSharedComposable(() => {
@@ -75,7 +74,7 @@ export const useAuth = createSharedComposable(() => {
   return {
     session,
     user,
-    loggedIn: computed(() => !!session.value),
+    loggedIn: computed(() => Boolean(session.value)),
     signIn: client.signIn,
     signUp: client.signUp,
     async signOut({ redirectTo }: { redirectTo?: RouteLocationRaw } = {}) {

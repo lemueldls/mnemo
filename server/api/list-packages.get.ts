@@ -35,10 +35,10 @@ export default defineCachedEventHandler(
     );
     allPackages.sort((a, b) => b.version.localeCompare(a.version));
 
-    const packages: { [name: string]: Package[] } = {};
+    const packages: Record<string, Package[]> = {};
     for (const pkg of allPackages) {
       packages[pkg.name] ||= [];
-      packages[pkg.name]!.push(pkg);
+      packages[pkg.name].push(pkg);
     }
 
     return packages;

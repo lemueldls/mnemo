@@ -8,8 +8,7 @@ export default defineNuxtPlugin({
       nuxtApp.payload.serverRendered &&
       !nuxtApp.payload.prerenderedAt &&
       !nuxtApp.payload.isCached
-    ) {
+    )
       await useAuth().fetchSession();
-    }
   },
 });

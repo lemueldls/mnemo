@@ -44,7 +44,7 @@ const calendar = computed(() => {
   const monthStartWeekday = getDayOfWeek(startOfMonth(date), locale.value);
   const monthEndDay = endOfMonth(date).day;
 
-  const month = date.month;
+  const { month } = date;
 
   for (let index = monthStartWeekday, day = 1; day < monthEndDay; ) {
     const week = [];

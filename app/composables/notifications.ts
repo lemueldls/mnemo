@@ -6,7 +6,7 @@ export const useNotifications = createSharedComposable(() => {
     const {
       type = "info",
       actions,
-      dismissible = !!actions?.length || type !== "info",
+      dismissible = Boolean(actions?.length) || type !== "info",
       duration = dismissible ? null : 5000,
     } = options;
 

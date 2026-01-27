@@ -1,5 +1,5 @@
-import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
-import { StateEffect, StateField, type Range } from "@codemirror/state";
+import { type Diagnostic, setDiagnostics } from "@codemirror/lint";
+import { type Range, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { LRUCache } from "lru-cache";
 
@@ -25,9 +25,8 @@ class TypstWidget extends WidgetType {
 
     const container = containerCache.get(frame.render.hash);
 
-    if (container?.isConnected) {
-      this.container = container;
-    } else {
+    if (container?.isConnected) this.container = container;
+    else {
       const container = document.createElement("div");
 
       // container.attachShadow({ mode: "open" });
@@ -121,13 +120,14 @@ function decorate(
       const { diagnostics, requests } = typstState.checkPaged(fileId, text, prelude);
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
-      if (requests.length > 0)
+      if (requests.length > 0) {
         handleTypstRequests(requests, spaceId).then((update) => {
           if (update) {
             view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
             view.dispatch({ changes: [{ from: 0, to: 1 }] });
           }
         });
+      }
 
       return;
     }
@@ -137,15 +137,16 @@ function decorate(
     const compileResult = typstState.compilePaged(fileId, text, prelude);
     dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
-    if (compileResult.requests.length > 0)
+    if (compileResult.requests.length > 0) {
       handleTypstRequests(compileResult.requests, spaceId).then((update) => {
         if (update) {
           view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
           view.dispatch({ changes: [{ from: 0, to: 1 }] });
         }
       });
+    }
 
-    frames = compileResult.frames;
+    ({ frames } = compileResult);
     framesCache.set(path, compileResult.frames);
   } else frames = framesCache.get(path)!;
 
@@ -187,9 +188,7 @@ function decorate(
             style += "border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;";
           if (currentLine == endLine)
             style += `border-bottom-left-radius:0.25rem;border-bottom-right-radius:0.25rem;min-height:${frame.render.height - lineHeight}px`;
-          else {
-            lineHeight += view.lineBlockAt(line.from).height;
-          }
+          else lineHeight += view.lineBlockAt(line.from).height;
 
           decorations.push(
             Decoration.line({
@@ -229,71 +228,69 @@ export const typstViewPlugin = (
   locked: boolean,
   typstState: TypstState,
 ) =>
-  ViewPlugin.define((_view) => {
-    return {
-      update(update: ViewUpdate) {
-        let widthChanged = false;
-        if (update.geometryChanged) {
-          const { scrollDOM, contentDOM } = update.view;
+  ViewPlugin.define((_view) => ({
+    update(update: ViewUpdate) {
+      let widthChanged = false;
+      if (update.geometryChanged) {
+        const { scrollDOM, contentDOM } = update.view;
 
-          widthChanged = typstState.resize(
-            fileId,
-            contentDOM.clientWidth - 2 * window.devicePixelRatio,
-            locked ? scrollDOM.clientHeight : undefined,
+        widthChanged = typstState.resize(
+          fileId,
+          contentDOM.clientWidth - 2 * window.devicePixelRatio,
+          locked ? scrollDOM.clientHeight : undefined,
+        );
+      }
+
+      if (update.docChanged || update.selectionSet || update.focusChanged || widthChanged) {
+        const { state } = update;
+        const currentDecorations = state.field(typstStateField);
+
+        let updateInWidget = false;
+
+        currentDecorations.between(0, state.doc.length, (from, to) => {
+          if (to > state.doc.length) return;
+
+          const { from: start } = state.doc.lineAt(from);
+          const { to: end } = state.doc.lineAt(to);
+
+          const active = state.selection.ranges.some(
+            (range) =>
+              (range.from >= start && range.from <= end) ||
+              (range.to >= start && range.to <= end) ||
+              (start >= range.from && start <= range.to) ||
+              (end >= range.from && end <= range.to),
           );
-        }
 
-        if (update.docChanged || update.selectionSet || update.focusChanged || widthChanged) {
-          const state = update.state;
-          const currentDecorations = state.field(typstStateField);
+          if (active) {
+            updateInWidget = true;
 
-          let updateInWidget = false;
+            return false;
+          }
+        });
 
-          currentDecorations.between(0, state.doc.length, (from, to) => {
-            if (to > state.doc.length) return;
+        queueMicrotask(() => {
+          const decorations = decorate(
+            fileId,
+            spaceId,
+            path,
+            prelude.value,
+            locked,
+            update,
+            updateInWidget,
+            widthChanged,
+            typstState,
+          );
 
-            const { from: start } = state.doc.lineAt(from);
-            const { to: end } = state.doc.lineAt(to);
+          if (decorations) {
+            const effects = typstStateEffect.of({ decorations });
+            update.view.dispatch({ effects });
+          }
+        });
 
-            const active = state.selection.ranges.some(
-              (range) =>
-                (range.from >= start && range.from <= end) ||
-                (range.to >= start && range.to <= end) ||
-                (start >= range.from && start <= range.to) ||
-                (end >= range.from && end <= range.to),
-            );
-
-            if (active) {
-              updateInWidget = true;
-
-              return false;
-            }
-          });
-
-          queueMicrotask(() => {
-            const decorations = decorate(
-              fileId,
-              spaceId,
-              path,
-              prelude.value,
-              locked,
-              update,
-              updateInWidget,
-              widthChanged,
-              typstState,
-            );
-
-            if (decorations) {
-              const effects = typstStateEffect.of({ decorations });
-              update.view.dispatch({ effects });
-            }
-          });
-
-          if (update.docChanged) text.value = update.state.doc.toString();
-        }
-      },
-    };
-  });
+        if (update.docChanged) text.value = update.state.doc.toString();
+      }
+    },
+  }));
 
 function dispatchDiagnostics(
   typstDiagnostics: TypstDiagnostic[],
@@ -301,35 +298,33 @@ function dispatchDiagnostics(
   view: EditorView,
 ) {
   if (typstDiagnostics.length > 0) {
-    const diagnostics = typstDiagnostics.map((diagnostic) => {
-      return {
-        from: diagnostic.range.start,
-        to: diagnostic.range.end,
-        severity: diagnostic.severity,
-        message: diagnostic.message,
-        renderMessage() {
-          const frag = document.createDocumentFragment();
-          const p = document.createElement("p");
-          parseBackticks(diagnostic.message, p);
-          frag.append(p);
+    const diagnostics = typstDiagnostics.map((diagnostic) => ({
+      from: diagnostic.range.start,
+      to: diagnostic.range.end,
+      severity: diagnostic.severity,
+      message: diagnostic.message,
+      renderMessage() {
+        const frag = document.createDocumentFragment();
+        const p = document.createElement("p");
+        parseBackticks(diagnostic.message, p);
+        frag.append(p);
 
-          if (diagnostic.hints.length) {
-            const ul = document.createElement("ul");
-            ul.className = "typst-hints";
+        if (diagnostic.hints.length) {
+          const ul = document.createElement("ul");
+          ul.className = "typst-hints";
 
-            for (const hint of diagnostic.hints) {
-              const li = document.createElement("li");
-              parseBackticks(hint, li);
-              ul.append(li);
-            }
-
-            frag.append(ul);
+          for (const hint of diagnostic.hints) {
+            const li = document.createElement("li");
+            parseBackticks(hint, li);
+            ul.append(li);
           }
 
-          return frag;
-        },
-      };
-    });
+          frag.append(ul);
+        }
+
+        return frag;
+      },
+    }));
 
     const transaction = setDiagnostics(state, diagnostics);
     view.dispatch(transaction);

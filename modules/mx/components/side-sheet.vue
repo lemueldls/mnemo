@@ -35,7 +35,7 @@ const modal = computed(() => (props.type === "auto" ? !large.value : props.type 
 
 <style lang="scss">
 .side-sheet {
-  @apply max-w-100 flex h-full min-w-64 translate-x-0 flex-col p-3;
+  @apply flex h-full max-w-100 min-w-64 translate-x-0 flex-col p-3;
 
   padding-top: calc(0.75rem + env(safe-area-inset-top));
 
@@ -64,7 +64,7 @@ const modal = computed(() => (props.type === "auto" ? !large.value : props.type 
   }
 
   &--modal {
-    @apply bg-surface-container-low z-1 absolute;
+    @apply bg-surface-container-low absolute z-1;
   }
 
   &--modal#{&}--left {

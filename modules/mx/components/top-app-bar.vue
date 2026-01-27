@@ -27,7 +27,7 @@ const { y } = useWindowScroll();
 
 <style lang="scss">
 .top-app-bar {
-  @apply bg-surface text-on-surface title-large duration-250 relative flex w-full items-center gap-2 p-3 transition-colors;
+  @apply bg-surface text-on-surface title-large relative flex w-full items-center gap-2 p-3 transition-colors duration-250;
 
   height: calc(4rem + env(safe-area-inset-top));
   padding-top: calc(0.75rem + env(safe-area-inset-top));

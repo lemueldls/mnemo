@@ -9,11 +9,12 @@ import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 if (isTauri()) {
   const unlisten = await onOpenUrl(async (urls) => {
     const [callback] = urls;
-    if (!callback)
+    if (!callback) {
       throw createError({
         statusCode: 400,
         statusMessage: "No callback URL provided",
       });
+    }
 
     const callbackUrl = new URL(callback);
     const token = callbackUrl.searchParams.get("token")!;
@@ -100,13 +101,14 @@ onMounted(async () => {
     y.value = event.clientY;
   });
 
-  if (import.meta.env.PROD)
+  if (import.meta.env.PROD) {
     useEventListener(window, "error", (event) => {
       const { createNotification } = useNotifications();
       createNotification(event.message, { type: "error" });
 
       console.error(event.error);
     });
+  }
 
   // Request persistent storage for site
   if (navigator.storage && navigator.storage.persist) {

@@ -42,17 +42,13 @@ class WebSocketMessageWrapper implements WebSocketMessage {
   constructor(public data: string | Uint8Array) {}
 
   async bytes(): Promise<Uint8Array> {
-    if (this.data instanceof Uint8Array) {
-      return this.data;
-    }
+    if (this.data instanceof Uint8Array) return this.data;
 
-    return new TextEncoder().encode(this.data as string);
+    return new TextEncoder().encode(this.data);
   }
 
   async text(): Promise<string> {
-    if (typeof this.data === "string") {
-      return this.data;
-    }
+    if (typeof this.data === "string") return this.data;
 
     const bytes = await this.bytes();
 
@@ -116,13 +112,9 @@ export function useApiWebSocket(
     if (reconnectAttempts < (autoReconnect.retries || 5)) {
       reconnectAttempts++;
       reconnectTimer = setTimeout(() => {
-        if (!explicitlyClosed) {
-          open();
-        }
+        if (!explicitlyClosed) open();
       }, autoReconnect.delay || 1000);
-    } else {
-      autoReconnect.onFailed?.();
-    }
+    } else autoReconnect.onFailed?.();
   };
 
   const open = async () => {
@@ -271,9 +263,7 @@ export function useApiWebSocket(
     }
   };
 
-  if (immediate) {
-    open();
-  }
+  if (immediate) open();
 
   // Cleanup on unmount
   tryOnScopeDispose(async () => {

@@ -5,7 +5,7 @@ export interface ScheduleItem {
 }
 
 export async function useSchedule() {
-  const schedule = await useStorageMap<{ [day: number]: ScheduleItem[] }>("schedule.json", {
+  const schedule = await useStorageMap<Record<number, ScheduleItem[]>>("schedule.json", {
     0: [],
     1: [],
     2: [],

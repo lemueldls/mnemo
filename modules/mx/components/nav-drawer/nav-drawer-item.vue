@@ -23,7 +23,7 @@ defineProps<{
 
 <style lang="scss">
 .nav-drawer-item {
-  @apply label-large rounded-3 relative flex h-14 items-center gap-3 overflow-hidden text-ellipsis whitespace-nowrap p-4;
+  @apply label-large rounded-3 relative flex h-14 items-center gap-3 overflow-hidden p-4 text-ellipsis whitespace-nowrap;
 
   border-radius: var(--md-nav-drawer-item-container-shape);
 

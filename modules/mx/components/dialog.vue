@@ -53,7 +53,7 @@ const basic = computed(() => (props.type === "auto" ? medium.value : props.type 
   // &--fullscreen {}
 
   &--basic &__inner {
-    @apply bg-surface-container-high max-w-140 min-w-70 flex flex-col rounded-xl p-6 opacity-100;
+    @apply bg-surface-container-high flex max-w-140 min-w-70 flex-col rounded-xl p-6 opacity-100;
 
     transform-origin: center -1rem;
     transform: scaleY(1) translateY(0);

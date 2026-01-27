@@ -14,7 +14,7 @@ const dark = useDark();
 <template>
   <mx-theme :color="space.color">
     <div class="text-on-background bg-background flex min-h-screen flex-1 flex-col pt-16">
-      <mx-top-app-bar compress class="print:hidden! z-1 fixed! top-0">
+      <mx-top-app-bar compress class="fixed! top-0 z-1 print:hidden!">
         <template #leading>
           <nuxt-link :to="`/space?id=${spaceId}`">
             <md-icon-button>

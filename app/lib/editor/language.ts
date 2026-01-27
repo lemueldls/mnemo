@@ -1,11 +1,10 @@
 import {
-  snippet,
-  startCompletion,
   type Completion,
   type CompletionContext,
   type CompletionResult,
+  snippet,
+  startCompletion,
 } from "@codemirror/autocomplete";
-
 import { EditorState } from "@codemirror/state";
 
 import type { EditorView } from "@codemirror/view";

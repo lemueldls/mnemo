@@ -15,9 +15,7 @@ export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefi
     (element) => {
       observer = new ResizeObserver(updateWidth);
       if (element) {
-        for (const child of element.children) {
-          observer.observe(child);
-        }
+        for (const child of element.children) observer.observe(child);
 
         updateWidth();
       }
@@ -44,9 +42,7 @@ export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefi
       observer.disconnect();
       observer = new ResizeObserver(updateWidth);
 
-      for (const child of element.children) {
-        observer.observe(child);
-      }
+      for (const child of element.children) observer.observe(child);
 
       updateWidth();
     }
@@ -73,9 +69,7 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
     (element) => {
       observer = new ResizeObserver(updateHeight);
       if (element) {
-        for (const child of element.children) {
-          observer.observe(child);
-        }
+        for (const child of element.children) observer.observe(child);
 
         updateHeight();
       }
@@ -102,9 +96,7 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
       observer.disconnect();
       observer = new ResizeObserver(updateHeight);
 
-      for (const child of element.children) {
-        observer.observe(child);
-      }
+      for (const child of element.children) observer.observe(child);
 
       updateHeight();
     }

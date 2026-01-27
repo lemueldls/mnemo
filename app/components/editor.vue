@@ -15,10 +15,10 @@ import { highlightSelectionMatches } from "@codemirror/search";
 import { Compartment, EditorState, type EditorStateConfig } from "@codemirror/state";
 
 import {
+  EditorView,
   crosshairCursor,
   drawSelection,
   dropCursor,
-  EditorView,
   highlightSpecialChars,
   placeholder,
   rectangularSelection,
@@ -26,14 +26,12 @@ import {
 
 // import { LoroExtensions } from "loro-codemirror";
 // import { EphemeralStore } from "loro-crdt";
+import { type FileId, Rgb, ThemeColors } from "mnemo-wasm";
 import { LRUCache } from "lru-cache";
-import { Rgb } from "mnemo-wasm";
-import { ThemeColors, type FileId } from "mnemo-wasm";
-import { match } from "ts-pattern";
-import { normalizeKey } from "unstorage";
-
 import type { NoteKind } from "~/composables/notes";
 import type { Rgba } from "~~/modules/mx/types";
+import { match } from "ts-pattern";
+import { normalizeKey } from "unstorage";
 
 import { typstPlugin } from "~/lib/editor/plugin";
 
@@ -161,24 +159,25 @@ onMounted(async () => {
       (text) => {
         typstState.insertSource(fileId, text);
 
-        if (oldFullPath)
+        if (oldFullPath) {
           stateCache.set(
             oldFullPath,
             view.state.toJSON({
               history: historyField,
             }),
           );
+        }
 
         const cache = stateCache.get(fullPath);
         const stateConfig = createStateConfig(fileId, view);
 
-        if (cache)
+        if (cache) {
           view.setState(
             EditorState.fromJSON(cache, stateConfig, {
               history: historyField,
             }),
           );
-        else {
+        } else {
           stateConfig.doc = text;
           view.setState(EditorState.create(stateConfig));
         }
@@ -290,7 +289,7 @@ const renderHoverBackground = computed(() => {
 
 <style lang="scss">
 .editor {
-  @apply size-full overflow-hidden pb-2 pr-2;
+  @apply size-full overflow-hidden pr-2 pb-2;
 
   .cm-editor {
     @apply body-large h-full outline-none;
@@ -397,7 +396,7 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest max-w-1/3 max-h-1/3 m-0 overflow-auto rounded-lg border-none p-0 font-mono shadow;
+    @apply bg-surface-container-lowest m-0 max-h-1/3 max-w-1/3 overflow-auto rounded-lg border-none p-0 font-mono shadow;
 
     font-family: var(--font-mono), var(--font-math);
 
@@ -414,7 +413,7 @@ const renderHoverBackground = computed(() => {
     }
 
     code {
-      @apply bg-surface-container text-wrap rounded px-1 font-mono;
+      @apply bg-surface-container rounded px-1 font-mono text-wrap;
     }
   }
 

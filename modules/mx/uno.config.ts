@@ -5,17 +5,18 @@ import { breakpointsM3, verticalBreakpointsM3 } from "./composables/breakpoints"
 import type { Preset } from "unocss";
 
 function kebabCase(text: string) {
-  return text.replaceAll(/[a-z][A-Z]/g, (match) => `${match[0]}-${match[1]!.toLowerCase()}`);
+  return text.replaceAll(/[a-z][A-Z]/g, (match) => `${match[0]}-${match[1].toLowerCase()}`);
 }
 
-const colors = {} as { [key: string]: string };
+const colors = {} as Record<string, string>;
 
-for (const color in MaterialDynamicColors)
+for (const color in MaterialDynamicColors) {
   if (Object.hasOwn(MaterialDynamicColors, color)) {
     const key = kebabCase(color);
 
     colors[`${key}`] = `var(--md-sys-color-${key})`;
   }
+}
 
 export function presetMx(): Preset {
   return {

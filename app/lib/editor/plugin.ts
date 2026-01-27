@@ -45,7 +45,7 @@ export const typstPlugin = (
 
 const addSpaceBeforeClosingBracket = EditorView.inputHandler.of((view, from, to, text) => {
   if (text === " ") {
-    const state = view.state;
+    const { state } = view;
     const pos = from;
     const bracketPairs = { "(": ")", "[": "]", "{": "}", $: "$" };
     const before = state.doc.sliceString(pos - 1, pos) as keyof typeof bracketPairs;
