@@ -56,8 +56,8 @@ export const useAuth = createSharedComposable(() => {
       return;
     }
 
-    session.value = sessionData?.session || null;
-    user.value = sessionData?.user || null;
+    session.value = sessionData?.session ?? null;
+    user.value = sessionData?.user ?? null;
     sessionFetching.value = false;
 
     return sessionData;

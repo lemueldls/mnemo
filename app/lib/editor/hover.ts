@@ -24,5 +24,5 @@ export const typstHoverTooltip = (fileId: FileId, typstState: TypstState) =>
           return { dom: div };
         },
       };
-    else return null;
+    return null;
   });

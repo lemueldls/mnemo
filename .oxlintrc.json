@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "jsdoc", "node", "promise", "vue"],
+  "categories": {
+    "nursery": "warn",
+    "correctness": "warn",
+    "pedantic": "warn"
+    // "perf": "warn",
+    // "restriction": "warn",
+    // "style": "warn",
+    // "suspicious": "warn"
+  },
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    ".pre-commit-config.yaml",
+    "dist/",
+    "node_modules/",
+    "platform/",
+    "target/",
+    ".output/",
+    ".data/",
+    ".nuxt/",
+    ".nitro/",
+    ".cache/",
+    ".wrangler/",
+    ".devenv*/",
+    ".direnv/",
+    ".android/",
+    ".vercel/",
+    ".netlify/"
+  ]
+}

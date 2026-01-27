@@ -56,7 +56,7 @@ export const useReview = createSharedComposable(async (amount: MaybeRefOrGetter<
           for (let i = end; i >= 0 && notesToReview.length < max; i--) {
             const note = notes[i]!;
 
-            const datesReviewed = note.datesReviewed || [];
+            const datesReviewed = note.datesReviewed ?? [];
 
             const createdAt = decodeTime(note.id);
             if (createdAt > yesterday) continue;

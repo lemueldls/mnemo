@@ -130,24 +130,23 @@ function decorate(
         });
 
       return;
-    } else {
-      if (isFlaggedForUpdate) updateFlagStore.delete(path);
-      else updateFlagStore.add(path);
-
-      const compileResult = typstState.compilePaged(fileId, text, prelude);
-      dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
-
-      if (compileResult.requests.length > 0)
-        handleTypstRequests(compileResult.requests, spaceId).then((update) => {
-          if (update) {
-            view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-            view.dispatch({ changes: [{ from: 0, to: 1 }] });
-          }
-        });
-
-      frames = compileResult.frames;
-      framesCache.set(path, compileResult.frames);
     }
+    if (isFlaggedForUpdate) updateFlagStore.delete(path);
+    else updateFlagStore.add(path);
+
+    const compileResult = typstState.compilePaged(fileId, text, prelude);
+    dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
+
+    if (compileResult.requests.length > 0)
+      handleTypstRequests(compileResult.requests, spaceId).then((update) => {
+        if (update) {
+          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
+          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+        }
+      });
+
+    frames = compileResult.frames;
+    framesCache.set(path, compileResult.frames);
   } else frames = framesCache.get(path)!;
 
   const { view, state } = update;

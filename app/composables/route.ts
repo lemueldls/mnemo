@@ -11,7 +11,7 @@ export function usePageRouteQuery(name: string, defaultValue: string = "") {
   const router = useRouter();
 
   return computed({
-    get: () => [route.query[name]].flat()[0]?.toString() || defaultValue,
+    get: () => [route.query[name]].flat()[0]?.toString() ?? defaultValue,
     set(query: string) {
       router.replace({ ...route, query: { ...route.query, [name]: query } });
     },

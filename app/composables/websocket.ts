@@ -104,10 +104,10 @@ export function useApiWebSocket(
     cleanup();
     heartbeatTimer = setTimeout(() => {
       if (ws.value && status.value === "OPEN") {
-        send(heartbeat.message || "ping");
+        send(heartbeat.message ?? "ping");
         startHeartbeat();
       }
-    }, heartbeat.interval || 30000);
+    }, heartbeat.interval ?? 30000);
   };
 
   const attemptReconnect = () => {

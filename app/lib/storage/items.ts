@@ -229,7 +229,7 @@ function createStorageItem<T extends StorageValue>(
 ) {
   return useSharedAsyncData(key, async (key, scope) => {
     const storageItem = await getStorageItem<T>(key);
-    const item = ref(storageItem || initialValue) as Ref<T>;
+    const item = ref(storageItem ?? initialValue) as Ref<T>;
 
     const customRef = scope.run(() => {
       const runNextSync = ref(true);

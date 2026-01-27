@@ -39,9 +39,8 @@ export const parseBackticks = (str: string, into: HTMLElement) => {
       const code = document.createElement("code");
       code.textContent = sub;
       return code;
-    } else {
-      return document.createTextNode(sub);
     }
+    return document.createTextNode(sub);
   });
 
   into.append(...result);

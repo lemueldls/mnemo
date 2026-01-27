@@ -9,5 +9,5 @@ export interface Space {
 }
 
 export async function useSpaces(archived?: boolean) {
-  return await useStorageMap<{ [id: string]: Space }>("spaces.json");
+  return useStorageMap<{ [id: string]: Space }>("spaces.json");
 }

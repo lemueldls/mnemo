@@ -41,8 +41,12 @@ export function useSteps({ initialSteps, onComplete }: UseStepsOptions) {
   async function startStep(id: string) {
     updateStep(id, "loading");
     return {
-      complete: () => updateStep(id, "done"),
-      error: () => updateStep(id, "pending"),
+      complete: () => {
+        updateStep(id, "done");
+      },
+      error: () => {
+        updateStep(id, "pending");
+      },
     };
   }
 

@@ -139,56 +139,55 @@ export function cycleHeading(view: EditorView) {
                   },
                 ],
               };
-        } else {
-          const f = state.doc.lineAt(o);
-          let g;
-          const v = f.from === 0 ? undefined : state.doc.lineAt(f.from - 1),
-            y = v === undefined || state.sliceDoc(v.from, v.to).trim().length === 0;
-          if (f.from === o || state.sliceDoc(f.from, o).trim().length === 0) g = y ? 0 : 1;
-          else {
-            g = 2;
-            if (!y) g++;
-          }
-          const E = f.text.match(/^\s*/)?.[0] ?? "",
-            N = state.sliceDoc(o, c).split("\n"),
-            _ = N.length > 1 && !N[0]!.startsWith("#[") && !N[N.length - 1]!.endsWith("]"),
-            T = (g > 0 ? "\n".repeat(g) + E : "") + "= ",
-            M = E + "  ";
-          let O = N.map((U, J) =>
-            J === 0
-              ? _
-                ? "#[\n" + E + "  " + U
-                : U
-              : U.trim() != "]" && !U.startsWith(M)
-                ? M + U
-                : U,
-          ).join("\n");
-          if (_) {
-            O += "\n" + E + "]";
-          }
-
-          let W = T + O;
-          const P = state.doc.length === c ? undefined : state.doc.lineAt(c + 1);
-
-          if (!P || P.from >= c) {
-            if (P && state.sliceDoc(P.from, P.to).match(/^\s*$/) === null) {
-              W += "\n";
-            }
-          }
-
-          return {
-            range: r.empty
-              ? EditorSelection.cursor(o + T.length + O.length)
-              : EditorSelection.range(o + T.length, o + T.length + O.length),
-            changes: [
-              {
-                from: o,
-                to: c,
-                insert: W,
-              },
-            ],
-          };
         }
+        const f = state.doc.lineAt(o);
+        let g;
+        const v = f.from === 0 ? undefined : state.doc.lineAt(f.from - 1),
+          y = v === undefined || state.sliceDoc(v.from, v.to).trim().length === 0;
+        if (f.from === o || state.sliceDoc(f.from, o).trim().length === 0) g = y ? 0 : 1;
+        else {
+          g = 2;
+          if (!y) g++;
+        }
+        const E = f.text.match(/^\s*/)?.[0] ?? "",
+          N = state.sliceDoc(o, c).split("\n"),
+          _ = N.length > 1 && !N[0]!.startsWith("#[") && !N[N.length - 1]!.endsWith("]"),
+          T = (g > 0 ? "\n".repeat(g) + E : "") + "= ",
+          M = E + "  ";
+        let O = N.map((U, J) =>
+          J === 0
+            ? _
+              ? "#[\n" + E + "  " + U
+              : U
+            : U.trim() != "]" && !U.startsWith(M)
+              ? M + U
+              : U,
+        ).join("\n");
+        if (_) {
+          O += "\n" + E + "]";
+        }
+
+        let W = T + O;
+        const P = state.doc.length === c ? undefined : state.doc.lineAt(c + 1);
+
+        if (!P || P.from >= c) {
+          if (P && state.sliceDoc(P.from, P.to).match(/^\s*$/) === null) {
+            W += "\n";
+          }
+        }
+
+        return {
+          range: r.empty
+            ? EditorSelection.cursor(o + T.length + O.length)
+            : EditorSelection.range(o + T.length, o + T.length + O.length),
+          changes: [
+            {
+              from: o,
+              to: c,
+              insert: W,
+            },
+          ],
+        };
       }),
     ),
     view.focus(),
@@ -375,27 +374,26 @@ export function toggleAroundSelection(
                   },
                 ],
               };
-            } else {
-              // Remove existing delimiters
-              return {
-                range: EditorSelection.range(
-                  selRange.from - before.length,
-                  selRange.to - before.length,
-                ),
-                changes: [
-                  {
-                    from: selRange.from - before.length,
-                    to: selRange.from,
-                    insert: "",
-                  },
-                  {
-                    from: selRange.to,
-                    to: selRange.to + after.length,
-                    insert: "",
-                  },
-                ],
-              };
             }
+            // Remove existing delimiters
+            return {
+              range: EditorSelection.range(
+                selRange.from - before.length,
+                selRange.to - before.length,
+              ),
+              changes: [
+                {
+                  from: selRange.from - before.length,
+                  to: selRange.from,
+                  insert: "",
+                },
+                {
+                  from: selRange.to,
+                  to: selRange.to + after.length,
+                  insert: "",
+                },
+              ],
+            };
           }
         }
 

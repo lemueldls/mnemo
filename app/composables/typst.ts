@@ -22,29 +22,28 @@ export function getTypstFontImports() {
   ];
 }
 
-export const useTypst = createSharedComposable(
-  async () =>
-    await init().then(async () => {
-      const typstState = new TypstState();
+export const useTypst = createSharedComposable(async () =>
+  init().then(async () => {
+    const typstState = new TypstState();
 
-      const fontSets = getTypstFontImports();
+    const fontSets = getTypstFontImports();
 
-      for (const fontImports of fontSets) {
-        await Promise.all(
-          fontImports.map(async (fontImport) => {
-            const { default: fileUrl } = await fontImport;
+    for (const fontImports of fontSets) {
+      await Promise.all(
+        fontImports.map(async (fontImport) => {
+          const { default: fileUrl } = await fontImport;
 
-            const response = await fetch(fileUrl);
-            const buffer = await response.arrayBuffer();
-            const bytes = new Uint8Array(buffer);
+          const response = await fetch(fileUrl);
+          const buffer = await response.arrayBuffer();
+          const bytes = new Uint8Array(buffer);
 
-            typstState.installFont(bytes);
-          }),
-        );
-      }
+          typstState.installFont(bytes);
+        }),
+      );
+    }
 
-      return typstState;
-    }),
+    return typstState;
+  }),
 );
 
 export interface TypstPackageSpec {
@@ -54,7 +53,7 @@ export interface TypstPackageSpec {
 }
 
 export const useInstalledPackages = async (spaceId: MaybeRefOrGetter<string>) =>
-  await useStorageList<TypstPackageSpec[]>(() => `spaces/${toValue(spaceId)}/packages.json`);
+  useStorageList<TypstPackageSpec[]>(() => `spaces/${toValue(spaceId)}/packages.json`);
 
 export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: string) => {
   const { createNotification } = useNotifications();
@@ -77,7 +76,8 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
     if (hasPackage) {
       await loadTypstPackage(pkg).catch(reject);
 
-      return resolve();
+      resolve();
+      return;
     }
 
     const { t } = useSharedI18n();

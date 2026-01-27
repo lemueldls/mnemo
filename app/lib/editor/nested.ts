@@ -207,7 +207,7 @@ class NestedEditorWidget extends WidgetType {
   }
 
   syncToParent(parentView: EditorView, newContent: string) {
-    const dom = this.dom || parentView.dom.querySelector(".cm-nested-widget");
+    const dom = this.dom ?? parentView.dom.querySelector(".cm-nested-widget");
     if (!dom) return;
 
     const currentFrom = parentView.posAtDOM(dom);
