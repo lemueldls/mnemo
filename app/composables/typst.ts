@@ -29,6 +29,7 @@ export const useTypst = createSharedComposable(async () =>
     const fontSets = getTypstFontImports();
 
     for (const fontImports of fontSets) {
+      // oxlint-disable-next-line no-await-in-loop
       await Promise.all(
         fontImports.map(async (fontImport) => {
           const { default: fileUrl } = await fontImport;
@@ -60,8 +61,7 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
 
   const spec = usePackageSpec(pkg);
 
-  // oxlint-disable-next-line no-async-promise-executor
-  // eslint-disable-next-line no-async-promise-executor
+  // oxlint-disable-next-line no-async-promise-executor typescript/no-misused-promises
   return new Promise<void>(async (resolve, reject) => {
     const spaces = await useSpaces();
     const space = spaces.value[spaceId]!;
@@ -97,7 +97,7 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
                 await loadTypstPackage(pkg);
 
                 const installedPackages = await useInstalledPackages(spaceId);
-                installedPackages.push(pkg);
+                void installedPackages.push(pkg);
 
                 resolve();
               } catch (error) {
@@ -109,6 +109,7 @@ export const installTypstPackage = useMemoize((pkg: TypstPackageSpec, spaceId: s
                   { type: "error" },
                 );
 
+                // oxlint-disable-next-line typescript/prefer-promise-reject-errors
                 reject(error);
               }
             },
@@ -133,6 +134,7 @@ export async function loadTypstPackage(pkg: TypstPackageSpec) {
     responseType: "blob",
   });
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const blob = data as Blob;
   const buffer = await blob.arrayBuffer();
 
@@ -163,6 +165,7 @@ const handleTypstRequest = useMemoize(async (request: TypstRequest, spaceId: str
 
       const item = await getStorageItem<string>(path);
 
+      // oxlint-disable-next-line typescript/strict-boolean-expressions
       if (item) {
         const typstState = await useTypst();
         const fileId = typstState.createSourceId(path, spaceId);
@@ -180,6 +183,7 @@ const handleTypstRequest = useMemoize(async (request: TypstRequest, spaceId: str
 
       const item = await getStorageItem<string>(path);
 
+      // oxlint-disable-next-line typescript/strict-boolean-expressions
       if (item) {
         const typstState = await useTypst();
         const fileId = typstState.createFileId(path);

@@ -29,12 +29,7 @@ const dailyNotes = await Promise.all(
       const time = decodeTime(note.id);
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-      return (
-        `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` +
-        "#{show block:html.frame;[\n" +
-        item +
-        "\n]}"
-      );
+      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n#{show block:html.frame;[\n${item}\n]}`;
     }),
 );
 
@@ -89,7 +84,7 @@ watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
 
 try {
   const packages = await useInstalledPackages(spaceId.value);
-  await Promise.all(packages.value.map((pkg) => installTypstPackage(pkg, spaceId.value)));
+  await Promise.all(packages.value.map((pkg) => loadTypstPackage(pkg)));
 } catch (err) {
   console.error("Error installing packages:", err);
 }
