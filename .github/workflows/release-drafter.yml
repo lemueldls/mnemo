@@ -18,7 +18,7 @@ jobs:
     name: Release Drafter
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v5.0.0.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
@@ -44,7 +44,7 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Release Drafter
-        uses: release-drafter/release-drafter@267d2e0268deae5d44f3ba5029dd4d6e85f9d52d # v6.1.1
+        uses: release-drafter/release-drafter@3f0f87098bd6b5c5b9a36d49c41d998ea58f9348 # v6.0.0
         with:
           name: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
           tag: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
