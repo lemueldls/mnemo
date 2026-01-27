@@ -64,6 +64,12 @@ function deleteSpace() {
   infoOpen.value = false;
 }
 
+const archivedSpaces = await useArchivedSpaces();
+function archiveSpace() {
+  archivedSpaces.set(spaceId.value, space);
+  deleteSpace();
+}
+
 const screenshotBlob = ref<Blob>();
 const screenshotUrl = ref<string>();
 
@@ -378,6 +384,9 @@ whenever(idle, async () => {
         <div slot="actions">
           <md-text-button class="text-error" form="edit-space-form" @click.prevent="deleteSpace">
             Delete
+          </md-text-button>
+          <md-text-button class="text-error" form="edit-space-form" @click.prevent="archiveSpace">
+            Archive
           </md-text-button>
           <md-text-button form="edit-space-form">Confirm</md-text-button>
         </div>
