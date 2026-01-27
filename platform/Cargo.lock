@@ -3053,7 +3053,6 @@ dependencies = [
  "typst",
  "typst-html",
  "typst-ide",
- "typst-render",
  "typst-svg",
  "typst-syntax",
  "wasm-bindgen",
@@ -3850,15 +3849,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pixglyph"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c1106193bc18a4b840eb075ff6664c8a0b0270f0531bb12a7e9c803e53b55c5"
-dependencies = [
- "ttf-parser",
-]
-
-[[package]]
 name = "pkg-config"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4411,32 +4401,6 @@ dependencies = [
  "wasm-streams",
  "web-sys",
  "webpki-roots",
-]
-
-[[package]]
-name = "resvg"
-version = "0.45.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8928798c0a55e03c9ca6c4c6846f76377427d2c1e1f7e6de3c06ae57942df43"
-dependencies = [
- "gif",
- "image-webp",
- "log",
- "pico-args",
- "rgb",
- "svgtypes",
- "tiny-skia",
- "usvg",
- "zune-jpeg",
-]
-
-[[package]]
-name = "rgb"
-version = "0.8.52"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c6a884d2998352bb4daf0183589aec883f16a6da1f4dde84d8e2e9a5409a1ce"
-dependencies = [
- "bytemuck",
 ]
 
 [[package]]
@@ -6352,25 +6316,6 @@ dependencies = [
  "typst-syntax",
  "typst-timing",
  "typst-utils",
-]
-
-[[package]]
-name = "typst-render"
-version = "0.14.2"
-source = "git+https://github.com/typst/typst.git?rev=7ada6687#7ada6687923fdc9168bc0b1ce6bed72c1e56b1a5"
-dependencies = [
- "bytemuck",
- "comemo",
- "hayro",
- "image",
- "pixglyph",
- "resvg",
- "tiny-skia",
- "ttf-parser",
- "typst-assets",
- "typst-library",
- "typst-macros",
- "typst-timing",
 ]
 
 [[package]]

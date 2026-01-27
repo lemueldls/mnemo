@@ -29,7 +29,7 @@ const dailyNotes = await Promise.all(
       const time = decodeTime(note.id);
       const date = d(time, { weekday: "long", month: "long", day: "numeric" });
 
-      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` + item;
+      return `#align(right)[#text(size:14pt,fill:theme.on-primary-container,[${date}])]\n` + "#{show block:html.frame;[\n" + item + "\n]}";
     }),
 );
 

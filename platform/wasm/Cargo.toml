@@ -39,14 +39,14 @@ typst = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-html = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-ide = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 # typst-pdf = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-render = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+# typst-render = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-svg = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-syntax = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 wasm-bindgen = "0.2"
 
 [dev-dependencies]
 criterion = { version = "0.8.1", features = ["html_reports"] }
-wasm-bindgen-test = "0.3.50"
+wasm-bindgen-test = "0.3"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false # ["-Oz", "-all"]

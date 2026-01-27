@@ -232,7 +232,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkPaged")]
     pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Png, self);
+        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Svg, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -319,26 +319,12 @@ impl TypstState {
         let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
 
         let page_config = match render_target {
-            RenderTarget::Png => {
+            RenderTarget::Svg => {
                 formatdoc!(
                     r#"
                         #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
-
                         #set text(top-edge:"ascender",bottom-edge:"descender")
                         #set par(leading:0.125em)
-
-                        // #set list(spacing:0.125em)
-                        // #set enum(spacing:0.125em)
-
-                        // #show math.equation:it=>box(it,stroke:0pt)
-                        // #show math.equation.where(block:true):set block(above:0.25em,below:0.25em)
-                        // #show heading:set block(above:0.25em,below:0.125em)
-                        // #show heading:set text(top-edge:"bounds",bottom-edge:"bounds")
-                        // #show list:set block(above:0.25em,below:0.125em)
-                        // #show enum:set block(above:0.25em,below:0.125em)
-                        // #show table:set block(inset:2pt)
-
-                        // #show:d=>box(d,width:100%)
                     "#,
                     width = source_ctx.width,
                 )

@@ -563,10 +563,6 @@ const renderHoverBackground = computed(() => {
     .typst-doc {
       @apply inline-block w-full;
     }
-
-    .typst-frame {
-      @apply cursor-text;
-    }
   }
 
   .cm-content[contenteditable="true"] {
@@ -576,6 +572,10 @@ const renderHoverBackground = computed(() => {
       &:hover {
         background-color: v-bind(renderHoverBackground);
       }
+    }
+
+    .typst-frame {
+      @apply cursor-text;
     }
   }
 

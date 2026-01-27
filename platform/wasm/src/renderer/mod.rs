@@ -165,7 +165,7 @@ pub struct AstBlock {
 }
 
 pub enum RenderTarget {
-    Png,
+    Svg,
     Pdf,
     Html,
 }

@@ -27,7 +27,7 @@ pub fn render_by_items(
     prelude: &str,
     state: &mut TypstState,
 ) -> PagedRenderResult {
-    let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Png, state);
+    let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Svg, state);
 
     let mut last_document = None;
 
