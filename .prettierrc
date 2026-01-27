@@ -1,7 +1,0 @@
-{
-  "plugins": ["@prettier/plugin-oxc", "prettier-plugin-tailwindcss"],
-  "semi": true,
-  "singleQuote": false,
-  "printWidth": 100,
-  "trailingComma": "all"
-}

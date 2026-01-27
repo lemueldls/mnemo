@@ -1,9 +1,20 @@
 packages:
   - platform/wasm/pkg
 
+overrides:
+  sharp: =0.34.5
+  crossws: =0.4.1
+  h3: npm:h3-nightly@1.15.5-20251001-082059-b4dce71
+
+patchedDependencies:
+  crossws: patches/crossws.patch
+  nitropack: patches/nitropack.patch
+  unwasm: patches/unwasm.patch
+
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@swc/core"
+  - better-sqlite3
   - esbuild
   - sharp
   - unrs-resolver

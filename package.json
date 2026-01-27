@@ -72,7 +72,6 @@
     "@nuxthub/core": "^0.10.4",
     "@nuxtjs/color-mode": "3.5.2",
     "@nuxtjs/i18n": "^10.1.0",
-    "@prettier/plugin-oxc": "^0.0.4",
     "@types/eslint": "^9.6.1",
     "@types/node": "^24.6.0",
     "@unocss/eslint-config": "66.5.2",
@@ -80,10 +79,8 @@
     "@vueuse/components": "^13.9.0",
     "@vueuse/nuxt": "^13.9.0",
     "eslint": "^9.36.0",
-    "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^61.0.2",
     "nitropack": "^2.12.6",
@@ -93,8 +90,6 @@
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.11.2",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
     "sass": "^1.93.2",
     "stylelint": "^16.24.0",
     "stylelint-config-clean-order": "^7.0.0",
@@ -108,16 +103,5 @@
     "wasm-pack": "^0.13.1",
     "wrangler": "^4.59.1"
   },
-  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
-  "pnpm": {
-    "overrides": {
-      "crossws": "=0.4.1",
-      "h3": "npm:h3-nightly@1.15.5-20251001-082059-b4dce71"
-    },
-    "patchedDependencies": {
-      "crossws": "patches/crossws.patch",
-      "nitropack": "patches/nitropack.patch",
-      "unwasm": "patches/unwasm.patch"
-    }
-  }
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"
 }
