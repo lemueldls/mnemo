@@ -2,18 +2,27 @@ export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefi
   const scrollWidth = ref(0);
 
   let observer: ResizeObserver;
+  let updateScheduled = false;
 
   const elementRef = toRef(element);
 
   const updateWidth = () => {
     const element = elementRef.value;
     if (element) scrollWidth.value = element.scrollWidth;
+    updateScheduled = false;
+  };
+
+  const scheduleUpdate = () => {
+    if (!updateScheduled) {
+      updateScheduled = true;
+      requestAnimationFrame(updateWidth);
+    }
   };
 
   whenever(
     elementRef,
     (element) => {
-      observer = new ResizeObserver(updateWidth);
+      observer = new ResizeObserver(scheduleUpdate);
       if (element) {
         for (const child of element.children) observer.observe(child);
 
@@ -21,7 +30,7 @@ export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefi
       }
 
       // Use a separate MutationObserver to detect added/removed nodes
-      const mutationObserver = new MutationObserver(updateWidth);
+      const mutationObserver = new MutationObserver(scheduleUpdate);
       if (element) {
         mutationObserver.observe(element, {
           childList: true,
@@ -40,7 +49,7 @@ export function useScrollWidth(element: MaybeRefOrGetter<Element | null | undefi
   watch(elementRef, (element) => {
     if (element && observer) {
       observer.disconnect();
-      observer = new ResizeObserver(updateWidth);
+      observer = new ResizeObserver(scheduleUpdate);
 
       for (const child of element.children) observer.observe(child);
 
@@ -55,6 +64,7 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
   const scrollHeight = ref(0);
 
   let observer: ResizeObserver;
+  let updateScheduled = false;
 
   const elementRef = toRef(element);
 
@@ -62,12 +72,20 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
     const element = elementRef.value;
 
     if (element) scrollHeight.value = element.scrollHeight;
+    updateScheduled = false;
+  };
+
+  const scheduleUpdate = () => {
+    if (!updateScheduled) {
+      updateScheduled = true;
+      requestAnimationFrame(updateHeight);
+    }
   };
 
   whenever(
     elementRef,
     (element) => {
-      observer = new ResizeObserver(updateHeight);
+      observer = new ResizeObserver(scheduleUpdate);
       if (element) {
         for (const child of element.children) observer.observe(child);
 
@@ -75,7 +93,7 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
       }
 
       // Use a separate MutationObserver to detect added/removed nodes
-      const mutationObserver = new MutationObserver(updateHeight);
+      const mutationObserver = new MutationObserver(scheduleUpdate);
       if (element) {
         mutationObserver.observe(element, {
           childList: true,
@@ -94,7 +112,7 @@ export function useScrollHeight(element: MaybeRefOrGetter<Element | null | undef
   watch(elementRef, (element) => {
     if (element && observer) {
       observer.disconnect();
-      observer = new ResizeObserver(updateHeight);
+      observer = new ResizeObserver(scheduleUpdate);
 
       for (const child of element.children) observer.observe(child);
 
