@@ -8,7 +8,7 @@ const redirect = usePageRouteQuery("redirect").value as string;
 const platform = usePageRouteQuery("platform").value as string;
 
 if (token) {
-  useApiToken().value = encodeURIComponent(token);
+  useApiToken().value = encodeURIComponent(atob(token));
 
   const auth = useAuth();
   await auth.fetchSession();

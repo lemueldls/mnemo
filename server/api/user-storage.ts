@@ -12,9 +12,13 @@ export default defineWebSocketHandler({
     const headers = new Headers();
     const url = new URL(request.url);
     const token = url.searchParams.get("token");
+    console.log("user-storage", { token });
     headers.set("cookie", `mnemo.session_token=${token}`);
+    console.log("user-storage", { headers });
 
     const user = await requireUser(headers);
+
+    console.log("user-storage", { user });
 
     return { namespace: `users:${user.id}`, context: { token } };
   },

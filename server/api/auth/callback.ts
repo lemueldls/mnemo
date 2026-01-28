@@ -5,10 +5,12 @@ export default defineEventHandler(async (event) => {
 
   const token = getCookie(event, "mnemo.session_token");
 
+  console.log({ token }, token && encodeURIComponent(token), event.headers);
+
   if (!token) throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
   const url = new URL(
-    `/auth/confirm?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(query.redirect)}&platform=${query.platform}`,
+    `/auth/confirm?token=${btoa(token)}&redirect=${encodeURIComponent(query.redirect)}&platform=${query.platform}`,
     getBaseURL(),
   );
 
