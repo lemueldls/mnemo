@@ -619,23 +619,27 @@ const renderHoverBackground = computed(() => {
   }
 
   .typ-heading-level-1 {
-    @apply text-primary headline-large;
+    @apply text-primary headline-large font-normal!;
   }
 
   .typ-heading-level-2 {
-    @apply text-secondary headline-medium;
+    @apply text-secondary headline-medium font-normal;
   }
 
   .typ-heading-level-3 {
-    @apply text-tertiary headline-small;
+    @apply text-tertiary headline-small font-normal;
   }
 
   .typ-heading-level-4 {
-    @apply text-on-primary-container title-large font-semibold;
+    @apply text-primary title-large font-normal;
   }
 
   .typ-heading-level-5 {
-    @apply text-on-secondary-container title-medium font-semibold;
+    @apply text-secondary title-medium font-semibold;
+  }
+
+  .typ-heading-level-6 {
+    @apply text-tertiary title-small font-semibold;
   }
 
   .typ-marker {
