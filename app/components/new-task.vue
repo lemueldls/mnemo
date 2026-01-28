@@ -5,7 +5,7 @@ const open = useNewTaskOpen();
 
 const route = useRoute();
 const isSpace = route.name === "space";
-const selectedSpaceId = isSpace ? usePageRouteQuery("id") : ref<string>();
+const selectedSpaceId = ref(isSpace ? usePageRouteQuery("id").value : undefined);
 
 const spaces = await useSpaces();
 
@@ -27,7 +27,7 @@ function createTask() {
 
   tasks.set(id, task);
   editingTask.value = task;
-  selectedSpaceId.value = undefined;
+  // selectedSpaceId.value = undefined;
 }
 </script>
 
