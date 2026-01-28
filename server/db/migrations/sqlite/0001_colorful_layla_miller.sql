@@ -1,6 +1,22 @@
 ALTER TABLE `account` RENAME TO `accounts`;--> statement-breakpoint
 ALTER TABLE `user` RENAME TO `users`;--> statement-breakpoint
 ALTER TABLE `verification` RENAME TO `verifications`;--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "accountId" TO "account_id";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "providerId" TO "provider_id";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "userId" TO "user_id";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "accessToken" TO "access_token";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "refreshToken" TO "refresh_token";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "idToken" TO "id_token";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "accessTokenExpiresAt" TO "access_token_expires_at";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "refreshTokenExpiresAt" TO "refresh_token_expires_at";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "createdAt" TO "created_at";--> statement-breakpoint
+ALTER TABLE `accounts` RENAME COLUMN "updatedAt" TO "updated_at";--> statement-breakpoint
+ALTER TABLE `users` RENAME COLUMN "emailVerified" TO "email_verified";--> statement-breakpoint
+ALTER TABLE `users` RENAME COLUMN "createdAt" TO "created_at";--> statement-breakpoint
+ALTER TABLE `users` RENAME COLUMN "updatedAt" TO "updated_at";--> statement-breakpoint
+ALTER TABLE `verifications` RENAME COLUMN "expiresAt" TO "expires_at";--> statement-breakpoint
+ALTER TABLE `verifications` RENAME COLUMN "createdAt" TO "created_at";--> statement-breakpoint
+ALTER TABLE `verifications` RENAME COLUMN "updatedAt" TO "updated_at";--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
 CREATE TABLE `__new_accounts` (
 	`id` text PRIMARY KEY NOT NULL,

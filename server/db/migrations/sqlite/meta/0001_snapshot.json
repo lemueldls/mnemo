@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b886bac4-72f9-41f0-a8a4-08b37e12eab2",
-  "prevId": "3baec8e8-95d3-42e1-9dd3-8652d4272ae0",
+  "id": "2dfd02dc-6498-4443-b673-923adc58897b",
+  "prevId": "36c7da57-bf49-4bb8-bc52-373f796af0bd",
   "tables": {
     "accounts": {
       "name": "accounts",
@@ -103,7 +103,9 @@
       "indexes": {
         "accounts_userId_idx": {
           "name": "accounts_userId_idx",
-          "columns": ["user_id"],
+          "columns": [
+            "user_id"
+          ],
           "isUnique": false
         }
       },
@@ -112,8 +114,12 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -181,7 +187,9 @@
       "indexes": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": ["email"],
+          "columns": [
+            "email"
+          ],
           "isUnique": true
         }
       },
@@ -241,7 +249,9 @@
       "indexes": {
         "verifications_identifier_idx": {
           "name": "verifications_identifier_idx",
-          "columns": ["identifier"],
+          "columns": [
+            "identifier"
+          ],
           "isUnique": false
         }
       },
@@ -260,7 +270,24 @@
       "\"user\"": "\"users\"",
       "\"verification\"": "\"verifications\""
     },
-    "columns": {}
+    "columns": {
+      "\"accounts\".\"accountId\"": "\"accounts\".\"account_id\"",
+      "\"accounts\".\"providerId\"": "\"accounts\".\"provider_id\"",
+      "\"accounts\".\"userId\"": "\"accounts\".\"user_id\"",
+      "\"accounts\".\"accessToken\"": "\"accounts\".\"access_token\"",
+      "\"accounts\".\"refreshToken\"": "\"accounts\".\"refresh_token\"",
+      "\"accounts\".\"idToken\"": "\"accounts\".\"id_token\"",
+      "\"accounts\".\"accessTokenExpiresAt\"": "\"accounts\".\"access_token_expires_at\"",
+      "\"accounts\".\"refreshTokenExpiresAt\"": "\"accounts\".\"refresh_token_expires_at\"",
+      "\"accounts\".\"createdAt\"": "\"accounts\".\"created_at\"",
+      "\"accounts\".\"updatedAt\"": "\"accounts\".\"updated_at\"",
+      "\"users\".\"emailVerified\"": "\"users\".\"email_verified\"",
+      "\"users\".\"createdAt\"": "\"users\".\"created_at\"",
+      "\"users\".\"updatedAt\"": "\"users\".\"updated_at\"",
+      "\"verifications\".\"expiresAt\"": "\"verifications\".\"expires_at\"",
+      "\"verifications\".\"createdAt\"": "\"verifications\".\"created_at\"",
+      "\"verifications\".\"updatedAt\"": "\"verifications\".\"updated_at\""
+    }
   },
   "internal": {
     "indexes": {}
