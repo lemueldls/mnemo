@@ -382,9 +382,9 @@ whenever(idle, async () => {
         </form>
 
         <div slot="actions">
-          <md-text-button class="text-error" form="edit-space-form" @click.prevent="deleteSpace">
+          <!-- <md-text-button class="text-error" form="edit-space-form" @click.prevent="deleteSpace">
             Delete
-          </md-text-button>
+          </md-text-button> -->
           <md-text-button class="text-error" form="edit-space-form" @click.prevent="archiveSpace">
             Archive
           </md-text-button>
