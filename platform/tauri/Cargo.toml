@@ -25,8 +25,8 @@ tokio = { version = "1", features = ["full"] }
 ulid = { version = "1.2.1", features = ["serde"] }
 
 tauri = { version = "2.9.5", features = ["devtools"] }
-tauri-plugin-deep-link = "2.4.5"
-tauri-plugin-opener = "2.5.2"
+tauri-plugin-deep-link = "2.4.6"
+tauri-plugin-opener = "2.5.3"
 tauri-plugin-process = "2.3.1"
 
 [features]
