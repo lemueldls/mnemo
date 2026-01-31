@@ -1,4 +1,4 @@
-import { type Diagnostic, setDiagnostics } from "@codemirror/lint";
+import { setDiagnostics } from "@codemirror/lint";
 import { type Range, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { LRUCache } from "lru-cache";
@@ -29,19 +29,10 @@ class TypstWidget extends WidgetType {
     else {
       const container = document.createElement("div");
 
-      // container.attachShadow({ mode: "open" });
-      // const shadow = container.shadowRoot!;
-
       container.dataset.hash = frame.render.hash.toString();
       container.classList.add("typst-render");
-      // container.style.height = `${frame.render.height}px`;
 
-      // const image = document.createElement("img");
       container.setHTMLUnsafe(frame.render.svg);
-
-      // image.draggable = false;
-      // image.src = `data:image/png;base64,${frame.render.encoding.toBase64()}`;
-      // image.height = frame.render.height;
 
       if (!locked) {
         container.addEventListener("click", this.handleMouseEvent.bind(this));
@@ -51,8 +42,6 @@ class TypstWidget extends WidgetType {
         //   this.handleTouchEvent.bind(this),
         // );
       }
-
-      // container.append(image);
 
       containerCache.set(frame.render.hash, container);
       this.container = container;
@@ -65,14 +54,14 @@ class TypstWidget extends WidgetType {
     this.handleJump(clientX, clientY);
   }
 
-  private handleTouchEvent(event: TouchEvent) {
-    event.preventDefault();
-    const [touch] = event.touches;
-    const { clientX, clientY } = touch!;
-    this.handleJump(clientX, clientY);
-  }
+  // private handleTouchEvent(event: TouchEvent) {
+  //   event.preventDefault();
+  //   const [touch] = event.touches;
+  //   const { clientX, clientY } = touch!;
+  //   this.handleJump(clientX, clientY);
+  // }
 
-  private async handleJump(clientX: number, clientY: number) {
+  private handleJump(clientX: number, clientY: number) {
     const { typstState, frame, view } = this;
     const { top, left } = this.container.getBoundingClientRect();
 
@@ -92,6 +81,10 @@ class TypstWidget extends WidgetType {
 
   public toDOM() {
     return this.container;
+  }
+
+  public override get estimatedHeight() {
+    return this.frame.render.height;
   }
 }
 
@@ -121,10 +114,12 @@ function decorate(
       dispatchDiagnostics(diagnostics, update.state, update.view);
 
       if (requests.length > 0) {
-        handleTypstRequests(requests, spaceId).then((update) => {
+        void handleTypstRequests(requests, spaceId).then((update) => {
           if (update) {
-            view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-            view.dispatch({ changes: [{ from: 0, to: 1 }] });
+            const text = view.state.doc.toString();
+            view.dispatch({
+              changes: { from: 0, to: text.length, insert: text },
+            });
           }
         });
       }
@@ -138,10 +133,12 @@ function decorate(
     dispatchDiagnostics(compileResult.diagnostics, update.state, update.view);
 
     if (compileResult.requests.length > 0) {
-      handleTypstRequests(compileResult.requests, spaceId).then((update) => {
+      void handleTypstRequests(compileResult.requests, spaceId).then((update) => {
         if (update) {
-          view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-          view.dispatch({ changes: [{ from: 0, to: 1 }] });
+          const text = view.state.doc.toString();
+          view.dispatch({
+            changes: { from: 0, to: text.length, insert: text },
+          });
         }
       });
     }
@@ -157,8 +154,8 @@ function decorate(
   for (const frame of frames) {
     const { start, end } = frame.range;
 
-    const { from, number: startLine } = state.doc.lineAt(start);
-    const { to, number: endLine } = state.doc.lineAt(end);
+    // const { from, number: startLine } = state.doc.lineAt(start);
+    // const { to, number: endLine } = state.doc.lineAt(end);
 
     if (frame.render) {
       const inactive =

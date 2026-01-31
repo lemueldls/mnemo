@@ -255,8 +255,10 @@ function createStateConfig(fileId: FileId, view: EditorView): EditorStateConfig 
 }
 
 function reloadEditorWidgets(view: EditorView) {
-  view.dispatch({ changes: [{ from: 0, insert: "\n" }] });
-  view.dispatch({ changes: [{ from: 0, to: 1 }] });
+  const text = view.state.doc.toString();
+  view.dispatch({
+    changes: { from: 0, to: text.length, insert: text },
+  });
 }
 
 const selectionBackground = computed(() => {
