@@ -120,16 +120,13 @@ onMounted(() => {
     });
 });
 
-const dark = useDark();
 const theme = useMaterialTheme();
 const selectionBackground = computed(() => {
   const { r, g, b } = theme!.value.palette.primaryContainer;
   return `rgba(${r},${g},${b},0.5)`;
 });
 
-const stickyNoteContainer = computed(() =>
-  dark.value ? theme!.value.palette.onTertiaryContainer : theme!.value.palette.tertiaryContainer,
-);
+const stickyNoteContainer = computed(() => theme!.value.palette.tertiaryContainer);
 // const onStickyNoteContainer = computed(() =>
 //   dark.value
 //     ? theme!.value.palette.tertiaryContainer

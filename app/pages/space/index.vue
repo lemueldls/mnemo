@@ -221,25 +221,6 @@ whenever(idle, async () => {
 
 <template>
   <mx-theme id="space-page" :color="space.color">
-    <sticky-note
-      v-for="(note, i) in activeStickyNotes"
-      :key="note.id"
-      v-model="activeStickyNotes[i]"
-      :space-id="spaceId"
-      @mousedown="
-        () => {
-          // const lastNote = activeStickyNotes.at(-1);
-          // if (lastNote) {
-          //   const currentNote = activeStickyNotes[i];
-          //   // activeStickyNotes[i] = lastNote;
-          //   // if (currentNote)
-          //   //   activeStickyNotes[activeStickyNotes.length - 1] = currentNote;
-          // }
-        }
-      "
-      @close="activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)"
-    />
-
     <mx-page>
       <div class="flex h-full flex-1">
         <div class="flex size-full flex-1 flex-col">
@@ -473,6 +454,27 @@ whenever(idle, async () => {
 
       <side-bar v-if="medium" direction="vertical" />
     </mx-page>
+
+    <mx-theme :color="space.color" :dark="false">
+      <sticky-note
+        v-for="(note, i) in activeStickyNotes"
+        :key="note.id"
+        v-model="activeStickyNotes[i]"
+        :space-id="spaceId"
+        @mousedown="
+          () => {
+            // const lastNote = activeStickyNotes.at(-1);
+            // if (lastNote) {
+            //   const currentNote = activeStickyNotes[i];
+            //   // activeStickyNotes[i] = lastNote;
+            //   // if (currentNote)
+            //   //   activeStickyNotes[activeStickyNotes.length - 1] = currentNote;
+            // }
+          }
+        "
+        @close="activeStickyNotes = activeStickyNotes.filter(({ id }) => note.id !== id)"
+      />
+    </mx-theme>
   </mx-theme>
 </template>
 
