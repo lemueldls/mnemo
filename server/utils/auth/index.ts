@@ -5,6 +5,8 @@ import { kv } from "hub:kv";
 
 import { AuthOptions, createAuth } from "./client";
 
+import type { H3Event } from "#imports";
+
 const runtimeConfig = useRuntimeConfig();
 const { apiBaseUrl } = runtimeConfig.public;
 
@@ -22,7 +24,7 @@ export async function requireUser(headers: Headers) {
   return session.user;
 }
 
-export const serverAuth = (options?: AuthOptions) =>
+export const serverAuth = (event?: H3Event, options?: AuthOptions) =>
   createAuth(
     defu(options, {
       baseURL: getBaseURL(),
@@ -30,7 +32,7 @@ export const serverAuth = (options?: AuthOptions) =>
       kv,
       runtimeConfig: useRuntimeConfig(),
       polarClient,
-      // cf: useEvent()?.context.cf,
+      cf: event?.context.cf,
     }),
   );
 

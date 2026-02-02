@@ -1,9 +1,4 @@
-import {
-  type GenericIssue,
-  type GenericSchema,
-  type GenericSchemaAsync,
-  safeParseAsync,
-} from "valibot";
+import { type GenericSchema, type GenericSchemaAsync, safeParseAsync } from "valibot";
 
 import type { H3Event } from "h3";
 
