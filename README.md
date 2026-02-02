@@ -5,7 +5,7 @@
 ## Inspirations
 
 - [Research](https://un.ms/research)
-- [Noodle](https://noodle.run)
+- [Noodle](https://github.com/noodle-run/noodle)
 - [Obsidian](https://obsidian.md)
 
 ## TODO
