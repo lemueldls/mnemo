@@ -7,6 +7,7 @@ const defaultLocale = "en";
 const locales: LocaleObject[] = [
   { code: "en", dir: "ltr", language: "en-US", file: "en.json" },
   { code: "es", dir: "ltr", language: "es-ES", file: "es.json" },
+  { code: "fr", dir: "ltr", language: "fr-FR", file: "fr.json" },
   { code: "de", dir: "ltr", language: "de-DE", file: "de.json" },
   { code: "he", dir: "rtl", language: "he-IL", file: "he.json" },
   { code: "zh", dir: "ltr", language: "zh-CN", file: "zh.json" },
