@@ -130,8 +130,8 @@
   #   };
   # };
 
-  pre-commit.hooks = {
-    actionlint.enable = false;
-    rustfmt.enable = false;
-  };
+  # pre-commit.hooks = {
+  #   actionlint.enable = false;
+  #   rustfmt.enable = false;
+  # };
 }
