@@ -7,7 +7,7 @@
    height="1024"
    preserveAspectRatio="none"
    id="svg6"
-   sodipodi:docname="icon.svg"
+   sodipodi:docname="favicon.svg"
    inkscape:export-filename="./mnemo.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
@@ -29,7 +29,7 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.51919385"
      inkscape:cx="292.76156"
-     inkscape:cy="504.62848"
+     inkscape:cy="504.62847"
      inkscape:window-width="1920"
      inkscape:window-height="1003"
      inkscape:window-x="0"
@@ -48,7 +48,7 @@
        empopacity="0.30196078"
        color="#0099e5"
        opacity="0.14901961"
-       empspacing="5"
+       empspacing="4"
        enabled="true"
        visible="true" />
   </sodipodi:namedview>
