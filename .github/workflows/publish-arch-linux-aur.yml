@@ -91,6 +91,18 @@ jobs:
           SUM=$(curl -LfsS "$URL" | sha256sum | cut -f1 -d ' ')
           echo "sha256=$SUM" >> $GITHUB_OUTPUT
 
+      - name: 📐 Lint generated PKGBUILD
+        shell: bash
+        run: |
+          su runner -c '
+            set -o errexit
+            mkdir -p ~/lint
+            o=$(pwd)
+            ${{ matrix.package.generate_script }} "${{ needs.release_info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/lint/PKGBUILD
+            cd ~/lint
+            "$o/platform/aur/makepkg-lint.sh"
+          '
+
       - name: 🌀 Generate PKGBUILD and update
         run: |
           su runner -c '

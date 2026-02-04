@@ -76,6 +76,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     OPENSSL_NO_VENDOR = true;
 
+    NODE_OPTIONS = "--max-old-space-size=8192";
+
     NUXT_TELEMETRY_DISABLED = 1;
     NUXT_PUBLIC_API_BASE_URL = apiBaseUrl;
   };

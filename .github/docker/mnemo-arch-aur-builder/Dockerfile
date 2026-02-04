@@ -1,10 +1,10 @@
-FROM archlinux:base-devel@sha256:943bdad9e9d0d23503f24797b44ce2cc1531bf101e18b3e7fb8c8776190dc45e
+FROM archlinux:base-devel@sha256:938749229e882c7a5b60a1de200b4b6c139264595656e594ccb07f53b944f7cfs
+
 RUN pacman -Syu --noconfirm \
-    && pacman -S --noconfirm \
+    && pacman -S --noconfirm --needed \
     appmenu-gtk-module \
     cargo \
-    nodejs \
-    pnpm \
+    cargo-auditable \
     coreutils \
     desktop-file-utils \
     gdk-pixbuf2 \
@@ -14,8 +14,8 @@ RUN pacman -Syu --noconfirm \
     jq \
     libappindicator-gtk3 \
     librsvg \
+    namcap \
     openssh \
-    rustup \
     webkit2gtk-4.1 \
     sudo \
     wget \
