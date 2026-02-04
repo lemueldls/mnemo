@@ -1,81 +1,54 @@
 {
-  stdenvNoCC,
+  stdenv,
   lib,
   fetchurl,
+  autoPatchelfHook,
   dpkg,
-  rustPlatform,
-  cargo-tauri,
-  npmHooks,
-  pnpm,
-  pkg-config,
-  python3,
-  nodejs,
-  webkitgtk_4_1,
-  glib,
-  gtk3,
   openssl,
-  pango,
-  cairo,
-  pixman,
-  protobuf,
-  perl,
-  makeWrapper,
-  nix-update-script,
+  webkitgtk_4_1,
+  libappindicator,
+  wrapGAppsHook4,
+  shared-mime-info,
+  glib-networking,
 }:
-stdenvNoCC.mkDerivation (finalAttrs: {
+
+stdenv.mkDerivation (finalAttrs: {
   pname = "mnemo";
-  version = "0.1.5";
+  version = "0.3.1";
 
   src = fetchurl {
     url = "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${finalAttrs.version}/Mnemo_${finalAttrs.version}_amd64.deb";
-    hash = "sha256-znoj7gPHGDD90OedOFyn4+TNEiR4dLdj17FNAQ7+hSM=";
+    sha256 = "sha256-y2LVhF0Y4oFw+n9wn1poCRt3Ob9I1IrJuAOVStHMQ3A=";
   };
-
-  unpackCmd = "dpkg -x $curSrc source";
-
-  nativeBuildInputs = [
-    dpkg
-    cargo-tauri.hook
-    pkg-config
-    nodejs
-    python3
-    protobuf
-    perl
-    makeWrapper
-  ];
-
-  buildInputs = [
-    glib
-    gtk3
-    openssl
-    webkitgtk_4_1
-    pango
-    cairo
-    pixman
-  ];
 
   dontConfigure = true;
   dontBuild = true;
 
-  dontStrip = true;
+  nativeBuildInputs = [
+    dpkg
+    autoPatchelfHook
+    wrapGAppsHook4
+  ];
+
+  buildInputs = [
+    webkitgtk_4_1
+  ];
 
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/bin
-    mkdir -p $out/share
+    install -Dm755 usr/bin/mnemo $out/bin/${finalAttrs.meta.mainProgram}
+    cp -r usr/share $out
 
-    cp -r usr/bin/mnemo $out/bin/mnemo
-    cp -r usr/share/applications $out/share/applications
-    cp -r usr/share/icons $out/share/icons
-    cp -r usr/share/licenses $out/share/licenses
+    wrapProgram "$out/bin/${finalAttrs.meta.mainProgram}" \
+      --prefix GIO_EXTRA_MODULES : "${glib-networking}/lib/gio/modules"
 
     runHook postInstall
   '';
 
   meta = {
     description = "Note-taking app designed to enhance the retention of information.";
-    homepage = "https://mnemo.nuxt.dev/";
+    homepage = "https://mnemo.world";
     changelog = "https://github.com/lemueldls/mnemo/releases/tag/mnemo-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ lemueldls ];

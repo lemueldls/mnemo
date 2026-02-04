@@ -34,7 +34,7 @@
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
-            <data android:host="notes.lemueldls.workers.dev" />
+            <data android:host="mnemo.world" />
             
             
             <data android:pathPrefix="/auth/confirm" />

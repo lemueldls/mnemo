@@ -41,3 +41,6 @@ target
 
 .android
 local.properties
+
+# Nix build
+result

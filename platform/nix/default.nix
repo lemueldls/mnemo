@@ -1,113 +1,89 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
+
   cargo-tauri,
-  npmHooks,
-  fetchFromGitHub,
-  pnpm,
-  pkg-config,
-  python3,
+  cmake,
+  curl,
+  # fetchFromGitHub,
+  glib-networking,
   nodejs,
-  webkitgtk_4_1,
-  glib,
-  gtk3,
   openssl,
-  pango,
-  cairo,
-  pixman,
-  protobuf,
-  perl,
-  makeWrapper,
-  nix-update-script,
+  pkg-config,
+  fetchPnpmDeps,
+  pnpmConfigHook,
+  pnpm,
+  rust,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
+
+  mnemo-src ? ../../.,
+  apiBaseUrl ? "https://mnemo.world",
+
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mnemo";
-  version = "0.1.5";
+  version = "0.3.1";
 
-  src = fetchFromGitHub {
-    owner = "lemueldls";
-    repo = "mnemo";
-    tag = "mnemo-v${finalAttrs.version}";
-    hash = "sha256-PjOUwLr9GIVoAel+VxRYqEXYPumGZE5/fYuuSqikNNA=";
-  };
-
-  # pnpmDeps = pnpm.fetchDeps {
-  #   inherit (finalAttrs) pname version src;
-  #   hash = "sha256-4D7ETUOLixpFB4luqQlwkGR/C6Ke6+ZmPg3dKKkrw7c=";
+  # src = fetchFromGitHub {
+  #   owner = "lemueldls";
+  #   repo = "mnemo";
+  #   tag = "mnemo-v${finalAttrs.version}";
+  #   hash = "sha256-T5DYBcupkvxwQlZACu4bxQe/3SEgARXWnVNi6m9EMjA=";
   # };
+  src = mnemo-src;
 
-  cargoHash = "sha256-OyjBAgcLswOvI+mG4NK8atGX5q4d1T+2mtelpMSPJjQ=";
+  cargoRoot = "platform";
+  cargoHash = "sha256-gWugZs8EfKoIod3bcIgNwL4Qc92yH399gUS2SgzMSjg=";
 
-  cargoRoot = "platform/tauri";
-  cargoLock = {
-    lockFile = finalAttrs.src + /platform/Cargo.lock;
-    # outputHashes = {
-    #   "codex-0.1.1" = "";
-    #   "krilla-0.4.0" = "";
-    #   "typst-0.13.1" = "";
-    };
+  buildAndTestSubdir = "${finalAttrs.cargoRoot}/tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 2;
+    hash = "sha256-J+crwjYQCfNONelWAOdnAHn4R4k9LQ/NeMJZKYMJTIo=";
   };
 
-  # nativeBuildInputs = [
-  #   cargo-tauri.hook
-  #   # npmHooks.npmConfigHook
-  #   pkg-config
-  #   nodejs
-  #   python3
-  #   protobuf
-  #   perl
-  #   makeWrapper
-  # ];
+  nativeBuildInputs = [
+    cargo-tauri.hook
+    cmake
+    nodejs
+    pkg-config
+    pnpmConfigHook
+    pnpm
+    wrapGAppsHook4
+  ];
 
-  # buildInputs = [
-  #   glib
-  #   gtk3
-  #   openssl
-  #   webkitgtk_4_1
-  #   pango
-  #   cairo
-  #   pixman
-  # ];
+  buildInputs = [
+    openssl
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin curl
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    glib-networking
+    webkitgtk_4_1
+  ];
 
-  # env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  tauriBuildFlags = [
+    "--config"
+    "tauri.package.conf.json"
+  ];
 
-  # postPatch = ''
-  #   substituteInPlace platform/tauri/tauri.conf.json \
-  #     --replace-fail '"createUpdaterArtifacts": "v1Compatible"' '"createUpdaterArtifacts": false'
-  #   substituteInPlace package.json \
-  #     --replace-fail '"bootstrap:vendor-node": "node scripts/vendor-node.cjs",' "" \
-  #     --replace-fail '"bootstrap:vendor-protoc": "node scripts/vendor-protoc.cjs",' ""
-  # '';
+  env = {
+    # `fetchPnpmDeps` and `pnpmConfigHook` use a specific version of pnpm, not upstream's
+    COREPACK_ENABLE_STRICT = 0;
 
-  # preBuild = ''
-  #   mkdir -p platform/tauri/vendored/node
-  #   ln -s ${nodejs}/bin/node platform/tauri/vendored/node/mnemonode-x86_64-unknown-linux-gnu
-  #   mkdir -p platform/tauri/vendored/protoc
-  #   ln -s ${protobuf}/bin/protoc platform/tauri/vendored/protoc/mnemoprotoc-x86_64-unknown-linux-gnu
-  #   ln -s ${protobuf}/include platform/tauri/vendored/protoc/include
-  # '';
+    OPENSSL_NO_VENDOR = true;
 
-  # # Permission denied (os error 13)
-  # # write to platform/tauri/vendored/protoc/include
-  # doCheck = false;
-
-  # preInstall = "pushd platform/tauri";
-
-  # postInstall = "popd";
-
-  # postFixup = ''
-  #   wrapProgram $out/bin/mnemo-app \
-  #     --inherit-argv0 \
-  #     --set-default WEBKIT_DISABLE_DMABUF_RENDERER 1
-  # '';
-
-  # passthru.updateScript = nix-update-script { };
+    NUXT_TELEMETRY_DISABLED = 1;
+    NUXT_PUBLIC_API_BASE_URL = apiBaseUrl;
+  };
 
   meta = {
     description = "Note-taking app designed to enhance the retention of information.";
-    # homepage = "https://mnemo.app/";
-    # changelog = "https://github.com/lemueldls/mnemo/releases/tag/v${finalAttrs.version}";
+    homepage = "https://mnemo.world";
+    changelog = "https://github.com/lemueldls/mnemo/releases/tag/mnemo-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ lemueldls ];
     mainProgram = "mnemo";

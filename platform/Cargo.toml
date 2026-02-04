@@ -1,13 +1,13 @@
 [workspace]
-members = ["tauri", "wasm"]
-package.authors = ["Lemuel DLS"]
-package.categories = []
-package.edition = "2024"
-package.keywords = [""]
-package.license = "Apache-2.0"
-package.repository = "https://github.com/lemueldls/mnemo"
-package.version = "0.3.1"
 resolver = "2"
+members = ["tauri", "wasm"]
+package.version = "0.3.1"
+package.edition = "2024"
+package.authors = ["Lemuel DLS"]
+package.keywords = [""]
+package.categories = []
+package.repository = "https://github.com/lemueldls/mnemo"
+package.license = "AGPL-3.0"
 
 [profile.release]
 codegen-units = 1

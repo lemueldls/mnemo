@@ -18,18 +18,34 @@
         "type": "github"
       }
     },
+    "mnemo-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770127053,
+        "narHash": "sha256-Vo36cqJ46IuPzjC73gkdvGpRkhDficqljp6fBDYWEi4=",
+        "owner": "lemueldls",
+        "repo": "mnemo",
+        "rev": "091139ca78cf778b699993f22e55d19999eceeac",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lemueldls",
+        "repo": "mnemo",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1760139962,
-        "narHash": "sha256-4xggC56Rub3WInz5eD7EZWXuLXpNvJiUPahGtMkwtuc=",
+        "lastModified": 1770056022,
+        "narHash": "sha256-yvCz+Qmci1bVucXEyac3TdoSPMtjqVJmVy5wro6j/70=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7e297ddff44a3cc93673bb38d0374df8d0ad73e4",
+        "rev": "d04d8548aed39902419f14a8537006426dc1e4fa",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-25.05",
+        "ref": "nixos-25.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -37,6 +53,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "mnemo-src": "mnemo-src",
         "nixpkgs": "nixpkgs"
       }
     },
