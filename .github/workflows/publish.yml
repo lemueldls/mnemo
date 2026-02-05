@@ -29,8 +29,6 @@ jobs:
       tagName: ${{ github.event.release.tag_name }}
 
   void:
-    needs:
-      - source
     permissions:
       id-token: write
       attestations: write
