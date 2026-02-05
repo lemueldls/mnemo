@@ -1,0 +1,75 @@
+name: Build Changed Dockerfiles
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        description: The branch name we are building, eg 'main'
+        required: true
+  workflow_dispatch:
+
+jobs:
+  changed-dockerfiles:
+    name: 🔍 Dockerfiles
+    runs-on: ubuntu-slim
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: 🔍 Filter changed Dockerfiles
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          list-files: json
+          filters: |
+            dockerfiles:
+              - added|modified: '.github/docker/*/Dockerfile'
+
+      - name: 🧩 Extract package names
+        id: packages
+        run: |
+          paths='${{ steps.filter.outputs.dockerfiles_files }}'
+
+          names=$(echo "$paths" \
+            | jq -r '.[] | split("/") | .[2]' \
+            | jq -R -s -c 'split("\n")[:-1]')
+
+          echo "packages=$names" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build
+    needs: changed-dockerfiles
+    if: ${{ needs.changed-dockerfiles.outputs.packages != '[]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Needed to push to GHCR
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changed-dockerfiles.outputs.packages) }}
+
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 🔐 Login to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Build and 🚀 push image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .github/docker/${{ matrix.package }}
+          file: .github/docker/${{ matrix.package }}/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.package }}:${{ inputs.branch == 'main' && 'v1' || 'dev' }}
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.package }}:${{ inputs.branch == 'main' && 'latest' || 'dev-latest' }}

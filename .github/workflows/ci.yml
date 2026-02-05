@@ -165,8 +165,7 @@ jobs:
     permissions:
       contents: read
       packages: write # Needed to push to GHCR
-
-    uses: hrzlgnm/actions/.github/workflows/docker-resuable.yml@481fadadfae2110130c65788f399af0bb855cffe # v1.6.4
+    uses: ./.github/workflows/docker.yml
     with:
       branch: ${{ needs.changes.outputs.branch }}
 
