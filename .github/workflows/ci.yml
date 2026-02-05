@@ -120,26 +120,26 @@ jobs:
   aur:
     name: AUR
     needs: changes
-    if: needs.changes.outputs.aur == 'true'
+    # if: needs.changes.outputs.aur == 'true'
     uses: ./.github/workflows/aur.yml
 
   void:
     name: Void
     needs: changes
-    if: needs.changes.outputs.void == 'true'
+    # if: needs.changes.outputs.void == 'true'
     uses: ./.github/workflows/void.yml
 
   winget:
     name: winget
     needs: changes
-    if: needs.changes.outputs.winget == 'true'
+    # if: needs.changes.outputs.winget == 'true'
     uses: ./.github/workflows/winget.yml
     secrets: inherit
 
   android:
     name: "📱"
     needs: changes
-    if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.android == 'true'
+    # if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.android == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/android.yml
@@ -150,7 +150,7 @@ jobs:
   desktop:
     name: "🖥️"
     needs: changes
-    if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.desktop == 'true'
+    # if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.desktop == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/desktop.yml
@@ -161,7 +161,7 @@ jobs:
   docker:
     name: "🐳"
     needs: changes
-    if: needs.changes.outputs.docker == 'true'
+    # if: needs.changes.outputs.docker == 'true'
     permissions:
       contents: read
       packages: write # Needed to push to GHCR
