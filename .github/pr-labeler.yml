@@ -1,8 +1,0 @@
-enhancement: ["feature/*", "feat/*"]
-ignore: ["bump/version*"]
-chore: ["chore/*"]
-performance: ["performance/*", "*blazingly-fast*"]
-refactor: ["refactor/*"]
-documentation: ["docs/*"]
-dependencies: ["renovate/*"]
-bug: ["fix/*", "bugfix/*"]

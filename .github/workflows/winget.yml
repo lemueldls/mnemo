@@ -1,0 +1,49 @@
+name: Publish Desktop Release to WinGet
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 🏷️
+        id: release-info
+        uses: ./.github/actions/latest-release-info
+
+      - name: 🛠️🔗
+        shell: bash
+        run: |
+          TAG_NAME=${{ steps.release-info.outputs.tagName }}
+          VERSION=${{ steps.release-info.outputs.version }}
+          URL=https://github.com/lemueldls/mnemo/releases/download/${TAG_NAME}/Mnemo_${VERSION}_x64-setup.exe
+          echo "URL=$URL" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Detected latest tag name: $TAG_NAME"
+          echo "URL: $URL"
+          echo "Version: $VERSION"
+
+      - name: 🆙 sync our fork of winget-pkgs
+        uses: michidk/run-komac@9b27eadc6e9235c252444a437d246c139da2f57f # v2.1.0
+        with:
+          args: "sync-fork --token=${{ secrets.WINGET_TOKEN }}"
+
+      - name: 🆙 winget package
+        uses: michidk/run-komac@9b27eadc6e9235c252444a437d246c139da2f57f # v2.1.0
+        with:
+          args: "update lemueldls.mnemo --version $VERSION --urls $URL --submit --token=${{ secrets.WINGET_TOKEN }}"
+
+  cleanup:
+    name: 🧹 branches
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹
+        uses: michidk/run-komac@9b27eadc6e9235c252444a437d246c139da2f57f # v2.1.0
+        with:
+          args: "cleanup --only-merged --token=${{ secrets.WINGET_TOKEN }}"

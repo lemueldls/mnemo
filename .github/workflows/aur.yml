@@ -1,37 +1,37 @@
-name: Publish arch linux AUR
+name: Arch linux AUR
 
 on:
-  release:
-    types:
-      - published
+  workflow_call:
   workflow_dispatch:
+  release:
+    types: [released]
 
 jobs:
-  release_info:
-    name: Get release info
-    runs-on: ubuntu-latest
+  release-info:
+    permissions:
+      packages: read
+    runs-on: ubuntu-slim
     outputs:
-      version: ${{ steps.get-version.outputs.current-version }}
+      version: ${{ steps.version.outputs.version }}
+      tagName: ${{ steps.version.outputs.tagName }}
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Extract version from tauri.conf.json
-        id: get-version
-        shell: bash
-        run: |
-          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
-          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: 🏷️ Get version info
+        id: version
+        uses: ./.github/actions/latest-release-info
 
   update-aur:
+    needs:
+      - release-info
     permissions:
       packages: read
     runs-on: ubuntu-latest
-    needs:
-      - release_info
     container:
       image: ghcr.io/lemueldls/mnemo-arch-aur-builder:latest
     strategy:
+      fail-fast: false
       matrix:
         package:
           - name: mnemo-bin
@@ -43,44 +43,6 @@ jobs:
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: 🛠️ Setup Deployment keys
-        shell: bash
-        run: |
-          chown -R runner:runner .
-          su runner -c '
-            set -o errexit
-            mkdir -p ~/.ssh
-            echo "${{ secrets.AUR_DEPLOY_KEY }}" > ~/.ssh/aur
-            chmod 600 ~/.ssh/aur
-            echo "Host aur.archlinux.org" >> ~/.ssh/config
-            echo "  IdentityFile ~/.ssh/aur" >> ~/.ssh/config
-            echo "  User aur" >> ~/.ssh/config
-            ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts
-          '
-
-      - name: 🔄 Clone AUR Repo
-        shell: bash
-        run: |
-          su runner -c '
-            set -o errexit
-            git clone --depth=1 "ssh://aur@aur.archlinux.org/${{ matrix.package.name }}.git" ~/aur
-          '
-
-      - name: 🔍 Check version
-        shell: bash
-        run: |
-          su runner -c '
-            set -o errexit
-            cd ~/aur
-            if [[ -f PKGBUILD ]]; then
-              CURRENT_VERSION=$(source PKGBUILD && echo $pkgver)
-              if [[ "$(printf "%s\n%s" "$CURRENT_VERSION" "${{ needs.release_info.outputs.version }}" | sort -V | head -n1)" != "$CURRENT_VERSION" ]] || [[ "$CURRENT_VERSION" == "${{ needs.release_info.outputs.version }}" ]]; then
-                echo "New version (${{ needs.release_info.outputs.version }}) is not higher than the current version ($CURRENT_VERSION). Exiting."
-                exit 1
-              fi
-            fi
-          '
 
       - name: 🔢 Get sha256sums
         id: sha256sums
@@ -98,16 +60,57 @@ jobs:
             set -o errexit
             mkdir -p ~/lint
             o=$(pwd)
-            ${{ matrix.package.generate_script }} "${{ needs.release_info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/lint/PKGBUILD
+            ${{ matrix.package.generate_script }} "${{ needs.release-info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/lint/PKGBUILD
             cd ~/lint
             "$o/platform/aur/makepkg-lint.sh"
           '
+      - name: 🛠️ Setup Deployment keys
+        if: github.event.release.tag_name
+        shell: bash
+        run: |
+          chown -R runner:runner .
+          su runner -c '
+            set -o errexit
+            mkdir -p ~/.ssh
+            printf '%s\n' "${{ secrets.AUR_DEPLOY_KEY }}" > ~/.ssh/aur
+            chmod 600 ~/.ssh/aur
+            echo "Host aur.archlinux.org" >> ~/.ssh/config
+            echo "  IdentityFile ~/.ssh/aur" >> ~/.ssh/config
+            echo "  User aur" >> ~/.ssh/config
+            ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts
+          '
 
-      - name: 🌀 Generate PKGBUILD and update
+      - name: 🔄 Clone AUR Repo
+        if: github.event.release.tag_name
+        shell: bash
         run: |
           su runner -c '
             set -o errexit
-            ${{ matrix.package.generate_script }} "${{ needs.release_info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/aur/PKGBUILD
+            git clone --depth=1 "ssh://aur@aur.archlinux.org/${{ matrix.package.name }}.git" ~/aur
+          '
+
+      - name: 🔍 Check version
+        if: github.event.release.tag_name
+        shell: bash
+        run: |
+          su runner -c '
+            set -o errexit
+            cd ~/aur
+            if [[ -f PKGBUILD ]]; then
+              CURRENT_VERSION=$(source PKGBUILD && echo $pkgver)
+              if [[ "$(printf "%s\n%s" "$CURRENT_VERSION" "${{ needs.release-info.outputs.version }}" | sort -V | head -n1)" != "$CURRENT_VERSION" ]] || [[ "$CURRENT_VERSION" == "${{ needs.release-info.outputs.version }}" ]]; then
+                echo "New version (${{ needs.release-info.outputs.version }}) is not higher than the current version ($CURRENT_VERSION). Exiting."
+                exit 1
+              fi
+            fi
+          '
+
+      - name: 🌀 Generate PKGBUILD update and publish
+        if: github.event.release.tag_name
+        run: |
+          su runner -c '
+            set -o errexit
+            ${{ matrix.package.generate_script }} "${{ needs.release-info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/aur/PKGBUILD
             cd ~/aur
             if [[ -z $(git status --porcelain) ]]; then
               echo "No changes"
@@ -119,11 +122,6 @@ jobs:
             git config user.name "lemueldls"
             git config user.email "26912197+lemueldls@users.noreply.github.com"
             git add PKGBUILD .SRCINFO
-            git commit -m "New upstream release ${{ needs.release_info.outputs.version }}"
+            git commit -m "New upstream release ${{ needs.release-info.outputs.version }}"
             git push origin master
           '
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}

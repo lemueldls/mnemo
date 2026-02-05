@@ -4,49 +4,29 @@ on:
   push:
     branches:
       - main
-      - dev
   workflow_dispatch:
 
 jobs:
   update_release_draft:
     permissions:
-      contents: write
-      # write permission is required for autolabeler
-      # otherwise, read permission is required at least
-      pull-requests: write
-    runs-on: ubuntu-latest
+      contents: write # to draft releases
+    runs-on: ubuntu-slim
     name: Release Drafter
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: 📝 Extract version from tauri.conf.json
-        id: get-version
-        shell: bash
-        run: |
-          CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
-          echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: 📝 Resolve tag
-        id: resolve-tag
-        shell: bash
-        run: |
-          if [ $GITHUB_REF = "refs/heads/main" ]; then
-            CURRENT_TAG=v${{ steps.get-version.outputs.current-version }}
-          else
-            CURRENT_TAG=$GITHUB_REF_NAME
-          fi
-          echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
-
-      # - name: Delete drafts
-      #   uses: hugo19941994/delete-draft-releases@1bdca1ea7ffb25ae7f468a7bdb40056dae98175e # v1.0.1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run Release Drafter
-        uses: release-drafter/release-drafter@3f0f87098bd6b5c5b9a36d49c41d998ea58f9348 # v6.0.0
         with:
-          name: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
-          tag: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
+          fetch-depth: 0
+
+      - name: 🧹 Old drafts
+        uses: hugo19941994/delete-draft-releases@d375ad67d25fed7520a8020c3a6561fff5260c1e # v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🗒️ Draft a new release
+        uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97 # v6.2.0
+        with:
+          prerelease: true
+          latest: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

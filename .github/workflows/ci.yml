@@ -1,0 +1,195 @@
+name: "CI"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  # measure against bitrot
+  # also rotates docker images monthly, by pushing new docker images
+  # the rotation will happen by dependabot
+  # rotate the images in the middle of the month,
+  # to avoid duplicate rotations at the beginning of the month,
+  # as the source docker images are also mostly rotated once a month
+  schedule:
+    - cron: "0 0 15 * *"
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+concurrency:
+  # On main, we want all builds to complete even if merging happens faster to make it easier to discover at which point something broke.
+  group: ${{ github.ref == 'refs/heads/main' && format('ci-main-{0}', github.sha) || format('ci-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  label-pr:
+    if: github.event_name == 'pull_request'
+    name: "🏷️ Label PR"
+    permissions:
+      contents: read # Needed to read repository contents
+      pull-requests: write # Needed to apply labels
+      issues: write # Needed to create non existing labels
+    runs-on: ubuntu-slim
+
+    steps:
+      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+        with:
+          configuration-path: .github/labeler.yml
+
+  changes:
+    name: "🔍 Detect Changes"
+    runs-on: ubuntu-slim
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      aur: ${{ steps.filter.outputs.aur }}
+      branch: ${{ steps.branch.outputs.branch }}
+      desktop: ${{ steps.filter.outputs.desktop }}
+      docker: ${{ steps.filter.outputs.docker }}
+      tauri: ${{ steps.filter.outputs.tauri }}
+      void: ${{ steps.filter.outputs.void }}
+      winget: ${{ steps.filter.outputs.winget }}
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 🔍 Check for changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            android:
+              - '.github/workflows/android.yml'
+              - 'platform/tauri/capabilities/default.json'
+              - 'platform/tauri/capabilities/mobile.json'
+              - 'platform/tauri/tauri.conf.json'
+              - 'platform/tauri/tauri.package.conf.json'
+            aur:
+              - '.github/workflows/aur.yml'
+              - '.github/actions/latest-release-info/action.yml'
+              - 'platform/aur/**'
+            desktop:
+              - '.github/workflows/desktop.yml'
+              - 'platform/tauri/capabilities/default.json'
+              - 'platform/tauri/capabilities/desktop.json'
+              - 'platform/tauri/icons/*.icns'
+              - 'platform/tauri/icons/*.ico'
+              - 'platform/tauri/icons/*.png'
+              - 'platform/tauri/icons/*.svg'
+              - 'platform/tauri/tauri.conf.json'
+            docker:
+              - '.github/docker/**'
+            tauri:
+              - '.github/actions/setup-*/**'
+              - 'app/**'
+              - 'i18n/**'
+              - 'modules/**'
+              - 'patches/**'
+              - 'platform/tauri/Cargo.toml'
+              - 'platform/tauri/src/**'
+              - 'platform/tauri/build.rs'
+              - 'platform/wasm/Cargo.toml'
+              - 'platform/wasm/src/**'
+              - 'platform/wasm/build.rs'
+              - 'platform/Cargo.toml'
+              - 'platform/Cargo.lock'
+              - 'public/**'
+              - 'scripts/**'
+              - 'shared/**'
+              - '.npmrc'
+              - 'nuxt.config.ts'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'tsconfig.json'
+              - 'uno.config.ts'
+              - 'wrangler.toml'
+            void:
+              - '.github/workflows/void.yml'
+              - 'platform/void/**'
+            winget:
+              - '.github/workflows/winget.yml'
+              - '.github/actions/latest-release-info/action.yml'
+
+      - name: Output branch name
+        id: branch
+        run: |
+          echo "branch=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
+
+  aur:
+    name: AUR
+    needs: changes
+    if: needs.changes.outputs.aur == 'true'
+    uses: ./.github/workflows/aur.yml
+
+  void:
+    name: Void
+    needs: changes
+    if: needs.changes.outputs.void == 'true'
+    uses: ./.github/workflows/void.yml
+
+  winget:
+    name: winget
+    needs: changes
+    if: needs.changes.outputs.winget == 'true'
+    uses: ./.github/workflows/winget.yml
+    secrets: inherit
+
+  android:
+    name: "📱"
+    needs: changes
+    if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.android == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/android.yml
+    secrets: inherit
+    with:
+      branch: ${{ needs.changes.outputs.branch }}
+
+  desktop:
+    name: "🖥️"
+    needs: changes
+    if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.desktop == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/desktop.yml
+    secrets: inherit
+    with:
+      branch: ${{ needs.changes.outputs.branch }}
+
+  docker:
+    name: "🐳"
+    needs: changes
+    if: needs.changes.outputs.docker == 'true'
+    permissions:
+      contents: read
+      packages: write # Needed to push to GHCR
+
+    uses: hrzlgnm/actions/.github/workflows/docker-resuable.yml@481fadadfae2110130c65788f399af0bb855cffe # v1.6.4
+    with:
+      branch: ${{ needs.changes.outputs.branch }}
+
+  all-required-green: # This job does nothing and is only used for the branch protection
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs:
+      - aur
+      - void
+      - winget
+      - android
+      - desktop
+      - docker
+    if: always()
+    steps:
+      - name: Check whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6
+        with:
+          allowed-skips: >-
+            aur,
+            void,
+            winget,
+            android,
+            desktop,
+            docker
+          jobs: ${{ toJSON(needs) }}

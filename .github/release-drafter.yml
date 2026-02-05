@@ -1,7 +1,28 @@
-change-template: "- #$NUMBER $TITLE @$AUTHOR"
+change-template: "- $TITLE @$AUTHOR #$NUMBER"
 sort-direction: ascending
-exclude-contributors:
-  - dependabot
+
+name-template: "Mnemo Release v$RESOLVED_VERSION"
+tag-template: "mnemo-v$RESOLVED_VERSION"
+tag-prefix: mnemo-v
+
+version-resolver:
+  major:
+    labels:
+      - "major"
+      - "breaking-change"
+  minor:
+    labels:
+      - "feature"
+      - "enhancement"
+
+  patch:
+    labels:
+      - "patch"
+      - "bug"
+      - "bugfix"
+      - "dependencies"
+
+  default: patch
 
 category-template: "### $TITLE"
 categories:
@@ -33,7 +54,7 @@ categories:
 
   - title: ":arrow_up: Dependency Updates"
     label: "dependencies"
-    collapse-after: 1
+    collapse-after: 5
 
 exclude-labels:
   - ignore
@@ -45,3 +66,8 @@ header: |
 template: |
 
   $CHANGES
+
+footer: |
+
+  ### Full Changelog
+  [$PREVIOUS_TAG...mnemo-v$RESOLVED_VERSION](https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...mnemo-v$RESOLVED_VERSION)

@@ -3,9 +3,13 @@ name: "Reusable android workflow"
 on:
   workflow_call:
     inputs:
-      publish:
+      branch:
         required: false
-        type: boolean
+        type: string
+        default: ""
+      tagName:
+        required: false
+        type: string
     secrets:
       ANDROID_RELEASE_KEYSTORE:
         required: false
@@ -19,28 +23,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: "📦"
+    name: 📦🔨
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        name: 🔄 Checkout
-
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
-        shell: bash
         run: |
           CURRENT_VERSION=$(jq -r '.version' platform/tauri/tauri.conf.json)
           echo "current-version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: 📝 Resolve tag
-        id: resolve-tag
+      - name: 🛡️ Verify tag matches version in tauri config (publish only)
+        if: inputs.tagName
         shell: bash
         run: |
-          if [ "${{ inputs.publish }}" = "true" ]; then
-            CURRENT_TAG=v${{ steps.get-version.outputs.current-version }}
-          else
-            CURRENT_TAG=$GITHUB_REF_NAME
+          CURRENT_VERSION=${{ steps.get-version.outputs.current-version }}
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG" != *"$CURRENT_VERSION" ]]
+          then
+            echo "The tag name ${TAG} does not match the version ${CURRENT_VERSION} from tauri config"
+            exit 1
           fi
-          echo "current-tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: 🦀🚀
+        uses: ./.github/actions/setup-rust-cache
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android,wasm32-unknown-unknown
+          save-cache: ${{ inputs.branch == 'main' }}
+
+      - name: 🛠️🚀
+        if: (!inputs.tagName)
+        uses: ./.github/actions/setup-sccache
 
       - name: ☕ Setup Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -49,38 +62,16 @@ jobs:
           java-version: "17"
 
       - name: 🤖 Setup Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
 
       - name: 🛠️ Install NDK
         run: sdkmanager "ndk;27.0.11902837"
 
-      - name: 🦀 Install rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
-
-      # - name: 📦 Rust cache
-      #   uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
-      #   with:
-      #     save-if: ${{ github.ref == 'refs/heads/main' }}
-      #     workspaces: platform
-
-      - name: 📦 Run sccache
-        if: ${{ !inputs.publish }}
-        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
-
-      - name: 📦 Set Rust caching env vars only on non-release runs
-        if: ${{ !inputs.publish }}
-        shell: bash
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-
       - name: 📥 Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       - name: 📥 Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
           cache: "pnpm"
@@ -94,40 +85,41 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" | base64 --decode > platform/tauri/gen/android/keystore.properties
 
       - name: 🔨 Build app bundle
-        run: pnpm tauri android build
+        run: |
+          pnpm tauri android init
+          pnpm tauri android build
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
           NODE_OPTIONS: --max-old-space-size=8192
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
 
-      - name: 📤 Upload build artifacts (push or pr builds only)
-        if: ${{ !inputs.publish }}
+      - name: 📤 Upload build artifacts (if not publishing)
+        if: (!inputs.tagName)
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: "signed-apk"
           path: |
-            platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+            platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk
 
       - name: ✏️ Rename APK file
         run: |
           mv ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk
 
-      - name: 🚀 Publish
+      - name: 🚀 Publish (publish only)
+        if: inputs.tagName
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          name: Mnemo [${{ steps.resolve-tag.outputs.current-tag }}]
-          draft: true
-          tag_name: mnemo-${{ steps.resolve-tag.outputs.current-tag }}
+          name: Mnemo Release v${{ steps.get-version.outputs.current-version }}
+          append_body: true
           make_latest: false
           generate_release_notes: false
           files: |
             platform/tauri/gen/android/app/build/outputs/apk/universal/release/Mnemo_${{ steps.get-version.outputs.current-version }}_universal.apk
 
       - name: 🛡️ Attest build provenance (publish only)
-        if: ${{ inputs.publish }}
+        if: inputs.tagName
         uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
         with:
           subject-path: |
