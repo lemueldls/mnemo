@@ -53,9 +53,6 @@ jobs:
 
       - name: 🔢 Get Source Tarball Checksum
         id: get-checksum
-
-      - name: 🔢 Get sha256sums
-        id: sha256sums
         run: |
           URL="https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ steps.get-version.outputs.version }}.tar.gz"
           echo "getting $URL"
