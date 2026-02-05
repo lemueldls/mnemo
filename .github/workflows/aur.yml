@@ -35,10 +35,10 @@ jobs:
       matrix:
         package:
           - name: mnemo-bin
-            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ needs.release_info.outputs.version }}/Mnemo_${{ needs.release_info.outputs.version }}_amd64.deb"
+            download_url: "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${{ needs.release-info.outputs.version }}/Mnemo_${{ needs.release-info.outputs.version }}_amd64.deb"
             generate_script: "./platform/aur/generate-mnemo-bin.sh"
           - name: mnemo
-            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ needs.release_info.outputs.version }}.tar.gz"
+            download_url: "https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ needs.release-info.outputs.version }}.tar.gz"
             generate_script: "./platform/aur/generate-mnemo.sh"
     steps:
       - name: 🔄 Checkout
