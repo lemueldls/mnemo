@@ -47,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "Note-taking app designed to enhance the retention of information.";
+    description = "Local-first note-taking app leveraging the Typst ecosystem.";
     homepage = "https://mnemo.world";
     changelog = "https://github.com/lemueldls/mnemo/releases/tag/mnemo-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;

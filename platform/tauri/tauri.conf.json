@@ -47,7 +47,7 @@
     },
     "plugins": {
         "cli": {
-            "description": "Note-taking app designed to enhance the retention of information.",
+            "description": "Local-first note-taking app leveraging the Typst ecosystem.",
             "args": [],
             "subcommands": {}
         },

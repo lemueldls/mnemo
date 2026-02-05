@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lemueldls/mnemo-void-package-builder:v1@sha256:5c4ee0a32a036881ffa25fcc79f1de12b35ee04667fc1ab729d779bcd16b8755
+      image: ghcr.io/lemueldls/mnemo-void-package-builder:latest
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

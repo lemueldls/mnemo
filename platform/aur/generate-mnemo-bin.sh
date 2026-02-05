@@ -11,7 +11,7 @@ cat <<EOF
 pkgname=mnemo-bin
 pkgver=$version
 pkgrel=1
-pkgdesc="Note-taking app designed to enhance the retention of information."
+pkgdesc="Local-first note-taking app leveraging the Typst ecosystem."
 arch=('x86_64')
 url="https://github.com/lemueldls/mnemo"
 license=('AGPL-3.0')
