@@ -26,7 +26,7 @@ jobs:
           list-files: json
           filters: |
             dockerfiles:
-              - '.github/docker/*/Dockerfile'
+              - added|modified: '.github/docker/*/Dockerfile'
 
       - name: 🧩 Extract package names
         id: packages
@@ -36,6 +36,7 @@ jobs:
           names=$(echo "$paths" \
             | jq -r '.[] | split("/") | .[2]' \
             | jq -R -s -c 'split("\n")[:-1]')
+          names='["arch", "void", "ubuntu"]'
 
           echo "packages=$names" >> $GITHUB_OUTPUT
 
