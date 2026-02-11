@@ -20,7 +20,7 @@ const parentTheme = computed(() =>
 );
 const theme = computed(() => createTheme(color.value, isDark.value, parentTheme.value));
 
-provide(m3ThemeKey, theme);
+provide(mxThemeKey, theme);
 
 // const { palette } = toRefs(theme);
 const palette = computed(() => theme.value.palette);
@@ -104,6 +104,7 @@ const selectionBackground = computed(() => {
 
   ::-webkit-scrollbar {
     width: 0;
+    height: 0;
     background: transparent;
   }
 
