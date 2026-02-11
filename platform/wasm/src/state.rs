@@ -2,22 +2,22 @@ use std::{
     fmt,
     io::{Cursor, Read},
     num::NonZeroUsize,
+    ops::ControlFlow,
     path::PathBuf,
     str::FromStr,
 };
 
 use ecow::EcoVec;
 use indoc::formatdoc;
-use rustc_hash::{FxHashMap, FxHashSet};
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use tar::Archive;
 use tsify::Tsify;
 use typst::{
     compile,
-    diag::Severity,
     ecow::EcoString,
     foundations::Bytes,
-    introspection::HtmlPosition,
+    introspection::{HtmlPosition, Introspector},
     layout::{Abs, PagedDocument, Point, Position},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
@@ -32,12 +32,12 @@ use wasm_bindgen::prelude::*;
 use crate::{
     index_mapper::IndexMapper,
     renderer::{
-        RenderHtmlResult,
-        // RenderPdfResult,
-        RenderTarget,
-        html,
-        paged,
-        sync_source_context,
+        RenderHtmlResult, RenderTarget, html,
+        paged::{
+            self,
+            svg::{SvgRangedFrame, render_svgs_by_items},
+        },
+        remove_errornous_block, sync_source_context,
     },
     world::MnemoWorld,
     wrappers::{
@@ -95,6 +95,11 @@ impl TypstState {
     #[wasm_bindgen(js_name = "setMathFont")]
     pub fn set_math_font(&mut self, id: &TypstFileId, math_font: Option<String>) {
         self.get_space_context_mut(id).math_font = math_font;
+    }
+
+    #[wasm_bindgen(js_name = "setCodeFont")]
+    pub fn set_code_font(&mut self, id: &TypstFileId, code_font: Option<String>) {
+        self.get_space_context_mut(id).code_font = code_font;
     }
 
     #[wasm_bindgen(js_name = "setLocale")]
@@ -205,7 +210,7 @@ impl TypstState {
         text: &str,
         prelude: &str,
     ) -> CompilePagedResult {
-        let result = paged::items::render_by_items(id, text, prelude, self);
+        let result = render_svgs_by_items(id, text, prelude, self);
 
         CompilePagedResult {
             frames: result.frames,
@@ -343,7 +348,7 @@ impl TypstState {
         formatdoc!(
             r#"
                 #let theme={theme}
-                #set text(fill:theme.on-background,size:16pt,lang:"{locale}",font:"{font}")
+                #set text(fill:theme.on-background,size:{text_size}pt,lang:"{locale}",font:"{font}")
 
                 #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
                 #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
@@ -369,14 +374,18 @@ impl TypstState {
                 #show math.equation.where(block:true):set text(size:18pt)
                 #show math.equation.where(block:true):set par(leading:9pt)
 
+                #show raw:set text(font:"{code_font}")
+
                 #context {{show math.equation:set text(size:text.size*2)}}
 
                 {page_config}
             "#,
-            theme = space_ctx.theme,
-            locale = space_ctx.locale,
+            text_size = source_ctx.text_size,
             font = space_ctx.font,
             math_font = space_ctx.math_font.as_ref().unwrap_or(&space_ctx.font),
+            code_font = space_ctx.code_font.as_ref().unwrap_or(&space_ctx.font),
+            locale = space_ctx.locale,
+            theme = space_ctx.theme,
         )
     }
 
@@ -638,6 +647,7 @@ impl TypstState {
             .replace(&ir);
 
         let mut document = None;
+        let mut convergence = 0_u8;
 
         while document.is_none() {
             let compiled = compile::<HtmlDocument>(&self.world);
@@ -663,50 +673,24 @@ impl TypstState {
                     }
                 }
                 Err(source_diagnostics) => {
-                    let error_ranges = source_diagnostics
-                        .iter()
-                        .filter_map(|diagnostic| {
-                            map_main_span(
-                                diagnostic.span,
-                                diagnostic.severity == Severity::Error,
-                                &diagnostic.trace,
-                                &context,
-                                &self.world,
-                            )
-                        })
-                        .collect::<FxHashSet<_>>();
+                    convergence += 1;
+                    if convergence >= 128 {
+                        crate::error!("COULD NOT CONVERGE ‼️");
 
-                    diagnostics.extend(TypstDiagnostic::from_diagnostics(
-                        source_diagnostics,
-                        &context,
-                        &self.world,
-                    ));
-
-                    crate::error!("[ERRORS]: {diagnostics:?}");
-
-                    let Some(main_range) = ast_blocks.iter().find_map(|block| {
-                        let aux_range = &block.range;
-
-                        let main_range_start = context.map_aux_to_main_left(aux_range.start);
-                        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
-                        let main_range = main_range_start..main_range_end;
-
-                        let in_block = error_ranges.iter().any(|error_range| {
-                            (main_range_start <= error_range.start
-                                && main_range_end >= error_range.start)
-                                || (main_range_start <= error_range.end
-                                    && main_range_end >= error_range.end)
-                        });
-
-                        in_block.then_some(main_range)
-                    }) else {
                         break;
-                    };
+                    }
 
-                    let start_byte = main_range.start;
-                    let end_byte = main_range.end;
-                    let source = context.main_source_mut(&mut self.world).unwrap();
-                    source.edit(start_byte..end_byte, &(" ".repeat(end_byte - start_byte)));
+                    let control_flow = remove_errornous_block(
+                        &ast_blocks,
+                        source_diagnostics,
+                        &mut diagnostics,
+                        context,
+                        &mut self.world,
+                    );
+
+                    if let ControlFlow::Break(_) = control_flow {
+                        break;
+                    }
 
                     None
                 }
@@ -730,23 +714,26 @@ impl TypstState {
 
 #[derive(Hash)]
 pub struct SpaceContext {
-    pub theme: ThemeColors,
-    pub locale: String,
     pub font: String,
     pub math_font: Option<String>,
+    pub code_font: Option<String>,
+    pub theme: ThemeColors,
+    pub locale: String,
 }
 
 impl SpaceContext {
     pub fn new() -> Self {
         Self {
-            theme: ThemeColors::default(),
-            locale: String::from("en"),
             font: String::from("Maple Mono"),
             math_font: Some(String::from("New Computer Modern Math")),
+            code_font: Some(String::from("Maple Mono")),
+            theme: ThemeColors::default(),
+            locale: String::from("en"),
         }
     }
 }
 
+#[derive(Debug)]
 pub struct SourceContext {
     pub main_id: FileId,
     pub aux_id: FileId,
@@ -756,6 +743,7 @@ pub struct SourceContext {
     pub html_document: Option<HtmlDocument>,
     pub width: String,
     pub height: Option<f64>,
+    pub text_size: f64,
 }
 
 impl SourceContext {
@@ -771,6 +759,7 @@ impl SourceContext {
             html_document: None,
             width: String::from("auto"),
             height: None,
+            text_size: 16.0,
         }
     }
 
@@ -802,7 +791,7 @@ impl SourceContext {
         self.index_mapper.map_main_to_aux_from_left(main_idx)
     }
 
-    pub fn map_aux_to_main_left(&self, aux_idx: usize) -> usize {
+    pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
         self.index_mapper.map_aux_to_main_from_left(aux_idx)
     }
 }
@@ -810,7 +799,7 @@ impl SourceContext {
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CompilePagedResult {
-    pub frames: Vec<paged::PagedRangedFrame>,
+    pub frames: Vec<SvgRangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
     pub requests: Vec<TypstRequest>,
 }

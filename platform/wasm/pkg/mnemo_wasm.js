@@ -409,6 +409,16 @@ export class TypstState {
     }
     /**
      * @param {FileId} id
+     * @param {string | null} [code_font]
+     */
+    setCodeFont(id, code_font) {
+        _assertClass(id, FileId);
+        var ptr0 = isLikeNone(code_font) ? 0 : passStringToWasm0(code_font, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.typststate_setCodeFont(this.__wbg_ptr, id.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {FileId} id
      * @param {string} font
      */
     setFont(id, font) {
@@ -471,8 +481,11 @@ function __wbg_get_imports() {
         __wbg___wbindgen_throw_be289d5034ed271b: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_debug_ee619762e99ebdf3: function(arg0, arg1) {
+        __wbg_debug_b853b470f0fa4fe7: function(arg0, arg1) {
             console.debug(getStringFromWasm0(arg0, arg1));
+        },
+        __wbg_error_5a877adb53a3ae06: function(arg0, arg1) {
+            console.error(getStringFromWasm0(arg0, arg1));
         },
         __wbg_error_7534b8e9a36f1ab4: function(arg0, arg1) {
             let deferred0_0;
@@ -485,14 +498,11 @@ function __wbg_get_imports() {
                 wasm.__wbindgen_export3(deferred0_0, deferred0_1, 1);
             }
         },
-        __wbg_error_e2abfcadeacda8f2: function(arg0, arg1) {
-            console.error(getStringFromWasm0(arg0, arg1));
-        },
         __wbg_getTime_1e3cd1391c5c3995: function(arg0) {
             const ret = getObject(arg0).getTime();
             return ret;
         },
-        __wbg_log_f75186ad5379cc45: function(arg0, arg1) {
+        __wbg_log_87678b4f86fd6b5e: function(arg0, arg1) {
             console.log(getStringFromWasm0(arg0, arg1));
         },
         __wbg_new_0_73afc35eb544e539: function() {

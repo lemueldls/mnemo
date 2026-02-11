@@ -17,7 +17,7 @@ export interface CompileHTMLResult {
 }
 
 export interface CompilePagedResult {
-    frames: PagedRangedFrame[];
+    frames: SvgRangedFrame[];
     diagnostics: TypstDiagnostic[];
     requests: TypstRequest[];
 }
@@ -37,25 +37,25 @@ export interface HTMLRenderResult {
     diagnostics: TypstDiagnostic[];
 }
 
-export interface PagedFrameRender {
+export interface RenderHtmlResult {
+    document: string | undefined;
+    diagnostics: TypstDiagnostic[];
+}
+
+export interface SvgFrameRender {
     svg: string;
     hash: number;
     height: number;
     offsetHeight: number;
 }
 
-export interface PagedRangedFrame {
+export interface SvgRangedFrame {
     range: { start: number; end: number };
-    render: PagedFrameRender;
+    render: SvgFrameRender;
 }
 
-export interface PagedRenderResult {
-    frames: PagedRangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface RenderHtmlResult {
-    document: string | undefined;
+export interface SvgRender {
+    frames: SvgRangedFrame[];
     diagnostics: TypstDiagnostic[];
 }
 
@@ -130,6 +130,7 @@ export class TypstState {
     removeFile(id: FileId): void;
     renderHtml(id: FileId, text: string, prelude: string): RenderHtmlResult;
     resize(id: FileId, width?: number | null, height?: number | null): boolean;
+    setCodeFont(id: FileId, code_font?: string | null): void;
     setFont(id: FileId, font: string): void;
     setLocale(id: FileId, locale: string): void;
     setMathFont(id: FileId, math_font?: string | null): void;
@@ -168,13 +169,14 @@ export interface InitOutput {
     readonly typststate_removeFile: (a: number, b: number) => void;
     readonly typststate_renderHtml: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
     readonly typststate_resize: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+    readonly typststate_setCodeFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setLocale: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setTheme: (a: number, b: number, c: number) => void;
     readonly __wbg_rgb_free: (a: number, b: number) => void;
-    readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
     readonly qcms_profile_precache_output_transform: (a: number) => void;
+    readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
     readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_is_bogus: (a: number) => number;

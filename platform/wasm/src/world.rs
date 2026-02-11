@@ -66,10 +66,9 @@ impl MnemoWorld {
     }
 
     pub fn get_file(&self, id: FileId) -> Option<&FileSlot> {
-        if !self.files.contains_key(&id) {
-            crate::error!("{id:#?} NOT FOUND");
-            // crate::log!("{:#?}", self.files);
-        }
+        // if !self.files.contains_key(&id) {
+        //     crate::error!("{id:#?} NOT FOUND");
+        // }
 
         self.files.get(&id)
     }

@@ -41,34 +41,49 @@ fn start() {
 #[macro_export]
 macro_rules! log {
     ($($e:tt)*) => {
-        $crate::log(&format!($($e)*))
+        #[cfg(target_arch="wasm32")]
+        $crate::log(&format!($($e)*));
+        #[cfg(not(target_arch="wasm32"))]
+        eprintln!($($e)*);
     };
 }
 
 #[macro_export]
 macro_rules! debug {
     ($($e:tt)*) => {
-        $crate::debug(&format!($($e)*))
+        #[cfg(target_arch="wasm32")]
+        $crate::debug(&format!($($e)*));
+        #[cfg(not(target_arch="wasm32"))]
+        eprintln!($($e)*);
     };
 }
 
 #[macro_export]
 macro_rules! error {
     ($($e:tt)*) => {
-        $crate::error(&format!($($e)*))
+        #[cfg(target_arch="wasm32")]
+        $crate::error(&format!($($e)*));
+        #[cfg(not(target_arch="wasm32"))]
+        eprintln!($($e)*);
     };
 }
 
 #[macro_export]
 macro_rules! group {
     ($($e:tt)*) => {
-        $crate::group(&format!($($e)*))
+        #[cfg(target_arch="wasm32")]
+        $crate::group(&format!($($e)*));
+        #[cfg(not(target_arch="wasm32"))]
+        eprintln!($($e)*);
     };
 }
 
 #[macro_export]
 macro_rules! group_end {
     ($($e:tt)*) => {
-        $crate::group_end(&format!($($e)*))
+        #[cfg(target_arch="wasm32")]
+        $crate::group_end(&format!($($e)*));
+        #[cfg(not(target_arch="wasm32"))]
+        eprintln!($($e)*);
     };
 }

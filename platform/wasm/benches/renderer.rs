@@ -1,7 +1,7 @@
 use std::fs;
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use mnemo_wasm::{renderer::paged::items::render_by_items, state::TypstState};
+use mnemo_wasm::{renderer::paged::svg::render_svgs_by_items, state::TypstState};
 
 fn benchmark_renderers(c: &mut Criterion) {
     let filename = String::from("math.typ");
@@ -22,11 +22,11 @@ fn benchmark_renderers(c: &mut Criterion) {
     let prelude = "";
 
     // c.bench_function("render by chunk", |b| {
-    //     b.iter(|| render_by_chunk(&id, &text, prelude, &mut state))
+    //     b.iter(|| chunk_by_blocks(&id, &text, prelude, &mut state))
     // });
 
     c.bench_function("render by items", |b| {
-        b.iter(|| render_by_items(&id, &text, prelude, &mut state))
+        b.iter(|| render_svgs_by_items(&id, &text, prelude, &mut state))
     });
 }
 

@@ -7,17 +7,17 @@ import { parseBackticks } from "./highlight";
 
 import type { EditorState } from "@codemirror/state";
 import type { DecorationSet, ViewUpdate } from "@codemirror/view";
-import type { FileId, PagedRangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
+import type { FileId, SvgRangedFrame, TypstDiagnostic, TypstState } from "mnemo-wasm";
 
 const containerCache = new LRUCache<number, HTMLElement>({ max: 128 });
 
 class TypstWidget extends WidgetType {
-  container!: HTMLElement;
+  private container: HTMLElement;
 
   public constructor(
     private readonly view: EditorView,
-    private readonly frame: PagedRangedFrame,
-    locked: boolean,
+    private readonly frame: SvgRangedFrame,
+    private readonly locked: boolean,
     private readonly fileId: FileId,
     private readonly typstState: TypstState,
   ) {
@@ -32,6 +32,7 @@ class TypstWidget extends WidgetType {
       container.dataset.hash = frame.render.hash.toString();
       container.classList.add("typst-render");
 
+      container.style.height = frame.render.height + "px";
       container.setHTMLUnsafe(frame.render.svg);
 
       if (!locked) {
@@ -88,7 +89,7 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const framesCache = new LRUCache<string, PagedRangedFrame[]>({ max: 8 });
+const framesCache = new LRUCache<string, SvgRangedFrame[]>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 
@@ -106,7 +107,7 @@ function decorate(
   const text = update.state.doc.toString();
   const isFlaggedForUpdate = updateFlagStore.has(path);
 
-  let frames: PagedRangedFrame[];
+  let frames: SvgRangedFrame[];
 
   if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
     if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
@@ -233,7 +234,7 @@ export const typstViewPlugin = (
 
         widthChanged = typstState.resize(
           fileId,
-          contentDOM.clientWidth - 2 * window.devicePixelRatio,
+          contentDOM.clientWidth - 2,
           locked ? scrollDOM.clientHeight : undefined,
         );
       }

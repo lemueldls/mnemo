@@ -2,12 +2,22 @@ pub mod html;
 pub mod paged;
 // pub mod svg;
 
-use std::{collections::VecDeque, iter, ops::Range};
+use std::{
+    collections::VecDeque,
+    iter,
+    ops::{ControlFlow, Range},
+};
 
+use ecow::EcoVec;
 use itertools::{Either, Itertools, MinMaxResult};
+use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
-use typst::{WorldExt, syntax::SyntaxKind};
+use typst::{
+    WorldExt,
+    diag::{Severity, SourceDiagnostic},
+    syntax::SyntaxKind,
+};
 use typst_syntax::{Span, SyntaxNode};
 // use typst_html::html;
 // use typst_svg::{svg, svg_merged};
@@ -16,8 +26,28 @@ use wasm_bindgen::prelude::*;
 use crate::{
     index_mapper::IndexMapper,
     state::{SourceContext, TypstState},
-    wrappers::{TypstDiagnostic, TypstFileId},
+    world::MnemoWorld,
+    wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
+
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct RenderHtmlResult {
+    pub document: Option<String>,
+    pub diagnostics: Vec<TypstDiagnostic>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AstBlock {
+    pub range: Range<usize>,
+    pub is_inline: bool,
+}
+
+pub enum RenderTarget {
+    Svg,
+    Pdf,
+    Html,
+}
 
 pub fn sync_source_context(
     id: &TypstFileId,
@@ -92,7 +122,7 @@ pub fn sync_source_context(
 
     // crate::log!(
     //     "[SOURCE]:\n{}",
-    //     &ir[(state.prelude(id, RenderTarget::Png) + prelude + "\n").len()..]
+    //     &ir[(state.prelude(id, RenderTarget::Svg) + prelude + "\n").len()..]
     // );
 
     (ir, ast_blocks)
@@ -113,15 +143,16 @@ fn wrap_block(
             | SyntaxKind::ModuleImport
             | SyntaxKind::ModuleInclude
             | SyntaxKind::Contextual
-            | SyntaxKind::ListItem
-            | SyntaxKind::EnumItem
-            | SyntaxKind::TermItem
             | SyntaxKind::Linebreak
             | SyntaxKind::Semicolon
             | SyntaxKind::LineComment
             | SyntaxKind::BlockComment,
         ) => {
             *ir += &text[last_block.range.clone()];
+        }
+        Some(SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem) => {
+            *ir += &text[last_block.range.clone()];
+            last_block.is_inline = true
         }
         _ => {
             *ir += "#block(stroke:0pt,width:100%)[";
@@ -144,28 +175,60 @@ fn wrap_block(
         .add_aux_to_main(last_block.range.end, ir.len());
 }
 
-// #[derive(Tsify, Serialize, Deserialize)]
-// #[tsify(into_wasm_abi, from_wasm_abi)]
-// pub struct RenderPdfResult {
-//     pub bytes: Option<Vec<u8>>,
-//     pub diagnostics: Vec<TypstDiagnostic>,
-// }
+pub fn remove_errornous_block(
+    ast_blocks: &[AstBlock],
+    source_diagnostics: EcoVec<SourceDiagnostic>,
+    diagnostics: &mut Vec<TypstDiagnostic>,
+    context: &mut SourceContext,
+    world: &mut MnemoWorld,
+) -> ControlFlow<(), usize> {
+    let error_ranges = source_diagnostics
+        .iter()
+        .filter_map(|diagnostic| {
+            map_main_span(
+                diagnostic.span,
+                diagnostic.severity == Severity::Error,
+                &diagnostic.trace,
+                context,
+                world,
+            )
+        })
+        .collect::<FxHashSet<_>>();
 
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderHtmlResult {
-    pub document: Option<String>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
+    diagnostics.extend(TypstDiagnostic::from_diagnostics(
+        source_diagnostics,
+        context,
+        world,
+    ));
 
-#[derive(Debug, Clone)]
-pub struct AstBlock {
-    pub range: Range<usize>,
-    pub is_inline: bool,
-}
+    crate::error!("[ERRORS]: {diagnostics:?}");
 
-pub enum RenderTarget {
-    Svg,
-    Pdf,
-    Html,
+    let Some((idx, main_range)) = ast_blocks.iter().enumerate().find_map(|(idx, block)| {
+        let aux_range = &block.range;
+
+        let main_range_start = context.map_aux_to_main_from_left(aux_range.start);
+        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
+        let main_range = main_range_start..main_range_end;
+
+        let in_block = error_ranges.iter().any(|error_range| {
+            (main_range_start <= error_range.start && main_range_end >= error_range.start)
+                || (main_range_start <= error_range.end && main_range_end >= error_range.end)
+        });
+
+        in_block.then_some((idx, main_range))
+    }) else {
+        return ControlFlow::Break(());
+    };
+
+    let start_byte = main_range.start;
+    let end_byte = main_range.end;
+
+    let source = context.main_source_mut(world).unwrap();
+    // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
+    let byte_length = end_byte - start_byte;
+    let whitespace = " ".repeat(byte_length.saturating_sub(1)) + "\n";
+    source.edit(start_byte..end_byte, &whitespace);
+    // crate::log!("[NEW SOURCE]:\n{}", &source.text());
+
+    ControlFlow::Continue(idx)
 }

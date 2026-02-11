@@ -4,8 +4,8 @@
   "collaborators": [
     "Lemuel DLS"
   ],
-  "version": "0.3.0",
-  "license": "Apache-2.0",
+  "version": "0.3.1",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/lemueldls/mnemo"
