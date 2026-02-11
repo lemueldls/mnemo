@@ -3,6 +3,7 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <application
     android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
     android:label="@string/app_name"
     android:theme="@style/Theme.mnemo"
     android:usesCleartextTraffic="${usesCleartextTraffic}">
@@ -17,30 +18,23 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
-        <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
-        <intent-filter >
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="mnemo" />
-            
-            
-            
-            
-            
-        </intent-filter>
-        <intent-filter android:autoVerify="true" >
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" />
-            <data android:host="mnemo.world" />
-            
-            
-            <data android:pathPrefix="/auth/confirm" />
-            
-        </intent-filter>
-        <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
+      <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="mnemo" />
+      </intent-filter>
+
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" />
+        <data android:host="mnemo.world" />
+        <data android:pathPrefix="/auth/confirm" />
+      </intent-filter>
+      <!-- DEEP LINK PLUGIN. AUTO-GENERATED. DO NOT REMOVE. -->
     </activity>
 
     <provider

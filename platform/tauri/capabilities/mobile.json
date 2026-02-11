@@ -1,10 +1,6 @@
 {
   "identifier": "mobile-capability",
-  "platforms": [
-    "android"
-  ],
-  "windows": [
-    "main"
-  ],
+  "platforms": ["android"],
+  "windows": ["main"],
   "permissions": []
 }
