@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
 
       - id: semver
         uses: SOLIDSoftworks/semver-tags@fa8963220fb4913aea2b20cc190004de1b79f395 # v1.5.3
@@ -37,7 +39,7 @@ jobs:
           create-release: false
           dry-run: true
 
-      - name: ⚙️ Set up SSH signing key
+      - name: ⚙️ Setup SSH signing key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_SIGNING_KEY }}" > ~/.ssh/id_ed25519
