@@ -1,0 +1,46 @@
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - platform/**
+      - package.json
+      - pnpm-lock.yaml
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: DeterminateSystems/determinate-nix-action@89ab342bd48ff7318caf8d39d6a330c7b1df8f2f # v3.15.2
+
+      - uses: DeterminateSystems/flakehub-cache-action@91ca310d06020a14c188943f8277d38678b576e5 # v3.15.2
+
+      - name: ⚙️ Setup SSH signing key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_SIGNING_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          git config --global gpg.format ssh
+          git config --global user.signingKey ~/.ssh/id_ed25519
+          git config --global user.name "Lemuel DLS"
+          git config --global user.email "26912197+lemueldls@users.noreply.github.com"
+
+      - run: nix flake check -L
+
+      - name: 🔨 Fix hash mismatches
+        if: failure()
+        id: fix-hashes
+        run: determinate-nixd fix hashes --auto-apply
+
+      - name: 💾⬆️ Commit and push
+        run: |
+          git add -A
+          git commit -S -m "chore: update nix hashes" || echo "No changes to commit"
+          git push
