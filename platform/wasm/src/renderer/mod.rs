@@ -8,6 +8,7 @@ use std::{
     ops::{ControlFlow, Range},
 };
 
+use comemo::Tracked;
 use ecow::EcoVec;
 use itertools::{Either, Itertools, MinMaxResult};
 use rustc_hash::FxHashSet;
@@ -43,12 +44,14 @@ pub struct AstBlock {
     pub is_inline: bool,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub enum RenderTarget {
     Svg,
     Pdf,
     Html,
 }
 
+#[typst_macros::time]
 pub fn sync_source_context(
     id: &TypstFileId,
     text: &str,
@@ -63,10 +66,10 @@ pub fn sync_source_context(
     context.index_mapper = IndexMapper::default();
     // context.index_mapper.add_aux_to_main(0, ir.len());
 
-    context
-        .main_source_mut(&mut state.world)
-        .unwrap()
-        .replace(&ir);
+    // context
+    //     .main_source_mut(&mut state.world)
+    //     .unwrap()
+    //     .replace(&ir);
     state.world.main_id = Some(context.main_id);
 
     context
@@ -128,6 +131,7 @@ pub fn sync_source_context(
     (ir, ast_blocks)
 }
 
+#[typst_macros::time]
 fn wrap_block(
     ir: &mut String,
     text: &str,
@@ -175,6 +179,7 @@ fn wrap_block(
         .add_aux_to_main(last_block.range.end, ir.len());
 }
 
+#[typst_macros::time]
 pub fn remove_errornous_block(
     ast_blocks: &[AstBlock],
     source_diagnostics: EcoVec<SourceDiagnostic>,

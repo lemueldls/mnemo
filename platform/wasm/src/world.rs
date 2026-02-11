@@ -14,6 +14,7 @@ use typst_syntax::{VirtualPath, package::PackageSpec};
 
 use crate::{fonts::FontLoader, index_mapper::IndexMapper};
 
+#[derive(Debug)]
 pub struct MnemoWorld {
     pub main_id: Option<FileId>,
     pub aux_id: Option<FileId>,

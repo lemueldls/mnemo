@@ -1,5 +1,7 @@
-use std::{collections::VecDeque, ops::Range};
+use std::{collections::VecDeque, hash::BuildHasher, ops::Range};
 
+use comemo::Prehashed;
+use rustc_hash::FxBuildHasher;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use typst::layout::{Abs, Frame, FrameKind, Point, Size};
@@ -7,11 +9,12 @@ use typst_svg::svg_frame;
 
 use super::FrameBlock;
 use crate::{
-    renderer::paged::items::{PagedRender, chunk_by_items},
+    renderer::paged::{PagedRender, items::chunk_by_items},
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
+#[typst_macros::time]
 pub fn render_svgs_by_items(
     id: &TypstFileId,
     text: &str,
@@ -19,7 +22,7 @@ pub fn render_svgs_by_items(
     state: &mut TypstState,
 ) -> SvgRender {
     let PagedRender {
-        ranged_heights,
+        chunks,
         diagnostics,
         document,
         context,
@@ -33,13 +36,15 @@ pub fn render_svgs_by_items(
             .max()
             .unwrap_or_default();
 
-        ranged_heights
+        chunks
             .into_iter()
-            .map(|(frame_blocks, range, height, offset_height, hash)| {
-                let height = Abs::pt(height);
-                let offset_height = Abs::pt(offset_height);
+            .map(|chunk| {
+                let blocks = Prehashed::new(chunk.blocks);
 
-                render_svg(frame_blocks, range, width, height, offset_height, hash)
+                let height = Abs::pt(chunk.height);
+                let offset_height = Abs::pt(chunk.offset_height);
+
+                render_svg(blocks, chunk.range, width, height, offset_height)
             })
             .collect()
     } else {
@@ -55,16 +60,18 @@ pub fn render_svgs_by_items(
 }
 
 #[comemo::memoize]
+#[typst_macros::time]
 fn render_svg(
-    frame_blocks: VecDeque<FrameBlock>,
+    blocks: Prehashed<VecDeque<FrameBlock>>,
     range: Range<usize>,
     width: Abs,
     height: Abs,
     offset_height: Abs,
-    hash: u32,
 ) -> SvgRangedFrame {
+    let hash = FxBuildHasher.hash_one(&blocks) as u32;
+
     let mut frame = Frame::new(Size::new(width, height), FrameKind::Soft);
-    frame.push_multiple(frame_blocks.into_iter().map(|block| {
+    frame.push_multiple(blocks.into_inner().into_iter().map(|block| {
         let point = block.point - Point::new(Abs::zero(), offset_height);
 
         (point, block.item)
@@ -77,9 +84,9 @@ fn render_svg(
 
     let render = SvgFrameRender {
         svg,
-        hash,
         height,
         offset_height,
+        hash,
     };
 
     SvgRangedFrame { range, render }
@@ -109,8 +116,8 @@ impl SvgRangedFrame {
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SvgFrameRender {
     pub svg: String,
-    pub hash: u32,
     pub height: f64,
     #[serde(rename = "offsetHeight")]
     pub offset_height: f64,
+    pub hash: u32,
 }

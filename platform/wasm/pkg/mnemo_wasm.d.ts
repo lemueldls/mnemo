@@ -44,9 +44,9 @@ export interface RenderHtmlResult {
 
 export interface SvgFrameRender {
     svg: string;
-    hash: number;
     height: number;
     offsetHeight: number;
+    hash: number;
 }
 
 export interface SvgRangedFrame {

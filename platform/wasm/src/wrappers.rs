@@ -13,7 +13,7 @@ use wasm_bindgen::prelude::*;
 use crate::{state::SourceContext, world::MnemoWorld};
 
 #[wasm_bindgen(js_name = "FileId")]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct TypstFileId(pub(crate) FileId);
 
 impl TypstFileId {

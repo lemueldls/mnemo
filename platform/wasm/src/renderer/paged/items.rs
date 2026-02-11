@@ -6,6 +6,7 @@ use std::{
     ops::{ControlFlow, Range},
 };
 
+use comemo::Tracked;
 use rustc_hash::FxBuildHasher;
 use typst::{
     WorldExt, compile,
@@ -15,21 +16,26 @@ use typst::{
 };
 
 use crate::{
-    renderer::{RenderTarget, paged::FrameBlock, remove_errornous_block, sync_source_context},
+    renderer::{
+        RenderTarget,
+        paged::{BlocksChunk, FrameBlock, PagedRender},
+        remove_errornous_block, sync_source_context,
+    },
     state::{SourceContext, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
+#[typst_macros::time]
 pub fn chunk_by_items<'a>(
-    id: &'a TypstFileId,
+    id: &TypstFileId,
     text: &'a str,
     prelude: &'a str,
     state: &'a mut TypstState,
 ) -> PagedRender<'a> {
     let (ir, mut ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Svg, state);
 
-    let mut last_document = None;
+    let mut document = None;
     let mut convergence = 0_u8;
 
     let mut diagnostics = Vec::new();
@@ -42,15 +48,15 @@ pub fn chunk_by_items<'a>(
         .unwrap()
         .replace(&ir);
 
-    let mut ranged_heights = Vec::new();
+    let mut chunks = Vec::new();
 
-    while last_document.is_none() {
+    while document.is_none() {
         let compiled = compile::<PagedDocument>(&state.world);
         compiled_warnings = Some(compiled.warnings);
 
         // crate::log!("[DOING A THING]");
 
-        ranged_heights = match compiled.output {
+        (chunks, document) = match compiled.output {
             Ok(document) => {
                 let mut tag_stack = Vec::new();
                 let mut frame_blocks = Vec::new();
@@ -65,9 +71,9 @@ pub fn chunk_by_items<'a>(
 
                 let mut frame_blocks = frame_blocks.into_iter().peekable();
 
-                let mut ranged_items = Vec::with_capacity(ast_blocks.len());
+                let mut chunks = Vec::with_capacity(ast_blocks.len());
                 let mut ast_blocks = ast_blocks.iter().peekable();
-                let mut remaining_items = Vec::<FrameBlock>::new();
+                let mut remaining_blocks = Vec::<FrameBlock>::new();
 
                 while let Some(ast_block) = ast_blocks.next() {
                     let aux_source = context.aux_source(&state.world).unwrap();
@@ -82,8 +88,8 @@ pub fn chunk_by_items<'a>(
                     let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
                     // let main_range = main_range_start..main_range_end;
 
-                    let mut items = VecDeque::<FrameBlock>::new();
-                    let mut deferred_items = Vec::<FrameBlock>::new();
+                    let mut chunk_blocks = VecDeque::<FrameBlock>::new();
+                    let mut deferred_blocks = Vec::<FrameBlock>::new();
 
                     let mut block_start_height = None;
                     let mut block_end_height = None;
@@ -103,19 +109,30 @@ pub fn chunk_by_items<'a>(
                                     _ => block_end_height = Some(frame_block.end_height),
                                 }
 
-                                items.extend(deferred_items.drain(..));
-                                items.push_back(frame_block);
+                                chunk_blocks.extend(deferred_blocks.drain(..));
+                                chunk_blocks.push_back(frame_block);
                             } else {
                                 break;
                             }
                         } else {
                             let frame_block = frame_blocks.next().unwrap();
-                            deferred_items.push(frame_block);
+                            deferred_blocks.push(frame_block);
                         }
                     }
 
                     let block_start_height = block_start_height.unwrap_or_default().to_pt();
                     let block_end_height = block_end_height.unwrap_or_default().to_pt();
+
+                    if ast_block.is_inline {
+                        let length = remaining_blocks.len();
+                        chunk_blocks.reserve(length.saturating_add(1));
+
+                        for remaining in remaining_blocks.drain(..).rev() {
+                            chunk_blocks.push_front(remaining);
+                        }
+
+                        remaining_blocks.extend(deferred_blocks.drain(..));
+                    }
 
                     match context.height {
                         Some(height) if block_start_height >= height => {
@@ -124,77 +141,32 @@ pub fn chunk_by_items<'a>(
                         _ => {}
                     }
 
-                    if ast_block.is_inline {
-                        let length = remaining_items.len();
-                        items.reserve(length.saturating_add(1));
-                        for remaining in remaining_items.drain(..).rev() {
-                            items.push_front(remaining);
-                        }
+                    let block_height = block_end_height - block_start_height;
 
-                        remaining_items.extend(deferred_items.drain(..));
-                    }
-
-                    let height = block_end_height - block_start_height;
-
-                    if height <= 0_f64 {
+                    if block_height <= 0_f64 {
                         continue;
                     }
 
-                    // for (i, frame_block) in items.iter().enumerate() {
-                    //     crate::group!("{i} [ITEMS]");
-
-                    //     crate::log!("[BLOCK_RANGE]: {:?}", frame_block.range);
-                    //     crate::log!("[BLOCK_START]: {:?}", frame_block.start_height);
-                    //     crate::log!("[BLOCK_END]: {:?}", frame_block.end_height);
-
-                    //     match &frame_block.item {
-                    //         FrameItem::Group(..) => {
-                    //             crate::log!("[GROUP]: {:?}", &frame_block.item);
-                    //         }
-                    //         FrameItem::Text(..) => {
-                    //             crate::log!("[TEXT]: {:?}", &frame_block.item);
-                    //         }
-                    //         FrameItem::Shape(..) => {
-                    //             crate::log!("[SHAPE]: {:?}", &frame_block.item);
-                    //         }
-                    //         FrameItem::Image(..) => {
-                    //             crate::log!("[IMAGE]: {:?}", &frame_block.item);
-                    //         }
-                    //         FrameItem::Link(..) => {
-                    //             crate::log!("[LINK]: {:?}", &frame_block.item);
-                    //         }
-                    //         FrameItem::Tag(..) => {
-                    //             crate::log!("[TAG]: {:?}", &frame_block.item);
-                    //         }
-                    //     }
-
-                    //     crate::group_end!("{i} [ITEMS]");
-                    // }
-
-                    let hash = FxBuildHasher.hash_one(&items) as u32;
-
-                    ranged_items.push((
-                        items,
-                        aux_range_utf16.clone(),
-                        height,
-                        block_start_height,
-                        hash,
-                    ));
+                    chunks.push(BlocksChunk {
+                        blocks: chunk_blocks,
+                        range: aux_range_utf16,
+                        height: block_height,
+                        offset_height: block_start_height,
+                    });
                 }
 
-                if !remaining_items.is_empty()
-                    && let Some((last_items, ..)) = ranged_items.last_mut()
+                if !remaining_blocks.is_empty()
+                    && let Some(chunk) = chunks.last_mut()
                 {
-                    let length = remaining_items.len();
-                    last_items.reserve(length.saturating_add(1));
-                    for remaining in remaining_items.drain(..).rev() {
-                        last_items.push_front(remaining);
+                    let length = remaining_blocks.len();
+                    chunk.blocks.reserve(length.saturating_add(1));
+
+                    for remaining in remaining_blocks.drain(..).rev() {
+                        chunk.blocks.push_front(remaining);
                     }
                 }
 
-                last_document = Some(document);
-
-                ranged_items
+                (chunks, Some(document))
             }
             Err(source_diagnostics) => {
                 convergence += 1;
@@ -219,7 +191,7 @@ pub fn chunk_by_items<'a>(
                     }
                 }
 
-                Vec::new()
+                (Vec::new(), None)
             }
         };
     }
@@ -239,20 +211,13 @@ pub fn chunk_by_items<'a>(
 
     PagedRender {
         diagnostics,
-        ranged_heights,
-        document: last_document,
+        chunks,
+        document,
         context,
     }
 }
 
-#[derive(Debug)]
-pub struct PagedRender<'a> {
-    pub ranged_heights: Vec<(VecDeque<FrameBlock>, Range<usize>, f64, f64, u32)>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-    pub document: Option<PagedDocument>,
-    pub context: &'a mut SourceContext,
-}
-
+#[typst_macros::time]
 fn frame_with_bounds(
     frame_item: &(Point, FrameItem),
     tag_stack: &mut Vec<(&str, Span)>,
@@ -295,27 +260,6 @@ fn frame_with_bounds(
 
     let range = frame_item_range(item, tag_stack, context, world);
 
-    // match &item {
-    //     FrameItem::Group(..) => {
-    //         crate::log!("[F GROUP]: {item:?} {range:?}");
-    //     }
-    //     FrameItem::Text(..) => {
-    //         crate::log!("[F TEXT]: {item:?} {range:?}");
-    //     }
-    //     FrameItem::Shape(..) => {
-    //         crate::log!("[F SHAPE]: {item:?} {range:?}");
-    //     }
-    //     FrameItem::Image(..) => {
-    //         crate::log!("[F IMAGE]: {item:?} {range:?}");
-    //     }
-    //     FrameItem::Link(..) => {
-    //         crate::log!("[F LINK]: {item:?} {range:?}");
-    //     }
-    //     FrameItem::Tag(..) => {
-    //         crate::log!("[F TAG]: {item:?} {range:?}");
-    //     }
-    // }
-
     Box::from_iter(iter::once(FrameBlock {
         range,
         start_height,
@@ -325,6 +269,7 @@ fn frame_with_bounds(
     }))
 }
 
+#[typst_macros::time]
 fn frame_item_range(
     item: &FrameItem,
     tag_stack: &mut Vec<(&str, Span)>,

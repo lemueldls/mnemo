@@ -1,13 +1,16 @@
 [workspace]
-resolver = "2"
 members = ["tauri", "wasm"]
-package.version = "0.3.1"
-package.edition = "2024"
 package.authors = ["Lemuel DLS"]
-package.keywords = [""]
 package.categories = []
-package.repository = "https://github.com/lemueldls/mnemo"
+package.edition = "2024"
+package.keywords = [""]
 package.license = "AGPL-3.0"
+package.repository = "https://github.com/lemueldls/mnemo"
+package.version = "0.3.1"
+resolver = "2"
+
+[profile.dev.package]
+insta.opt-level = 3
 
 [profile.release]
 codegen-units = 1

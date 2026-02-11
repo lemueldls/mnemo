@@ -15,7 +15,6 @@ use ecow::{EcoString, EcoVec, eco_format, eco_vec};
 use itertools::Itertools;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
-use tiny_skia::IntRect;
 use tsify::Tsify;
 use typst::{
     __bail as bail, World, WorldExt, compile,

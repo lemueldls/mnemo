@@ -33,7 +33,7 @@ pub fn chunk_by_blocks(
 
     let context = state.source_context_map.get_mut(id).unwrap();
 
-    let ranged_heights = ast_blocks
+    let chunks = ast_blocks
         .into_iter()
         .filter_map(|block| {
             match context.height {
@@ -82,12 +82,12 @@ pub fn chunk_by_blocks(
                         return None;
                     }
 
-                    let ranged_height = Some((aux_range_utf16, height, offset_height));
+                    let chunk = Some((aux_range_utf16, height, offset_height));
 
                     offset_height = document_height - 1.0;
                     last_document = Some(document);
 
-                    ranged_height
+                    chunk
                 }
                 Err(source_diagnostics) => {
                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
@@ -115,7 +115,7 @@ pub fn chunk_by_blocks(
         let canvas = typst_render::render_merged(document, context.pixel_per_pt, Abs::zero(), None);
         let width = canvas.width();
 
-        ranged_heights
+        chunks
             .into_iter()
             .filter_map(|(range, height, offset_height)| {
                 let rect = IntRect::from_xywh(

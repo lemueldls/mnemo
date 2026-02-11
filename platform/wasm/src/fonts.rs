@@ -4,7 +4,7 @@ use typst::{
     utils::LazyHash,
 };
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct FontLoader {
     pub book: LazyHash<FontBook>,
     pub fonts: Vec<Font>,

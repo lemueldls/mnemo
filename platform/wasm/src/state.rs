@@ -17,7 +17,7 @@ use typst::{
     compile,
     ecow::EcoString,
     foundations::Bytes,
-    introspection::{HtmlPosition, Introspector},
+    introspection::HtmlPosition,
     layout::{Abs, PagedDocument, Point, Position},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
@@ -26,7 +26,6 @@ use typst_ide::Tooltip;
 // use typst_html::html;
 // use typst_pdf::{PdfOptions, pdf};
 use typst_syntax::{LinkedNode, Side, Tag};
-// use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -46,7 +45,7 @@ use crate::{
 };
 
 #[wasm_bindgen]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TypstState {
     pub(crate) world: MnemoWorld,
     pub(crate) space_context_map: FxHashMap<String, SpaceContext>,
@@ -58,28 +57,6 @@ impl TypstState {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub(crate) fn get_source_context(&self, id: &TypstFileId) -> &SourceContext {
-        self.source_context_map.get(id).unwrap()
-    }
-
-    pub(crate) fn get_source_context_mut(&mut self, id: &TypstFileId) -> &mut SourceContext {
-        self.source_context_map.get_mut(id).unwrap()
-    }
-
-    pub(crate) fn get_space_context(&self, id: &TypstFileId) -> &SpaceContext {
-        let space_id = &self.get_source_context(id).space_id;
-        let space_ctx = self.space_context_map.get(space_id).unwrap();
-
-        space_ctx
-    }
-
-    pub(crate) fn get_space_context_mut(&mut self, id: &TypstFileId) -> &mut SpaceContext {
-        let space_id = self.get_source_context(id).space_id.clone();
-        let space_ctx = self.space_context_map.get_mut(&space_id).unwrap();
-
-        space_ctx
     }
 
     #[wasm_bindgen(js_name = "setTheme")]
@@ -317,76 +294,6 @@ impl TypstState {
             diagnostics,
             requests: self.process_requests(),
         }
-    }
-
-    pub(crate) fn prelude(&self, id: &TypstFileId, render_target: RenderTarget) -> String {
-        let source_ctx = self.source_context_map.get(id).unwrap();
-        let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
-
-        let page_config = match render_target {
-            RenderTarget::Svg => {
-                formatdoc!(
-                    r#"
-                        #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
-                        #set text(top-edge:"ascender",bottom-edge:"descender")
-                        #set par(leading:0.125em)
-                    "#,
-                    width = source_ctx.width,
-                )
-            }
-            RenderTarget::Pdf => {
-                formatdoc!(
-                    r#"
-                        #set page(width:{width},height:auto,margin:16pt)
-                    "#,
-                    width = source_ctx.width,
-                )
-            }
-            RenderTarget::Html => formatdoc!(""),
-        };
-
-        formatdoc!(
-            r#"
-                #let theme={theme}
-                #set text(fill:theme.on-background,size:{text_size}pt,lang:"{locale}",font:"{font}")
-
-                #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
-                #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
-                #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
-                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
-                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
-                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
-
-                #show link:set text(fill:theme.primary)
-                #show link:underline
-
-                #set line(stroke:theme.outline)
-                #set table(stroke:theme.outline)
-                #set circle(stroke:theme.outline)
-                #set ellipse(stroke:theme.outline)
-                #set line(stroke:theme.outline)
-                #set curve(stroke:theme.outline)
-                #set polygon(stroke:theme.outline)
-                #set rect(stroke:theme.outline)
-                #set square(stroke:theme.outline)
-
-                #show math.equation:set text(font:"{math_font}")
-                #show math.equation.where(block:true):set text(size:18pt)
-                #show math.equation.where(block:true):set par(leading:9pt)
-
-                #show raw:set text(font:"{code_font}")
-
-                #context {{show math.equation:set text(size:text.size*2)}}
-
-                {page_config}
-            "#,
-            text_size = source_ctx.text_size,
-            font = space_ctx.font,
-            math_font = space_ctx.math_font.as_ref().unwrap_or(&space_ctx.font),
-            code_font = space_ctx.code_font.as_ref().unwrap_or(&space_ctx.font),
-            locale = space_ctx.locale,
-            theme = space_ctx.theme,
-        )
     }
 
     #[wasm_bindgen]
@@ -712,7 +619,112 @@ impl TypstState {
     }
 }
 
-#[derive(Hash)]
+impl TypstState {
+    pub fn world(&self) -> &MnemoWorld {
+        &self.world
+    }
+
+    pub fn world_mut(&mut self) -> &mut MnemoWorld {
+        &mut self.world
+    }
+
+    pub fn get_source_context(&self, id: &TypstFileId) -> &SourceContext {
+        self.source_context_map.get(id).unwrap()
+    }
+
+    pub fn get_source_context_mut(&mut self, id: &TypstFileId) -> &mut SourceContext {
+        self.source_context_map.get_mut(id).unwrap()
+    }
+
+    pub fn get_space_context(&self, id: &TypstFileId) -> &SpaceContext {
+        let space_id = &self.get_source_context(id).space_id;
+        let space_ctx = self.space_context_map.get(space_id).unwrap();
+
+        space_ctx
+    }
+
+    pub fn get_space_context_mut(&mut self, id: &TypstFileId) -> &mut SpaceContext {
+        let space_id = self.get_source_context(id).space_id.clone();
+        let space_ctx = self.space_context_map.get_mut(&space_id).unwrap();
+
+        space_ctx
+    }
+}
+
+#[comemo::track]
+impl TypstState {
+    pub fn prelude(&self, id: &TypstFileId, render_target: RenderTarget) -> String {
+        let source_ctx = self.source_context_map.get(id).unwrap();
+        let space_ctx = self.space_context_map.get(&source_ctx.space_id).unwrap();
+
+        let page_config = match render_target {
+            RenderTarget::Svg => {
+                formatdoc!(
+                    r#"
+                        #set page(fill:rgb(0,0,0,0),width:{width},height:auto,margin:0pt)
+                        #set text(top-edge:"ascender",bottom-edge:"descender")
+                        #set par(leading:0.125em)
+                    "#,
+                    width = source_ctx.width,
+                )
+            }
+            RenderTarget::Pdf => {
+                formatdoc!(
+                    r#"
+                        #set page(width:{width},height:auto,margin:16pt)
+                    "#,
+                    width = source_ctx.width,
+                )
+            }
+            RenderTarget::Html => formatdoc!(""),
+        };
+
+        formatdoc!(
+            r#"
+                #let theme={theme}
+                #set text(fill:theme.on-background,size:{text_size}pt,lang:"{locale}",font:"{font}")
+
+                #show heading.where(level:1):set text(fill:theme.primary,size:32pt,weight:400)
+                #show heading.where(level:2):set text(fill:theme.secondary,size:28pt,weight:400)
+                #show heading.where(level:3):set text(fill:theme.tertiary,size:24pt,weight:400)
+                #show heading.where(level:4):set text(fill:theme.primary,size:22pt,weight:400)
+                #show heading.where(level:5):set text(fill:theme.secondary,size:16pt,weight:500)
+                #show heading.where(level:6):set text(fill:theme.tertiary,size:14pt,weight:500)
+
+                #show link:set text(fill:theme.primary)
+                #show link:underline
+
+                #set line(stroke:theme.outline)
+                #set table(stroke:theme.outline)
+                #set circle(stroke:theme.outline)
+                #set ellipse(stroke:theme.outline)
+                #set line(stroke:theme.outline)
+                #set curve(stroke:theme.outline)
+                #set polygon(stroke:theme.outline)
+                #set rect(stroke:theme.outline)
+                #set square(stroke:theme.outline)
+
+                #show math.equation:set text(font:"{math_font}")
+                #show math.equation.where(block:true):set text(size:18pt)
+                #show math.equation.where(block:true):set par(leading:9pt)
+
+                #show raw:set text(font:"{code_font}")
+
+                #context {{show math.equation:set text(size:text.size*2)}}
+
+                {page_config}
+            "#,
+            text_size = source_ctx.text_size,
+            font = space_ctx.font,
+            math_font = space_ctx.math_font.as_ref().unwrap_or(&space_ctx.font),
+            code_font = space_ctx.code_font.as_ref().unwrap_or(&space_ctx.font),
+            locale = space_ctx.locale,
+            theme = space_ctx.theme,
+        )
+    }
+}
+
+#[derive(Debug, Hash)]
 pub struct SpaceContext {
     pub font: String,
     pub math_font: Option<String>,
@@ -833,7 +845,7 @@ pub enum TypstRequest {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Copy, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, Serialize, Deserialize)]
 pub struct ThemeColors {
     background: Rgb,
     on_background: Rgb,
@@ -984,7 +996,7 @@ impl fmt::Display for ThemeColors {
 }
 
 #[wasm_bindgen]
-#[derive(Default, Clone, Copy, Hash, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, Hash, Serialize, Deserialize)]
 pub struct Rgb(u8, u8, u8);
 
 impl Rgb {

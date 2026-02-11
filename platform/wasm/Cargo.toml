@@ -33,20 +33,24 @@ serde-wasm-bindgen = "0.6.5"
 serde_bytes = "0.11"
 tar = { version = "0.4" }
 time = { version = "0.3", features = ["serde", "wasm-bindgen"] }
-tiny-skia = { version = "0.11" }
+# tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.6", features = ["js"] }
 typst = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-html = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-ide = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst-macros = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 # typst-pdf = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 # typst-render = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-svg = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
 typst-syntax = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-wasm-bindgen = "0.2"
+typst-timing = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+wasm-bindgen = { version = "0.2" }
 
 [dev-dependencies]
 criterion = { version = "0.8.1", features = ["html_reports"] }
-wasm-bindgen-test = "0.3"
+insta = { version = "1.46.3", features = ["yaml"] }
+walkdir = { version = "2.5.0" }
+wasm-bindgen-test = { version = "0.3" }
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-Oz", "-all"]
