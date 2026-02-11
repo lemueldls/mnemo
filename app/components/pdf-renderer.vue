@@ -38,8 +38,6 @@ if (prelude) dailyNotes.unshift();
 
 const typstState = await useTypst();
 
-const pixelPerPoint = ref(window.devicePixelRatio);
-
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
 
@@ -48,10 +46,9 @@ function parseColor(color: Rgba): Rgb {
 }
 
 const path = `spaces/${spaceId.value}/export.typ`;
-const fileId = typstState.createSourceId(path);
+const fileId = typstState.createSourceId(path, spaceId.value);
 
-watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
-  typstState.setPixelPerPt(fileId, pixelPerPoint);
+watchImmediate(palette, (palette) => {
   typstState.setTheme(
     fileId,
     new ThemeColors(

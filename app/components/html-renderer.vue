@@ -37,8 +37,6 @@ const prelude = await getStorageItem<string>(`spaces/${spaceId.value}/prelude/ma
 
 const typstState = await useTypst();
 
-const pixelPerPoint = ref(window.devicePixelRatio);
-
 const theme = useMaterialTheme()!;
 const palette = computed(() => theme.value.palette);
 
@@ -49,7 +47,7 @@ function parseColor(color: Rgba): Rgb {
 const path = `spaces/${spaceId.value}/export.typ`;
 const fileId = typstState.createSourceId(path, spaceId.value);
 
-watchImmediate([pixelPerPoint, palette], ([pixelPerPoint, palette]) => {
+watchImmediate(palette, (palette) => {
   typstState.setTheme(
     fileId,
     new ThemeColors(

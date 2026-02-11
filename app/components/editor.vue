@@ -398,7 +398,7 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest m-0 max-h-1/3 max-w-1/3 overflow-auto rounded-lg border-none p-0 font-mono shadow;
+    @apply bg-surface-container-lowest m-0 max-h-1/2 max-w-1/2 overflow-auto rounded-lg border-none p-0 font-mono shadow;
 
     font-family: var(--font-mono), var(--font-math);
 
@@ -556,13 +556,13 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-render {
-    @apply inline-block max-w-full align-top;
+    @apply inline-block max-w-full overflow-visible align-top;
 
     -webkit-user-drag: none;
     -moz-user-drag: none;
 
     .typst-doc {
-      @apply inline-block w-full;
+      @apply size-full overflow-visible;
     }
   }
 
@@ -575,7 +575,7 @@ const renderHoverBackground = computed(() => {
       }
     }
 
-    .typst-frame {
+    .typst-doc {
       @apply cursor-text;
     }
   }
