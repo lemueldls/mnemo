@@ -52,7 +52,7 @@
     "lru-cache": "^11.2.5",
     "material-symbols": "^0.40.2",
     "mnemo-wasm": "workspace:*",
-    "nanotar": "^0.2.0",
+    "nanotar": "^0.2.1",
     "pdfjs-dist": "^5.4.530",
     "reka-ui": "2.7.0",
     "ts-pattern": "^5.9.0",
