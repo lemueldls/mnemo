@@ -44,11 +44,17 @@ use crate::{
     },
 };
 
+/// Global state for Typst rendering and compilation in Mnemo.
+///
+/// Holds the world, all open source and space contexts, and manages the mapping between user/editor state and Typst's compilation model.
 #[wasm_bindgen]
 #[derive(Default, Debug)]
 pub struct TypstState {
+    /// The Typst world, containing all loaded files and fonts.
     pub(crate) world: MnemoWorld,
+    /// Mapping from space IDs to their context (fonts, theme, locale).
     pub(crate) space_context_map: FxHashMap<String, SpaceContext>,
+    /// Mapping from file IDs to their source context (main/aux sources, index mapping, etc).
     pub(crate) source_context_map: FxHashMap<TypstFileId, SourceContext>,
 }
 
@@ -724,12 +730,18 @@ impl TypstState {
     }
 }
 
+/// Per-space configuration for rendering (fonts, theme, locale).
 #[derive(Debug, Hash)]
 pub struct SpaceContext {
+    /// Default font for this space.
     pub font: String,
+    /// Math font for this space.
     pub math_font: Option<String>,
+    /// Code font for this space.
     pub code_font: Option<String>,
+    /// Theme colors for this space.
     pub theme: ThemeColors,
+    /// Locale for this space.
     pub locale: String,
 }
 
@@ -745,16 +757,26 @@ impl SpaceContext {
     }
 }
 
+/// Context for a single Typst source file, tracking both main and aux sources and their mapping.
 #[derive(Debug)]
 pub struct SourceContext {
+    /// FileId of the main (intermediate/compiled) source.
     pub main_id: FileId,
+    /// FileId of the aux (user/editor) source.
     pub aux_id: FileId,
+    /// The space this source belongs to.
     pub space_id: String,
+    /// Index mapping between aux and main sources.
     pub index_mapper: IndexMapper,
+    /// Cached paged document for this source, if available.
     pub paged_document: Option<PagedDocument>,
+    /// Cached HTML document for this source, if available.
     pub html_document: Option<HtmlDocument>,
+    /// Page width setting for this source.
     pub width: String,
+    /// Page height setting for this source.
     pub height: Option<f64>,
+    /// Text size for rendering.
     pub text_size: f64,
 }
 

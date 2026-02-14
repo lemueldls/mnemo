@@ -1,13 +1,20 @@
+/// Maps byte indices between aux (user/editor) and main (compiled) sources.
+///
+/// Maintains inflection points to efficiently translate positions in either direction.
 #[derive(Debug, Default)]
 pub struct IndexMapper {
     inflections: Vec<(usize, usize)>,
 }
 
 impl IndexMapper {
+    /// Add an inflection point mapping an aux (editor) index to a main (compiled) index.
     pub fn add_aux_to_main(&mut self, aux: usize, main: usize) {
         self.inflections.push((aux, main));
     }
 
+    /// Map a main (compiled) index to an aux (editor) index, searching from the right.
+    ///
+    /// Returns the closest aux index corresponding to the given main index.
     pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
         let inflection = self
             .inflections
@@ -20,6 +27,9 @@ impl IndexMapper {
         }
     }
 
+    /// Map an aux (editor) index to a main (compiled) index, searching from the right.
+    ///
+    /// Returns the closest main index corresponding to the given aux index.
     pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
         let inflection = self
             .inflections
@@ -32,6 +42,9 @@ impl IndexMapper {
         }
     }
 
+    /// Map a main (compiled) index to an aux (editor) index, searching from the left.
+    ///
+    /// Returns the closest aux index corresponding to the given main index.
     pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
         let mut mapped_idx = None;
 
@@ -58,6 +71,9 @@ impl IndexMapper {
         mapped_idx.unwrap_or_default()
     }
 
+    /// Map an aux (editor) index to a main (compiled) index, searching from the left.
+    ///
+    /// Returns the closest main index corresponding to the given aux index.
     pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
         let mut mapped_idx = None;
 

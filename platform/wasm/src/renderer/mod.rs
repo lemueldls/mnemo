@@ -1,16 +1,25 @@
+//! Document renderer for Typst in Mnemo.
+//!
+//! This module provides the core logic for rendering Typst documents, including chunking, diagnostics, and output for multiple targets (SVG, HTML, PDF).
+//!
+//! # Main and Aux Sources
+//!
+//! The renderer operates on two parallel representations of the document:
+//!
+//! - **Aux source**: The origin text a user writes in an editor. This is the user's direct input and is used for mapping diagnostics, highlights, and incremental updates.
+//! - **Main source**: The intermediate file used for compilation. This is a transformed version of the aux source, prepared for Typst's incremental compilation and error reporting. The main source is the authoritative version used for diagnostics and output.
+//!
+//! The mapping between aux and main sources is maintained throughout the rendering process (see [`IndexMapper`]), allowing for robust error localization and efficient incremental updates. Most rendering functions synchronize both sources before producing output or diagnostics.
+//!
+//! Unless extending the renderer or integrating with Typst's incremental compilation, you will rarely need to interact with both sources directly. Most APIs abstract over this duality.
+
 pub mod html;
 pub mod paged;
 // pub mod svg;
 
-use std::{
-    collections::VecDeque,
-    iter,
-    ops::{ControlFlow, Range},
-};
+use std::ops::{ControlFlow, Range};
 
-use comemo::Tracked;
 use ecow::EcoVec;
-use itertools::{Either, Itertools, MinMaxResult};
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -19,9 +28,6 @@ use typst::{
     diag::{Severity, SourceDiagnostic},
     syntax::SyntaxKind,
 };
-use typst_syntax::{Span, SyntaxNode};
-// use typst_html::html;
-// use typst_svg::{svg, svg_merged};
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -31,26 +37,39 @@ use crate::{
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
 
+/// Result of rendering a Typst document to HTML.
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RenderHtmlResult {
+    /// The rendered HTML document, if successful.
     pub document: Option<String>,
+    /// Diagnostics and warnings produced during rendering.
     pub diagnostics: Vec<TypstDiagnostic>,
 }
 
+/// Represents a block in the Typst AST, with its byte range and inline status.
 #[derive(Debug, Clone)]
 pub struct AstBlock {
+    /// Byte range of the block in the source.
     pub range: Range<usize>,
+    /// Whether the block is inline (not a standalone block).
     pub is_inline: bool,
 }
 
+/// Output target for rendering.
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub enum RenderTarget {
+    /// Render as SVG.
     Svg,
+    /// Render as PDF.
     Pdf,
+    /// Render as HTML.
     Html,
 }
 
+/// Synchronizes the Typst source context, producing an intermediate representation and AST blocks.
+///
+/// Returns a tuple of the intermediate representation and a vector of AST blocks.
 #[typst_macros::time]
 pub fn sync_source_context(
     id: &TypstFileId,
@@ -131,6 +150,7 @@ pub fn sync_source_context(
     (ir, ast_blocks)
 }
 
+/// Wraps a block of Typst source for rendering, updating the intermediate representation and block metadata.
 #[typst_macros::time]
 fn wrap_block(
     ir: &mut String,
@@ -179,6 +199,9 @@ fn wrap_block(
         .add_aux_to_main(last_block.range.end, ir.len());
 }
 
+/// Removes the block containing the first error from the source, updating diagnostics and context.
+///
+/// Returns `ControlFlow::Continue(idx)` with the index of the removed block, or `ControlFlow::Break(())` if no error block is found.
 #[typst_macros::time]
 pub fn remove_errornous_block(
     ast_blocks: &[AstBlock],

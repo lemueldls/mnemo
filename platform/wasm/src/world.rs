@@ -14,17 +14,27 @@ use typst_syntax::{VirtualPath, package::PackageSpec};
 
 use crate::{fonts::FontLoader, index_mapper::IndexMapper};
 
+/// Implementation of Typst's `World` for Mnemo, managing all loaded files, fonts, and compilation state.
 #[derive(Debug)]
 pub struct MnemoWorld {
+    /// The main (compiled/intermediate) source file id.
     pub main_id: Option<FileId>,
+    /// The aux (user/editor/origin) source file id.
     pub aux_id: Option<FileId>,
+    /// All loaded files (sources and binaries) by id.
     pub files: FxHashMap<FileId, FileSlot>,
+    /// Index mapping between aux and main sources.
     pub index_mapper: IndexMapper,
+    /// The Typst standard library for this world.
     library: LazyHash<Library>,
+    /// Font loader and font book.
     font_loader: FontLoader,
 
+    /// Sources requested by Typst but not yet loaded.
     pub requested_sources: DashSet<&'static VirtualPath>,
+    /// Files requested by Typst but not yet loaded.
     pub requested_files: DashSet<&'static VirtualPath>,
+    /// Packages requested by Typst but not yet loaded.
     pub requested_packages: DashSet<&'static PackageSpec>,
 }
 
@@ -145,9 +155,12 @@ impl IdeWorld for MnemoWorld {
     }
 }
 
+/// Slot for a loaded file in the world, either a source or binary.
 #[derive(Debug)]
 pub enum FileSlot {
+    /// A Typst source file.
     Source(Source),
+    /// A binary file (e.g., image, font, etc).
     Bytes(Bytes),
 }
 

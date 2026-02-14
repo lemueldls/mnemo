@@ -23,6 +23,7 @@ use crate::{
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
+/// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error convergence.
 #[typst_macros::time]
 pub fn chunk_by_items<'a>(
     id: &TypstFileId,
@@ -215,6 +216,7 @@ pub fn chunk_by_items<'a>(
     }
 }
 
+/// Recursively bounds a frame item, producing frame blocks with position and range.
 #[typst_macros::time]
 fn bound_frame(
     frame_item: &(Point, FrameItem),
@@ -297,6 +299,7 @@ fn bound_frame(
     }))
 }
 
+/// Determines the source range for a frame item, using tag stack for introspectable tags.
 #[typst_macros::time]
 fn frame_item_range(
     item: &FrameItem,
