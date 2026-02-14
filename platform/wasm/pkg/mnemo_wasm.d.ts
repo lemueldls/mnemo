@@ -1,5 +1,69 @@
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * An SVG frame with its corresponding source range.
+ */
+export interface SvgRangedFrame {
+    /**
+     * UTF-16 range in the source for this frame.
+     */
+    range: { start: number; end: number };
+    /**
+     * The SVG render data.
+     */
+    render: SvgFrameRender;
+}
+
+/**
+ * Rendered SVG data for a frame, including metadata.
+ */
+export interface SvgFrameRender {
+    /**
+     * SVG markup as a string.
+     */
+    svg: string;
+    /**
+     * Height of the frame in points.
+     */
+    height: number;
+    /**
+     * Offset from the top of the page in points.
+     */
+    offsetHeight: number;
+    /**
+     * Hash of the frame blocks for change detection.
+     */
+    hash: number;
+}
+
+/**
+ * Result of SVG rendering, containing SVG frames and diagnostics.
+ */
+export interface SvgRender {
+    /**
+     * Rendered SVG frames for each chunk.
+     */
+    frames: SvgRangedFrame[];
+    /**
+     * Diagnostics and warnings produced during rendering.
+     */
+    diagnostics: TypstDiagnostic[];
+}
+
+/**
+ * Result of rendering a Typst document to HTML.
+ */
+export interface RenderHtmlResult {
+    /**
+     * The rendered HTML document, if successful.
+     */
+    document: string | undefined;
+    /**
+     * Diagnostics and warnings produced during rendering.
+     */
+    diagnostics: TypstDiagnostic[];
+}
+
 export interface Autocomplete {
     offset: number;
     completions: TypstCompletion[];
@@ -34,28 +98,6 @@ export interface HTMLRangedFrame {
 
 export interface HTMLRenderResult {
     frames: HTMLRangedFrame[];
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface RenderHtmlResult {
-    document: string | undefined;
-    diagnostics: TypstDiagnostic[];
-}
-
-export interface SvgFrameRender {
-    svg: string;
-    height: number;
-    offsetHeight: number;
-    hash: number;
-}
-
-export interface SvgRangedFrame {
-    range: { start: number; end: number };
-    render: SvgFrameRender;
-}
-
-export interface SvgRender {
-    frames: SvgRangedFrame[];
     diagnostics: TypstDiagnostic[];
 }
 
@@ -108,6 +150,11 @@ export class ThemeColors {
     constructor(background: Rgb, on_background: Rgb, outline: Rgb, outline_variant: Rgb, primary: Rgb, on_primary: Rgb, primary_container: Rgb, on_primary_container: Rgb, secondary: Rgb, on_secondary: Rgb, secondary_container: Rgb, on_secondary_container: Rgb, tertiary: Rgb, on_tertiary: Rgb, tertiary_container: Rgb, on_tertiary_container: Rgb, error: Rgb, on_error: Rgb, error_container: Rgb, on_error_container: Rgb);
 }
 
+/**
+ * Global state for Typst rendering and compilation in Mnemo.
+ *
+ * Holds the world, all open source and space contexts, and manages the mapping between user/editor state and Typst's compilation model.
+ */
 export class TypstState {
     free(): void;
     [Symbol.dispose](): void;
@@ -175,8 +222,8 @@ export interface InitOutput {
     readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setTheme: (a: number, b: number, c: number) => void;
     readonly __wbg_rgb_free: (a: number, b: number) => void;
-    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_is_bogus: (a: number) => number;
