@@ -9,7 +9,10 @@ use typst_svg::svg_frame;
 
 use super::FrameBlock;
 use crate::{
-    renderer::paged::{PagedRender, items::chunk_by_items},
+    renderer::{
+        RenderTarget,
+        paged::{PagedRender, items::chunk_by_items},
+    },
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId},
 };
@@ -26,7 +29,7 @@ pub fn render_svgs_by_items(
         diagnostics,
         document,
         context,
-    } = chunk_by_items(id, text, prelude, state);
+    } = chunk_by_items(id, text, prelude, RenderTarget::Svg, state);
 
     let frames = if let Some(document) = &document {
         let width = document
@@ -70,7 +73,7 @@ fn render_svg(
 ) -> SvgRangedFrame {
     let hash = FxBuildHasher.hash_one(&blocks) as u32;
 
-    let mut frame = Frame::new(Size::new(width, height), FrameKind::Soft);
+    let mut frame = Frame::soft(Size::new(width, height));
     frame.push_multiple(blocks.into_inner().into_iter().map(|block| {
         let point = block.point - Point::new(Abs::zero(), offset_height);
 

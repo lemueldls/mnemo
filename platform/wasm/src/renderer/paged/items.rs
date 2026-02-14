@@ -1,13 +1,10 @@
 use std::{
     cmp,
     collections::VecDeque,
-    hash::BuildHasher,
     iter,
     ops::{ControlFlow, Range},
 };
 
-use comemo::Tracked;
-use rustc_hash::FxBuildHasher;
 use typst::{
     WorldExt, compile,
     introspection::Tag,
@@ -31,9 +28,10 @@ pub fn chunk_by_items<'a>(
     id: &TypstFileId,
     text: &'a str,
     prelude: &'a str,
+    render_target: RenderTarget,
     state: &'a mut TypstState,
 ) -> PagedRender<'a> {
-    let (ir, mut ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Svg, state);
+    let (ir, mut ast_blocks) = sync_source_context(id, text, prelude, render_target, state);
 
     let mut document = None;
     let mut convergence = 0_u8;
@@ -64,7 +62,7 @@ pub fn chunk_by_items<'a>(
                 for page in &document.pages {
                     for frame_item in page.frame.items() {
                         let frame_block =
-                            frame_with_bounds(frame_item, &mut tag_stack, context, &state.world);
+                            bound_frame(frame_item, &mut tag_stack, context, &state.world);
                         frame_blocks.extend(frame_block);
                     }
                 }
@@ -218,7 +216,7 @@ pub fn chunk_by_items<'a>(
 }
 
 #[typst_macros::time]
-fn frame_with_bounds(
+fn bound_frame(
     frame_item: &(Point, FrameItem),
     tag_stack: &mut Vec<(&str, Span)>,
     context: &SourceContext,
@@ -229,28 +227,58 @@ fn frame_with_bounds(
     let (start_height, end_height) = match &item {
         FrameItem::Text(text) => (cmp::max(point.y - text.size, Abs::zero()), point.y),
         FrameItem::Group(group) => {
-            // crate::log!("[F GROUP]: {:?}", group);
-            if !group.transform.is_identity() {
-                crate::log!("[G TRANSFORM]: {:?}", group.transform);
+            if group.transform.is_identity() {
+                return group
+                    .frame
+                    .items()
+                    .flat_map(|frame_item| {
+                        bound_frame(frame_item, tag_stack, context, world)
+                            .into_iter()
+                            .map(|mut frame_block| {
+                                frame_block.point.x += point.x;
+                                frame_block.point.y += point.y;
+                                frame_block.start_height += point.y;
+                                frame_block.end_height += point.y;
+
+                                frame_block
+                            })
+                    })
+                    .collect::<Box<[_]>>();
             }
 
-            // TOOD: Handle transform?
-            return group
+            let (range, start_height, end_height) = group
                 .frame
                 .items()
-                .flat_map(|frame_item| {
-                    frame_with_bounds(frame_item, tag_stack, context, world)
-                        .into_iter()
-                        .map(|mut frame_block| {
-                            frame_block.point.x += point.x;
-                            frame_block.point.y += point.y;
-                            frame_block.start_height += point.y;
-                            frame_block.end_height += point.y;
+                .flat_map(|frame_item| bound_frame(frame_item, tag_stack, context, world))
+                .fold(
+                    (None::<Range<usize>>, Abs::zero(), Abs::zero()),
+                    |(range, start_height, end_height), frame_block| {
+                        let range = match (range, frame_block.range) {
+                            (Some(range), Some(block_range)) => {
+                                let start = cmp::min(range.start, block_range.start);
+                                let end = cmp::max(range.end, block_range.end);
 
-                            frame_block
-                        })
-                })
-                .collect::<Box<[_]>>();
+                                Some(start..end)
+                            }
+                            (Some(range), None) => Some(range),
+                            (None, Some(block_range)) => Some(block_range),
+                            (None, None) => None,
+                        };
+
+                        let start_height = cmp::min(start_height, frame_block.start_height);
+                        let end_height = cmp::max(end_height, frame_block.end_height);
+
+                        (range, start_height, end_height)
+                    },
+                );
+
+            return Box::from_iter(iter::once(FrameBlock {
+                range,
+                start_height,
+                end_height,
+                item: item.clone(),
+                point: point.clone(),
+            }));
         }
         FrameItem::Shape(shape, _span) => (point.y, shape.geometry.bbox_size().y),
         FrameItem::Image(_image, axes, _span) => (point.y, axes.y),

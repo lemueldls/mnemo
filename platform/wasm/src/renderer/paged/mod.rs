@@ -18,19 +18,19 @@ pub struct PagedRender<'a> {
 
 #[derive(Debug)]
 pub struct BlocksChunk {
-    blocks: VecDeque<FrameBlock>,
-    range: Range<usize>,
-    height: f64,
-    offset_height: f64,
+    pub blocks: VecDeque<FrameBlock>,
+    pub range: Range<usize>,
+    pub height: f64,
+    pub offset_height: f64,
 }
 
 #[derive(Debug, Clone)]
 pub struct FrameBlock {
-    range: Option<Range<usize>>,
-    start_height: Abs,
-    end_height: Abs,
-    item: FrameItem,
-    point: Point,
+    pub range: Option<Range<usize>>,
+    pub start_height: Abs,
+    pub end_height: Abs,
+    pub item: FrameItem,
+    pub point: Point,
 }
 
 impl Hash for FrameBlock {
