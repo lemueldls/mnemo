@@ -15,20 +15,16 @@
 
 pub mod html;
 pub mod paged;
-// pub mod svg;
 
 use std::ops::{ControlFlow, Range};
 
 use ecow::EcoVec;
 use rustc_hash::FxHashSet;
-use serde::{Deserialize, Serialize};
-use tsify::Tsify;
 use typst::{
     WorldExt,
     diag::{Severity, SourceDiagnostic},
     syntax::SyntaxKind,
 };
-use wasm_bindgen::prelude::*;
 
 use crate::{
     index_mapper::IndexMapper,
@@ -36,16 +32,6 @@ use crate::{
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
-
-/// Result of rendering a Typst document to HTML.
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct RenderHtmlResult {
-    /// The rendered HTML document, if successful.
-    pub document: Option<String>,
-    /// Diagnostics and warnings produced during rendering.
-    pub diagnostics: Vec<TypstDiagnostic>,
-}
 
 /// Represents a block in the Typst AST, with its byte range and inline status.
 #[derive(Debug, Clone)]
@@ -125,7 +111,7 @@ pub fn sync_source_context(
             } else {
                 in_block = true;
 
-                context.index_mapper.add_aux_to_main(range.start, ir.len());
+                context.index_mapper.push_aux_to_main(range.start, ir.len());
                 ast_blocks.push(AstBlock {
                     range,
                     is_inline: false,
@@ -182,12 +168,12 @@ fn wrap_block(
             *ir += "#block(stroke:0pt,width:100%)[";
             context
                 .index_mapper
-                .add_aux_to_main(last_block.range.start, ir.len());
+                .push_aux_to_main(last_block.range.start, ir.len());
             *ir += &text[last_block.range.clone()];
             context
                 .index_mapper
-                .add_aux_to_main(last_block.range.end, ir.len());
-            *ir += "]";
+                .push_aux_to_main(last_block.range.end, ir.len());
+            *ir += "\n]";
 
             last_block.is_inline = true
         }
@@ -196,7 +182,7 @@ fn wrap_block(
     *ir += "\n";
     context
         .index_mapper
-        .add_aux_to_main(last_block.range.end, ir.len());
+        .push_aux_to_main(last_block.range.end, ir.len());
 }
 
 /// Removes the block containing the first error from the source, updating diagnostics and context.
