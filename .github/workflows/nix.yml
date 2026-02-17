@@ -20,7 +20,7 @@ jobs:
 
       - uses: DeterminateSystems/determinate-nix-action@89ab342bd48ff7318caf8d39d6a330c7b1df8f2f # v3.15.2
 
-      - uses: DeterminateSystems/flakehub-cache-action@91ca310d06020a14c188943f8277d38678b576e5 # v3.15.2
+      - uses: DeterminateSystems/flakehub-cache-action@a09b82cd3b1c66a93894d2071510aac1441d2f39 # v3.16.0
 
       - name: ⚙️ Setup SSH signing key
         run: |
