@@ -23,18 +23,14 @@ export interface SvgFrameRender {
      */
     svg: string;
     /**
-<<<<<<< HEAD
      * Width of the frame in points.
      */
     width: number;
     /**
-=======
->>>>>>> 665aa889b4b6f306ccd773e374f3137560683f89
      * Height of the frame in points.
      */
     height: number;
     /**
-<<<<<<< HEAD
      * Offset from the left of the page in points.
      */
     xOffset: number;
@@ -42,11 +38,6 @@ export interface SvgFrameRender {
      * Hash of the frame blocks for change detection.
      */
     yOffset: number;
-=======
-     * Offset from the top of the page in points.
-     */
-    offsetHeight: number;
->>>>>>> 665aa889b4b6f306ccd773e374f3137560683f89
     /**
      * Hash of the frame blocks for change detection.
      */
