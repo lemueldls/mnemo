@@ -23,14 +23,18 @@ export interface SvgFrameRender {
      */
     svg: string;
     /**
+<<<<<<< HEAD
      * Width of the frame in points.
      */
     width: number;
     /**
+=======
+>>>>>>> 665aa889b4b6f306ccd773e374f3137560683f89
      * Height of the frame in points.
      */
     height: number;
     /**
+<<<<<<< HEAD
      * Offset from the left of the page in points.
      */
     xOffset: number;
@@ -38,6 +42,11 @@ export interface SvgFrameRender {
      * Hash of the frame blocks for change detection.
      */
     yOffset: number;
+=======
+     * Offset from the top of the page in points.
+     */
+    offsetHeight: number;
+>>>>>>> 665aa889b4b6f306ccd773e374f3137560683f89
     /**
      * Hash of the frame blocks for change detection.
      */
@@ -230,8 +239,8 @@ export interface InitOutput {
     readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setTheme: (a: number, b: number, c: number) => void;
     readonly __wbg_rgb_free: (a: number, b: number) => void;
-    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+    readonly qcms_profile_precache_output_transform: (a: number) => void;
     readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_is_bogus: (a: number) => number;

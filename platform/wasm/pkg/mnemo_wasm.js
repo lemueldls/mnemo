@@ -507,9 +507,6 @@ function __wbg_get_imports() {
             const ret = getObject(arg0).getTime();
             return ret;
         },
-        __wbg_log_87678b4f86fd6b5e: function(arg0, arg1) {
-            console.log(getStringFromWasm0(arg0, arg1));
-        },
         __wbg_new_0_73afc35eb544e539: function() {
             const ret = new Date();
             return addHeapObject(ret);
