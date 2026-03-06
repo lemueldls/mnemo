@@ -27,7 +27,7 @@ pub fn chunk_by_blocks(
 
     let mut last_document = None;
 
-    let mut offset_height = 0_f64;
+    let mut y_offset = 0_f64;
     let mut diagnostics = Vec::new();
     let mut compiled_warnings = None;
 
@@ -37,7 +37,7 @@ pub fn chunk_by_blocks(
         .into_iter()
         .filter_map(|block| {
             match context.height {
-                Some(height) if offset_height >= height => return None,
+                Some(height) if y_offset >= height => return None,
                 _ => {}
             }
 
@@ -76,15 +76,15 @@ pub fn chunk_by_blocks(
                         .sum::<Abs>()
                         .to_pt();
 
-                    let height = document_height - offset_height - 1.0;
+                    let height = document_height - y_offset - 1.0;
 
                     if height <= 0_f64 {
                         return None;
                     }
 
-                    let chunk = Some((aux_range_utf16, height, offset_height));
+                    let chunk = Some((aux_range_utf16, height, y_offset));
 
-                    offset_height = document_height - 1.0;
+                    y_offset = document_height - 1.0;
                     last_document = Some(document);
 
                     chunk
@@ -117,10 +117,10 @@ pub fn chunk_by_blocks(
 
         chunks
             .into_iter()
-            .filter_map(|(range, height, offset_height)| {
+            .filter_map(|(range, height, y_offset)| {
                 let rect = IntRect::from_xywh(
                     0,
-                    (offset_height as f32 * context.pixel_per_pt).ceil() as i32,
+                    (y_offset as f32 * context.pixel_per_pt).ceil() as i32,
                     width,
                     (height as f32 * context.pixel_per_pt).ceil() as u32,
                 )?;
@@ -135,7 +135,7 @@ pub fn chunk_by_blocks(
                     encoding,
                     hash,
                     height,
-                    offset_height,
+                    y_offset,
                 };
 
                 Some(RangedFrame { range, render })

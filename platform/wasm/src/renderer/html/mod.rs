@@ -355,6 +355,28 @@ fn flat_node_range(
     }
 }
 
+fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
+    let mut cursor = 0;
+    let mut was_text = false;
+
+    nodes.into_iter().map(move |child| {
+        let mut i = cursor;
+
+        match child {
+            HtmlNode::Tag(_) => {}
+            HtmlNode::Text(..) => was_text = true,
+            _ => {
+                cursor += usize::from(was_text);
+                i = cursor;
+                cursor += 1;
+                was_text = false;
+            }
+        }
+
+        (child, i)
+    })
+}
+
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct HTMLRenderResult {
@@ -376,24 +398,12 @@ pub struct HTMLFrameRender {
     hash: u32,
 }
 
-fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
-    let mut cursor = 0;
-    let mut was_text = false;
-
-    nodes.into_iter().map(move |child| {
-        let mut i = cursor;
-
-        match child {
-            HtmlNode::Tag(_) => {}
-            HtmlNode::Text(..) => was_text = true,
-            _ => {
-                cursor += usize::from(was_text);
-                i = cursor;
-                cursor += 1;
-                was_text = false;
-            }
-        }
-
-        (child, i)
-    })
+/// Result of rendering a Typst document to HTML.
+#[derive(Tsify, Serialize, Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct RenderHtmlResult {
+    /// The rendered HTML document, if successful.
+    pub document: Option<String>,
+    /// Diagnostics and warnings produced during rendering.
+    pub diagnostics: Vec<TypstDiagnostic>,
 }

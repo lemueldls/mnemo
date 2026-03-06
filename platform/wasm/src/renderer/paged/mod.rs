@@ -4,7 +4,7 @@ pub mod svg;
 
 use std::{collections::VecDeque, hash::Hash, ops::Range};
 
-use typst::layout::{Abs, FrameItem, PagedDocument, Point};
+use typst::layout::{FrameItem, PagedDocument, Point, Rect, Size};
 
 use crate::{state::SourceContext, wrappers::TypstDiagnostic};
 
@@ -25,31 +25,33 @@ pub struct PagedRender<'a> {
 #[derive(Debug)]
 pub struct BlocksChunk {
     /// The frame blocks in this chunk.
-    pub blocks: VecDeque<FrameBlock>,
+    pub blocks: VecDeque<BoundFrameBlock>,
     /// UTF-16 range in the source corresponding to this chunk.
     pub range: Range<usize>,
+    /// Width of the chunk in points.
+    pub width: f64,
     /// Height of the chunk in points.
     pub height: f64,
+    /// Offset from the left of the page in points.
+    pub x_offset: f64,
     /// Offset from the top of the page in points.
-    pub offset_height: f64,
+    pub y_offset: f64,
 }
 
-/// A single frame block, representing a renderable item with position and range.
+/// A single frame block, representing a renderable item with bounds and range.
 #[derive(Debug, Clone)]
-pub struct FrameBlock {
+pub struct BoundFrameBlock {
     /// Optional byte range in the source for this block.
     pub range: Option<Range<usize>>,
-    /// Start height of the block.
-    pub start_height: Abs,
-    /// End height of the block.
-    pub end_height: Abs,
+    /// Bounding box of the block.
+    pub bounds: Rect,
     /// The frame item to render.
     pub item: FrameItem,
     /// The position of the block on the page.
     pub point: Point,
 }
 
-impl Hash for FrameBlock {
+impl Hash for BoundFrameBlock {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         // self.range.hash(state);
         // self.start_height.hash(state);

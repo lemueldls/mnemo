@@ -31,11 +31,9 @@ use wasm_bindgen::prelude::*;
 use crate::{
     index_mapper::IndexMapper,
     renderer::{
-        RenderHtmlResult, RenderTarget, html,
-        paged::{
-            self,
-            svg::{SvgRangedFrame, render_svgs_by_items},
-        },
+        RenderTarget,
+        html::{self, RenderHtmlResult},
+        paged::svg::{SvgRangedFrame, render_svgs_by_items},
         remove_errornous_block, sync_source_context,
     },
     world::MnemoWorld,
@@ -593,7 +591,7 @@ impl TypstState {
                         break;
                     }
 
-                    let control_flow = remove_errornous_block(
+                    let indicies = remove_errornous_block(
                         &ast_blocks,
                         source_diagnostics,
                         &mut diagnostics,
@@ -601,7 +599,9 @@ impl TypstState {
                         &mut self.world,
                     );
 
-                    if let ControlFlow::Break(_) = control_flow {
+                    if indicies.is_empty() {
+                        crate::error!("NO ERROR BLOCKS FOUND ‼️");
+
                         break;
                     }
 

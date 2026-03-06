@@ -69,7 +69,7 @@ class TypstWidget extends WidgetType {
     const x = clientX - left;
     const y = clientY - top;
 
-    const jump = typstState.jumpPaged(this.fileId, x, y + frame.render.offsetHeight);
+    const jump = typstState.jumpPaged(this.fileId, x, y + frame.render.yOffset);
     const position = jump ? jump.position : frame.range.end;
 
     view.focus();
@@ -93,6 +93,18 @@ const framesCache = new LRUCache<string, SvgRangedFrame[]>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 
+export const framesStateEffect = StateEffect.define<SvgRangedFrame[]>();
+
+export const framesStateField = StateField.define<SvgRangedFrame[]>({
+  create() {
+    return [];
+  },
+  update(frames, transaction) {
+    const effect = transaction.effects.find((effect) => effect.is(framesStateEffect));
+    return effect ? effect.value : frames;
+  },
+});
+
 function decorate(
   fileId: FileId,
   spaceId: string,
@@ -103,30 +115,31 @@ function decorate(
   updateInWidget: boolean,
   widthChanged: boolean,
   typstState: TypstState,
-) {
+): { decorations: DecorationSet; frames: SvgRangedFrame[] } | null {
   const text = update.state.doc.toString();
   const isFlaggedForUpdate = updateFlagStore.has(path);
 
   let frames: SvgRangedFrame[];
 
-  if (update.docChanged || widthChanged || !framesCache.has(path) || isFlaggedForUpdate) {
-    if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
-      const { diagnostics, requests } = typstState.checkPaged(fileId, text, prelude);
-      dispatchDiagnostics(diagnostics, update.state, update.view);
+  if (update.docChanged || widthChanged || !framesCache.has(path)) {
+    // if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
+    //   const { diagnostics, requests } = typstState.checkPaged(fileId, text, prelude);
+    //   dispatchDiagnostics(diagnostics, update.state, update.view);
 
-      if (requests.length > 0) {
-        void handleTypstRequests(requests, spaceId).then((update) => {
-          if (update) {
-            const text = view.state.doc.toString();
-            view.dispatch({
-              changes: { from: 0, to: text.length, insert: text },
-            });
-          }
-        });
-      }
+    //   if (requests.length > 0) {
+    //     void handleTypstRequests(requests, spaceId).then((update) => {
+    //       if (update) {
+    //         const text = view.state.doc.toString();
+    //         view.dispatch({
+    //           changes: { from: 0, to: text.length, insert: text },
+    //         });
+    //       }
+    //     });
+    //   }
 
-      return;
-    }
+    //   return null;
+    // }
+
     if (isFlaggedForUpdate) updateFlagStore.delete(path);
     else updateFlagStore.add(path);
 
@@ -199,7 +212,10 @@ function decorate(
     }
   }
 
-  return Decoration.set(decorations, true);
+  return {
+    decorations: Decoration.set(decorations, true),
+    frames,
+  };
 }
 
 const typstStateEffect = StateEffect.define<{ decorations: DecorationSet }>({});
@@ -267,7 +283,7 @@ export const typstViewPlugin = (
         });
 
         queueMicrotask(() => {
-          const decorations = decorate(
+          const result = decorate(
             fileId,
             spaceId,
             path,
@@ -279,8 +295,11 @@ export const typstViewPlugin = (
             typstState,
           );
 
-          if (decorations) {
-            const effects = typstStateEffect.of({ decorations });
+          if (result) {
+            const effects = [
+              typstStateEffect.of({ decorations: result.decorations }),
+              framesStateEffect.of(result.frames),
+            ];
             update.view.dispatch({ effects });
           }
         });

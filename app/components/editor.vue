@@ -687,5 +687,17 @@ const renderHoverBackground = computed(() => {
   .typ-error {
     @apply text-error;
   }
+
+  .typst-popup-render {
+    // @apply border-outline bg-surface-container-lowest rounded-lg border shadow-lg;
+
+    // overflow: auto;
+    // max-height: 400px;
+    // width: 400px;
+
+    .typst-doc {
+      @apply w-full overflow-visible;
+    }
+  }
 }
 </style>

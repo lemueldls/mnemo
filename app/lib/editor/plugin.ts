@@ -6,7 +6,8 @@ import { typstSyntaxHighlighting } from "./highlight";
 import { typstHoverTooltip } from "./hover";
 import { typstKeymap } from "./keymap";
 import { autocomplete, typstLanguageData } from "./language";
-import { typstStateField, typstViewPlugin } from "./widgets";
+import { popupStateField, popupViewPlugin } from "./popup";
+import { typstStateField, typstViewPlugin, framesStateField } from "./widgets";
 
 import type { IndentContext } from "@codemirror/language";
 import type { Extension } from "@codemirror/state";
@@ -22,7 +23,10 @@ export const typstPlugin = (
   typstState: TypstState,
 ): Extension => [
   typstStateField,
+  framesStateField,
   typstViewPlugin(fileId, spaceId, path, text, prelude, locked, typstState),
+  popupViewPlugin(),
+  popupStateField,
 
   autocompletion({
     override: [(context) => autocomplete(context, fileId, typstState)],

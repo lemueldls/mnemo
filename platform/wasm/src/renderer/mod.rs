@@ -160,7 +160,9 @@ fn wrap_block(
         ) => {
             *ir += &text[last_block.range.clone()];
         }
-        Some(SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem) => {
+        Some(
+            SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem | SyntaxKind::Label,
+        ) => {
             *ir += &text[last_block.range.clone()];
             last_block.is_inline = true
         }
@@ -187,7 +189,7 @@ fn wrap_block(
 
 /// Removes the block containing the first error from the source, updating diagnostics and context.
 ///
-/// Returns `ControlFlow::Continue(idx)` with the index of the removed block, or `ControlFlow::Break(())` if no error block is found.
+/// Returns the indices of the removed blocks, or an empty vector if no error blocks were found.
 #[typst_macros::time]
 pub fn remove_errornous_block(
     ast_blocks: &[AstBlock],
@@ -195,7 +197,7 @@ pub fn remove_errornous_block(
     diagnostics: &mut Vec<TypstDiagnostic>,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
-) -> ControlFlow<(), usize> {
+) -> Vec<usize> {
     let error_ranges = source_diagnostics
         .iter()
         .filter_map(|diagnostic| {
@@ -217,7 +219,65 @@ pub fn remove_errornous_block(
 
     crate::error!("[ERRORS]: {diagnostics:?}");
 
-    let Some((idx, main_range)) = ast_blocks.iter().enumerate().find_map(|(idx, block)| {
+    let (indicies, main_ranges): (Vec<usize>, Vec<Range<usize>>) = ast_blocks
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, block)| {
+            let aux_range = &block.range;
+
+            let main_range_start = context.map_aux_to_main_from_left(aux_range.start);
+            let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
+            let main_range = main_range_start..main_range_end;
+
+            let in_block = error_ranges.iter().any(|error_range| {
+                (main_range_start <= error_range.start && main_range_end >= error_range.start)
+                    || (main_range_start <= error_range.end && main_range_end >= error_range.end)
+            });
+
+            in_block.then_some((idx, main_range))
+        })
+        .unzip();
+
+    for main_range in main_ranges {
+        let start_byte = main_range.start;
+        let end_byte = main_range.end;
+
+        let source = context.main_source_mut(world).unwrap();
+        crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
+        let byte_length = end_byte - start_byte;
+        let whitespace = " ".repeat(byte_length.saturating_sub(1)) + "\n";
+        source.edit(start_byte..end_byte, &whitespace);
+        // crate::log!("[NEW SOURCE]:\n{}", &source.text());
+    }
+
+    indicies
+}
+
+/// Tries to mark the specific expressions containing errors and wraps it in a red text expression (using #text(fill:theme.error)[expr]) for visual feedback in the rendered output.
+/// If marking is unsuccessful (e.g., due to complex expressions or multiple errors), it falls back to removing the entire block containing the error, as implemented in `remove_errornous_block`.
+#[typst_macros::time]
+pub fn try_mark_errornous(
+    ast_blocks: &[AstBlock],
+    source_diagnostics: EcoVec<SourceDiagnostic>,
+    context: &mut SourceContext,
+    world: &mut MnemoWorld,
+) {
+    let error_ranges = source_diagnostics
+        .iter()
+        .filter_map(|diagnostic| {
+            map_main_span(
+                diagnostic.span,
+                diagnostic.severity == Severity::Error,
+                &diagnostic.trace,
+                context,
+                world,
+            )
+        })
+        .collect::<FxHashSet<_>>();
+
+    let mut marked = false;
+
+    for block in ast_blocks {
         let aux_range = &block.range;
 
         let main_range_start = context.map_aux_to_main_from_left(aux_range.start);
@@ -229,20 +289,23 @@ pub fn remove_errornous_block(
                 || (main_range_start <= error_range.end && main_range_end >= error_range.end)
         });
 
-        in_block.then_some((idx, main_range))
-    }) else {
-        return ControlFlow::Break(());
-    };
+        if in_block {
+            let source = context.main_source_mut(world).unwrap();
+            let original_text = &source.text()[main_range.clone()];
+            crate::log!("[MARKING]:\n{}", original_text);
 
-    let start_byte = main_range.start;
-    let end_byte = main_range.end;
+            // Wrap the original text in a red text expression
+            let marked_text = format!("#text(fill:theme.error)[{}]", original_text);
+            source.edit(main_range.clone(), &marked_text);
 
-    let source = context.main_source_mut(world).unwrap();
-    // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
-    let byte_length = end_byte - start_byte;
-    let whitespace = " ".repeat(byte_length.saturating_sub(1)) + "\n";
-    source.edit(start_byte..end_byte, &whitespace);
-    // crate::log!("[NEW SOURCE]:\n{}", &source.text());
+            crate::log!("[NEW SOURCE]:\n{}", &source.text());
 
-    ControlFlow::Continue(idx)
+            marked = true;
+            break;
+        }
+    }
+
+    if !marked {
+        crate::log!("Failed to mark specific expression, falling back to block removal.");
+    }
 }

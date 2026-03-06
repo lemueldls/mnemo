@@ -7,7 +7,7 @@ use tsify::Tsify;
 use typst::layout::{Abs, Frame, Point, Size};
 use typst_svg::svg_frame;
 
-use super::FrameBlock;
+use super::BoundFrameBlock;
 use crate::{
     renderer::{
         RenderTarget,
@@ -33,7 +33,7 @@ pub fn render_svgs_by_items(
     } = chunk_by_items(id, text, prelude, RenderTarget::Svg, state);
 
     let frames = if let Some(document) = &document {
-        let width = document
+        let document_width = document
             .pages
             .iter()
             .map(|page| page.frame.width())
@@ -45,10 +45,20 @@ pub fn render_svgs_by_items(
             .map(|chunk| {
                 let blocks = Prehashed::new(chunk.blocks);
 
+                let width = Abs::pt(chunk.width);
                 let height = Abs::pt(chunk.height);
-                let offset_height = Abs::pt(chunk.offset_height);
+                let x_offset = Abs::pt(chunk.x_offset);
+                let y_offset = Abs::pt(chunk.y_offset);
 
-                render_svg(blocks, chunk.range, width, height, offset_height)
+                render_svg(
+                    blocks,
+                    chunk.range,
+                    width,
+                    height,
+                    x_offset,
+                    y_offset,
+                    document_width,
+                )
             })
             .collect()
     } else {
@@ -67,30 +77,36 @@ pub fn render_svgs_by_items(
 #[comemo::memoize]
 #[typst_macros::time]
 fn render_svg(
-    blocks: Prehashed<VecDeque<FrameBlock>>,
+    blocks: Prehashed<VecDeque<BoundFrameBlock>>,
     range: Range<usize>,
     width: Abs,
     height: Abs,
-    offset_height: Abs,
+    x_offset: Abs,
+    y_offset: Abs,
+    document_width: Abs,
 ) -> SvgRangedFrame {
     let hash = FxBuildHasher.hash_one(&blocks) as u32;
 
-    let mut frame = Frame::soft(Size::new(width, height));
+    let mut frame = Frame::soft(Size::new(document_width, height));
     frame.push_multiple(blocks.into_inner().into_iter().map(|block| {
-        let point = block.point - Point::new(Abs::zero(), offset_height);
+        let point = block.point - Point::new(Abs::zero(), y_offset);
 
         (point, block.item)
     }));
 
     let svg = svg_frame(&frame);
 
+    let width = width.to_pt();
     let height = height.to_pt();
-    let offset_height = offset_height.to_pt();
+    let x_offset = x_offset.to_pt();
+    let y_offset = y_offset.to_pt();
 
     let render = SvgFrameRender {
         svg,
+        width,
         height,
-        offset_height,
+        x_offset,
+        y_offset,
         hash,
     };
 
@@ -129,11 +145,16 @@ impl SvgRangedFrame {
 pub struct SvgFrameRender {
     /// SVG markup as a string.
     pub svg: String,
+    /// Width of the frame in points.
+    pub width: f64,
     /// Height of the frame in points.
     pub height: f64,
-    /// Offset from the top of the page in points.
-    #[serde(rename = "offsetHeight")]
-    pub offset_height: f64,
+    /// Offset from the left of the page in points.
+    #[serde(rename = "xOffset")]
+    pub x_offset: f64,
+    /// Hash of the frame blocks for change detection.
+    #[serde(rename = "yOffset")]
+    pub y_offset: f64,
     /// Hash of the frame blocks for change detection.
     pub hash: u32,
 }

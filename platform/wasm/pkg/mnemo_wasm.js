@@ -147,6 +147,11 @@ export class ThemeColors {
 }
 if (Symbol.dispose) ThemeColors.prototype[Symbol.dispose] = ThemeColors.prototype.free;
 
+/**
+ * Global state for Typst rendering and compilation in Mnemo.
+ *
+ * Holds the world, all open source and space contexts, and manages the mapping between user/editor state and Typst's compilation model.
+ */
 export class TypstState {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
