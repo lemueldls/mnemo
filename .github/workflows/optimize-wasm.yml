@@ -26,7 +26,7 @@ jobs:
           git config --global gpg.format ssh
           git config --global user.signingKey ~/.ssh/id_ed25519
           git config --global user.name "Lemuel DLS"
-          git config --global user.email "26912197+lemueldls@users.noreply.github.com"
+          git config --global user.email "noreply@git.lemueldls.dev"
 
       - name: 📥 Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
