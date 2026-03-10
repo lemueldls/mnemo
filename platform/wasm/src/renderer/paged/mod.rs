@@ -12,7 +12,9 @@ use crate::{state::SourceContext, wrappers::TypstDiagnostic};
 #[derive(Debug)]
 pub struct PagedRender<'a> {
     /// Chunks of blocks for incremental rendering.
-    pub chunks: Vec<BlocksChunk>,
+    pub chunks: Vec<FrameItemsChunk>,
+    /// Tooltips for the rendered content.
+    pub tooltips: Vec<FrameItemsChunk>,
     /// Diagnostics and warnings produced during rendering.
     pub diagnostics: Vec<TypstDiagnostic>,
     /// The paged Typst document, if available.
@@ -21,11 +23,11 @@ pub struct PagedRender<'a> {
     pub context: &'a mut SourceContext,
 }
 
-/// A chunk of frame blocks, representing a logical segment of the document.
+/// A chunk of frame items, representing a logical segment of the document.
 #[derive(Debug)]
-pub struct BlocksChunk {
-    /// The frame blocks in this chunk.
-    pub blocks: VecDeque<BoundFrameBlock>,
+pub struct FrameItemsChunk {
+    /// The bound frame items in this chunk.
+    pub items: VecDeque<BoundFrameItem>,
     /// UTF-16 range in the source corresponding to this chunk.
     pub range: Range<usize>,
     /// Width of the chunk in points.
@@ -38,9 +40,9 @@ pub struct BlocksChunk {
     pub y_offset: f64,
 }
 
-/// A single frame block, representing a renderable item with bounds and range.
+/// A single frame item with bounds and range.
 #[derive(Debug, Clone)]
-pub struct BoundFrameBlock {
+pub struct BoundFrameItem {
     /// Optional byte range in the source for this block.
     pub range: Option<Range<usize>>,
     /// Bounding box of the block.
@@ -51,7 +53,7 @@ pub struct BoundFrameBlock {
     pub point: Point,
 }
 
-impl Hash for BoundFrameBlock {
+impl Hash for BoundFrameItem {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         // self.range.hash(state);
         // self.start_height.hash(state);

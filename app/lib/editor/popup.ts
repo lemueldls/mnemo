@@ -2,7 +2,7 @@ import { StateEffect, StateField } from "@codemirror/state";
 import { ViewPlugin } from "@codemirror/view";
 import { showTooltip } from "@codemirror/view";
 
-import { framesStateField } from "./widgets";
+import { tooltipsStateField } from "./widgets";
 
 import type { Tooltip } from "@codemirror/view";
 import type { ViewUpdate } from "@codemirror/view";
@@ -29,40 +29,29 @@ export const popupViewPlugin = () =>
       queueMicrotask(() => {
         const state = view.state;
         const pos = state.selection.main.from;
-        const frames = state.field(framesStateField);
+        const tooltips = state.field(tooltipsStateField);
 
         let tooltip: Tooltip | null = null;
 
         // Find which frame contains the cursor
-        for (const frame of frames) {
-          const { start, end } = frame.range;
+        for (const { render, range } of tooltips) {
+          const { start, end } = range;
 
-          if (pos >= start && pos <= end && frame.render) {
+          if (pos >= start && pos <= end && render) {
             const container = document.createElement("div");
-            container.style.width = frame.render.width + "px";
-            container.style.height = frame.render.height + "px";
-            container.style.overflow = "visible";
-
-            const { contentDOM } = update.view;
+            container.classList.add("typst-popup-render");
 
             const svg = document.createElement("div");
-            svg.classList.add("typst-popup-render");
-            svg.style.width = contentDOM.clientWidth - 2 + "px";
-            // svg.style.height = frame.render.height + "px";
-            svg.style.transform = `translate(-${frame.render.xOffset}px)`;
-            svg.setHTMLUnsafe(frame.render.svg);
+            svg.style.width = render.width + "px";
+            svg.style.height = render.height + "px";
+            svg.style.transform = `translate(-${render.xOffset}px)`;
+            svg.setHTMLUnsafe(render.svg);
 
             container.append(svg);
 
-            const { doc } = state;
-            const { from: lineFrom, to: lineTo } = doc.lineAt(start);
-
             tooltip = {
-              pos: lineFrom,
-              end: lineTo,
-              // above: false,
-              // arrow: true,
-              // strictSide: true,
+              pos: start,
+              end: end,
               create() {
                 return { dom: container };
               },

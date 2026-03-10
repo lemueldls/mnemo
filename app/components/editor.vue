@@ -689,14 +689,14 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-popup-render {
-    // @apply border-outline bg-surface-container-lowest rounded-lg border shadow-lg;
+    @apply p-4 pb-6;
 
-    // overflow: auto;
-    // max-height: 400px;
-    // width: 400px;
+    div {
+      @apply relative;
+    }
 
     .typst-doc {
-      @apply w-full overflow-visible;
+      @apply size-full overflow-visible;
     }
   }
 }

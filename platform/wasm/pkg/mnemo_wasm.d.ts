@@ -35,11 +35,11 @@ export interface SvgFrameRender {
      */
     xOffset: number;
     /**
-     * Hash of the frame blocks for change detection.
+     * Hash of the frame items for change detection.
      */
     yOffset: number;
     /**
-     * Hash of the frame blocks for change detection.
+     * Hash of the frame items for change detection.
      */
     hash: number;
 }
@@ -52,6 +52,10 @@ export interface SvgRender {
      * Rendered SVG frames for each chunk.
      */
     frames: SvgRangedFrame[];
+    /**
+     * Rendered SVG frames for tooltips.
+     */
+    tooltips: SvgRangedFrame[];
     /**
      * Diagnostics and warnings produced during rendering.
      */
@@ -90,6 +94,7 @@ export interface CompileHTMLResult {
 
 export interface CompilePagedResult {
     frames: SvgRangedFrame[];
+    tooltips: SvgRangedFrame[];
     diagnostics: TypstDiagnostic[];
     requests: TypstRequest[];
 }
@@ -230,8 +235,8 @@ export interface InitOutput {
     readonly typststate_setMathFont: (a: number, b: number, c: number, d: number) => void;
     readonly typststate_setTheme: (a: number, b: number, c: number) => void;
     readonly __wbg_rgb_free: (a: number, b: number) => void;
-    readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
     readonly qcms_profile_precache_output_transform: (a: number) => void;
+    readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
     readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly qcms_enable_iccv4: () => void;
     readonly qcms_profile_is_bogus: (a: number) => number;

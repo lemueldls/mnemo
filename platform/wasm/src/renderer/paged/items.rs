@@ -10,7 +10,7 @@ use typst::{
 use crate::{
     renderer::{
         RenderTarget,
-        paged::{BlocksChunk, BoundFrameBlock, PagedRender},
+        paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
         remove_errornous_block, sync_source_context,
     },
     state::{SourceContext, TypstState},
@@ -43,6 +43,7 @@ pub fn chunk_by_items<'a>(
         .replace(&ir);
 
     let mut chunks = Vec::new();
+    let mut tooltips = Vec::new();
 
     while document.is_none() {
         let compiled = compile::<PagedDocument>(&state.world);
@@ -50,24 +51,24 @@ pub fn chunk_by_items<'a>(
 
         // crate::log!("[DOING A THING]");
 
-        (chunks, document) = match compiled.output {
+        (chunks, tooltips, document) = match compiled.output {
             Ok(document) => {
-                let mut tag_stack = Vec::new();
-                let mut frame_blocks = Vec::new();
+                let mut sink = BoundFrameSink::default();
+                let mut bound_frame_items = Vec::new();
 
                 for page in &document.pages {
                     for frame_item in page.frame.items() {
                         let frame_block =
-                            bound_frame(frame_item, &mut tag_stack, context, &state.world);
-                        frame_blocks.extend(frame_block);
+                            bound_frame(frame_item, None, &mut sink, context, &state.world);
+                        bound_frame_items.extend(frame_block);
                     }
                 }
 
-                let mut frame_blocks = frame_blocks.into_iter().peekable();
+                let mut bound_frame_items = bound_frame_items.into_iter().peekable();
 
                 let mut chunks = Vec::with_capacity(ast_blocks.len());
                 let mut ast_blocks = ast_blocks.iter().peekable();
-                let mut remaining_blocks = Vec::<BoundFrameBlock>::new();
+                let mut remaining_items = Vec::<BoundFrameItem>::new();
 
                 while let Some(ast_block) = ast_blocks.next() {
                     let aux_source = context.aux_source(&state.world).unwrap();
@@ -82,18 +83,18 @@ pub fn chunk_by_items<'a>(
                     let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
                     // let main_range = main_range_start..main_range_end;
 
-                    let mut chunk_blocks = VecDeque::<BoundFrameBlock>::new();
-                    let mut deferred_blocks = Vec::<BoundFrameBlock>::new();
+                    let mut chunk_items = VecDeque::<BoundFrameItem>::new();
+                    let mut deferred_items = Vec::<BoundFrameItem>::new();
 
                     let mut block_start_width = None;
                     let mut block_start_height = None;
                     let mut block_end_width = None;
                     let mut block_end_height = None;
 
-                    while let Some(frame_block) = frame_blocks.peek() {
+                    while let Some(frame_block) = bound_frame_items.peek() {
                         if let Some(range) = &frame_block.range {
                             if range.end <= main_range_end {
-                                let frame_block = frame_blocks.next().unwrap();
+                                let frame_block = bound_frame_items.next().unwrap();
 
                                 // crate::log!("{frame_block:#?}");
 
@@ -117,14 +118,14 @@ pub fn chunk_by_items<'a>(
                                     _ => block_end_height = Some(frame_block.bounds.max.y),
                                 }
 
-                                chunk_blocks.extend(deferred_blocks.drain(..));
-                                chunk_blocks.push_back(frame_block);
+                                chunk_items.extend(deferred_items.drain(..));
+                                chunk_items.push_back(frame_block);
                             } else {
                                 break;
                             }
                         } else {
-                            let frame_block = frame_blocks.next().unwrap();
-                            deferred_blocks.push(frame_block);
+                            let frame_block = bound_frame_items.next().unwrap();
+                            deferred_items.push(frame_block);
                         }
                     }
 
@@ -141,15 +142,15 @@ pub fn chunk_by_items<'a>(
                     }
 
                     if ast_block.is_inline {
-                        let length = remaining_blocks.len();
-                        chunk_blocks.reserve(length.saturating_add(1));
+                        let length = remaining_items.len();
+                        chunk_items.reserve(length.saturating_add(1));
 
-                        for remaining in remaining_blocks.drain(..).rev() {
-                            chunk_blocks.push_front(remaining);
+                        for remaining in remaining_items.drain(..).rev() {
+                            chunk_items.push_front(remaining);
                         }
                     }
 
-                    remaining_blocks.extend(deferred_blocks.drain(..));
+                    remaining_items.extend(deferred_items.drain(..));
 
                     // crate::log!("start width: {block_start_width}");
                     // crate::log!("end width: {block_end_width}");
@@ -161,8 +162,8 @@ pub fn chunk_by_items<'a>(
                         continue;
                     }
 
-                    chunks.push(BlocksChunk {
-                        blocks: chunk_blocks,
+                    chunks.push(FrameItemsChunk {
+                        items: chunk_items,
                         range: aux_range_utf16,
                         width: block_width,
                         height: block_height,
@@ -171,18 +172,18 @@ pub fn chunk_by_items<'a>(
                     });
                 }
 
-                if !remaining_blocks.is_empty()
+                if !remaining_items.is_empty()
                     && let Some(chunk) = chunks.last_mut()
                 {
-                    let length = remaining_blocks.len();
-                    chunk.blocks.reserve(length.saturating_add(1));
+                    let length = remaining_items.len();
+                    chunk.items.reserve(length.saturating_add(1));
 
-                    for remaining in remaining_blocks.drain(..).rev() {
-                        chunk.blocks.push_front(remaining);
+                    for remaining in remaining_items.drain(..).rev() {
+                        chunk.items.push_front(remaining);
                     }
                 }
 
-                (chunks, Some(document))
+                (chunks, sink.tooltips, Some(document))
             }
             Err(source_diagnostics) => {
                 convergence += 1;
@@ -210,7 +211,7 @@ pub fn chunk_by_items<'a>(
                     }
                 }
 
-                (Vec::new(), None)
+                (Vec::new(), Vec::new(), None)
             }
         };
     }
@@ -228,35 +229,143 @@ pub fn chunk_by_items<'a>(
         .unwrap()
         .replace(&ir);
 
+    // convert tooltips into Vec<FrameItemsChunk>
+    let tooltips = tooltips
+        .into_iter()
+        .filter_map(|items| {
+            // let bounds =
+            //     items
+            //         .iter()
+            //         .fold((None, None, None, None), |bounds, block| {
+            //             if matches!(block.item, FrameItem::Tag(..)) {
+            //                 let min_y = cmp::min(bounds.min.y, block.bounds.min.y);
+            //                 let max_y = cmp::max(bounds.max.y, block.bounds.max.y);
+
+            //                 Rect::new(
+            //                     Point::new(bounds.min.x, min_y),
+            //                     Point::new(bounds.max.x, max_y),
+            //                 )
+            //             } else {
+            //                 let min_x = cmp::min(bounds.min.x, block.bounds.min.x);
+            //                 let min_y = cmp::min(bounds.min.y, block.bounds.min.y);
+            //                 let max_x = cmp::max(bounds.max.x, block.bounds.max.x);
+            //                 let max_y = cmp::max(bounds.max.y, block.bounds.max.y);
+
+            //                 Rect::new(Point::new(min_x, min_y), Point::new(max_x, max_y))
+            //             }
+            //         });
+
+            let mut block_start_width = None;
+            let mut block_start_height = None;
+            let mut block_end_width = None;
+            let mut block_end_height = None;
+
+            for block in &items {
+                match block_start_height {
+                    Some(height) if height < block.bounds.min.y => {}
+                    _ => block_start_height = Some(block.bounds.min.y),
+                }
+
+                match block_end_height {
+                    Some(height) if height > block.bounds.max.y => {}
+                    _ => block_end_height = Some(block.bounds.max.y),
+                }
+
+                match block.item {
+                    FrameItem::Tag(..) => {}
+                    _ => {
+                        match block_start_width {
+                            Some(width) if width < block.bounds.min.x => {}
+                            _ => block_start_width = Some(block.bounds.min.x),
+                        }
+
+                        match block_end_width {
+                            Some(width) if width > block.bounds.max.x => {}
+                            _ => block_end_width = Some(block.bounds.max.x),
+                        }
+                    }
+                }
+            }
+
+            let block_start_width = block_start_width?.to_pt();
+            let block_start_height = block_start_height?.to_pt();
+            let block_end_width = block_end_width?.to_pt();
+            let block_end_height = block_end_height?.to_pt();
+
+            let main_range = items
+                .iter()
+                .filter_map(|item| item.range.clone())
+                .fold(None::<Range<usize>>, |range, item_range| {
+                    Some(match range {
+                        Some(range) => {
+                            let start = cmp::min(range.start, item_range.start);
+                            let end = cmp::max(range.end, item_range.end);
+
+                            start..end
+                        }
+                        None => item_range,
+                    })
+                })
+                .unwrap_or(0..0);
+
+            let aux_start = context.map_main_to_aux_from_left(main_range.start);
+            let aux_end = context.map_main_to_aux_from_right(main_range.end);
+
+            let aux_source = context.aux_source(&state.world)?;
+
+            let aux_lines = aux_source.lines();
+            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start)?;
+            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end)?;
+            let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+
+            Some(FrameItemsChunk {
+                items: VecDeque::from(items),
+                range: aux_range_utf16,
+                width: block_end_width - block_start_width,
+                height: block_end_height - block_start_height,
+                x_offset: block_start_width,
+                y_offset: block_start_height,
+            })
+        })
+        .collect();
+
     PagedRender {
-        diagnostics,
         chunks,
+        tooltips,
+        diagnostics,
         document,
         context,
     }
 }
 
 /// Recursively bounds a frame item, producing frame blocks with position and range.
+// #[comemo::memoize]
 #[typst_macros::time]
 fn bound_frame(
     frame_item: &(Point, FrameItem),
-    tag_stack: &mut Vec<(&str, Span)>,
+    parent_point: Option<Point>,
+    sink: &mut BoundFrameSink,
     context: &SourceContext,
     world: &MnemoWorld,
-) -> Box<[BoundFrameBlock]> {
+) -> Box<[BoundFrameItem]> {
     let (point, item) = frame_item;
 
     let bounds = match &item {
         FrameItem::Text(text) => {
             let bbox = text.bbox(); // optimize!!
 
-            // crate::log!(
-            //     "rect: {:?}",
-            //     Rect::new(
-            //         Point::new(point.x, cmp::max(point.y - text.size, Abs::zero())),
-            //         Point::new(point.x + bbox.max.x, point.y),
-            //     )
-            // );
+            crate::log!(
+                "text: {:#?}\nrect: {:#?}\npoint: {point:#?}\nheight: {:#?}\nbbox: {bbox:#?}",
+                &text.text,
+                Rect::new(
+                    Point::new(
+                        point.x + bbox.min.x,
+                        cmp::max(point.y - text.size, Abs::zero()),
+                    ),
+                    Point::new(point.x + bbox.max.x, point.y),
+                ),
+                text.height(),
+            );
 
             Rect::new(
                 Point::new(
@@ -268,22 +377,17 @@ fn bound_frame(
         }
         FrameItem::Group(group) => {
             if group.transform.is_identity() {
+                let point = if let Some(parnet_point) = parent_point {
+                    parnet_point + *point
+                } else {
+                    *point
+                };
+
                 return group
                     .frame
                     .items()
                     .flat_map(|frame_item| {
-                        bound_frame(frame_item, tag_stack, context, world)
-                            .into_iter()
-                            .map(|mut frame_block| {
-                                frame_block.point.x += point.x;
-                                frame_block.point.y += point.y;
-                                frame_block.bounds.min.x += point.x;
-                                frame_block.bounds.min.y += point.y;
-                                frame_block.bounds.max.x += point.x;
-                                frame_block.bounds.max.y += point.y;
-
-                                frame_block
-                            })
+                        bound_frame(frame_item, Some(point), sink, context, world)
                     })
                     .collect::<Box<[_]>>();
             }
@@ -291,7 +395,7 @@ fn bound_frame(
             let (range, bounds) = group
                 .frame
                 .items()
-                .flat_map(|frame_item| bound_frame(frame_item, tag_stack, context, world))
+                .flat_map(|frame_item| bound_frame(frame_item, None, sink, context, world))
                 .fold(
                     (
                         None::<Range<usize>>,
@@ -315,16 +419,31 @@ fn bound_frame(
                         bounds.max.x = cmp::max(bounds.max.x, frame_block.bounds.max.x);
                         bounds.max.y = cmp::max(bounds.max.y, frame_block.bounds.max.y);
 
+                        // sink.process_tooltips(frame_block);
+
                         (range, bounds)
                     },
                 );
 
-            return Box::from_iter(iter::once(BoundFrameBlock {
+            let mut item = BoundFrameItem {
                 range,
                 bounds,
                 item: item.clone(),
                 point: point.clone(),
-            }));
+            };
+
+            if let Some(point) = parent_point {
+                item.point.x += point.x;
+                item.point.y += point.y;
+                item.bounds.min.x += point.x;
+                item.bounds.min.y += point.y;
+                item.bounds.max.x += point.x;
+                item.bounds.max.y += point.y;
+            }
+
+            sink.process_tooltips(&item);
+
+            return Box::from_iter(iter::once(item));
         }
         FrameItem::Shape(shape, _span) => {
             let bbox = shape.geometry.bbox_size();
@@ -333,29 +452,65 @@ fn bound_frame(
         FrameItem::Image(_image, axes, _span) => Rect::new(*point, Point::new(axes.x, axes.y)),
         FrameItem::Link(..) => Rect::new(*point, *point),
         FrameItem::Tag(..) => Rect::new(*point, *point),
-        // FrameItem::Tag(..) => {
-        //     Rect::new(
-        //         Point::new(Abs::zero(), point.y),
-        //         Point::new(Abs::zero(), point.y),
-        //     )
-        // }
     };
 
-    let range = frame_item_range(item, tag_stack, context, world);
+    let range = frame_item_range(item, sink, context, world);
 
-    Box::from_iter(iter::once(BoundFrameBlock {
+    let mut item = BoundFrameItem {
         range,
         bounds,
         item: item.clone(),
         point: point.clone(),
-    }))
+    };
+
+    if let Some(point) = parent_point {
+        item.point.x += point.x;
+        item.point.y += point.y;
+        item.bounds.min.x += point.x;
+        item.bounds.min.y += point.y;
+        item.bounds.max.x += point.x;
+        item.bounds.max.y += point.y;
+    }
+
+    sink.process_tooltips(&item);
+
+    Box::from_iter(iter::once(item))
+}
+
+#[derive(Default)]
+struct BoundFrameSink {
+    tooltips: Vec<Vec<BoundFrameItem>>,
+    tag_stack: Vec<(&'static str, Span)>,
+}
+
+// #[comemo::track]
+impl BoundFrameSink {
+    pub fn process_tooltips(&mut self, block: &BoundFrameItem) {
+        if let Some((name, _span)) = self.tag_stack.last() {
+            match *name {
+                "equation" => {
+                    self.tooltips.last_mut().unwrap().push(block.clone());
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn push_tag(&mut self, name: &'static str, span: Span) {
+        self.tooltips.push(Vec::new());
+        self.tag_stack.push((name, span));
+    }
+
+    pub fn pop_tag(&mut self) -> Option<(&'static str, Span)> {
+        self.tag_stack.pop()
+    }
 }
 
 /// Determines the source range for a frame item, using tag stack for introspectable tags.
 #[typst_macros::time]
 fn frame_item_range(
     item: &FrameItem,
-    tag_stack: &mut Vec<(&str, Span)>,
+    sink: &mut BoundFrameSink,
     context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
@@ -380,7 +535,7 @@ fn frame_item_range(
                     let span = content.span();
 
                     if flags.introspectable {
-                        tag_stack.push((name, span));
+                        sink.push_tag(name, span);
                     }
 
                     // crate::log!("[START FLAGS]: {flags:?} {name}");
@@ -391,7 +546,7 @@ fn frame_item_range(
                 }
                 Tag::End(_location, _key, flags) => {
                     if flags.introspectable
-                        && let Some((name, span)) = tag_stack.pop()
+                        && let Some((name, span)) = sink.pop_tag()
                     {
                         match name {
                             "equation" => span,

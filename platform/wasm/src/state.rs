@@ -195,6 +195,7 @@ impl TypstState {
 
         CompilePagedResult {
             frames: result.frames,
+            tooltips: result.tooltips,
             diagnostics: result.diagnostics,
             requests: self.process_requests(),
         }
@@ -834,6 +835,7 @@ impl SourceContext {
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CompilePagedResult {
     pub frames: Vec<SvgRangedFrame>,
+    pub tooltips: Vec<SvgRangedFrame>,
     pub diagnostics: Vec<TypstDiagnostic>,
     pub requests: Vec<TypstRequest>,
 }

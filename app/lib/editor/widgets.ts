@@ -89,18 +89,20 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const framesCache = new LRUCache<string, SvgRangedFrame[]>({ max: 8 });
+const compileCache = new LRUCache<string, { frames: SvgRangedFrame[]; tooltips: SvgRangedFrame[] }>(
+  { max: 8 },
+);
 
 const updateFlagStore = new Set<string>();
 
-export const framesStateEffect = StateEffect.define<SvgRangedFrame[]>();
+export const tooltipsStateEffect = StateEffect.define<SvgRangedFrame[]>();
 
-export const framesStateField = StateField.define<SvgRangedFrame[]>({
+export const tooltipsStateField = StateField.define<SvgRangedFrame[]>({
   create() {
     return [];
   },
   update(frames, transaction) {
-    const effect = transaction.effects.find((effect) => effect.is(framesStateEffect));
+    const effect = transaction.effects.find((effect) => effect.is(tooltipsStateEffect));
     return effect ? effect.value : frames;
   },
 });
@@ -115,13 +117,14 @@ function decorate(
   updateInWidget: boolean,
   widthChanged: boolean,
   typstState: TypstState,
-): { decorations: DecorationSet; frames: SvgRangedFrame[] } | null {
+) {
   const text = update.state.doc.toString();
   const isFlaggedForUpdate = updateFlagStore.has(path);
 
   let frames: SvgRangedFrame[];
+  let tooltips: SvgRangedFrame[];
 
-  if (update.docChanged || widthChanged || !framesCache.has(path)) {
+  if (update.docChanged || widthChanged || !compileCache.has(path)) {
     // if (update.docChanged && updateInWidget && isFlaggedForUpdate) {
     //   const { diagnostics, requests } = typstState.checkPaged(fileId, text, prelude);
     //   dispatchDiagnostics(diagnostics, update.state, update.view);
@@ -157,9 +160,9 @@ function decorate(
       });
     }
 
-    ({ frames } = compileResult);
-    framesCache.set(path, compileResult.frames);
-  } else frames = framesCache.get(path)!;
+    ({ frames, tooltips } = compileResult);
+    compileCache.set(path, { frames, tooltips });
+  } else ({ frames, tooltips } = compileCache.get(path)!);
 
   const { view, state } = update;
 
@@ -214,7 +217,7 @@ function decorate(
 
   return {
     decorations: Decoration.set(decorations, true),
-    frames,
+    tooltips,
   };
 }
 
@@ -298,7 +301,7 @@ export const typstViewPlugin = (
           if (result) {
             const effects = [
               typstStateEffect.of({ decorations: result.decorations }),
-              framesStateEffect.of(result.frames),
+              tooltipsStateEffect.of(result.tooltips),
             ];
             update.view.dispatch({ effects });
           }

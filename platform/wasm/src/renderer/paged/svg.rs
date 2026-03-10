@@ -7,7 +7,7 @@ use tsify::Tsify;
 use typst::layout::{Abs, Frame, Point, Size};
 use typst_svg::svg_frame;
 
-use super::BoundFrameBlock;
+use super::BoundFrameItem;
 use crate::{
     renderer::{
         RenderTarget,
@@ -27,6 +27,7 @@ pub fn render_svgs_by_items(
 ) -> SvgRender {
     let PagedRender {
         chunks,
+        tooltips,
         diagnostics,
         document,
         context,
@@ -43,7 +44,7 @@ pub fn render_svgs_by_items(
         chunks
             .into_iter()
             .map(|chunk| {
-                let blocks = Prehashed::new(chunk.blocks);
+                let items = Prehashed::new(chunk.items);
 
                 let width = Abs::pt(chunk.width);
                 let height = Abs::pt(chunk.height);
@@ -51,7 +52,7 @@ pub fn render_svgs_by_items(
                 let y_offset = Abs::pt(chunk.y_offset);
 
                 render_svg(
-                    blocks,
+                    items,
                     chunk.range,
                     width,
                     height,
@@ -65,19 +66,67 @@ pub fn render_svgs_by_items(
         Vec::new()
     };
 
+    // let tooltips = if let Some(document) = &document {
+    //     let document_width = document
+    //         .pages
+    //         .iter()
+    //         .map(|page| page.frame.width())
+    //         .max()
+    //         .unwrap_or_default();
+
+    //     tooltips
+    //         .into_iter()
+    //         .map(|chunk| {
+    //             let items = Prehashed::new(chunk.items);
+
+    //             let width = Abs::pt(chunk.width);
+    //             let height = Abs::pt(chunk.height);
+    //             let x_offset = Abs::pt(chunk.x_offset);
+    //             let y_offset = Abs::pt(chunk.y_offset);
+
+    //             render_svg(
+    //                 items,
+    //                 chunk.range,
+    //                 width,
+    //                 height,
+    //                 x_offset,
+    //                 y_offset,
+    //                 document_width,
+    //             )
+    //         })
+    //         .collect()
+    // } else {
+    //     Vec::new()
+    // };
+
+    let tooltips = tooltips
+        .into_iter()
+        .map(|chunk| {
+            let items = Prehashed::new(chunk.items);
+
+            let width = Abs::pt(chunk.width);
+            let height = Abs::pt(chunk.height);
+            let x_offset = Abs::pt(chunk.x_offset);
+            let y_offset = Abs::pt(chunk.y_offset);
+
+            render_svg(items, chunk.range, width, height, x_offset, y_offset, width)
+        })
+        .collect();
+
     context.paged_document = document;
 
     SvgRender {
         frames,
+        tooltips,
         diagnostics,
     }
 }
 
-/// Renders a single SVG frame from a set of frame blocks and metadata.
+/// Renders a single SVG frame from a set of frame items and metadata.
 #[comemo::memoize]
 #[typst_macros::time]
 fn render_svg(
-    blocks: Prehashed<VecDeque<BoundFrameBlock>>,
+    items: Prehashed<VecDeque<BoundFrameItem>>,
     range: Range<usize>,
     width: Abs,
     height: Abs,
@@ -85,10 +134,10 @@ fn render_svg(
     y_offset: Abs,
     document_width: Abs,
 ) -> SvgRangedFrame {
-    let hash = FxBuildHasher.hash_one(&blocks) as u32;
+    let hash = FxBuildHasher.hash_one(&items) as u32;
 
     let mut frame = Frame::soft(Size::new(document_width, height));
-    frame.push_multiple(blocks.into_inner().into_iter().map(|block| {
+    frame.push_multiple(items.into_inner().into_iter().map(|block| {
         let point = block.point - Point::new(Abs::zero(), y_offset);
 
         (point, block.item)
@@ -119,6 +168,8 @@ fn render_svg(
 pub struct SvgRender {
     /// Rendered SVG frames for each chunk.
     pub frames: Vec<SvgRangedFrame>,
+    /// Rendered SVG frames for tooltips.
+    pub tooltips: Vec<SvgRangedFrame>,
     /// Diagnostics and warnings produced during rendering.
     pub diagnostics: Vec<TypstDiagnostic>,
 }
@@ -152,9 +203,9 @@ pub struct SvgFrameRender {
     /// Offset from the left of the page in points.
     #[serde(rename = "xOffset")]
     pub x_offset: f64,
-    /// Hash of the frame blocks for change detection.
+    /// Hash of the frame items for change detection.
     #[serde(rename = "yOffset")]
     pub y_offset: f64,
-    /// Hash of the frame blocks for change detection.
+    /// Hash of the frame items for change detection.
     pub hash: u32,
 }
