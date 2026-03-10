@@ -5,8 +5,8 @@
 ## Inspirations
 
 - [Obsidian](https://obsidian.md)
-- [Research by UNMS](https://un.ms/research)
 - [Noodle](https://github.com/noodle-run/noodle)
+- [Research by UNMS](https://un.ms/research)
 
 ## TODO
 
