@@ -1,3 +1,4 @@
+import { decodeTime } from "ulid";
 import { type StorageValue, normalizeKey } from "unstorage";
 
 import { commit, useCrdt } from "./crdt";
@@ -175,6 +176,18 @@ export async function useStorageSet<T extends Exclude<Record<string, any>, Conta
         const syncKeys = new Set<string>();
         const deleteQueue: number[] = [];
 
+        console.log(key, {
+          itemList: itemList
+            .map(toRaw)
+            .map((n) => decodeTime(n.id))
+            .toSorted((a, b) => a - b)
+            .map((d) => new Date(d)),
+          syncList: syncList
+            .map((n) => decodeTime(n.id))
+            .toSorted((a, b) => a - b)
+            .map((d) => new Date(d)),
+        });
+
         for (let i = 0; i < syncList.length; i++) {
           const item = syncList[i] as Exclude<T[number], Container>;
           const key = item[setKey];
@@ -184,11 +197,16 @@ export async function useStorageSet<T extends Exclude<Record<string, any>, Conta
           } else syncKeys.add(key);
         }
 
+        console.log(key, { syncKeys, deleteQueue });
+
         for (let i = 0; i < itemList.length; i++) {
           const item = itemList[i] as Exclude<T[number], Container>;
           const key = item[setKey];
 
-          if (!syncKeys.has(key)) list.push(item);
+          if (!syncKeys.has(key)) {
+            console.log("no entry for", key, "pusing", item);
+            list.push(item);
+          }
         }
 
         for (let i = deleteQueue.length - 1; i >= 0; i--) list.delete(deleteQueue[i]!, 1);

@@ -10,20 +10,23 @@ export interface DailyNote {
 export type NoteKind = "daily" | "sticky" | "prelude" | "task";
 
 export async function useDailyNotes(spaceId: MaybeRefOrGetter<string>) {
-  const notes = await useStorageSet<DailyNote[]>(
+  const notes = await useStorageMap<{ [id: string]: DailyNote }>(
     () => `spaces/${toValue(spaceId)}/daily/notes.json`,
-    "id",
   );
 
   return notes;
 }
 
-export async function loadDailyNotes(spaceId: string, notes: DailyNote[], archived?: boolean) {
+export async function loadDailyNotes(
+  spaceId: string,
+  notes: MapRef<{ [id: string]: DailyNote }>,
+  archived?: boolean,
+) {
   let addToday = true;
 
   const timeZone = useTimeZone();
-  const maybeNotes = await Promise.all(
-    notes.map(async (note) => {
+  const noteEntries = await Promise.all(
+    Object.entries(notes.value).map(async ([key, note]) => {
       const date = toCalendarDate(fromAbsolute(decodeTime(note.id), timeZone));
 
       if (isToday(date, timeZone) && !archived) addToday = false;
@@ -33,17 +36,17 @@ export async function loadDailyNotes(spaceId: string, notes: DailyNote[], archiv
         if (!item) return;
       }
 
-      return note;
+      return [key, note];
     }),
   );
 
-  const newNotes = maybeNotes.filter((note) => note) as DailyNote[];
+  const newNotes = Object.fromEntries(noteEntries.filter((note) => note) as [string, DailyNote][]);
 
   if (addToday) {
     const id = ulid();
-    // const date = toCalendarDate(fromAbsolute(decodeTime(id), timeZone));
 
-    newNotes.push({ id, datesReviewed: [] });
+    await notes.set(id, { id, datesReviewed: [] });
+    newNotes[id] = { id, datesReviewed: [] };
   }
 
   return newNotes;

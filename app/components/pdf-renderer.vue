@@ -12,12 +12,12 @@ const { d } = useSharedI18n();
 const spaces = await useSpaces();
 const space = computed(() => spaces.value[spaceId.value]!);
 
-const dailyNotesItem = await getStorageItem<DailyNote[]>(
+const dailyNotesItem = await getStorageItem<{ [id: string]: DailyNote }>(
   `spaces/${spaceId.value}/daily/notes.json`,
 );
 
 const dailyNotes = await Promise.all(
-  dailyNotesItem!.map(async (note) => {
+  Object.values(dailyNotesItem!).map(async (note) => {
     const item = await getStorageItem<string>(`spaces/${spaceId.value}/daily/${note.id}.typ`);
 
     return { note, item };

@@ -101,10 +101,15 @@ const dailyNotes = ref<DailyNote[]>([]);
 
 await watchImmediateAsync(spaceId, async (spaceId) => {
   const resolvedDailyNotes = await useDailyNotes(spaceId);
-  const notes = await loadDailyNotes(spaceId, resolvedDailyNotes.value, false);
+  const notes = await loadDailyNotes(spaceId, resolvedDailyNotes, false);
 
-  dailyNotes.value = notes;
-  resolvedDailyNotes.value = notes;
+  console.log(
+    Object.values(notes)
+      .map(toRaw)
+      .map((n) => [n.id, new Date(decodeTime(n.id))]),
+  );
+
+  dailyNotes.value = Object.values(notes);
 });
 
 const timeZone = useTimeZone();

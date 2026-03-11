@@ -22,7 +22,7 @@ export const useActivityGraph = createSharedComposable(async (amount: MaybeRefOr
         spaceIds.value.map(async (spaceId) => {
           const notes = await useDailyNotes(spaceId);
 
-          return notes.value.map((note) => {
+          return Object.values(notes.value).map((note) => {
             const createdAt = toCalendarDate(fromAbsolute(decodeTime(note.id), timeZone));
 
             return { note, createdAt };

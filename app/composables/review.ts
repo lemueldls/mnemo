@@ -34,7 +34,7 @@ export const useReview = createSharedComposable(async (amount: MaybeRefOrGetter<
     Promise.all(
       spaceIds.value.map(async (spaceId) => {
         const dailyNotes = await useDailyNotes(spaceId);
-        const notes = dailyNotes.value;
+        const notes = Object.values(dailyNotes.value);
 
         return { spaceId, notes };
       }),
