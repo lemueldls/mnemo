@@ -7,26 +7,32 @@ import { tooltipsStateField } from "./widgets";
 import type { Tooltip } from "@codemirror/view";
 import type { ViewUpdate } from "@codemirror/view";
 
-const popupTooltipEffect = StateEffect.define<Tooltip | null>();
+const tooltipStateEffect = StateEffect.define<Tooltip | null>();
 
-export const popupStateField = StateField.define<Tooltip | null>({
+export const tooltipStateField = StateField.define<Tooltip | null>({
   create() {
     return null;
   },
   update(tooltip, transaction) {
-    const effect = transaction.effects.find((e) => e.is(popupTooltipEffect));
+    const effect = transaction.effects.find((e) => e.is(tooltipStateEffect));
     if (effect) return effect.value;
     return tooltip;
   },
   provide: (field) => showTooltip.from(field),
 });
 
-export const popupViewPlugin = () =>
+export const tooltipViewPlugin = () =>
   ViewPlugin.define((view) => ({
     update(update: ViewUpdate) {
-      if (!update.selectionSet && !update.docChanged) return;
+      if (!update.selectionSet && !update.docChanged && !update.focusChanged) return;
 
       queueMicrotask(() => {
+        if (!view.hasFocus) {
+          view.dispatch({ effects: tooltipStateEffect.of(null) });
+
+          return;
+        }
+
         const state = view.state;
         const pos = state.selection.main.from;
         const tooltips = state.field(tooltipsStateField);
@@ -61,9 +67,7 @@ export const popupViewPlugin = () =>
           }
         }
 
-        view.dispatch({
-          effects: popupTooltipEffect.of(tooltip),
-        });
+        view.dispatch({ effects: tooltipStateEffect.of(tooltip) });
       });
     },
   }));

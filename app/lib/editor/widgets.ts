@@ -89,9 +89,10 @@ class TypstWidget extends WidgetType {
   }
 }
 
-const compileCache = new LRUCache<string, { frames: SvgRangedFrame[]; tooltips: SvgRangedFrame[] }>(
-  { max: 8 },
-);
+export const compileCache = new LRUCache<
+  string,
+  { frames: SvgRangedFrame[]; tooltips: SvgRangedFrame[] }
+>({ max: 8 });
 
 const updateFlagStore = new Set<string>();
 

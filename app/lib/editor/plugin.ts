@@ -6,7 +6,7 @@ import { typstSyntaxHighlighting } from "./highlight";
 import { typstHoverTooltip } from "./hover";
 import { typstKeymap } from "./keymap";
 import { autocomplete, typstLanguageData } from "./language";
-import { popupStateField, popupViewPlugin } from "./popup";
+import { tooltipStateField, tooltipViewPlugin } from "./tooltip";
 import { typstStateField, typstViewPlugin, tooltipsStateField } from "./widgets";
 
 import type { IndentContext } from "@codemirror/language";
@@ -25,8 +25,8 @@ export const typstPlugin = (
   typstStateField,
   tooltipsStateField,
   typstViewPlugin(fileId, spaceId, path, text, prelude, locked, typstState),
-  popupViewPlugin(),
-  popupStateField,
+  tooltipViewPlugin(),
+  tooltipStateField,
 
   autocompletion({
     override: [(context) => autocomplete(context, fileId, typstState)],
