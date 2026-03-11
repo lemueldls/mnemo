@@ -103,13 +103,10 @@ await watchImmediateAsync(spaceId, async (spaceId) => {
   const resolvedDailyNotes = await useDailyNotes(spaceId);
   const notes = await loadDailyNotes(spaceId, resolvedDailyNotes, false);
 
-  console.log(
-    Object.values(notes)
-      .map(toRaw)
-      .map((n) => [n.id, new Date(decodeTime(n.id))]),
-  );
+  const values = Object.values(notes);
+  values.sort((a, b) => a.id.localeCompare(b.id));
 
-  dailyNotes.value = Object.values(notes);
+  dailyNotes.value = values;
 });
 
 const timeZone = useTimeZone();
