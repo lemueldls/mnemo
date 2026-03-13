@@ -25,6 +25,7 @@ use typst::{
     diag::{Severity, SourceDiagnostic},
     syntax::SyntaxKind,
 };
+use typst_syntax::SyntaxNode;
 
 use crate::{
     index_mapper::IndexMapper,
@@ -194,7 +195,6 @@ fn wrap_block(
 pub fn remove_errornous_block(
     ast_blocks: &[AstBlock],
     source_diagnostics: EcoVec<SourceDiagnostic>,
-    diagnostics: &mut Vec<TypstDiagnostic>,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
 ) -> Vec<usize> {
@@ -210,14 +210,6 @@ pub fn remove_errornous_block(
             )
         })
         .collect::<FxHashSet<_>>();
-
-    diagnostics.extend(TypstDiagnostic::from_diagnostics(
-        source_diagnostics,
-        context,
-        world,
-    ));
-
-    crate::error!("[ERRORS]: {diagnostics:?}");
 
     let (indicies, main_ranges): (Vec<usize>, Vec<Range<usize>>) = ast_blocks
         .iter()
@@ -257,13 +249,27 @@ pub fn remove_errornous_block(
 /// If marking is unsuccessful (e.g., due to complex expressions or multiple errors), it falls back to removing the entire block containing the error, as implemented in `remove_errornous_block`.
 #[typst_macros::time]
 pub fn try_mark_errornous(
-    ast_blocks: &[AstBlock],
     source_diagnostics: EcoVec<SourceDiagnostic>,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
-) {
+) -> Option<()> {
+    let main_source = context.main_source(world).unwrap();
+
     let error_ranges = source_diagnostics
         .iter()
+        .filter(|diagnostic| {
+            main_source.find(diagnostic.span).is_some_and(|node| {
+                crate::log!("err@{node:?} <- {:?}", node.parent());
+
+                matches!(node.kind(), SyntaxKind::MathIdent)
+                    || node.parent().is_some_and(|node| {
+                        matches!(node.kind(), SyntaxKind::MathAttach | SyntaxKind::MathFrac)
+                            || node
+                                .parent_kind()
+                                .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
+                    })
+            })
+        })
         .filter_map(|diagnostic| {
             map_main_span(
                 diagnostic.span,
@@ -275,37 +281,34 @@ pub fn try_mark_errornous(
         })
         .collect::<FxHashSet<_>>();
 
-    let mut marked = false;
-
-    for block in ast_blocks {
-        let aux_range = &block.range;
-
-        let main_range_start = context.map_aux_to_main_from_left(aux_range.start);
-        let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
-        let main_range = main_range_start..main_range_end;
-
-        let in_block = error_ranges.iter().any(|error_range| {
-            (main_range_start <= error_range.start && main_range_end >= error_range.start)
-                || (main_range_start <= error_range.end && main_range_end >= error_range.end)
-        });
-
-        if in_block {
-            let source = context.main_source_mut(world).unwrap();
-            let original_text = &source.text()[main_range.clone()];
-            crate::log!("[MARKING]:\n{}", original_text);
-
-            // Wrap the original text in a red text expression
-            let marked_text = format!("#text(fill:theme.error)[{}]", original_text);
-            source.edit(main_range.clone(), &marked_text);
-
-            crate::log!("[NEW SOURCE]:\n{}", &source.text());
-
-            marked = true;
-            break;
-        }
+    if error_ranges.is_empty() {
+        return None;
     }
 
-    if !marked {
-        crate::log!("Failed to mark specific expression, falling back to block removal.");
+    for main_range in error_ranges {
+        let source = context.main_source_mut(world).unwrap();
+        let original_text = &source.text()[main_range.clone()];
+        crate::log!("[MARKING]:\n{}", original_text);
+
+        // Wrap the original text in a red text expression
+        let marked_text = format!("#text(fill:theme.error)[{original_text}]");
+        let delta = marked_text.len() - original_text.len();
+        source.edit(main_range.clone(), &marked_text);
+
+        let aux_end = context
+            .index_mapper
+            .map_main_to_aux_from_left(main_range.end);
+        context
+            .index_mapper
+            .push_aux_to_main_sorted(aux_end, main_range.end);
+
+        crate::log!("before: {:?}", &context.index_mapper);
+        crate::log!("delta range: {main_range:?}");
+        context.index_mapper.bump_main_from(main_range.end, delta);
+        crate::log!("after: {:?}", &context.index_mapper);
+
+        // crate::log!("[NEW SOURCE]:\n{}", &source.text());
     }
+
+    Some(())
 }

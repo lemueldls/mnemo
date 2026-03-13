@@ -425,17 +425,17 @@ impl TypstState {
 
         let aux_lines = aux_source.lines();
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
+        let main_cursor = context.map_aux_to_main_from_left(aux_cursor);
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
-            context.html_document.as_ref(),
+            context.paged_document.as_ref(),
             main_source,
             main_cursor,
             explicit,
         )?;
 
-        let aux_offset = context.map_main_to_aux_from_right(main_offset);
+        let aux_offset = context.map_main_to_aux_from_left(main_offset);
         let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
 
         Some(Autocomplete {
@@ -592,10 +592,17 @@ impl TypstState {
                         break;
                     }
 
+                    diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                        source_diagnostics.clone(),
+                        context,
+                        &mut self.world,
+                    ));
+
+                    crate::error!("[ERRORS]: {diagnostics:?}");
+
                     let indicies = remove_errornous_block(
                         &ast_blocks,
                         source_diagnostics,
-                        &mut diagnostics,
                         context,
                         &mut self.world,
                     );

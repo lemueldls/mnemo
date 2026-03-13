@@ -1,7 +1,9 @@
 use std::{cmp, collections::VecDeque, iter, ops::Range};
 
+use rustc_hash::FxHashSet;
 use typst::{
     WorldExt, compile,
+    diag::Severity,
     introspection::Tag,
     layout::{Abs, FrameItem, PagedDocument, Point, Rect},
     syntax::Span,
@@ -11,11 +13,11 @@ use crate::{
     renderer::{
         RenderTarget,
         paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
-        remove_errornous_block, sync_source_context,
+        remove_errornous_block, sync_source_context, try_mark_errornous,
     },
     state::{SourceContext, TypstState},
     world::MnemoWorld,
-    wrappers::{TypstDiagnostic, TypstFileId},
+    wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
 
 /// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error convergence.
@@ -193,10 +195,24 @@ pub fn chunk_by_items<'a>(
                     break;
                 }
 
+                diagnostics.extend(TypstDiagnostic::from_diagnostics(
+                    source_diagnostics.clone(),
+                    context,
+                    &mut state.world,
+                ));
+
+                crate::error!("[ERRORS]: {diagnostics:?}");
+
+                let marked =
+                    try_mark_errornous(source_diagnostics.clone(), context, &mut state.world);
+
+                if marked.is_some() {
+                    continue;
+                }
+
                 let indicies = remove_errornous_block(
                     &ast_blocks,
                     source_diagnostics,
-                    &mut diagnostics,
                     context,
                     &mut state.world,
                 );
@@ -233,28 +249,6 @@ pub fn chunk_by_items<'a>(
     let tooltips = tooltips
         .into_iter()
         .filter_map(|items| {
-            // let bounds =
-            //     items
-            //         .iter()
-            //         .fold((None, None, None, None), |bounds, block| {
-            //             if matches!(block.item, FrameItem::Tag(..)) {
-            //                 let min_y = cmp::min(bounds.min.y, block.bounds.min.y);
-            //                 let max_y = cmp::max(bounds.max.y, block.bounds.max.y);
-
-            //                 Rect::new(
-            //                     Point::new(bounds.min.x, min_y),
-            //                     Point::new(bounds.max.x, max_y),
-            //                 )
-            //             } else {
-            //                 let min_x = cmp::min(bounds.min.x, block.bounds.min.x);
-            //                 let min_y = cmp::min(bounds.min.y, block.bounds.min.y);
-            //                 let max_x = cmp::max(bounds.max.x, block.bounds.max.x);
-            //                 let max_y = cmp::max(bounds.max.y, block.bounds.max.y);
-
-            //                 Rect::new(Point::new(min_x, min_y), Point::new(max_x, max_y))
-            //             }
-            //         });
-
             let mut block_start_width = None;
             let mut block_start_height = None;
             let mut block_end_width = None;
@@ -318,6 +312,9 @@ pub fn chunk_by_items<'a>(
             let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end)?;
             let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
+            crate::log!("main_range: {main_range:?}");
+            crate::log!("aux_range: {:?}", aux_start..aux_end);
+
             Some(FrameItemsChunk {
                 items: VecDeque::from(items),
                 range: aux_range_utf16,
@@ -352,27 +349,9 @@ fn bound_frame(
 
     let bounds = match &item {
         FrameItem::Text(text) => {
-            let bbox = text.bbox(); // optimize!!
-
-            crate::log!(
-                "text: {:#?}\nrect: {:#?}\npoint: {point:#?}\nheight: {:#?}\nbbox: {bbox:#?}",
-                &text.text,
-                Rect::new(
-                    Point::new(
-                        point.x + bbox.min.x,
-                        cmp::max(point.y - text.size, Abs::zero()),
-                    ),
-                    Point::new(point.x + bbox.max.x, point.y),
-                ),
-                text.height(),
-            );
-
             Rect::new(
-                Point::new(
-                    point.x + bbox.min.x,
-                    cmp::max(point.y - text.size, Abs::zero()),
-                ),
-                Point::new(point.x + bbox.max.x, point.y),
+                Point::new(point.x, cmp::max(point.y - text.size, Abs::zero())),
+                Point::new(point.x + text.width(), point.y),
             )
         }
         FrameItem::Group(group) => {
@@ -489,7 +468,9 @@ impl BoundFrameSink {
         if let Some((name, _span)) = self.tag_stack.last() {
             match *name {
                 "equation" => {
-                    self.tooltips.last_mut().unwrap().push(block.clone());
+                    let mut block = block.clone();
+                    block.range = block.range.map(|range| (range.start - 1)..(range.end + 1));
+                    self.tooltips.last_mut().unwrap().push(block);
                 }
                 _ => {}
             }

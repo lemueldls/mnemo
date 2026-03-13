@@ -10,8 +10,15 @@ pub struct IndexMapper {
 
 impl IndexMapper {
     /// Add an inflection point mapping an aux (editor) index to a main (compiled) index.
-    pub fn push_aux_to_main(&mut self, aux: usize, main: usize) {
-        self.inflections.push((aux, main));
+    pub fn push_aux_to_main(&mut self, aux_idx: usize, main_idx: usize) {
+        self.inflections.push((aux_idx, main_idx));
+    }
+
+    /// Add an inflection point mapping an aux (editor) index to a main (compiled) index, keeping the inflections sorted by aux index.
+    pub fn push_aux_to_main_sorted(&mut self, aux: usize, main: usize) {
+        match self.inflections.binary_search_by_key(&aux, |&(a, _)| a) {
+            Ok(idx) | Err(idx) => self.inflections.insert(idx, (aux, main)),
+        }
     }
 
     /// Map a main (compiled) index to an aux (editor) index, searching from the right.
@@ -32,12 +39,12 @@ impl IndexMapper {
         });
 
         let idx = match search {
-            Ok(i) => i,
-            Err(i) => {
-                if i == 0 {
+            Ok(idx) => idx,
+            Err(idx) => {
+                if idx == 0 {
                     return main_idx;
                 } else {
-                    i - 1
+                    idx - 1
                 }
             }
         };
@@ -65,12 +72,12 @@ impl IndexMapper {
         });
 
         let idx = match search {
-            Ok(i) => i,
-            Err(i) => {
-                if i == 0 {
+            Ok(idx) => idx,
+            Err(idx) => {
+                if idx == 0 {
                     return aux_idx;
                 } else {
-                    i - 1
+                    idx - 1
                 }
             }
         };
@@ -136,6 +143,14 @@ impl IndexMapper {
         }
 
         mapped_idx.unwrap_or(aux_idx)
+    }
+
+    pub fn bump_main_from(&mut self, main_idx: usize, delta: usize) {
+        for (_, mapped_main_idx) in &mut self.inflections {
+            if *mapped_main_idx >= main_idx {
+                *mapped_main_idx += delta;
+            }
+        }
     }
 }
 

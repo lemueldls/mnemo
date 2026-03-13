@@ -398,7 +398,7 @@ const renderHoverBackground = computed(() => {
   } */
 
   .cm-tooltip {
-    @apply bg-surface-container-lowest m-0 max-h-1/2 max-w-1/2 overflow-auto rounded-lg border-none p-0 font-mono shadow;
+    @apply bg-surface-container-lowest m-0 max-w-1/2 rounded-lg border-none p-0 font-mono shadow;
 
     font-family: var(--font-mono), var(--font-math);
 
