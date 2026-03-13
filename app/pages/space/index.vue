@@ -292,12 +292,12 @@ whenever(idle, async () => {
                       <md-icon>package_2</md-icon>
                     </div>
                   </div>
-                  <div class="sidebar-button" title="Screenshot" @click="screenshot">
+                  <!-- <div class="sidebar-button" title="Screenshot" @click="screenshot">
                     <div class="sidebar-button__inner">
                       <md-ripple />
                       <md-icon>camera</md-icon>
                     </div>
-                  </div>
+                  </div> -->
                   <nuxt-link class="sidebar-button" title="Export" :to="`/export?space=${spaceId}`">
                     <div class="sidebar-button__inner">
                       <md-ripple />
