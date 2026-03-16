@@ -4,9 +4,7 @@ layer: "library"
 
 tasks:
   build-dev:
-    command: "wasm-pack build -t web platform/wasm --features wasm-simd"
-    options:
-      runFromWorkspaceRoot: true
+    command: "wasm-pack build -t web --no-opt --features wasm-simd"
     inputs:
       - "Cargo.toml"
       - "src/**/*"
@@ -18,9 +16,7 @@ tasks:
       - "pkg/**/*"
 
   build:
-    command: "wasm-pack build -t web platform/wasm --release --features wasm-simd"
-    options:
-      runFromWorkspaceRoot: true
+    command: "wasm-pack build -t web --release --features wasm-simd"
     inputs:
       - "Cargo.toml"
       - "src/**/*"

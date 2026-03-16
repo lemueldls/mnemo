@@ -52,6 +52,9 @@ insta = { version = "1.46.3", features = ["yaml"] }
 walkdir = { version = "2.5.0" }
 wasm-bindgen-test = { version = "0.3" }
 
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = false
+
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-Oz", "-all"]
 
