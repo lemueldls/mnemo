@@ -91,6 +91,16 @@ jobs:
           node-version: 24
           cache: "pnpm"
 
+      - name: 💾 Restore Moon cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            .moon/cache/hashes
+            .moon/cache/outputs
+          key: ${{ runner.os }}-moon-${{ hashFiles('.moon/**/*.yml', 'moon.yml', 'platform/**/moon.yml', 'package.json', 'pnpm-lock.yaml', 'nuxt.config.ts', 'wrangler.toml', 'platform/Cargo.toml', 'platform/Cargo.lock', 'platform/tauri/Cargo.toml', 'platform/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-moon-
+
       - name: 🔨 Build plain executables using tauri action (publish artifacts on release)
         uses: tauri-apps/tauri-action@73fb865345c54760d875b94642314f8c0c894afa # v0.6.1
         if: ${{ !contains(matrix.os, 'macos') }}

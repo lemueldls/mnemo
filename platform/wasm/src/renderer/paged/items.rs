@@ -1,9 +1,7 @@
 use std::{cmp, collections::VecDeque, iter, ops::Range};
 
-use rustc_hash::FxHashSet;
 use typst::{
     WorldExt, compile,
-    diag::Severity,
     introspection::Tag,
     layout::{Abs, FrameItem, PagedDocument, Point, Rect},
     syntax::Span,
@@ -17,7 +15,7 @@ use crate::{
     },
     state::{SourceContext, TypstState},
     world::MnemoWorld,
-    wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
+    wrappers::{TypstDiagnostic, TypstFileId},
 };
 
 /// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error convergence.

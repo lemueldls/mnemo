@@ -16,7 +16,7 @@
 pub mod html;
 pub mod paged;
 
-use std::ops::{ControlFlow, Range};
+use std::ops::Range;
 
 use ecow::EcoVec;
 use rustc_hash::FxHashSet;
@@ -25,13 +25,12 @@ use typst::{
     diag::{Severity, SourceDiagnostic},
     syntax::SyntaxKind,
 };
-use typst_syntax::SyntaxNode;
 
 use crate::{
     index_mapper::IndexMapper,
     state::{SourceContext, TypstState},
     world::MnemoWorld,
-    wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
+    wrappers::{TypstFileId, map_main_span},
 };
 
 /// Represents a block in the Typst AST, with its byte range and inline status.

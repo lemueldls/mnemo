@@ -1,0 +1,48 @@
+language: "typescript"
+stack: "frontend"
+layer: "application"
+dependsOn:
+  - "wasm"
+
+tasks:
+  dev:
+    command: "pnpm nuxt dev"
+    deps:
+      - "wasm:build-dev"
+    options:
+      runInCI: false
+
+  build:
+    command: "pnpm nuxt build"
+    deps:
+      - "wasm:build"
+    inputs:
+      - "app/**/*"
+      - "server/**/*"
+      - "modules/**/*"
+      - "shared/**/*"
+      - "i18n/**/*"
+      - "public/**/*"
+      - "nuxt.config.ts"
+      - "uno.config.ts"
+      - "tsconfig.json"
+      - "wrangler.toml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "project://wasm"
+    outputs:
+      - ".output/**/*"
+
+  generate:
+    command: "pnpm nuxt generate"
+    deps:
+      - "wasm:build"
+    outputs:
+      - ".output/**/*"
+
+  preview:
+    command: "pnpm nuxt preview"
+    deps:
+      - "build"
+    options:
+      runInCI: false

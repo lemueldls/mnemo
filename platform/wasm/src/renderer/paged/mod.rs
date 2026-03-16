@@ -4,7 +4,7 @@ pub mod svg;
 
 use std::{collections::VecDeque, hash::Hash, ops::Range};
 
-use typst::layout::{FrameItem, PagedDocument, Point, Rect, Size};
+use typst::layout::{FrameItem, PagedDocument, Point, Rect};
 
 use crate::{state::SourceContext, wrappers::TypstDiagnostic};
 

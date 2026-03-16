@@ -42,5 +42,9 @@ target
 .android
 local.properties
 
-# Nix build
+# nix build
 result
+
+# moon
+.moon/cache
+.moon/docker

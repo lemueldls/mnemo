@@ -1,0 +1,13 @@
+projects:
+  web: "."
+  tauri: "platform/tauri"
+  wasm: "platform/wasm"
+
+defaultProject: "web"
+
+pipeline:
+  cacheLifetime: "7 days"
+
+vcs:
+  defaultBranch: "dev"
+  provider: "github"

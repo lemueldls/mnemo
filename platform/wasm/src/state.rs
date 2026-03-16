@@ -2,7 +2,6 @@ use std::{
     fmt,
     io::{Cursor, Read},
     num::NonZeroUsize,
-    ops::ControlFlow,
     path::PathBuf,
     str::FromStr,
 };
@@ -38,7 +37,7 @@ use crate::{
     },
     world::MnemoWorld,
     wrappers::{
-        TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump, map_main_span,
+        TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump,
     },
 };
 

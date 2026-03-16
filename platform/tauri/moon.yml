@@ -1,0 +1,34 @@
+language: "rust"
+stack: "systems"
+layer: "application"
+dependsOn:
+  - "web"
+  - "wasm"
+
+tasks:
+  build:
+    command: "pnpm tauri build"
+    deps:
+      - "web:build"
+    inputs:
+      - "Cargo.toml"
+      - "build.rs"
+      - "src/**/*"
+      - "tauri.conf.json"
+      - "tauri.package.conf.json"
+      - "capabilities/**/*"
+      - "icons/**/*"
+      - "/platform/Cargo.toml"
+      - "/platform/Cargo.lock"
+      - "project://web"
+      - "project://wasm"
+    outputs:
+      - "/platform/target/**/release/bundle/**/*"
+      - "/platform/target/**/release/mnemo*"
+
+  android-build:
+    script: "pnpm tauri android init && pnpm tauri android build"
+    deps:
+      - "web:build"
+    outputs:
+      - "gen/android/app/build/outputs/**/*"

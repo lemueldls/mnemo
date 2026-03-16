@@ -1,5 +1,11 @@
+.cargo
+
 **/target/
 **/*.rs.bk
+
 wasm/bin/
-# wasm/pkg/
+wasm/pkg/
+!wasm/pkg/package.json
 wasm/wasm-pack.log
+
+tauri/gen/schemas

@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "build": "moon run web:build",
+    "dev": "moon run web:dev",
+    "generate": "moon run web:generate",
+    "preview": "moon run web:preview",
+    "wasm:build": "moon run wasm:build",
     "postinstall": "nuxt prepare",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --type-aware --fix",
@@ -66,6 +67,7 @@
   "devDependencies": {
     "@better-auth/cli": "^1.4.17",
     "@cloudflare/workers-types": "^4.20260127.0",
+    "@moonrepo/cli": "^2.0.4",
     "@nuxt/devtools": "^3.1.1",
     "@nuxt/eslint": "1.13.0",
     "@nuxt/fonts": "0.13.0",

@@ -1,0 +1,32 @@
+language: "rust"
+stack: "systems"
+layer: "library"
+
+tasks:
+  build-dev:
+    command: "wasm-pack build -t web platform/wasm --features wasm-simd"
+    options:
+      runFromWorkspaceRoot: true
+    inputs:
+      - "Cargo.toml"
+      - "src/**/*"
+      - "build.rs"
+      - "tests/**/*"
+      - "/platform/Cargo.toml"
+      - "/platform/Cargo.lock"
+    outputs:
+      - "pkg/**/*"
+
+  build:
+    command: "wasm-pack build -t web platform/wasm --release --features wasm-simd"
+    options:
+      runFromWorkspaceRoot: true
+    inputs:
+      - "Cargo.toml"
+      - "src/**/*"
+      - "build.rs"
+      - "tests/**/*"
+      - "/platform/Cargo.toml"
+      - "/platform/Cargo.lock"
+    outputs:
+      - "pkg/**/*"

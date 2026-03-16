@@ -76,6 +76,16 @@ jobs:
           node-version: 24
           cache: "pnpm"
 
+      - name: 💾 Restore Moon cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            .moon/cache/hashes
+            .moon/cache/outputs
+          key: ${{ runner.os }}-moon-${{ hashFiles('.moon/**/*.yml', 'moon.yml', 'platform/**/moon.yml', 'package.json', 'pnpm-lock.yaml', 'nuxt.config.ts', 'wrangler.toml', 'platform/Cargo.toml', 'platform/Cargo.lock', 'platform/tauri/Cargo.toml', 'platform/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-moon-
+
       - name: 📥 Install frontend dependencies
         run: pnpm install
 
@@ -86,8 +96,7 @@ jobs:
 
       - name: 🔨 Build app bundle
         run: |
-          pnpm tauri android init
-          pnpm tauri android build
+          pnpm moon run tauri:android-build
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
           NODE_OPTIONS: --max-old-space-size=8192

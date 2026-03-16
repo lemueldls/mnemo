@@ -5,36 +5,27 @@ pub mod writer;
 
 use std::{
     cmp,
-    fmt::Write,
     hash::{BuildHasher, Hash, Hasher},
     iter,
-    ops::{Deref, Range},
+    ops::Range,
 };
 
-use ecow::{EcoString, EcoVec, eco_format, eco_vec};
-use itertools::Itertools;
+use ecow::eco_vec;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
-use typst::{
-    __bail as bail, World, WorldExt, compile,
-    diag::{At, Severity, SourceResult, StrResult},
-    foundations::{Element, NativeRuleMap, Repr, Selector, Target},
-    introspection::{Introspector, Location, Tag},
-    layout::BlockElem,
-    syntax::Span,
-};
+use typst::{compile, diag::Severity, introspection::Tag, syntax::Span};
 // use ecow::{EcoString, eco_format};
 // use typst_library::diag::{At, SourceResult, StrResult, bail};
 // use typst_library::foundations::Repr;
 // use typst_library::introspection::Introspector;
 // use typst_syntax::Span;
-use typst_html::{HtmlDocument, HtmlElement, HtmlFrame, HtmlNode, HtmlSliceExt, HtmlTag};
+use typst_html::{HtmlDocument, HtmlElement, HtmlNode};
 use writer::{Writer, write_node};
 
 use crate::{
     renderer::{RenderTarget, sync_source_context},
-    state::{SourceContext, TypstRequest, TypstState},
+    state::{SourceContext, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
@@ -85,7 +76,7 @@ pub fn render(
 
                 // let mut ast_blocks = ast_blocks.iter().peekable();
 
-                let mut children = body
+                let children = body
                     .children
                     .into_iter()
                     .flat_map(flatten_node)
@@ -114,7 +105,7 @@ pub fn render(
                     .peekable();
 
                 let blocks = children
-                    .filter_map(|(node, range, position)| {
+                    .filter_map(|(node, range, _position)| {
                         let mut w = Writer::new(&document.introspector, false);
 
                         let mut hasher = FxBuildHasher::default().build_hasher();
@@ -355,27 +346,27 @@ fn flat_node_range(
     }
 }
 
-fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
-    let mut cursor = 0;
-    let mut was_text = false;
+// fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
+//     let mut cursor = 0;
+//     let mut was_text = false;
 
-    nodes.into_iter().map(move |child| {
-        let mut i = cursor;
+//     nodes.into_iter().map(move |child| {
+//         let mut i = cursor;
 
-        match child {
-            HtmlNode::Tag(_) => {}
-            HtmlNode::Text(..) => was_text = true,
-            _ => {
-                cursor += usize::from(was_text);
-                i = cursor;
-                cursor += 1;
-                was_text = false;
-            }
-        }
+//         match child {
+//             HtmlNode::Tag(_) => {}
+//             HtmlNode::Text(..) => was_text = true,
+//             _ => {
+//                 cursor += usize::from(was_text);
+//                 i = cursor;
+//                 cursor += 1;
+//                 was_text = false;
+//             }
+//         }
 
-        (child, i)
-    })
-}
+//         (child, i)
+//     })
+// }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
