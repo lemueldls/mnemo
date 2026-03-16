@@ -30,7 +30,6 @@ do_build() {
 	ln -s /host/.rustup /tmp
 	. /tmp/.cargo/env
 	cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
-  export NODE_OPTIONS=--max-old-space-size=8192
   export NUXT_PUBLIC_API_BASE_URL="https://mnemo.world"
   pnpm tauri build -b deb -c "platform/tauri/tauri.package.conf.json"
 }

@@ -105,7 +105,6 @@ jobs:
         uses: tauri-apps/tauri-action@73fb865345c54760d875b94642314f8c0c894afa # v0.6.1
         if: ${{ !contains(matrix.os, 'macos') }}
         env:
-          NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -121,7 +120,6 @@ jobs:
       - name: 🔨 Build bundles using tauri action (publish artifacts on release)
         uses: tauri-apps/tauri-action@73fb865345c54760d875b94642314f8c0c894afa # v0.6.1
         env:
-          NODE_OPTIONS: --max-old-space-size=8192
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
