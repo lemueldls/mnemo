@@ -25,20 +25,7 @@ logs
 
 .wrangler
 
-# Devenv
-.devenv*
-devenv.local.nix
-
-# direnv
-.direnv
-
-# pre-commit
-.pre-commit-config.yaml
-
-target
-
-.local.properties
-
+# Android
 .android
 local.properties
 

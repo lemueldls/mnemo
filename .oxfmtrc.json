@@ -27,7 +27,6 @@
   },
   "ignorePatterns": [
     "pnpm-lock.yaml",
-    ".pre-commit-config.yaml",
     "dist/",
     "node_modules/",
     "platform/target",
@@ -38,8 +37,6 @@
     ".nitro/",
     ".cache/",
     ".wrangler/",
-    ".devenv*/",
-    ".direnv/",
     ".android/",
     ".vercel/",
     ".netlify/"
