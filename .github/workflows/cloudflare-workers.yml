@@ -1,0 +1,59 @@
+name: Deploy Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - app/**
+      - server/**
+      - modules/**
+      - shared/**
+      - i18n/**
+      - public/**
+      - platform/wasm/**
+      - .moon/**
+      - moon.yml
+      - nuxt.config.ts
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - wrangler.toml
+      - .github/workflows/cloudflare-workers.yml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: ☁️ Deploy Workers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 🦀 Setup Rust
+        uses: ./.github/actions/setup-rust-cache
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: 🌙 Setup Moon
+        uses: ./.github/actions/setup-moon
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔨 Build web app
+        run: pnpm moon run web:build
+        env:
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
+
+      - name: 🚀 Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@c67cfcc9f628396f535fd2cbca7dc008eb5f4f4a # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --cwd .output
+        env:
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}

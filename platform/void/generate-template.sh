@@ -35,7 +35,8 @@ do_build() {
 }
 
 do_install() {
-	vcopy platform/target/release/bundle/deb/Mnemo_\${version}_amd64/data/usr /
+	vcopy platform/target/release/bundle/deb/Mnemo_\${version}_amd64/data/usr/share /usr
+	vbin platform/target/release/mnemo
 	vlicense LICENSE
 }
 EOF
