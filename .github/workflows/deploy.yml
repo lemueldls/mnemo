@@ -53,15 +53,34 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
 
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            case "${{ github.ref_name }}" in
+              main) echo "environment=prod" >> $GITHUB_OUTPUT ;;
+              staging) echo "environment=staging" >> $GITHUB_OUTPUT ;;
+              *) echo "environment=dev" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+
       - name: 🚀 Deploy to Cloudflare Workers
+        id: deploy
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --env ${{ github.event.inputs.environment }}
+          command: deploy --env ${{ steps.env.outputs.environment }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
 
       - name: 🌐 Print deployment URL
-        run: echo "Deployed to $DEPLOYMENT_URL"
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOYMENT_ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+        run: |
+          echo "Deployment URL: $DEPLOYMENT_URL"
+          echo "Alias URL: $DEPLOYMENT_ALIAS_URL"
