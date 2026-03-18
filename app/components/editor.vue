@@ -267,9 +267,9 @@ const selectionBackground = computed(() => {
   return `rgba(${r},${g},${b},0.25)`;
 });
 const selectionMatchBackground = computed(() => {
-  const { r, g, b } = palette.value.onTertiary;
+  const { r, g, b } = palette.value.tertiaryContainer;
 
-  return `rgba(${r},${g},${b},0.5)`;
+  return `rgba(${r},${g},${b},0.75)`;
 });
 const activeLineBackground = computed(() => {
   const { secondaryContainer } = palette.value;
@@ -336,8 +336,12 @@ const renderHoverBackground = computed(() => {
     @apply text-outline;
   }
 
+  .cm-selectionLayer {
+    @apply z-0!;
+  }
+
   .cm-selectionBackground {
-    // @apply text-tertiary;
+    // @apply text-on-tertiary-container!;
 
     background-color: v-bind(selectionBackground) !important;
   }
