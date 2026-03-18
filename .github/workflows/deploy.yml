@@ -19,6 +19,11 @@ on:
       - wrangler.toml
       - .github/workflows/cloudflare-workers.yml
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose an environment to deploy to: <dev|staging|prod>"
+        required: true
+        default: "dev"
 
 jobs:
   deploy:
@@ -26,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      deployments: write
 
     steps:
       - name: 🔄 Checkout
@@ -52,6 +58,10 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          command: deploy --env ${{ github.event.inputs.environment }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
+
+      - name: 🌐 Print deployment URL
+        run: echo "Deployed to $DEPLOYMENT_URL"
