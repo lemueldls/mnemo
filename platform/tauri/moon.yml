@@ -27,7 +27,7 @@ tasks:
       - "/platform/target/**/release/mnemo*"
 
   android-build:
-    script: "pnpm tauri android init && pnpm tauri android build"
+    script: "pnpm tauri android build"
     deps:
       - "web:build"
     outputs:
