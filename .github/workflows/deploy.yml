@@ -17,7 +17,7 @@ on:
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
       - wrangler.toml
-      - .github/workflows/cloudflare-workers.yml
+      - .github/workflows/deploy.yml
   workflow_dispatch:
     inputs:
       environment:
@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: 🦀 Setup Rust
-        uses: ./.github/actions/setup-rust-cache
+        uses: moonrepo/setup-rust@v1
         with:
           targets: wasm32-unknown-unknown
 
@@ -66,8 +66,17 @@ jobs:
             esac
           fi
 
-      - name: 🚀 Deploy to Cloudflare Workers
-        id: deploy
+      - name: 🗄️ Apply D1 migrations (Production)
+        if: ${{ steps.env.outputs.environment == 'prod' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply DB --remote --config .output/server/wrangler.json
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Deploy to Cloudflare Workers (Production)
+        if: ${{ steps.env.outputs.environment == 'prod' }}
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -77,10 +86,13 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
 
-      - name: 🌐 Print deployment URL
+      - name: 🚀 Deploy to Cloudflare Workers (Preview)
+        if: ${{ steps.env.outputs.environment != 'prod' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload --env ${{ steps.env.outputs.environment }} --preview-alias ${{ steps.env.outputs.environment }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
-          DEPLOYMENT_ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
-        run: |
-          echo "Deployment URL: $DEPLOYMENT_URL"
-          echo "Alias URL: $DEPLOYMENT_ALIAS_URL"
+          NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
