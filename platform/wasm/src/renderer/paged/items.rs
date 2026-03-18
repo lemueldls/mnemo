@@ -201,12 +201,12 @@ pub fn chunk_by_items<'a>(
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let marked =
-                    try_mark_errornous(source_diagnostics.clone(), context, &mut state.world);
+                // let marked =
+                //     try_mark_errornous(source_diagnostics.clone(), context, &mut state.world);
 
-                if marked.is_some() {
-                    continue;
-                }
+                // if marked.is_some() {
+                //     continue;
+                // }
 
                 let indicies = remove_errornous_block(
                     &ast_blocks,
@@ -310,8 +310,8 @@ pub fn chunk_by_items<'a>(
             let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end)?;
             let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-            crate::log!("main_range: {main_range:?}");
-            crate::log!("aux_range: {:?}", aux_start..aux_end);
+            // crate::log!("main_range: {main_range:?}");
+            // crate::log!("aux_range: {:?}", aux_start..aux_end);
 
             Some(FrameItemsChunk {
                 items: VecDeque::from(items),

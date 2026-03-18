@@ -234,7 +234,7 @@ pub fn remove_errornous_block(
         let end_byte = main_range.end;
 
         let source = context.main_source_mut(world).unwrap();
-        crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
+        // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
         let byte_length = end_byte - start_byte;
         let whitespace = " ".repeat(byte_length.saturating_sub(1)) + "\n";
         source.edit(start_byte..end_byte, &whitespace);
