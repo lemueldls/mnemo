@@ -1,26 +1,72 @@
 # mnemo
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lemueldls/mnemo)
-
 ## Inspirations
 
 - [Obsidian](https://obsidian.md)
 - [Noodle](https://github.com/noodle-run/noodle)
 - [Research by UNMS](https://un.ms/research)
 
-## TODO
+## Getting Started
 
-- Global search system
-- Prompt to install missing packages
-- Local storage explorer (and search?)
-- Handle internal and external links
-- Static assets manager
-- Custom font loader
-- Publishing service
-- Document collaboration
-- Handwritten notes and drawings
-- Reference study sheet generator
-- Flash cards and quiz generator
+### Prerequisites
+
+- Node.js 22+
+- pnpm 10+
+- Rust (stable toolchain)
+
+### Quickstart
+
+```bash
+pnpm install
+pnpm dev
+```
+
+### Environment variables
+
+Create `.env` in the repository root with the following:
+
+```dotenv
+# Required only for production Tauri builds.
+NUXT_PUBLIC_API_BASE_URL=http://localhost:3000
+
+# Optional in development. Recommended in production.
+NUXT_SESSION_PASSWORD=change-me-to-a-long-random-secret
+
+# Optional: GitHub OAuth
+NUXT_OAUTH_GITHUB_CLIENT_ID=
+NUXT_OAUTH_GITHUB_CLIENT_SECRET=
+NUXT_OAUTH_GITHUB_REDIRECT_URL=
+
+# Optional: Polar integration
+NUXT_POLAR_ACCESS_TOKEN=
+NUXT_POLAR_WEBHOOK_SECRET=
+```
+
+### Production preview
+
+```bash
+pnpm build
+pnpm preview
+```
+
+## Self-Hosting
+
+This project targets Cloudflare Workers with NuxtHub.
+
+### Deploy to Cloudflare Workers
+
+Build and deploy with Wrangler:
+
+```bash
+pnpm build
+pnpm wrangler deploy
+```
+
+See [NuxtHub deployment docs](https://hub.nuxt.com/docs/getting-started/deploy) for more information.
+
+## Roadmap
+
+See [TODO.md](TODO.md) for the expanded roadmap.
 
 ## License
 
