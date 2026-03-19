@@ -3,12 +3,15 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { UseOnline } from "@vueuse/components";
 
 const { $api } = useNuxtApp();
+const {
+  public: { platform, githubOauthEnabled },
+} = useRuntimeConfig();
 
 const auth = useAuth();
 const { user } = auth;
 
 async function login() {
-  const { platform } = useRuntimeConfig().public;
+  if (!githubOauthEnabled) return;
 
   const { url } = await $api(
     `/api/auth/sign-in?provider=github&redirect=${encodeURIComponent(window.location.href)}&platform=${platform}`,
@@ -95,7 +98,7 @@ const keys = await getStorageKeys();
       <md-filled-tonal-button v-if="user" @click="logout">
         {{ $t("components.sync.logout") }}
       </md-filled-tonal-button>
-      <md-filled-button v-else @click="login">
+      <md-filled-button v-else :disabled="!githubOauthEnabled" @click="login">
         {{ $t("components.sync.continue-with-github") }}
       </md-filled-button>
     </md-outlined-card>

@@ -16,7 +16,7 @@ export interface AuthOptions {
   db?: DB;
   kv?: KVStorage;
   runtimeConfig: NitroRuntimeConfig;
-  polarClient: Polar;
+  polarClient?: Polar | null | undefined | void;
   cf?: IncomingRequestCfProperties;
 }
 

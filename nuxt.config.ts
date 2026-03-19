@@ -19,6 +19,11 @@ const apiBaseUrl = import.meta.env.NUXT_PUBLIC_API_BASE_URL;
 const platform: string = import.meta.env.TAURI_ENV_PLATFORM;
 // const internalHost = import.meta.env.TAURI_DEV_HOST || "localhost";
 
+const githubOauthEnabled =
+  !!import.meta.env.NUXT_OAUTH_GITHUB_CLIENT_ID &&
+  !!import.meta.env.NUXT_OAUTH_GITHUB_CLIENT_SECRET &&
+  !!import.meta.env.NUXT_OAUTH_GITHUB_REDIRECT_URL;
+
 const siteUrl = platform ? "http://tauri.localhost" : isDev ? "http://localhost:3000" : apiBaseUrl;
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -53,8 +58,9 @@ export default defineNuxtConfig({
   vue: { compilerOptions: { isCustomElement: (tag) => tag.startsWith("md-") } },
   runtimeConfig: {
     public: {
-      platform,
       apiBaseUrl: "",
+      platform,
+      githubOauthEnabled,
     },
     session: {
       password: "",
@@ -77,7 +83,8 @@ export default defineNuxtConfig({
     viewTransition: true,
     asyncContext: true,
   },
-  compatibilityDate: "2025-12-25",
+  compatibilityDate: "2026-03-14",
+  // future: { compatibilityVersion: 5 },
   nitro: {
     preset: "cloudflare-durable",
     cloudflare: { deployConfig: true },
@@ -89,7 +96,7 @@ export default defineNuxtConfig({
     experimental: { websocket: true, wasm: true },
   },
   hub: {
-    db: { dialect: "sqlite", driver: "d1" },
+    db: { dialect: "sqlite", driver: "d1", applyMigrationsDuringBuild: false },
     kv: { driver: "cloudflare-kv-binding", binding: "KV" },
     cache: { driver: "cloudflare-kv-binding", binding: "CACHE" },
     blob: { driver: "cloudflare-r2", binding: "BLOB" },

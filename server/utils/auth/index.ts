@@ -5,15 +5,17 @@ import { kv } from "hub:kv";
 
 import { AuthOptions, createAuth } from "./client";
 
-import type { H3Event } from "#imports";
+import type { H3Event } from "h3";
 
 const runtimeConfig = useRuntimeConfig();
 const { apiBaseUrl } = runtimeConfig.public;
 
-const polarClient = new Polar({
-  accessToken: runtimeConfig.polar.accessToken,
-  server: import.meta.dev ? "sandbox" : "production",
-});
+const polarClient = runtimeConfig.polar.accessToken
+  ? new Polar({
+      accessToken: runtimeConfig.polar.accessToken,
+      server: import.meta.dev ? "sandbox" : "production",
+    })
+  : undefined;
 
 export async function requireUser(headers: Headers) {
   const auth = serverAuth();
