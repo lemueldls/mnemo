@@ -1,5 +1,7 @@
 # mnemo
 
+> A local-first, cross-platform note-taking app leveraging the Typst ecosystem. Designed to minimize distractions and enhance the retention of information.
+
 ## Inspirations
 
 - [Obsidian](https://obsidian.md)
@@ -21,7 +23,7 @@ pnpm install
 pnpm dev
 ```
 
-### Environment variables
+### Environment Variables
 
 Create `.env` in the repository root with the following:
 
@@ -40,13 +42,6 @@ NUXT_OAUTH_GITHUB_REDIRECT_URL=
 # Optional: Polar integration
 NUXT_POLAR_ACCESS_TOKEN=
 NUXT_POLAR_WEBHOOK_SECRET=
-```
-
-### Production preview
-
-```bash
-pnpm build
-pnpm preview
 ```
 
 ## Self-Hosting
