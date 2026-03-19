@@ -92,7 +92,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: versions deploy --env ${{ steps.env.outputs.environment }} --preview-alias ${{ steps.env.outputs.environment }}
+          command: versions upload --env ${{ steps.env.outputs.environment }} --preview-alias ${{ steps.env.outputs.environment }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
