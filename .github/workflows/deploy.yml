@@ -49,7 +49,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 🔨 Build web app
-        run: pnpm moon run web:build
+        run: pnpm build
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
 
@@ -92,7 +92,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: versions upload --env ${{ steps.env.outputs.environment }} --preview-alias ${{ steps.env.outputs.environment }}
+          command: versions deploy --env ${{ steps.env.outputs.environment }} --preview-alias ${{ steps.env.outputs.environment }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         env:
           NUXT_PUBLIC_API_BASE_URL: ${{ secrets.NUXT_PUBLIC_API_BASE_URL }}
