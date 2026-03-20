@@ -1,7 +1,6 @@
 # Mnemo
 
 > A local-first, cross-platform note-taking app leveraging the Typst ecosystem.
->
 > Designed to minimize distractions and enhance the retention of information.
 
 ## Inspirations
@@ -67,4 +66,4 @@ See [TODO.md](TODO.md) for the expanded roadmap.
 
 ## License
 
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL-3.0 License. See the [LICENSE](LICENSE) file for details.
