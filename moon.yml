@@ -31,6 +31,8 @@ tasks:
       - "wrangler.toml"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "$NUXT_*"
+      - "$TAURI_*"
       - "project://wasm"
     outputs:
       - ".output/**/*"
