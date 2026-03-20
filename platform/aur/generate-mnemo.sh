@@ -26,7 +26,7 @@ prepare() {
     export RUSTUP_TOOLCHAIN=stable
     rustup toolchain install \$RUSTUP_TOOLCHAIN --profile minimal --no-self-update
     cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
-    pnpm install
+    pnpm install --frozen-lockfile
 }
 build() {
     cd "\$srcdir/\$_builddir" || exit 1

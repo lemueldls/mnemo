@@ -46,14 +46,9 @@ jobs:
           fi
 
       - name: 🦀🚀
-        uses: ./.github/actions/setup-rust-cache
+        uses: moonrepo/setup-rust@v1
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android,wasm32-unknown-unknown
-          save-cache: ${{ inputs.branch == 'main' }}
-
-      - name: 🛠️🚀
-        if: (!inputs.tagName)
-        uses: ./.github/actions/setup-sccache
 
       - name: ☕ Setup Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0

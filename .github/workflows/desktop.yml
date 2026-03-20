@@ -61,14 +61,9 @@ jobs:
           fi
 
       - name: 🦀🚀
-        uses: ./.github/actions/setup-rust-cache
+        uses: moonrepo/setup-rust@v1
         with:
           targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin,wasm32-unknown-unknown' || 'wasm32-unknown-unknown' }}
-          save-cache: ${{ inputs.branch == 'main' }}
-
-      - name: 🛠️🚀
-        if: (!inputs.tagName)
-        uses: ./.github/actions/setup-sccache
 
       - name: 🔑 Import windows signing certificate (windows only)
         if: contains(matrix.os, 'windows')

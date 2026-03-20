@@ -16,6 +16,7 @@ RUN pacman -Syu --noconfirm \
     namcap \
     openssh \
     rust \
+    rust-wasm \
     webkit2gtk-4.1 \
     sudo \
     wget \

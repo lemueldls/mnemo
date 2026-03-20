@@ -19,6 +19,7 @@ RUN xbps-install -Syu xbps \
 
 RUN rustup-init -y -q \
     && . $HOME/.cargo/env \
+    && rustup target add wasm32-unknown-unknown \
     && rm -rf $HOME/.cargo/registry $HOME/.cargo/git
 
 LABEL org.opencontainers.image.source="https://github.com/lemueldls/mnemo"
