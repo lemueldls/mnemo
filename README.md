@@ -19,7 +19,7 @@
 
 ### Quickstart
 
-```bash
+```sh
 pnpm install
 pnpm dev
 ```
@@ -53,7 +53,7 @@ This project targets Cloudflare Workers with NuxtHub.
 
 Build and deploy with Wrangler:
 
-```bash
+```sh
 pnpm build
 pnpm wrangler deploy
 ```
@@ -66,4 +66,4 @@ See [TODO.md](TODO.md) for the expanded roadmap.
 
 ## License
 
-This project is licensed under the AGPL-3.0 License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under [AGPL-3.0](https://choosealicense.com/licenses/agpl-3.0/). See the [LICENSE](LICENSE) file for details.
