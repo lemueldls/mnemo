@@ -8,13 +8,17 @@
 - [Noodle](https://github.com/noodle-run/noodle)
 - [Research by UNMS](https://un.ms/research)
 
-## Getting Started
+## Roadmap
+
+See [TODO.md](TODO.md) for the expanded roadmap.
+
+## Development
 
 ### Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - pnpm 10+
-- Rust (stable toolchain)
+- Rust 1.85.0+
 
 ### Quickstart
 
@@ -59,9 +63,41 @@ pnpm wrangler deploy
 
 See [NuxtHub deployment docs](https://hub.nuxt.com/docs/getting-started/deploy) for more information.
 
-## Roadmap
+## Installation
 
-See [TODO.md](TODO.md) for the expanded roadmap.
+You can download the latest version of the application from the [GitHub Release page](https://github.com/lemueldls/mnemo/releases/latest).
+
+### Windows (winget)
+
+Run the following command:
+
+```sh
+winget install mnemo
+```
+
+### Arch Linux (AUR)
+
+Install either the prebuilt package or build-from-source package from AUR:
+
+```sh
+# Prebuilt binary package
+paru -S mnemo-bin
+
+# Or build from source
+paru -S mnemo
+```
+
+### Void Linux
+
+Add the repository and install the package:
+
+```sh
+# Add the repository
+echo "repository=https://github.com/lemueldls/mnemo/releases/latest/download" | sudo tee /etc/xbps.d/mnemo-repo.conf
+
+# Install the package
+sudo xbps-install -S mnemo
+```
 
 ## License
 
