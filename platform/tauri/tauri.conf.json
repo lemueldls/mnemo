@@ -5,7 +5,7 @@
   "identifier": "dev.lemueldls.mnemo",
   "build": {
     "beforeBuildCommand": "pnpm build",
-    "beforeDevCommand": "pnpm dev --public",
+    "beforeDevCommand": "pnpm dev -- --public",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../.output/public"
   },

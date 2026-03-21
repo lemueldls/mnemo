@@ -33,7 +33,7 @@
     "@replit/codemirror-vscode-keymap": "^6.0.2",
     "@tanstack/vue-virtual": "^3.13.18",
     "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/cli": "^2.10.0",
+    "@tauri-apps/cli": "^2.10.1",
     "@tauri-apps/plugin-cli": "^2.4.1",
     "@tauri-apps/plugin-deep-link": "^2.4.7",
     "@tauri-apps/plugin-opener": "^2.5.3",
@@ -67,7 +67,7 @@
   "devDependencies": {
     "@better-auth/cli": "^1.4.17",
     "@cloudflare/workers-types": "^4.20260127.0",
-    "@moonrepo/cli": "^2.0.4",
+    "@moonrepo/cli": "^2.1.1",
     "@nuxt/devtools": "^3.1.1",
     "@nuxt/eslint": "1.13.0",
     "@nuxt/fonts": "0.13.0",
