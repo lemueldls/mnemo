@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { UseVirtualList } from "@vueuse/components";
 
-import type { Space } from "~/composables/spaces";
-
 import symbols from "~/assets/symbols.json";
+
+import type { Space } from "~/composables/spaces";
 
 // import type { MaterialSymbol } from "material-symbols";
 

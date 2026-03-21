@@ -28,19 +28,19 @@ math {
   }
 
   h3 {
-    @apply text-secondary headline-medium mb-1 mt-3;
+    @apply text-secondary headline-medium mt-3 mb-1;
   }
 
   h4 {
-    @apply text-tertiary headline-small mb-1 mt-3;
+    @apply text-tertiary headline-small mt-3 mb-1;
   }
 
   h5 {
-    @apply text-on-primary-container title-large mb-1 mt-3 font-semibold;
+    @apply text-on-primary-container title-large mt-3 mb-1 font-semibold;
   }
 
   h6 {
-    @apply text-on-secondary-container title-medium mb-1 mt-3 font-semibold;
+    @apply text-on-secondary-container title-medium mt-3 mb-1 font-semibold;
   }
 
   p {

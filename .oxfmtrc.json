@@ -1,20 +1,18 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "experimentalTailwindcss": {},
-  "experimentalSortPackageJson": {},
-  "experimentalSortImports": {
+  "sortTailwindcss": {},
+  "sortImports": {
     "groups": [
-      ["builtin"],
-      ["external"],
-      ["internal"],
-      ["parent"],
-      ["sibling"],
-      ["index"],
-      ["object"],
-      ["type"]
+      "type-import",
+      ["value-builtin", "value-external"],
+      "type-internal",
+      "value-internal",
+      ["type-parent", "type-sibling", "type-index"],
+      ["value-parent", "value-sibling", "value-index"],
+      "unknown"
     ],
     "newlines-between": "always-and-inside-groups",
-    // "newlines-between-types": "always-and-inside-groups",
+    "newlines-between-types": "always-and-inside-groups",
     "consolidateIslands": "inside-groups",
     "distinctGroup": true,
     "alphabetize": {
@@ -26,7 +24,6 @@
     "warnOnUnassignedImports": true
   },
   "ignorePatterns": [
-    "pnpm-lock.yaml",
     "dist/",
     "node_modules/",
     "platform/target",
@@ -39,6 +36,8 @@
     ".wrangler/",
     ".android/",
     ".vercel/",
-    ".netlify/"
+    ".netlify/",
+    "app/assets/symbols.json",
+    "pnpm-lock.yaml"
   ]
 }

@@ -24,16 +24,19 @@ import {
   rectangularSelection,
 } from "@codemirror/view";
 
+import { LRUCache } from "lru-cache";
+
 // import { LoroExtensions } from "loro-codemirror";
 // import { EphemeralStore } from "loro-crdt";
+
 import { type FileId, Rgb, ThemeColors } from "mnemo-wasm";
-import { LRUCache } from "lru-cache";
-import type { NoteKind } from "~/composables/notes";
-import type { Rgba } from "~~/modules/mx/types";
 import { match } from "ts-pattern";
 import { normalizeKey } from "unstorage";
 
 import { typstPlugin } from "~/lib/editor/plugin";
+
+import type { NoteKind } from "~/composables/notes";
+import type { Rgba } from "~~/modules/mx/types";
 
 const props = defineProps<{
   spaceId: string;

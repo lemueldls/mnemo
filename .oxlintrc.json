@@ -14,7 +14,6 @@
     "typescript/unbound-method": "off"
   },
   "ignorePatterns": [
-    "pnpm-lock.yaml",
     "dist/",
     "node_modules/",
     "platform/target",
@@ -27,6 +26,8 @@
     ".wrangler/",
     ".android/",
     ".vercel/",
-    ".netlify/"
+    ".netlify/",
+    "app/assets/symbols.json",
+    "pnpm-lock.yaml"
   ]
 }
