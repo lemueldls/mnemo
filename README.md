@@ -1,7 +1,6 @@
 # Mnemo
 
-> A local-first, cross-platform note-taking app leveraging the Typst ecosystem.
-> Designed to minimize distractions and enhance the retention of information.
+> Local-first note-taking app leveraging the Typst ecosystem.
 
 ## Inspirations
 
@@ -40,7 +39,7 @@ NUXT_OAUTH_GITHUB_CLIENT_ID=
 NUXT_OAUTH_GITHUB_CLIENT_SECRET=
 NUXT_OAUTH_GITHUB_REDIRECT_URL=
 
-# Optional: Polar integration
+# Optional: Polar integration (incomplete)
 NUXT_POLAR_ACCESS_TOKEN=
 NUXT_POLAR_WEBHOOK_SECRET=
 ```
