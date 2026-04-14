@@ -53,37 +53,45 @@ pub enum RenderTarget {
     Html,
 }
 
-/// Synchronizes the Typst source context, producing an intermediate representation and AST blocks.
-///
-/// Returns a tuple of the intermediate representation and a vector of AST blocks.
 #[typst_macros::time]
-pub fn sync_source_context(
+pub fn sync_source_state(
     id: &TypstFileId,
     text: &str,
     prelude: &str,
     render_target: RenderTarget,
     state: &mut TypstState,
 ) -> (String, Vec<AstBlock>) {
-    let mut ir = state.prelude(id, render_target) + prelude + "\n";
-
+    let prelude = state.prelude(id, render_target) + prelude + "\n";
     let context = state.source_context_map.get_mut(id).unwrap();
+
+    sync_source_context(text, prelude, context, &mut state.world)
+}
+
+/// Synchronizes the Typst source context, producing an intermediate representation and AST blocks.
+///
+/// Returns a tuple of the intermediate representation and a vector of AST blocks.
+#[typst_macros::time]
+pub fn sync_source_context(
+    text: &str,
+    prelude: String,
+    context: &mut SourceContext,
+    world: &mut MnemoWorld,
+) -> (String, Vec<AstBlock>) {
+    let mut ir = prelude;
 
     context.index_mapper = IndexMapper::default();
     // context.index_mapper.add_aux_to_main(0, ir.len());
 
     // context
-    //     .main_source_mut(&mut state.world)
+    //     .main_source_mut(&mut world)
     //     .unwrap()
     //     .replace(&ir);
-    state.world.main_id = Some(context.main_id);
+    world.main_id = Some(context.main_id);
 
-    context
-        .aux_source_mut(&mut state.world)
-        .unwrap()
-        .replace(&text);
-    state.world.aux_id = Some(context.aux_id);
+    context.aux_source_mut(world).unwrap().replace(&text);
+    world.aux_id = Some(context.aux_id);
 
-    let aux_source = context.aux_source(&state.world).unwrap();
+    let aux_source = context.aux_source(&world).unwrap();
 
     let children = aux_source.root().children();
     let text = aux_source.text();
@@ -94,7 +102,7 @@ pub fn sync_source_context(
     let mut last_kind: Option<SyntaxKind> = None;
 
     for node in children {
-        let range = state.world.range(node.span()).unwrap();
+        let range = world.range(node.span()).unwrap();
 
         if let Some(until_newline) = node.text().chars().position(|ch| ch == '\n') {
             in_block = false;
@@ -233,12 +241,11 @@ pub fn remove_errornous_block(
         let start_byte = main_range.start;
         let end_byte = main_range.end;
 
+        // fill block with whitespace to stablize ranges
         let source = context.main_source_mut(world).unwrap();
-        // crate::log!("[REPLACING]:\n{}", &source.text()[start_byte..end_byte]);
         let byte_length = end_byte - start_byte;
         let whitespace = " ".repeat(byte_length.saturating_sub(1)) + "\n";
         source.edit(start_byte..end_byte, &whitespace);
-        // crate::log!("[NEW SOURCE]:\n{}", &source.text());
     }
 
     indicies
@@ -251,21 +258,28 @@ pub fn try_mark_errornous(
     source_diagnostics: EcoVec<SourceDiagnostic>,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
-) -> Option<()> {
+) -> MarkedErrors {
     let main_source = context.main_source(world).unwrap();
 
     let error_ranges = source_diagnostics
         .iter()
         .filter(|diagnostic| {
             main_source.find(diagnostic.span).is_some_and(|node| {
-                crate::log!("err@{node:?} <- {:?}", node.parent());
+                crate::log!(
+                    "err@{node:?}\n |> {:?}\n |> {:?}",
+                    node.parent(),
+                    node.parent().and_then(|node| node.parent())
+                );
 
                 matches!(node.kind(), SyntaxKind::MathIdent)
                     || node.parent().is_some_and(|node| {
-                        matches!(node.kind(), SyntaxKind::MathAttach | SyntaxKind::MathFrac)
-                            || node
-                                .parent_kind()
-                                .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
+                        matches!(
+                            node.kind(),
+                            SyntaxKind::MathAttach | SyntaxKind::MathFrac | SyntaxKind::FieldAccess
+                        )
+                        // || node
+                        //     .parent_kind()
+                        //     .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
                     })
             })
         })
@@ -278,36 +292,88 @@ pub fn try_mark_errornous(
                 world,
             )
         })
-        .collect::<FxHashSet<_>>();
+        .collect::<Vec<_>>();
 
-    if error_ranges.is_empty() {
-        return None;
+    // if error_ranges.is_empty() {
+    //     return Vec::new();
+    // }
+
+    let pre_text = "#emph(text(fill:theme.error)[";
+    let post_text = "])";
+    let pre_text_len = pre_text.len();
+    let post_text_len = post_text.len();
+    let total_wrap_len = pre_text_len + post_text_len;
+
+    let marks = error_ranges
+        .into_iter()
+        .map(|main_range| {
+            let source = context.main_source_mut(world).unwrap();
+            let original_text = source.text()[main_range.clone()].to_string();
+            // crate::log!("[MARKING]:\n{}", original_text);
+
+            // Wrap the original text in a red text expression
+            let marked_text = format!("{pre_text}{original_text}{post_text}");
+            source.edit(main_range.clone(), &marked_text);
+
+            context
+                .index_mapper
+                .bump_main_from(main_range.end, total_wrap_len);
+
+            // crate::log!("[NEW SOURCE]:\n{}", &source.text());
+
+            ErrorMark {
+                text: original_text,
+                main_range: main_range.start..(main_range.end + total_wrap_len),
+            }
+        })
+        .collect();
+
+    MarkedErrors {
+        marks,
+        pre_text_len,
+        post_text_len,
+        total_wrap_len,
     }
+}
 
-    for main_range in error_ranges {
-        let source = context.main_source_mut(world).unwrap();
-        let original_text = &source.text()[main_range.clone()];
-        crate::log!("[MARKING]:\n{}", original_text);
+pub fn map_error_mark_index(marked_errors: &MarkedErrors, context: &mut SourceContext) {
+    for mark in &marked_errors.marks {
+        crate::log!("before: {:?}", &context.index_mapper);
+        // crate::log!("delta range: {main_range:?}");
 
-        // Wrap the original text in a red text expression
-        let marked_text = format!("#text(fill:theme.error)[{original_text}]");
-        let delta = marked_text.len() - original_text.len();
-        source.edit(main_range.clone(), &marked_text);
+        let aux_start = context
+            .index_mapper
+            .map_main_to_aux_from_right(mark.main_range.start);
+        context.index_mapper.push_aux_to_main_sorted(
+            aux_start,
+            mark.main_range.start + marked_errors.pre_text_len,
+        );
+        context
+            .index_mapper
+            .push_aux_to_main_sorted(aux_start, mark.main_range.start);
 
         let aux_end = context
             .index_mapper
-            .map_main_to_aux_from_left(main_range.end);
+            .map_main_to_aux_from_left(mark.main_range.end);
         context
             .index_mapper
-            .push_aux_to_main_sorted(aux_end, main_range.end);
+            .push_aux_to_main_sorted(aux_end, mark.main_range.end + marked_errors.total_wrap_len);
+        context
+            .index_mapper
+            .push_aux_to_main_sorted(aux_end, mark.main_range.end + marked_errors.pre_text_len);
 
-        crate::log!("before: {:?}", &context.index_mapper);
-        crate::log!("delta range: {main_range:?}");
-        context.index_mapper.bump_main_from(main_range.end, delta);
         crate::log!("after: {:?}", &context.index_mapper);
-
-        // crate::log!("[NEW SOURCE]:\n{}", &source.text());
     }
+}
 
-    Some(())
+pub struct MarkedErrors {
+    marks: Vec<ErrorMark>,
+    pre_text_len: usize,
+    post_text_len: usize,
+    total_wrap_len: usize,
+}
+
+pub struct ErrorMark {
+    pub text: String,
+    pub main_range: Range<usize>,
 }

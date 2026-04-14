@@ -33,12 +33,10 @@ use crate::{
         RenderTarget,
         html::{self, RenderHtmlResult},
         paged::svg::{SvgRangedFrame, render_svgs_by_items},
-        remove_errornous_block, sync_source_context,
+        remove_errornous_block, sync_source_context, sync_source_state,
     },
     world::MnemoWorld,
-    wrappers::{
-        TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump,
-    },
+    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump},
 };
 
 /// Global state for Typst rendering and compilation in Mnemo.
@@ -218,7 +216,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkPaged")]
     pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Svg, self);
+        let (ir, _) = sync_source_state(id, text, prelude, RenderTarget::Svg, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -260,7 +258,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkHTML")]
     pub fn check_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
+        let (ir, _) = sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -426,6 +424,11 @@ impl TypstState {
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
         let main_cursor = context.map_aux_to_main_from_left(aux_cursor);
 
+        crate::log!(
+            "aux_cursor: {aux_cursor}, left_cursor: {main_cursor}, right_cursor: {}",
+            context.map_aux_to_main_from_right(aux_cursor)
+        );
+
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
             context.paged_document.as_ref(),
@@ -545,7 +548,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = renderHtml)]
     pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
-        let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Html, self);
+        let (ir, ast_blocks) = sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let mut diagnostics = Vec::new();
         let mut compiled_warnings = None;

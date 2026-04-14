@@ -696,7 +696,7 @@ const renderHoverBackground = computed(() => {
   }
 
   .typst-popup-render {
-    @apply p-4 pb-6;
+    @apply p-4;
 
     div {
       @apply relative;

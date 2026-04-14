@@ -24,7 +24,7 @@ use typst_html::{HtmlDocument, HtmlElement, HtmlNode};
 use writer::{Writer, write_node};
 
 use crate::{
-    renderer::{RenderTarget, sync_source_context},
+    renderer::{RenderTarget, sync_source_state},
     state::{SourceContext, TypstState},
     world::MnemoWorld,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
@@ -36,7 +36,7 @@ pub fn render(
     prelude: &str,
     state: &mut TypstState,
 ) -> HTMLRenderResult {
-    let (ir, ast_blocks) = sync_source_context(id, text, prelude, RenderTarget::Html, state);
+    let (ir, ast_blocks) = sync_source_state(id, text, prelude, RenderTarget::Html, state);
 
     let mut last_document = None;
 

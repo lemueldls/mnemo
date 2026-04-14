@@ -10,7 +10,7 @@ use crate::{state::SourceContext, wrappers::TypstDiagnostic};
 
 /// Result of paged rendering, containing chunks, diagnostics, and document context.
 #[derive(Debug)]
-pub struct PagedRender<'a> {
+pub struct PagedRender {
     /// Chunks of blocks for incremental rendering.
     pub chunks: Vec<FrameItemsChunk>,
     /// Tooltips for the rendered content.
@@ -19,8 +19,6 @@ pub struct PagedRender<'a> {
     pub diagnostics: Vec<TypstDiagnostic>,
     /// The paged Typst document, if available.
     pub document: Option<PagedDocument>,
-    /// Mutable reference to the source context.
-    pub context: &'a mut SourceContext,
 }
 
 /// A chunk of frame items, representing a logical segment of the document.

@@ -30,8 +30,9 @@ pub fn render_svgs_by_items(
         tooltips,
         diagnostics,
         document,
-        context,
     } = chunk_by_items(id, text, prelude, RenderTarget::Svg, state);
+
+    let context = state.get_source_context_mut(id);
 
     let frames = if let Some(document) = &document {
         let document_width = document
@@ -112,6 +113,8 @@ pub fn render_svgs_by_items(
             render_svg(items, chunk.range, width, height, x_offset, y_offset, width)
         })
         .collect();
+
+    // crate::log!("tooltips: {tooltips:#?}");
 
     context.paged_document = document;
 

@@ -3,7 +3,7 @@ use std::cmp;
 /// Maps byte indices between aux (user/editor) and main (compiled) sources.
 ///
 /// Maintains inflection points to efficiently translate positions in either direction.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct IndexMapper {
     inflections: Vec<(usize, usize)>,
 }

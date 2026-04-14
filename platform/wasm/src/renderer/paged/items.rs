@@ -3,13 +3,13 @@ use std::{cmp, collections::VecDeque, iter, ops::Range};
 use typst::{
     WorldExt, compile,
     introspection::Tag,
-    layout::{Abs, FrameItem, PagedDocument, Point, Rect},
+    layout::{FrameItem, PagedDocument, Point, Rect},
     syntax::Span,
 };
 
 use crate::{
     renderer::{
-        RenderTarget,
+        AstBlock, RenderTarget, map_error_mark_index,
         paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
         remove_errornous_block, sync_source_context, try_mark_errornous,
     },
@@ -20,33 +20,43 @@ use crate::{
 
 /// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error convergence.
 #[typst_macros::time]
-pub fn chunk_by_items<'a>(
+pub fn chunk_by_items(
     id: &TypstFileId,
-    text: &'a str,
-    prelude: &'a str,
+    text: &str,
+    prelude: &str,
     render_target: RenderTarget,
-    state: &'a mut TypstState,
-) -> PagedRender<'a> {
-    let (ir, mut ast_blocks) = sync_source_context(id, text, prelude, render_target, state);
-
-    let mut document = None;
-    let mut convergence = 0_u8;
-
-    let mut diagnostics = Vec::new();
-    let mut compiled_warnings = None;
-
+    state: &mut TypstState,
+) -> PagedRender {
+    let prelude = state.prelude(id, render_target) + prelude + "\n";
     let context = state.source_context_map.get_mut(id).unwrap();
+    let (ir, mut ast_blocks) = sync_source_context(text, prelude, context, &mut state.world);
 
     context
         .main_source_mut(&mut state.world)
         .unwrap()
         .replace(&ir);
 
+    chunk_by_items_with_ir(ir, &mut ast_blocks, context, &mut state.world)
+}
+
+#[typst_macros::time]
+pub fn chunk_by_items_with_ir(
+    ir: String,
+    ast_blocks: &mut Vec<AstBlock>,
+    context: &mut SourceContext,
+    world: &mut MnemoWorld,
+) -> PagedRender {
+    let mut document = None;
+    let mut convergence = 0_u8;
+
+    let mut diagnostics = Vec::new();
+    let mut compiled_warnings = None;
+
     let mut chunks = Vec::new();
     let mut tooltips = Vec::new();
 
     while document.is_none() {
-        let compiled = compile::<PagedDocument>(&state.world);
+        let compiled = compile::<PagedDocument>(world);
         compiled_warnings = Some(compiled.warnings);
 
         // crate::log!("[DOING A THING]");
@@ -58,8 +68,7 @@ pub fn chunk_by_items<'a>(
 
                 for page in &document.pages {
                     for frame_item in page.frame.items() {
-                        let frame_block =
-                            bound_frame(frame_item, None, &mut sink, context, &state.world);
+                        let frame_block = bound_frame(frame_item, None, &mut sink, context, world);
                         bound_frame_items.extend(frame_block);
                     }
                 }
@@ -71,7 +80,7 @@ pub fn chunk_by_items<'a>(
                 let mut remaining_items = Vec::<BoundFrameItem>::new();
 
                 while let Some(ast_block) = ast_blocks.next() {
-                    let aux_source = context.aux_source(&state.world).unwrap();
+                    let aux_source = context.aux_source(world).unwrap();
 
                     let aux_range = &ast_block.range;
                     let aux_lines = aux_source.lines();
@@ -183,6 +192,14 @@ pub fn chunk_by_items<'a>(
                     }
                 }
 
+                // let has_errornous_marks=  false;
+
+                // let document = if has_errornous_marks && let Some(document) = context.paged_document {
+                //     document.clone();
+                // }else {
+                //     document
+                // }
+
                 (chunks, sink.tooltips, Some(document))
             }
             Err(source_diagnostics) => {
@@ -196,24 +213,63 @@ pub fn chunk_by_items<'a>(
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics.clone(),
                     context,
-                    &mut state.world,
+                    world,
                 ));
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                // let marked =
-                //     try_mark_errornous(source_diagnostics.clone(), context, &mut state.world);
+                let marked_errors = try_mark_errornous(source_diagnostics.clone(), context, world);
 
-                // if marked.is_some() {
-                //     continue;
-                // }
+                if !marked_errors.marks.is_empty() {
+                    let source = context.main_source_mut(world).unwrap();
 
-                let indicies = remove_errornous_block(
-                    &ast_blocks,
-                    source_diagnostics,
-                    context,
-                    &mut state.world,
-                );
+                    let index_mapper = context.index_mapper.clone();
+                    map_error_mark_index(&marked_errors, context);
+
+                    let marked_text = source.text().to_string();
+                    let marked_render =
+                        chunk_by_items_with_ir(marked_text, ast_blocks, context, world);
+
+                    context.index_mapper = index_mapper;
+
+                    let source = context.main_source_mut(world).unwrap();
+
+                    for mark in &marked_errors.marks {
+                        let start_byte = mark.main_range.start;
+                        let end_byte = mark.main_range.end;
+
+                        // fill with whitespace to stablize ranges
+                        let byte_length = end_byte - start_byte;
+                        let whitespace = " ".repeat(byte_length);
+                        source.edit(start_byte..end_byte, &whitespace);
+                    }
+
+                    let stable_text = source.text().to_string();
+                    let stable_render =
+                        chunk_by_items_with_ir(stable_text, ast_blocks, context, world);
+
+                    let source = context.main_source_mut(world).unwrap();
+
+                    for mark in marked_errors.marks {
+                        let start_byte = mark.main_range.start;
+                        source.edit(start_byte..(start_byte + mark.text.len()), &mark.text);
+                    }
+
+                    crate::log!("index_mapper: {:#?}", context.index_mapper);
+
+                    let text = source.text().to_string();
+                    crate::log!("marked_text:\n{text}");
+
+                    return PagedRender {
+                        chunks: marked_render.chunks,
+                        tooltips: marked_render.tooltips,
+                        diagnostics,
+                        document: stable_render.document,
+                    };
+                }
+
+                let indicies =
+                    remove_errornous_block(&ast_blocks, source_diagnostics, context, world);
 
                 if indicies.is_empty() {
                     crate::error!("NO ERROR BLOCKS FOUND ‼️");
@@ -231,19 +287,11 @@ pub fn chunk_by_items<'a>(
     }
 
     if let Some(warnings) = compiled_warnings {
-        diagnostics.extend(TypstDiagnostic::from_diagnostics(
-            warnings,
-            &context,
-            &state.world,
-        ));
+        diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &context, world));
     }
 
-    context
-        .main_source_mut(&mut state.world)
-        .unwrap()
-        .replace(&ir);
+    // context.main_source_mut(world).unwrap().replace(&ir);
 
-    // convert tooltips into Vec<FrameItemsChunk>
     let tooltips = tooltips
         .into_iter()
         .filter_map(|items| {
@@ -300,18 +348,21 @@ pub fn chunk_by_items<'a>(
                 })
                 .unwrap_or(0..0);
 
+            // crate::log!("main_range: {main_range:?}");
+
             let aux_start = context.map_main_to_aux_from_left(main_range.start);
             let aux_end = context.map_main_to_aux_from_right(main_range.end);
 
-            let aux_source = context.aux_source(&state.world)?;
+            // crate::log!("aux_range: {:?}", aux_start..aux_end);
+
+            let aux_source = context.aux_source(world)?;
 
             let aux_lines = aux_source.lines();
-            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start)?;
-            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end)?;
+            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start - 1)?;
+            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end + 1)?;
             let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
 
-            // crate::log!("main_range: {main_range:?}");
-            // crate::log!("aux_range: {:?}", aux_start..aux_end);
+            // crate::log!("aux_range_utf16: {:?}", aux_start_utf16..aux_end_utf16);
 
             Some(FrameItemsChunk {
                 items: VecDeque::from(items),
@@ -324,12 +375,13 @@ pub fn chunk_by_items<'a>(
         })
         .collect();
 
+    crate::log!("tooltips: {tooltips:#?}");
+
     PagedRender {
         chunks,
         tooltips,
         diagnostics,
         document,
-        context,
     }
 }
 
@@ -347,9 +399,12 @@ fn bound_frame(
 
     let bounds = match &item {
         FrameItem::Text(text) => {
+            let bbox = text.bbox();
+
             Rect::new(
-                Point::new(point.x, cmp::max(point.y - text.size, Abs::zero())),
-                Point::new(point.x + text.width(), point.y),
+                // not a mistake: text runs use a y-up coordinate system
+                Point::new(point.x + bbox.min.x, point.y + bbox.max.y),
+                Point::new(point.x + bbox.max.x, point.y + bbox.min.y),
             )
         }
         FrameItem::Group(group) => {
@@ -467,7 +522,7 @@ impl BoundFrameSink {
             match *name {
                 "equation" => {
                     let mut block = block.clone();
-                    block.range = block.range.map(|range| (range.start - 1)..(range.end + 1));
+                    block.range = block.range.map(|range| (range.start)..(range.end));
                     self.tooltips.last_mut().unwrap().push(block);
                 }
                 _ => {}
