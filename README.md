@@ -17,7 +17,7 @@ See [TODO.md](TODO.md) for the expanded roadmap.
 ### Prerequisites
 
 - Node.js 24+
-- pnpm 10+
+- pnpm 11+
 - Rust 1.85.0+
 
 ### Quickstart

@@ -2,23 +2,24 @@ packages:
   - platform/wasm/pkg
 
 overrides:
-  sharp: =0.34.5
   crossws: =0.4.1
-  unwasm: =0.3.11
   h3: npm:h3-nightly@1.15.5-20251001-082059-b4dce71
+  sharp: =0.34.5
+  unwasm: =0.3.11
 
 patchedDependencies:
   crossws: patches/crossws.patch
   nitropack: patches/nitropack.patch
   unwasm: patches/unwasm.patch
 
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - "@swc/core"
-  - better-sqlite3
-  - esbuild
-  - sharp
-  - unrs-resolver
-  - vue-demi
-  - wasm-pack
-  - workerd
+allowBuilds:
+  "@parcel/watcher": true
+  "@prisma/client": false
+  "@swc/core": true
+  better-sqlite3: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+  vue-demi: true
+  wasm-pack: true
+  workerd: true
