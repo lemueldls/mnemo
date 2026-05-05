@@ -64,7 +64,7 @@ jobs:
       - name: 🌀  Generate template
         run: |
           mkdir -p ~/void-packages/srcpkgs/mnemo
-          platform/void/generate-template.sh \
+          bash platform/void/generate-template.sh \
             "${{ steps.get-version.outputs.version }}" \
             "${{ steps.get-checksum.outputs.checksum }}" \
             > ~/void-packages/srcpkgs/mnemo/template
