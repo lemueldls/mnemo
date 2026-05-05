@@ -124,7 +124,7 @@ jobs:
             makepkg
             makepkg --install --noconfirm
             git config user.name "lemueldls"
-            git config user.email "noreply@git.lemueldls.dev"
+            git config user.email "aur@lemueldls.dev"
             git add PKGBUILD .SRCINFO
             git commit -m "New upstream release ${{ needs.release-info.outputs.version }}"
             git push origin master
