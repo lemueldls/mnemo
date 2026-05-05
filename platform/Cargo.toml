@@ -6,7 +6,7 @@ package.edition = "2024"
 package.keywords = [""]
 package.license = "AGPL-3.0"
 package.repository = "https://github.com/lemueldls/mnemo"
-package.version = "0.3.2"
+package.version = "0.3.3"
 resolver = "3"
 
 [profile.dev.package]
