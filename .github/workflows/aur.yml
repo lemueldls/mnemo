@@ -66,7 +66,7 @@ jobs:
             o=$(pwd)
             ${{ matrix.package.generate_script }} "${{ needs.release-info.outputs.version }}" "${{ steps.sha256sums.outputs.sha256 }}" > ~/lint/PKGBUILD
             cd ~/lint
-            "$o/platform/aur/makepkg-lint.sh"
+            bash "$o/platform/aur/makepkg-lint.sh"
           '
       - name: 🛠️ Setup Deployment keys
         if: github.event.release.tag_name
