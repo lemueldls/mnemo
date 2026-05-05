@@ -18,7 +18,7 @@ use crate::{
     wrappers::{TypstDiagnostic, TypstFileId},
 };
 
-/// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error convergence.
+/// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error divergence.
 #[typst_macros::time]
 pub fn chunk_by_items(
     id: &TypstFileId,
@@ -36,18 +36,19 @@ pub fn chunk_by_items(
         .unwrap()
         .replace(&ir);
 
-    chunk_by_items_with_ir(ir, &mut ast_blocks, context, &mut state.world)
+    let mut divergence = 0_u8;
+
+    chunk_by_items_with_ast_blocks(&mut ast_blocks, &mut divergence, context, &mut state.world)
 }
 
 #[typst_macros::time]
-pub fn chunk_by_items_with_ir(
-    ir: String,
+pub fn chunk_by_items_with_ast_blocks(
     ast_blocks: &mut Vec<AstBlock>,
+    divergence: &mut u8,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
 ) -> PagedRender {
     let mut document = None;
-    let mut convergence = 0_u8;
 
     let mut diagnostics = Vec::new();
     let mut compiled_warnings = None;
@@ -203,8 +204,8 @@ pub fn chunk_by_items_with_ir(
                 (chunks, sink.tooltips, Some(document))
             }
             Err(source_diagnostics) => {
-                convergence += 1;
-                if convergence >= 32 {
+                *divergence += 1;
+                if *divergence >= 32 {
                     crate::error!("COULD NOT CONVERGE ‼️");
 
                     break;
@@ -221,14 +222,14 @@ pub fn chunk_by_items_with_ir(
                 let marked_errors = try_mark_errornous(source_diagnostics.clone(), context, world);
 
                 if !marked_errors.marks.is_empty() {
-                    let source = context.main_source_mut(world).unwrap();
+                    // let source = context.main_source_mut(world).unwrap();
 
                     let index_mapper = context.index_mapper.clone();
                     map_error_mark_index(&marked_errors, context);
 
-                    let marked_text = source.text().to_string();
+                    // let marked_text = source.text().to_string();
                     let marked_render =
-                        chunk_by_items_with_ir(marked_text, ast_blocks, context, world);
+                        chunk_by_items_with_ast_blocks(ast_blocks, divergence, context, world);
 
                     context.index_mapper = index_mapper;
 
@@ -244,9 +245,9 @@ pub fn chunk_by_items_with_ir(
                         source.edit(start_byte..end_byte, &whitespace);
                     }
 
-                    let stable_text = source.text().to_string();
+                    // let stable_text = source.text().to_string();
                     let stable_render =
-                        chunk_by_items_with_ir(stable_text, ast_blocks, context, world);
+                        chunk_by_items_with_ast_blocks(ast_blocks, divergence, context, world);
 
                     let source = context.main_source_mut(world).unwrap();
 
@@ -255,10 +256,10 @@ pub fn chunk_by_items_with_ir(
                         source.edit(start_byte..(start_byte + mark.text.len()), &mark.text);
                     }
 
-                    crate::log!("index_mapper: {:#?}", context.index_mapper);
+                    // crate::log!("index_mapper: {:#?}", context.index_mapper);
 
-                    let text = source.text().to_string();
-                    crate::log!("marked_text:\n{text}");
+                    // let text = source.text().to_string();
+                    // crate::log!("marked_text:\n{text}");
 
                     return PagedRender {
                         chunks: marked_render.chunks,
@@ -375,7 +376,7 @@ pub fn chunk_by_items_with_ir(
         })
         .collect();
 
-    crate::log!("tooltips: {tooltips:#?}");
+    // crate::log!("tooltips: {tooltips:#?}");
 
     PagedRender {
         chunks,

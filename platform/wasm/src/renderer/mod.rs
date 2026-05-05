@@ -265,11 +265,11 @@ pub fn try_mark_errornous(
         .iter()
         .filter(|diagnostic| {
             main_source.find(diagnostic.span).is_some_and(|node| {
-                crate::log!(
-                    "err@{node:?}\n |> {:?}\n |> {:?}",
-                    node.parent(),
-                    node.parent().and_then(|node| node.parent())
-                );
+                // crate::log!(
+                //     "err@{node:?}\n |> {:?}\n |> {:?}",
+                //     node.parent(),
+                //     node.parent().and_then(|node| node.parent())
+                // );
 
                 matches!(node.kind(), SyntaxKind::MathIdent)
                     || node.parent().is_some_and(|node| {
@@ -338,7 +338,7 @@ pub fn try_mark_errornous(
 
 pub fn map_error_mark_index(marked_errors: &MarkedErrors, context: &mut SourceContext) {
     for mark in &marked_errors.marks {
-        crate::log!("before: {:?}", &context.index_mapper);
+        // crate::log!("before: {:?}", &context.index_mapper);
         // crate::log!("delta range: {main_range:?}");
 
         let aux_start = context
@@ -362,15 +362,15 @@ pub fn map_error_mark_index(marked_errors: &MarkedErrors, context: &mut SourceCo
             .index_mapper
             .push_aux_to_main_sorted(aux_end, mark.main_range.end + marked_errors.pre_text_len);
 
-        crate::log!("after: {:?}", &context.index_mapper);
+        // crate::log!("after: {:?}", &context.index_mapper);
     }
 }
 
 pub struct MarkedErrors {
-    marks: Vec<ErrorMark>,
-    pre_text_len: usize,
-    post_text_len: usize,
-    total_wrap_len: usize,
+    pub marks: Vec<ErrorMark>,
+    pub pre_text_len: usize,
+    pub post_text_len: usize,
+    pub total_wrap_len: usize,
 }
 
 pub struct ErrorMark {

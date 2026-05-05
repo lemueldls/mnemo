@@ -424,10 +424,10 @@ impl TypstState {
         let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
         let main_cursor = context.map_aux_to_main_from_left(aux_cursor);
 
-        crate::log!(
-            "aux_cursor: {aux_cursor}, left_cursor: {main_cursor}, right_cursor: {}",
-            context.map_aux_to_main_from_right(aux_cursor)
-        );
+        // crate::log!(
+        //     "aux_cursor: {aux_cursor}, left_cursor: {main_cursor}, right_cursor: {}",
+        //     context.map_aux_to_main_from_right(aux_cursor)
+        // );
 
         let (main_offset, completions) = typst_ide::autocomplete(
             &self.world,
@@ -474,11 +474,9 @@ impl TypstState {
             side,
         );
 
-        tooltip.map(|tooltip| {
-            match tooltip {
-                Tooltip::Text(text) => text.to_string(),
-                Tooltip::Code(text) => typst_syntax::highlight_html(&typst_syntax::parse(&text)),
-            }
+        tooltip.map(|tooltip| match tooltip {
+            Tooltip::Text(text) => text.to_string(),
+            Tooltip::Code(text) => typst_syntax::highlight_html(&typst_syntax::parse(&text)),
         })
     }
 
