@@ -50,7 +50,7 @@ export const tooltipViewPlugin = () =>
             const svg = document.createElement("div");
             svg.style.width = render.width + "px";
             svg.style.height = render.height + "px";
-            svg.style.transform = `translate(-${render.xOffset}px)`;
+            svg.style.transform = `translateX(-${render.xOffset}px)`;
             svg.setHTMLUnsafe(render.svg);
 
             container.append(svg);
@@ -58,8 +58,21 @@ export const tooltipViewPlugin = () =>
             tooltip = {
               pos: start,
               end: end,
-              create() {
-                return { dom: container };
+              create(view) {
+                return {
+                  dom: container,
+                  getCoords(_pos) {
+                    const startCoords = view.coordsAtPos(start)!;
+                    const endCoords = view.coordsAtPos(end)!;
+
+                    return {
+                      left: startCoords.left,
+                      right: startCoords.right,
+                      top: endCoords.top,
+                      bottom: endCoords.bottom,
+                    };
+                  },
+                };
               },
             };
 
