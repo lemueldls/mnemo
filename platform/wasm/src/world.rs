@@ -4,13 +4,13 @@ use time::{OffsetDateTime, UtcOffset};
 use typst::{
     Feature, Library, LibraryExt, World,
     diag::{FileError, FileResult},
-    foundations::{Bytes, Datetime},
+    foundations::{Bytes, Datetime, Duration},
     syntax::{FileId, Source},
     text::{Font, FontBook},
     utils::LazyHash,
 };
 use typst_ide::IdeWorld;
-use typst_syntax::{VirtualPath, package::PackageSpec};
+use typst_syntax::{VirtualPath, VirtualRoot, package::PackageSpec};
 
 use crate::{fonts::FontLoader, index_mapper::IndexMapper};
 
@@ -31,11 +31,11 @@ pub struct MnemoWorld {
     font_loader: FontLoader,
 
     /// Sources requested by Typst but not yet loaded.
-    pub requested_sources: DashSet<&'static VirtualPath>,
+    pub requested_sources: DashSet<VirtualPath>,
     /// Files requested by Typst but not yet loaded.
-    pub requested_files: DashSet<&'static VirtualPath>,
+    pub requested_files: DashSet<VirtualPath>,
     /// Packages requested by Typst but not yet loaded.
-    pub requested_packages: DashSet<&'static PackageSpec>,
+    pub requested_packages: DashSet<PackageSpec>,
 }
 
 impl Default for MnemoWorld {
@@ -110,9 +110,9 @@ impl World for MnemoWorld {
         match self.get_source(id) {
             Some(source) => Ok(source.clone()),
             None => {
-                match id.package() {
-                    Some(spec) => self.requested_packages.insert(spec),
-                    None => self.requested_sources.insert(id.vpath()),
+                match id.root() {
+                    VirtualRoot::Project => self.requested_sources.insert(id.vpath().clone()),
+                    VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
                 };
 
                 Err(FileError::Other(None))
@@ -124,9 +124,9 @@ impl World for MnemoWorld {
         match self.get_file(id) {
             Some(file) => Ok(file.bytes()),
             None => {
-                match id.package() {
-                    Some(spec) => self.requested_packages.insert(spec),
-                    None => self.requested_files.insert(id.vpath()),
+                match id.root() {
+                    VirtualRoot::Project => self.requested_files.insert(id.vpath().clone()),
+                    VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
                 };
 
                 Err(FileError::Other(None))
@@ -138,9 +138,10 @@ impl World for MnemoWorld {
         Some(self.font_loader.fonts[index].clone())
     }
 
-    fn today(&self, offset: Option<i64>) -> Option<Datetime> {
-        let now = if let Some(hours) = offset {
-            OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(hours as i8, 0, 0).unwrap())
+    fn today(&self, offset: Option<Duration>) -> Option<Datetime> {
+        let now = if let Some(duration) = offset {
+            OffsetDateTime::now_utc()
+                .to_offset(UtcOffset::from_hms(duration.hours() as i8, 0, 0).unwrap())
         } else {
             OffsetDateTime::now_utc()
         };

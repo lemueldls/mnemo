@@ -25,6 +25,7 @@ use typst::{
     diag::{Severity, SourceDiagnostic},
     syntax::SyntaxKind,
 };
+use typst_syntax::{DiagSpan, DiagSpanKind, LinkedNode, Source, Span, SpanNumber, SyntaxNode};
 
 use crate::{
     index_mapper::IndexMapper,
@@ -104,7 +105,7 @@ pub fn sync_source_context(
     for node in children {
         let range = world.range(node.span()).unwrap();
 
-        if let Some(until_newline) = node.text().chars().position(|ch| ch == '\n') {
+        if let Some(until_newline) = node.leaf_text().chars().position(|ch| ch == '\n') {
             in_block = false;
 
             if let Some(last_block) = ast_blocks.last_mut() {
@@ -264,24 +265,27 @@ pub fn try_mark_errornous(
     let error_ranges = source_diagnostics
         .iter()
         .filter(|diagnostic| {
-            main_source.find(diagnostic.span).is_some_and(|node| {
-                // crate::log!(
-                //     "err@{node:?}\n |> {:?}\n |> {:?}",
-                //     node.parent(),
-                //     node.parent().and_then(|node| node.parent())
-                // );
+            crate::log!("span: {:?}, trace: {:?}", diagnostic.span, diagnostic.trace);
 
-                matches!(node.kind(), SyntaxKind::MathIdent)
-                    || node.parent().is_some_and(|node| {
-                        matches!(
-                            node.kind(),
-                            SyntaxKind::MathAttach | SyntaxKind::MathFrac | SyntaxKind::FieldAccess
-                        )
-                        // || node
-                        //     .parent_kind()
-                        //     .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
-                    })
-            })
+            // main_source.find(diagnostic.span).is_some_and(|node| {
+            //     // crate::log!(
+            //     //     "err@{node:?}\n |> {:?}\n |> {:?}",
+            //     //     node.parent(),
+            //     //     node.parent().and_then(|node| node.parent())
+            //     // );
+
+            //     matches!(node.kind(), SyntaxKind::MathIdent)
+            //         || node.parent().is_some_and(|node| {
+            //             matches!(
+            //                 node.kind(),
+            //                 SyntaxKind::MathAttach | SyntaxKind::MathFrac | SyntaxKind::FieldAccess
+            //             )
+            //             // || node
+            //             //     .parent_kind()
+            //             //     .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
+            //         })
+            // })
+            false
         })
         .filter_map(|diagnostic| {
             map_main_span(

@@ -1,11 +1,14 @@
 use std::{collections::VecDeque, hash::BuildHasher, ops::Range};
 
-use comemo::Prehashed;
+use comemo::{Prehashed, Track, Tracked};
 use rustc_hash::FxBuildHasher;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
-use typst::layout::{Abs, Frame, Point, Size};
-use typst_svg::svg_frame;
+use typst::{
+    layout::{Abs, Frame, Point, Size},
+    model::LateLinkResolver,
+};
+use typst_svg::svg_in_html;
 
 use super::BoundFrameItem;
 use crate::{
@@ -34,15 +37,18 @@ pub fn render_svgs_by_items(
 
     let context = state.get_source_context_mut(id);
 
-    let frames = if let Some(document) = &document {
+    let (frames, tooltips) = if let Some(document) = &document {
+        let link_resolver = LateLinkResolver::new(None, document.introspector().as_ref());
+        let link_resolver = link_resolver.track();
+
         let document_width = document
-            .pages
+            .pages()
             .iter()
             .map(|page| page.frame.width())
             .max()
             .unwrap_or_default();
 
-        chunks
+        let frames = chunks
             .into_iter()
             .map(|chunk| {
                 let items = Prehashed::new(chunk.items);
@@ -60,61 +66,38 @@ pub fn render_svgs_by_items(
                     x_offset,
                     y_offset,
                     document_width,
+                    link_resolver,
                 )
             })
-            .collect()
+            .collect();
+
+        let tooltips = tooltips
+            .into_iter()
+            .map(|chunk| {
+                let items = Prehashed::new(chunk.items);
+
+                let width = Abs::pt(chunk.width);
+                let height = Abs::pt(chunk.height);
+                let x_offset = Abs::pt(chunk.x_offset);
+                let y_offset = Abs::pt(chunk.y_offset);
+
+                render_svg(
+                    items,
+                    chunk.range,
+                    width,
+                    height,
+                    x_offset,
+                    y_offset,
+                    width,
+                    link_resolver,
+                )
+            })
+            .collect();
+
+        (frames, tooltips)
     } else {
-        Vec::new()
+        (Vec::new(), Vec::new())
     };
-
-    // let tooltips = if let Some(document) = &document {
-    //     let document_width = document
-    //         .pages
-    //         .iter()
-    //         .map(|page| page.frame.width())
-    //         .max()
-    //         .unwrap_or_default();
-
-    //     tooltips
-    //         .into_iter()
-    //         .map(|chunk| {
-    //             let items = Prehashed::new(chunk.items);
-
-    //             let width = Abs::pt(chunk.width);
-    //             let height = Abs::pt(chunk.height);
-    //             let x_offset = Abs::pt(chunk.x_offset);
-    //             let y_offset = Abs::pt(chunk.y_offset);
-
-    //             render_svg(
-    //                 items,
-    //                 chunk.range,
-    //                 width,
-    //                 height,
-    //                 x_offset,
-    //                 y_offset,
-    //                 document_width,
-    //             )
-    //         })
-    //         .collect()
-    // } else {
-    //     Vec::new()
-    // };
-
-    let tooltips = tooltips
-        .into_iter()
-        .map(|chunk| {
-            let items = Prehashed::new(chunk.items);
-
-            let width = Abs::pt(chunk.width);
-            let height = Abs::pt(chunk.height);
-            let x_offset = Abs::pt(chunk.x_offset);
-            let y_offset = Abs::pt(chunk.y_offset);
-
-            render_svg(items, chunk.range, width, height, x_offset, y_offset, width)
-        })
-        .collect();
-
-    // crate::log!("tooltips: {tooltips:#?}");
 
     context.paged_document = document;
 
@@ -136,6 +119,7 @@ fn render_svg(
     x_offset: Abs,
     y_offset: Abs,
     document_width: Abs,
+    link_resolver: Tracked<LateLinkResolver>,
 ) -> SvgRangedFrame {
     let hash = FxBuildHasher.hash_one(&items) as u32;
 
@@ -146,7 +130,7 @@ fn render_svg(
         (point, block.item)
     }));
 
-    let svg = svg_frame(&frame);
+    let svg = svg_in_html(&frame, Abs::pt(1.0), false, None, "", &[], link_resolver);
 
     let width = width.to_pt();
     let height = height.to_pt();

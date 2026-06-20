@@ -4,9 +4,10 @@ pub mod svg;
 
 use std::{collections::VecDeque, hash::Hash, ops::Range};
 
-use typst::layout::{FrameItem, PagedDocument, Point, Rect};
+use typst::layout::{FrameItem, Point, Rect};
+use typst_layout::PagedDocument;
 
-use crate::{state::SourceContext, wrappers::TypstDiagnostic};
+use crate::wrappers::TypstDiagnostic;
 
 /// Result of paged rendering, containing chunks, diagnostics, and document context.
 #[derive(Debug)]

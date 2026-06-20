@@ -3,9 +3,10 @@ use std::{cmp, collections::VecDeque, iter, ops::Range};
 use typst::{
     WorldExt, compile,
     introspection::Tag,
-    layout::{FrameItem, PagedDocument, Point, Rect},
+    layout::{FrameItem, Point, Rect},
     syntax::Span,
 };
+use typst_layout::PagedDocument;
 
 use crate::{
     renderer::{
@@ -67,7 +68,7 @@ pub fn chunk_by_items_with_ast_blocks(
                 let mut sink = BoundFrameSink::default();
                 let mut bound_frame_items = Vec::new();
 
-                for page in &document.pages {
+                for page in document.pages() {
                     for frame_item in page.frame.items() {
                         let frame_block = bound_frame(frame_item, None, &mut sink, context, world);
                         bound_frame_items.extend(frame_block);
@@ -479,8 +480,11 @@ fn bound_frame(
             return Box::from_iter(iter::once(item));
         }
         FrameItem::Shape(shape, _span) => {
-            let bbox = shape.geometry.bbox_size();
-            Rect::new(*point, Point::new(bbox.x, bbox.y))
+            let bbox = shape.bbox(true);
+            Rect::new(
+                Point::new(point.x + bbox.min.x, point.y + bbox.min.y),
+                Point::new(point.x + bbox.max.x, point.y + bbox.max.y),
+            )
         }
         FrameItem::Image(_image, axes, _span) => Rect::new(*point, Point::new(axes.x, axes.y)),
         FrameItem::Link(..) => Rect::new(*point, *point),

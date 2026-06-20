@@ -568,8 +568,8 @@ const renderHoverBackground = computed(() => {
     -webkit-user-drag: none;
     -moz-user-drag: none;
 
-    .typst-doc {
-      @apply size-full overflow-visible;
+    svg {
+      @apply size-full!;
     }
   }
 
@@ -582,7 +582,7 @@ const renderHoverBackground = computed(() => {
       }
     }
 
-    .typst-doc {
+    svg {
       @apply cursor-text;
     }
   }
@@ -702,8 +702,8 @@ const renderHoverBackground = computed(() => {
       @apply relative;
     }
 
-    .typst-doc {
-      @apply size-full overflow-visible;
+    svg {
+      @apply size-full!;
     }
   }
 }

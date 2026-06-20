@@ -1,8 +1,3 @@
-pub mod attr;
-pub mod charsets;
-pub mod tag;
-pub mod writer;
-
 use std::{
     cmp,
     hash::{BuildHasher, Hash, Hasher},
@@ -20,8 +15,7 @@ use typst::{compile, diag::Severity, introspection::Tag, syntax::Span};
 // use typst_library::foundations::Repr;
 // use typst_library::introspection::Introspector;
 // use typst_syntax::Span;
-use typst_html::{HtmlDocument, HtmlElement, HtmlNode};
-use writer::{Writer, write_node};
+use typst_html::{HtmlDocument, HtmlElement, HtmlNode, HtmlOptions, tag};
 
 use crate::{
     renderer::{RenderTarget, sync_source_state},
@@ -62,108 +56,22 @@ pub fn render(
 
         frames = match compiled.output {
             Ok(document) => {
-                let body = document
-                    .root
-                    .children
-                    .iter()
-                    .find(|node| matches!(node, HtmlNode::Element(el) if el.tag == tag::body))
-                    .unwrap();
-                let HtmlNode::Element(body) = body.clone() else {
-                    unreachable!()
-                };
-
-                // let mut blocks = Vec::with_capacity(ast_blocks.len());
-
-                // let mut ast_blocks = ast_blocks.iter().peekable();
-
-                let children = body
-                    .children
-                    .into_iter()
-                    .flat_map(flatten_node)
-                    .filter_map(|node| {
-                        let location = match &node {
-                            HtmlNode::Tag(tag) => {
-                                match tag {
-                                    Tag::Start(content, ..) => content.location(),
-                                    Tag::End(location, ..) => Some(location.clone()),
-                                }
-                            }
-                            HtmlNode::Text(..) => None,
-                            HtmlNode::Element(element) => element.parent,
-                            HtmlNode::Frame(..) => None,
-                        };
-
-                        let position = location.and_then(|location| {
-                            document.introspector.position(location).as_html()
-                        });
-
-                        let range = flat_node_range(&node, context, &state.world)?;
-
-                        Some((node, range, position))
-                    })
-                    // .sorted_by_key(|(_, range)| range.start)
-                    .peekable();
-
-                let blocks = children
-                    .filter_map(|(node, range, _position)| {
-                        let mut w = Writer::new(&document.introspector, false);
-
-                        let mut hasher = FxBuildHasher::default().build_hasher();
-
-                        let aux_source = context.aux_source(&state.world).unwrap();
-
-                        // let aux_range = &ast_block.range;
-                        // let aux_lines = aux_source.lines();
-                        // let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
-                        // let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
-                        // let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
-
-                        // let main_range_start = context.map_aux_to_main(aux_range.start);
-                        // let main_range_end = context.map_aux_to_main(aux_range.end);
-                        // let main_range = main_range_start..main_range_end;
-
-                        // while let Some((node, range, position)) = children.peek() {
-                        //     crate::debug!("comparing ast {main_range:?} with node {range:?}");
-                        //     crate::debug!("node {node:?}");
-                        //     crate::debug!("position: {position:?}");
-
-                        //     if range.end <= main_range_end {
-                        //         let (node, ..) = children.next().unwrap();
-
-                        //         write_node(&mut w, &node, body.pre_span).unwrap();
-                        //         node.hash(&mut hasher);
-                        //     } else {
-                        //         break;
-                        //     }
-                        // }
-
-                        let aux_start = context.map_main_to_aux_from_right(range.start);
-                        let aux_end = context.map_main_to_aux_from_right(range.end);
-                        let aux_lines = aux_source.lines();
-                        let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start).unwrap();
-                        let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end).unwrap();
-                        let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
-
-                        write_node(&mut w, &node, body.pre_span).unwrap();
-                        node.hash(&mut hasher);
-
-                        if !w.buf.is_empty() {
-                            Some(HTMLRangedFrame {
-                                render: HTMLFrameRender {
-                                    html: w.buf,
-                                    hash: hasher.finish() as u32,
-                                },
-                                range: aux_range_utf16.clone(),
-                            })
-                        } else {
-                            None
-                        }
-                    })
-                    .collect::<Vec<_>>();
+                let element = typst_html::html(&document, &HtmlOptions::default())
+                    .expect("HTML rendering failed");
 
                 last_document = Some(document);
 
-                blocks
+                vec![HTMLRangedFrame {
+                    range: 0..text.len(),
+                    render: HTMLFrameRender {
+                        html: element.to_string(),
+                        hash: {
+                            let mut hasher = FxBuildHasher::default().build_hasher();
+                            element.to_string().hash(&mut hasher);
+                            hasher.finish() as u32
+                        },
+                    },
+                }]
             }
             Err(source_diagnostics) => {
                 let error_ranges = source_diagnostics
@@ -248,125 +156,6 @@ pub fn render(
         diagnostics,
     }
 }
-
-fn flatten_node(node: HtmlNode) -> Box<[HtmlNode]> {
-    match node {
-        HtmlNode::Element(element) => {
-            match element.tag {
-                tag::p => Box::from_iter(element.children),
-                tag::ul => {
-                    let children = element.children;
-                    Box::from_iter(children.into_iter().map(|node| {
-                        HtmlNode::Element(HtmlElement {
-                            tag: tag::ul,
-                            attrs: element.attrs.clone(),
-                            children: eco_vec![node],
-                            parent: element.parent,
-                            pre_span: element.pre_span,
-                            span: Span::detached(),
-                        })
-                    }))
-                }
-                tag::ol => {
-                    let mut start = 1;
-
-                    let children = element.children;
-                    Box::from_iter(children.into_iter().map(|mut node| {
-                        let HtmlNode::Element(HtmlElement { attrs, .. }) = &mut node else {
-                            unreachable!()
-                        };
-
-                        if let Some(value) = attrs.get(attr::value) {
-                            start = value.parse::<u16>().unwrap() + 1;
-                        } else {
-                            attrs.push(attr::value, start.to_string());
-                            start += 1;
-                        }
-
-                        HtmlNode::Element(HtmlElement {
-                            tag: tag::ol,
-                            attrs: element.attrs.clone(),
-                            children: eco_vec![node],
-                            parent: element.parent,
-                            pre_span: element.pre_span,
-                            span: Span::detached(),
-                        })
-                    }))
-                }
-                tag::dl => {
-                    let children = element.children;
-                    Box::from_iter(children.into_iter().map(|node| {
-                        HtmlNode::Element(HtmlElement {
-                            tag: tag::dl,
-                            attrs: element.attrs.clone(),
-                            children: eco_vec![node],
-                            parent: element.parent,
-                            pre_span: element.pre_span,
-                            span: Span::detached(),
-                        })
-                    }))
-                }
-                _ => Box::from_iter(iter::once(HtmlNode::Element(element))),
-            }
-        }
-        _ => Box::from_iter(iter::once(node)),
-    }
-}
-
-fn flat_node_range(
-    node: &HtmlNode,
-    context: &SourceContext,
-    world: &MnemoWorld,
-) -> Option<Range<usize>> {
-    match node {
-        HtmlNode::Tag(_) => None,
-        HtmlNode::Text(_, span) => map_main_span(*span, false, &[], context, world),
-        HtmlNode::Element(element) => {
-            let range = map_main_span(element.span, false, &[], context, world);
-
-            element
-                .children
-                .iter()
-                .map(|node| flat_node_range(node, context, world))
-                .fold(range, |a, b| {
-                    match (a, b) {
-                        (Some(a), Some(b)) => {
-                            let start = cmp::min(a.start, b.start);
-                            let end = cmp::max(a.end, b.end);
-
-                            Some(start..end)
-                        }
-                        (Some(a), None) => Some(a),
-                        (None, Some(b)) => Some(b),
-                        (None, None) => None,
-                    }
-                })
-        }
-        HtmlNode::Frame(frame) => map_main_span(frame.span, false, &[], context, world),
-    }
-}
-
-// fn with_dom_indices(nodes: EcoVec<HtmlNode>) -> impl Iterator<Item = (HtmlNode, usize)> {
-//     let mut cursor = 0;
-//     let mut was_text = false;
-
-//     nodes.into_iter().map(move |child| {
-//         let mut i = cursor;
-
-//         match child {
-//             HtmlNode::Tag(_) => {}
-//             HtmlNode::Text(..) => was_text = true,
-//             _ => {
-//                 cursor += usize::from(was_text);
-//                 i = cursor;
-//                 cursor += 1;
-//                 was_text = false;
-//             }
-//         }
-
-//         (child, i)
-//     })
-// }
 
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]

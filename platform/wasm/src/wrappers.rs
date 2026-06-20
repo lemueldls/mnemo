@@ -6,14 +6,14 @@ use typst::{
     World, WorldExt,
     diag::{Severity, SourceDiagnostic, Tracepoint},
     ecow::{EcoVec, eco_format},
-    syntax::{FileId, Span, Spanned, SyntaxError},
+    syntax::{DiagSpan, FileId, Spanned},
 };
 use wasm_bindgen::prelude::*;
 
 use crate::{state::SourceContext, world::MnemoWorld};
 
 #[wasm_bindgen(js_name = "FileId")]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct TypstFileId(pub(crate) FileId);
 
 impl TypstFileId {
@@ -36,26 +36,6 @@ pub struct TypstDiagnostic {
 }
 
 impl TypstDiagnostic {
-    pub fn from_errors(
-        errors: EcoVec<SyntaxError>,
-        context: &SourceContext,
-        world: &MnemoWorld,
-    ) -> Box<[Self]> {
-        errors
-            .into_iter()
-            .flat_map(|error| {
-                map_aux_span(error.span, true, &[], context, world).map(|range| {
-                    TypstDiagnostic {
-                        range,
-                        severity: TypstDiagnosticSeverity::Error,
-                        message: error.message.to_string(),
-                        hints: error.hints.into_iter().map(|s| s.to_string()).collect(),
-                    }
-                })
-            })
-            .collect()
-    }
-
     pub fn from_diagnostics(
         diagnostics: EcoVec<SourceDiagnostic>,
         context: &SourceContext,
@@ -99,12 +79,14 @@ impl TypstDiagnostic {
 }
 
 pub fn map_main_span(
-    span: Span,
+    span: impl Into<DiagSpan>,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
     context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
+    let span = span.into();
+
     let mut main_range = if Some(context.main_id) == span.id() {
         world.range(span)
     } else {
@@ -129,7 +111,7 @@ pub fn map_main_span(
 }
 
 pub fn map_aux_span(
-    span: Span,
+    span: impl Into<DiagSpan>,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
     context: &SourceContext,

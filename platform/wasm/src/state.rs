@@ -16,15 +16,16 @@ use typst::{
     compile,
     ecow::EcoString,
     foundations::Bytes,
-    introspection::HtmlPosition,
-    layout::{Abs, PagedDocument, Point, Position},
+    introspection::{HtmlPosition, PagedPosition},
+    layout::{Abs, Point},
     syntax::{FileId, Source, VirtualPath, package::PackageSpec},
 };
-use typst_html::HtmlDocument;
+use typst_html::{HtmlDocument, HtmlOptions};
 use typst_ide::Tooltip;
+use typst_layout::PagedDocument;
 // use typst_html::html;
 // use typst_pdf::{PdfOptions, pdf};
-use typst_syntax::{LinkedNode, Side, Tag};
+use typst_syntax::{LinkedNode, RootedPath, Side, Tag, VirtualRoot};
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -33,7 +34,7 @@ use crate::{
         RenderTarget,
         html::{self, RenderHtmlResult},
         paged::svg::{SvgRangedFrame, render_svgs_by_items},
-        remove_errornous_block, sync_source_context, sync_source_state,
+        remove_errornous_block, sync_source_state,
     },
     world::MnemoWorld,
     wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump},
@@ -87,7 +88,12 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "createSourceId")]
     pub fn create_source_id(&mut self, path: String, space_id: String) -> TypstFileId {
-        let id = FileId::new(None, VirtualPath::new(&path).with_extension("typ"));
+        let id = FileId::new(RootedPath::new(
+            VirtualRoot::Project,
+            VirtualPath::new(&path)
+                .expect("Invalid virtual path")
+                .with_extension("typ"),
+        ));
         let id_wrapper = TypstFileId::new(id);
 
         let source_ctx = SourceContext::new(id, space_id.clone());
@@ -103,7 +109,10 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "createFileId")]
     pub fn create_file_id(&mut self, path: String) -> TypstFileId {
-        let id = FileId::new(None, VirtualPath::new(&path));
+        let id = FileId::new(RootedPath::new(
+            VirtualRoot::Project,
+            VirtualPath::new(&path).expect("Invalid virtual path"),
+        ));
         let id_wrapper = TypstFileId::new(id);
 
         id_wrapper
@@ -137,7 +146,16 @@ impl TypstState {
             let mut file = entry.unwrap();
             let path = file.path().unwrap();
 
-            let id = FileId::new(package_spec.clone(), VirtualPath::new(&path));
+            let root = match &package_spec {
+                Some(spec) => VirtualRoot::Package(spec.clone()),
+                None => VirtualRoot::Project,
+            };
+
+            let id = FileId::new(RootedPath::new(
+                root,
+                VirtualPath::new(path.to_str().expect("Invalid virtual path"))
+                    .expect("Invalid virtual path"),
+            ));
 
             let mut content = Vec::new();
             file.read_to_end(&mut content).unwrap();
@@ -160,12 +178,12 @@ impl TypstState {
         let mut requests = Vec::new();
 
         for source in self.world.requested_sources.iter() {
-            requests.push(TypstRequest::Source(source.as_rooted_path().to_path_buf()));
+            requests.push(TypstRequest::Source(PathBuf::from(source.get_with_slash())));
         }
         self.world.requested_sources.clear();
 
         for file in self.world.requested_files.iter() {
-            requests.push(TypstRequest::File(file.as_rooted_path().to_path_buf()));
+            requests.push(TypstRequest::File(PathBuf::from(file.get_with_slash())));
         }
         self.world.requested_files.clear();
 
@@ -334,7 +352,7 @@ impl TypstState {
                         let Some(marker_node) = node.children().next() else {
                             unreachable!()
                         };
-                        let level = marker_node.text().len();
+                        let level = marker_node.leaf_text().len();
 
                         css_class += " typ-heading-level-";
                         css_class += level.to_string().as_str();
@@ -373,20 +391,20 @@ impl TypstState {
         let document = context.paged_document.as_ref()?;
 
         let index = document
-            .pages
+            .pages()
             .iter()
             .rposition(|page| y >= page.frame.height().to_pt())
             .unwrap_or_default();
 
         let page_offset = document
-            .pages
+            .pages()
             .iter()
             .map(|page| page.frame.height().to_pt())
             .rfind(|height| y >= *height)
             .unwrap_or_default();
         y -= page_offset;
 
-        let position = Position {
+        let position = PagedPosition {
             page: NonZeroUsize::new(index + 1).unwrap(),
             point: Point::new(Abs::pt(x), Abs::pt(y)),
         };
@@ -474,9 +492,11 @@ impl TypstState {
             side,
         );
 
-        tooltip.map(|tooltip| match tooltip {
-            Tooltip::Text(text) => text.to_string(),
-            Tooltip::Code(text) => typst_syntax::highlight_html(&typst_syntax::parse(&text)),
+        tooltip.map(|tooltip| {
+            match tooltip {
+                Tooltip::Text(text) => text.to_string(),
+                Tooltip::Code(text) => typst_syntax::highlight_html(&typst_syntax::parse(&text)),
+            }
         })
     }
 
@@ -567,7 +587,7 @@ impl TypstState {
 
             document = match compiled.output {
                 Ok(document) => {
-                    let html = typst_html::html(&document);
+                    let html = typst_html::html(&document, &HtmlOptions::default());
 
                     match html {
                         Ok(html) => Some(html),
@@ -790,7 +810,10 @@ pub struct SourceContext {
 
 impl SourceContext {
     pub fn new(main_id: FileId, space_id: String) -> Self {
-        let aux_id: FileId = main_id.with_extension("$.typ");
+        let aux_id = FileId::new(RootedPath::new(
+            main_id.root().clone(),
+            main_id.vpath().with_extension("$.typ"),
+        ));
 
         Self {
             main_id,
@@ -1043,7 +1066,7 @@ impl Rgb {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_js_string(&self) -> String {
         format!("rgb({},{},{})", self.0, self.1, self.2)
     }
 }

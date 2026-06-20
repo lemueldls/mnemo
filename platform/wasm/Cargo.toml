@@ -35,15 +35,16 @@ tar = { version = "0.4" }
 time = { version = "0.3", features = ["serde", "wasm-bindgen"] }
 # tiny-skia = { version = "0.11" }
 tsify = { version = "0.5.6", features = ["js"] }
-typst = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-html = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-ide = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-macros = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-# typst-pdf = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-# typst-render = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-svg = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-syntax = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
-typst-timing = { git = "https://github.com/typst/typst.git", rev = "7ada6687" }
+typst = { version = "0.15.0" }
+typst-html = { version = "0.15.0" }
+typst-ide = { version = "0.15.0" }
+typst-layout = { version = "0.15.0" }
+typst-macros = { version = "0.15.0" }
+# typst-pdf = { version = "0.15.0" }
+# typst-render = { version = "0.15.0" }
+typst-svg = { version = "0.15.0" }
+typst-syntax = { version = "0.15.0" }
+typst-timing = { version = "0.15.0" }
 wasm-bindgen = { version = "0.2" }
 
 [dev-dependencies]
