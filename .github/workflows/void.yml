@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lemueldls/mnemo-void-package-builder:v1
+      image: ghcr.io/lemueldls/mnemo-void-package-builder:latest
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -68,7 +68,7 @@ jobs:
           mkdir -p ~/void-packages/srcpkgs/mnemo
           bash platform/void/generate-template.sh \
             "${{ steps.get-version.outputs.version }}" \
-            "${{ steps.get-checksum.outputs.checksum }}" \
+            "${{ steps.get-checksum.outputs.sha256 }}" \
             > ~/void-packages/srcpkgs/mnemo/template
 
       - name: 📐 Lint generated template
