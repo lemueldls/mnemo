@@ -1,8 +1,8 @@
 FROM ghcr.io/void-linux/void-glibc@sha256:28fdbec439e19df1016cf5d9bb059618d031c710d798fe8bd72716928b221d3b
 
-RUN xbps-install -Syu xbps \
-    && xbps-install -Syu \
-    && xbps-install -Sy \
+RUN xbps-install -Syu xbps
+RUN xbps-install -Syu
+RUN xbps-install -Sy \
     base-devel \
     bash \
     binutils \
@@ -14,13 +14,13 @@ RUN xbps-install -Syu xbps \
     jq \
     rustup \
     util-linux \
-    xtools \
-    && xbps-remove -Ooy
+    xtools
+RUN xbps-remove -Ooy
 
-RUN rustup-init -y -q \
-    && . $HOME/.cargo/env \
-    && rustup target add wasm32-unknown-unknown \
-    && rm -rf $HOME/.cargo/registry $HOME/.cargo/git
+RUN rustup-init -y -q
+RUN . $HOME/.cargo/env
+RUN rustup target add wasm32-unknown-unknown
+RUN rm -rf $HOME/.cargo/registry $HOME/.cargo/git
 
 LABEL org.opencontainers.image.source="https://github.com/lemueldls/mnemo"
 LABEL org.opencontainers.image.title="Mnemo Void Package Builder"
