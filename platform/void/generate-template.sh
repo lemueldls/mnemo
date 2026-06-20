@@ -9,6 +9,7 @@ if [[ -z "$version" || -z "$sha256sum" ]]; then
 fi
 
 cat <<EOF
+# Template file for 'mnemo'
 pkgname=mnemo
 version=$version
 revision=1
@@ -17,9 +18,9 @@ build_style=tauri
 hostmakedepends="desktop-file-utils"
 makedepends="nodejs pnpm libwebkit2gtk41-devel wget file gtk+3-devel librsvg-devel"
 depends="libwebkit2gtk41"
-short_desc="Local-first note-taking app leveraging the Typst ecosystem."
+short_desc="Local-first note-taking app leveraging the Typst ecosystem"
 maintainer="Lemuel De Los Santos <void@lemueldls.dev>"
-license="AGPL-3.0"
+license="AGPL-3.0-only"
 homepage="https://github.com/lemueldls/mnemo"
 distfiles="https://github.com/lemueldls/mnemo/archive/refs/tags/\${pkgname}-v\${version}.tar.gz"
 checksum=$sha256sum
@@ -30,8 +31,8 @@ do_build() {
 	ln -s /host/.rustup /tmp
 	. /tmp/.cargo/env
 	cargo fetch --locked --target "\$(rustc -vV | sed -n 's/host: //p')"
-  export NUXT_PUBLIC_API_BASE_URL="https://mnemo.world"
-  pnpm tauri build -b deb -c "platform/tauri/tauri.package.conf.json"
+	export NUXT_PUBLIC_API_BASE_URL="https://mnemo.world"
+	pnpm tauri build -b deb -c "platform/tauri/tauri.package.conf.json"
 }
 
 do_install() {
