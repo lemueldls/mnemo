@@ -20,7 +20,7 @@ RUN pacman -Syu --noconfirm \
     webkit2gtk-4.1 \
     sudo \
     wget \
-    libsoup \
+    libsoup3 \
     && useradd -m -G wheel -s /bin/bash runner \
     && echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && pacman -Scc --noconfirm

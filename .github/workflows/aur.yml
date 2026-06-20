@@ -27,8 +27,6 @@ jobs:
   update-aur:
     needs:
       - release-info
-    permissions:
-      packages: read
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lemueldls/mnemo-arch-aur-builder:latest
