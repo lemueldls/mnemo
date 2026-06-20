@@ -10,10 +10,10 @@ updates:
   #   schedule:
   #     interval: "monthly"
 
-  - package-ecosystem: "cargo"
-    directory: "/platform"
-    schedule:
-      interval: "weekly"
+  # - package-ecosystem: "cargo"
+  #   directory: "/platform"
+  #   schedule:
+  #     interval: "weekly"
 
   - package-ecosystem: "docker"
     directory: "/"

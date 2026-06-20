@@ -39,7 +39,7 @@ jobs:
     container: ${{ contains(matrix.os, 'ubuntu') && matrix.container_image || null }}
     steps:
       - name: 🔄 Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: 🦀🚀
-        uses: moonrepo/setup-rust@v1
+        uses: moonrepo/setup-rust@abb2d32350334249b178c401e5ec5836e0cd88d3 # v1.3.0
         with:
           targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin,wasm32-unknown-unknown' || 'wasm32-unknown-unknown' }}
 
@@ -81,7 +81,7 @@ jobs:
         uses: ./.github/actions/setup-moon
 
       - name: 🔨 Build plain executables using tauri action (publish artifacts on release)
-        uses: tauri-apps/tauri-action@73fb865345c54760d875b94642314f8c0c894afa # v0.6.1
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         if: ${{ !contains(matrix.os, 'macos') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -97,7 +97,7 @@ jobs:
           uploadPlainBinary: true
 
       - name: 🔨 Build bundles using tauri action (publish artifacts on release)
-        uses: tauri-apps/tauri-action@73fb865345c54760d875b94642314f8c0c894afa # v0.6.1
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -113,7 +113,7 @@ jobs:
 
       - name: 📤 Upload build artifacts (push or pr builds only)
         if: (!inputs.tagName)
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "bundles-${{matrix.os}}${{matrix.args}}"
           path: |
