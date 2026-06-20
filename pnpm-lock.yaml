@@ -168,8 +168,8 @@ importers:
         specifier: ^4.20260127.0
         version: 4.20260127.0
       '@moonrepo/cli':
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.3.4
+        version: 2.3.4
       '@nuxt/devtools':
         specifier: ^3.1.1
         version: 3.2.4(vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3))
@@ -1698,41 +1698,46 @@ packages:
     peerDependencies:
       rollup: ^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0
 
-  '@moonrepo/cli@2.1.1':
-    resolution: {integrity: sha512-jh46CtdeGkU9iOjjGXv5vAnmM8UpcAugYeVivQzuu37mVlmyuZGzbo222shpOfxFLhPPmyXIa8IugL6VoipqGw==}
+  '@moonrepo/cli@2.3.4':
+    resolution: {integrity: sha512-ctkyiMAS/4LbgBhz2c2YJc+7agK0nzzCy3trDL5EvZiO5HnPWrYPJ/1/03B3upNGoK6p0BM88lCu43htS75wxA==}
     hasBin: true
 
-  '@moonrepo/core-linux-arm64-gnu@2.1.1':
-    resolution: {integrity: sha512-NpOZuKdAiNlzAQ+mwLfzto5IByJGamxH1JuN/sP6qKe9aWCn8jyJaKCDLFbnLXjKMX3pXZ8qmwr/L3JHah+4/A==}
+  '@moonrepo/core-linux-arm64-gnu@2.3.4':
+    resolution: {integrity: sha512-X9iFwCuUikgM6nIHmPe3+TTon/FSmv8u6/HLmuGFr1MJnMLAGlc5oY8Q0KW+32lvepaHe5s0FA8opTjOzmDz4w==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@moonrepo/core-linux-arm64-musl@2.1.1':
-    resolution: {integrity: sha512-vsEB80VY4kJtf46IvCbmNOCAtDEQEu49iD+4z3Fvrjlc63NxmEFmLCu8gArgFlGFCR2WtafzE9qoWy+d4HOIEA==}
+  '@moonrepo/core-linux-arm64-musl@2.3.4':
+    resolution: {integrity: sha512-IVRTJXGGeBceVqqOjU/sMwaZy7ygtbDU4RyG9ege7y7dMXzaKNec5XPJcs05NuNlpqFjZv/jvP+Nn7JAkBKtEg==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@moonrepo/core-linux-x64-gnu@2.1.1':
-    resolution: {integrity: sha512-M4Fr9dPOgKWUYzAvL2HRyh025c7Qz3YMgj4qpRhDrwqmD3URrdVYiP6Fr4s3cTqF5tGMjak2NSN4Ff1nCEPauA==}
+  '@moonrepo/core-linux-x64-gnu@2.3.4':
+    resolution: {integrity: sha512-ZxD2pGbJLBdJ/EUW1Kb6KntzCM0ovXW7uMqxqVcJ5qTKRAp3g/zg8tCXXKCOanA32IUcYQ+S61TNEV4bHmqcvA==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@moonrepo/core-linux-x64-musl@2.1.1':
-    resolution: {integrity: sha512-NaucWtIakrN0NKAMlqXrlDO698+KMGziZ20SdSujZ3Rpo2zhT553xiVKbrj0r47qOTcUvPJUeWqEp+fuTArkkw==}
+  '@moonrepo/core-linux-x64-musl@2.3.4':
+    resolution: {integrity: sha512-Eu16HduvoQfr7Dq61lvCb/dGn4g3uVyrnoGzY6wDY9tcy/QMDAath3xTmq4WpnBDHaEcbtX5oXbsYvVsxMFnTQ==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@moonrepo/core-macos-arm64@2.1.1':
-    resolution: {integrity: sha512-T/GvUS9b64QkU/iJlO2UpMoS2lRC2wfk0ypfNoDuwnKhZW9H4ifu/on9UqjIP+L8QXA/jxVMSoLSQSlfMwvmmg==}
+  '@moonrepo/core-macos-arm64@2.3.4':
+    resolution: {integrity: sha512-0oUCtt4U2UeRwm4TmQdUWo07t5e7jI89rDW3WF8JEMgckcb64AkrVZJ3EoyTIpv/iPu7i3WLEAUh5/6EcHQF7A==}
     cpu: [arm64]
     os: [darwin]
 
-  '@moonrepo/core-windows-x64-msvc@2.1.1':
-    resolution: {integrity: sha512-m+SmMTatewzZ7mlnEsPn/xjVAERH1+33+9WqvFQMapnwg6l+80GRwZB4HlyRhyrz6M6JGGyg3N9UjN1Vx3nxXg==}
+  '@moonrepo/core-macos-x64@2.3.4':
+    resolution: {integrity: sha512-SmzM7GvnWLPwtLxwWYBsPFVyryQyZRctni24r1rqTlDHetNF/h4FH9hUSESOcUoly+Kt8kWhS5EwENXs36ufWw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@moonrepo/core-windows-x64-msvc@2.3.4':
+    resolution: {integrity: sha512-B9VD4V1rxNufSmWGDTmH4i4zrI5zNksbEA9oqxZcCFzdt/CvdVYn+RGaC+VibTXTzmp3B3wTeRLoFTPBZbOv/Q==}
     cpu: [x64]
     os: [win32]
 
@@ -8293,6 +8298,7 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   valibot@1.2.0:
@@ -9983,33 +9989,37 @@ snapshots:
       json5: 2.2.3
       rollup: 4.56.0
 
-  '@moonrepo/cli@2.1.1':
+  '@moonrepo/cli@2.3.4':
     dependencies:
       detect-libc: 2.1.2
     optionalDependencies:
-      '@moonrepo/core-linux-arm64-gnu': 2.1.1
-      '@moonrepo/core-linux-arm64-musl': 2.1.1
-      '@moonrepo/core-linux-x64-gnu': 2.1.1
-      '@moonrepo/core-linux-x64-musl': 2.1.1
-      '@moonrepo/core-macos-arm64': 2.1.1
-      '@moonrepo/core-windows-x64-msvc': 2.1.1
+      '@moonrepo/core-linux-arm64-gnu': 2.3.4
+      '@moonrepo/core-linux-arm64-musl': 2.3.4
+      '@moonrepo/core-linux-x64-gnu': 2.3.4
+      '@moonrepo/core-linux-x64-musl': 2.3.4
+      '@moonrepo/core-macos-arm64': 2.3.4
+      '@moonrepo/core-macos-x64': 2.3.4
+      '@moonrepo/core-windows-x64-msvc': 2.3.4
 
-  '@moonrepo/core-linux-arm64-gnu@2.1.1':
+  '@moonrepo/core-linux-arm64-gnu@2.3.4':
     optional: true
 
-  '@moonrepo/core-linux-arm64-musl@2.1.1':
+  '@moonrepo/core-linux-arm64-musl@2.3.4':
     optional: true
 
-  '@moonrepo/core-linux-x64-gnu@2.1.1':
+  '@moonrepo/core-linux-x64-gnu@2.3.4':
     optional: true
 
-  '@moonrepo/core-linux-x64-musl@2.1.1':
+  '@moonrepo/core-linux-x64-musl@2.3.4':
     optional: true
 
-  '@moonrepo/core-macos-arm64@2.1.1':
+  '@moonrepo/core-macos-arm64@2.3.4':
     optional: true
 
-  '@moonrepo/core-windows-x64-msvc@2.1.1':
+  '@moonrepo/core-macos-x64@2.3.4':
+    optional: true
+
+  '@moonrepo/core-windows-x64-msvc@2.3.4':
     optional: true
 
   '@mrleebo/prisma-ast@0.13.1':
@@ -11108,7 +11118,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -12273,7 +12283,7 @@ snapshots:
       debug: 4.4.3
       minimatch: 10.2.4
       semver: 7.7.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
       ts-api-utils: 2.4.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -12486,7 +12496,7 @@ snapshots:
       chokidar: 5.0.0
       magic-string: 0.30.21
       pathe: 2.0.3
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
       unplugin: 2.3.11
       unplugin-utils: 0.3.1
       webpack: 5.100.1(esbuild@0.25.12)
@@ -12657,7 +12667,7 @@ snapshots:
       '@vue/shared': 3.5.30
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.8
+      postcss: 8.5.13
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.5.30':
@@ -15777,7 +15787,7 @@ snapshots:
 
   rc9@3.0.0:
     dependencies:
-      defu: 6.1.4
+      defu: 6.1.7
       destr: 2.0.5
 
   rc9@3.0.1:
@@ -16026,7 +16036,7 @@ snapshots:
   rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-beta.57)(rollup@4.56.0):
     dependencies:
       open: 8.4.2
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       source-map: 0.7.6
       yargs: 17.7.2
     optionalDependencies:
@@ -16626,7 +16636,7 @@ snapshots:
   unplugin-utils@0.3.1:
     dependencies:
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   unplugin-vue-router@0.16.2(@vue/compiler-sfc@3.5.30)(vue-router@4.6.4(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)):
     dependencies:
@@ -16887,11 +16897,11 @@ snapshots:
   vite@7.3.1(@types/node@25.2.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.8
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
+      postcss: 8.5.13
       rollup: 4.56.0
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
     optionalDependencies:
       '@types/node': 25.2.0
       fsevents: 2.3.3
@@ -16957,9 +16967,9 @@ snapshots:
       mlly: 1.8.2
       muggle-string: 0.4.1
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       scule: 1.3.0
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
       unplugin: 3.0.0
       unplugin-utils: 0.3.1
       vue: 3.5.30(typescript@5.9.3)
