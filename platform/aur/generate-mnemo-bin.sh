@@ -8,6 +8,7 @@ if [[ -z "$version" || -z "$sha256sum" ]]; then
 fi
 
 cat <<EOF
+# Maintainer: Lemuel De Los Santos <aur@lemueldls.dev>
 pkgname=mnemo-bin
 pkgver=$version
 pkgrel=1

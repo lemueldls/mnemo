@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lemueldls/mnemo-void-package-builder:latest
+      image: ghcr.io/lemueldls/mnemo-void-package-builder:v1
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -55,6 +55,7 @@ jobs:
 
       - name: 🔢 Get Source Tarball Checksum
         id: get-checksum
+        shell: bash
         run: |
           URL="https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v${{ steps.get-version.outputs.version }}.tar.gz"
           echo "getting $URL"
@@ -62,6 +63,7 @@ jobs:
           echo "sha256=$SUM" >> $GITHUB_OUTPUT
 
       - name: 🌀  Generate template
+        shell: bash
         run: |
           mkdir -p ~/void-packages/srcpkgs/mnemo
           bash platform/void/generate-template.sh \

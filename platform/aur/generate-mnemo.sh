@@ -9,6 +9,7 @@ if [[ -z "$version" || -z "$sha256sum" ]]; then
 fi
 
 cat <<EOF
+# Maintainer: Lemuel De Los Santos <aur@lemueldls.dev>
 pkgname=mnemo
 pkgver=$version
 pkgrel=1
@@ -17,7 +18,7 @@ arch=('x86_64')
 url="https://github.com/lemueldls/mnemo"
 license=('AGPL-3.0')
 depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup3' 'pango' 'webkit2gtk-4.1' 'openssl')
-makedepends=('cargo' 'nodejs' 'pnpm' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup' 'webkit2gtk-4.1') options=('!strip' '!emptydirs')
+makedepends=('cargo' 'nodejs' 'pnpm' 'git' 'file' 'appmenu-gtk-module' 'libappindicator-gtk3' 'librsvg' 'base-devel' 'curl' 'wget' 'rustup') options=('!strip' '!emptydirs')
 source=("mnemo-v\$pkgver.tar.gz::https://github.com/lemueldls/mnemo/archive/refs/tags/mnemo-v\$pkgver.tar.gz")
 sha256sums=('$sha256sum')
 _builddir="\$pkgname-\$pkgname-v\$pkgver/platform"
