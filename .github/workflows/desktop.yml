@@ -25,7 +25,7 @@ jobs:
           - os: "ubuntu-latest"
             symbol: 🐧
             platform: Linux
-            container_image: ghcr.io/lemueldls/mnemo-ubuntu-builder:latest
+            # container_image: ghcr.io/lemueldls/mnemo-ubuntu-builder:latest
           - os: "macos-latest"
             args: "--target universal-apple-darwin"
             symbol: 🍏
@@ -36,10 +36,14 @@ jobs:
 
     name: ${{ matrix.symbol }}🔨
     runs-on: ${{ matrix.os }}
-    container: ${{ contains(matrix.os, 'ubuntu') && matrix.container_image || null }}
+    # container: ${{ contains(matrix.os, 'ubuntu') && matrix.container_image || null }}
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # - name: 🛡️ Mark workspace as safe
+      #   shell: bash
+      #   run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
