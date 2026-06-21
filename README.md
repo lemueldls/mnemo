@@ -63,7 +63,7 @@ pnpm build
 pnpm wrangler deploy
 ```
 
-See [NuxtHub deployment docs](https://hub.nuxt.com/docs/getting-started/deploy) for more information.
+See the [NuxtHub deployment docs](https://hub.nuxt.com/docs/getting-started/deploy) for more information.
 
 ## Installation
 
