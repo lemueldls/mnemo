@@ -11,6 +11,7 @@ pub struct FontLoader {
 }
 
 impl FontLoader {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             book: LazyHash::new(FontBook::new()),

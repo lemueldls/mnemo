@@ -20,7 +20,7 @@ pub fn run() {
                     .expect("no main window")
                     .set_focus();
             }))
-            .plugin(tauri_plugin_updater::Builder::new().build())
+            .plugin(tauri_plugin_updater::Builder::new().build());
     }
 
     // #[cfg(any(debug_assertions, feature = "devtools"))]
@@ -53,5 +53,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tauri application")
+        .expect("error while running tauri application");
 }

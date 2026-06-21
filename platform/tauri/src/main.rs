@@ -58,14 +58,15 @@ fn configure_display_backend() -> Option<String> {
         }
 
         set_env_if_absent("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+
         Some(
-        "Wayland session detected without X11; leaving Wayland enabled (set WINIT_UNIX_BACKEND/GDK_BACKEND manually if needed)."
-            .into(),
-    )
+            "Wayland session detected without X11; leaving Wayland enabled (set WINIT_UNIX_BACKEND/GDK_BACKEND manually if needed)."
+                .into(),
+        )
     } else {
-        return Some(
+        Some(
             "Wayland session detected; Set MNEMO_DISABLE_WAYLAND=1 to disable native Wayland."
                 .into(),
-        );
+        )
     }
 }

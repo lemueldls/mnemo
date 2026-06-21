@@ -42,6 +42,7 @@ pub fn chunk_by_items(
     chunk_by_items_with_ast_blocks(&mut ast_blocks, &mut divergence, context, &mut state.world)
 }
 
+#[allow(clippy::iter_with_drain)]
 #[typst_macros::time]
 pub fn chunk_by_items_with_ast_blocks(
     ast_blocks: &mut Vec<AstBlock>,
@@ -78,10 +79,9 @@ pub fn chunk_by_items_with_ast_blocks(
                 let mut bound_frame_items = bound_frame_items.into_iter().peekable();
 
                 let mut chunks = Vec::with_capacity(ast_blocks.len());
-                let mut ast_blocks = ast_blocks.iter().peekable();
                 let mut remaining_items = Vec::<BoundFrameItem>::new();
 
-                while let Some(ast_block) = ast_blocks.next() {
+                for ast_block in ast_blocks.iter() {
                     let aux_source = context.aux_source(world).unwrap();
 
                     let aux_range = &ast_block.range;
@@ -161,7 +161,7 @@ pub fn chunk_by_items_with_ast_blocks(
                         }
                     }
 
-                    remaining_items.extend(deferred_items.drain(..));
+                    remaining_items.append(&mut deferred_items);
 
                     // crate::log!("start width: {block_start_width}");
                     // crate::log!("end width: {block_end_width}");
@@ -220,7 +220,7 @@ pub fn chunk_by_items_with_ast_blocks(
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let marked_errors = try_mark_errornous(source_diagnostics.clone(), context, world);
+                let marked_errors = try_mark_errornous(&source_diagnostics, context, world);
 
                 if !marked_errors.marks.is_empty() {
                     // let source = context.main_source_mut(world).unwrap();
@@ -271,16 +271,15 @@ pub fn chunk_by_items_with_ast_blocks(
                 }
 
                 let indicies =
-                    remove_errornous_block(&ast_blocks, source_diagnostics, context, world);
+                    remove_errornous_block(ast_blocks, &source_diagnostics, context, world);
 
                 if indicies.is_empty() {
                     crate::error!("NO ERROR BLOCKS FOUND ‼️");
-
                     break;
-                } else {
-                    for idx in indicies.iter().rev() {
-                        ast_blocks.remove(*idx);
-                    }
+                }
+
+                for idx in indicies.iter().rev() {
+                    ast_blocks.remove(*idx);
                 }
 
                 (Vec::new(), Vec::new(), None)
@@ -289,7 +288,7 @@ pub fn chunk_by_items_with_ast_blocks(
     }
 
     if let Some(warnings) = compiled_warnings {
-        diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, &context, world));
+        diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, context, world));
     }
 
     // context.main_source_mut(world).unwrap().replace(&ir);
@@ -313,18 +312,15 @@ pub fn chunk_by_items_with_ast_blocks(
                     _ => block_end_height = Some(block.bounds.max.y),
                 }
 
-                match block.item {
-                    FrameItem::Tag(..) => {}
-                    _ => {
-                        match block_start_width {
-                            Some(width) if width < block.bounds.min.x => {}
-                            _ => block_start_width = Some(block.bounds.min.x),
-                        }
+                if !matches!(block.item, FrameItem::Tag(..)) {
+                    match block_start_width {
+                        Some(width) if width < block.bounds.min.x => {}
+                        _ => block_start_width = Some(block.bounds.min.x),
+                    }
 
-                        match block_end_width {
-                            Some(width) if width > block.bounds.max.x => {}
-                            _ => block_end_width = Some(block.bounds.max.x),
-                        }
+                    match block_end_width {
+                        Some(width) if width > block.bounds.max.x => {}
+                        _ => block_end_width = Some(block.bounds.max.x),
                     }
                 }
             }
@@ -463,7 +459,7 @@ fn bound_frame(
                 range,
                 bounds,
                 item: item.clone(),
-                point: point.clone(),
+                point: *point,
             };
 
             if let Some(point) = parent_point {
@@ -477,7 +473,7 @@ fn bound_frame(
 
             sink.process_tooltips(&item);
 
-            return Box::from_iter(iter::once(item));
+            return iter::once(item).collect::<Box<[_]>>();
         }
         FrameItem::Shape(shape, _span) => {
             let bbox = shape.bbox(true);
@@ -497,7 +493,7 @@ fn bound_frame(
         range,
         bounds,
         item: item.clone(),
-        point: point.clone(),
+        point: *point,
     };
 
     if let Some(point) = parent_point {
@@ -511,7 +507,7 @@ fn bound_frame(
 
     sink.process_tooltips(&item);
 
-    Box::from_iter(iter::once(item))
+    iter::once(item).collect::<Box<[_]>>()
 }
 
 #[derive(Default)]
@@ -523,15 +519,10 @@ struct BoundFrameSink {
 // #[comemo::track]
 impl BoundFrameSink {
     pub fn process_tooltips(&mut self, block: &BoundFrameItem) {
-        if let Some((name, _span)) = self.tag_stack.last() {
-            match *name {
-                "equation" => {
-                    let mut block = block.clone();
-                    block.range = block.range.map(|range| (range.start)..(range.end));
-                    self.tooltips.last_mut().unwrap().push(block);
-                }
-                _ => {}
-            }
+        if let Some((name, _span)) = self.tag_stack.last()
+            && *name == "equation"
+        {
+            self.tooltips.last_mut().unwrap().push(block.clone());
         }
     }
 
@@ -569,9 +560,9 @@ fn frame_item_range(
         FrameItem::Link(_destination, _axes) => return None,
         FrameItem::Tag(tag) => {
             match tag {
-                Tag::Start(content, flags) => {
-                    let name = content.elem().name();
-                    let span = content.span();
+                Tag::Start(c, flags) => {
+                    let name = c.elem().name();
+                    let span = c.span();
 
                     if flags.introspectable {
                         sink.push_tag(name, span);
@@ -579,9 +570,7 @@ fn frame_item_range(
 
                     // crate::log!("[START FLAGS]: {flags:?} {name}");
 
-                    match name {
-                        _ => return None,
-                    }
+                    return None;
                 }
                 Tag::End(_location, _key, flags) => {
                     if flags.introspectable

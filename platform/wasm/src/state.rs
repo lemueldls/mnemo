@@ -56,6 +56,7 @@ pub struct TypstState {
 
 #[wasm_bindgen]
 impl TypstState {
+    #[must_use]
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self::default()
@@ -87,10 +88,10 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = "createSourceId")]
-    pub fn create_source_id(&mut self, path: String, space_id: String) -> TypstFileId {
+    pub fn create_source_id(&mut self, path: &str, space_id: String) -> TypstFileId {
         let id = FileId::new(RootedPath::new(
             VirtualRoot::Project,
-            VirtualPath::new(&path)
+            VirtualPath::new(path)
                 .expect("Invalid virtual path")
                 .with_extension("typ"),
         ));
@@ -98,8 +99,7 @@ impl TypstState {
 
         let source_ctx = SourceContext::new(id, space_id.clone());
         self.world.insert_source(source_ctx.aux_id, String::new());
-        self.source_context_map
-            .insert(id_wrapper.clone(), source_ctx);
+        self.source_context_map.insert(id_wrapper, source_ctx);
 
         let space_ctx = SpaceContext::new();
         self.space_context_map.insert(space_id, space_ctx);
@@ -108,14 +108,13 @@ impl TypstState {
     }
 
     #[wasm_bindgen(js_name = "createFileId")]
-    pub fn create_file_id(&mut self, path: String) -> TypstFileId {
+    pub fn create_file_id(&mut self, path: &str) -> TypstFileId {
         let id = FileId::new(RootedPath::new(
             VirtualRoot::Project,
-            VirtualPath::new(&path).expect("Invalid virtual path"),
+            VirtualPath::new(path).expect("Invalid virtual path"),
         ));
-        let id_wrapper = TypstFileId::new(id);
 
-        id_wrapper
+        TypstFileId::new(id)
     }
 
     #[wasm_bindgen(js_name = "insertSource")]
@@ -250,7 +249,7 @@ impl TypstState {
         if let Some(warnings) = compiled_warnings {
             diagnostics.extend(TypstDiagnostic::from_diagnostics(
                 warnings,
-                &context,
+                context,
                 &self.world,
             ));
         }
@@ -262,7 +261,7 @@ impl TypstState {
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
-                    &context,
+                    context,
                     &self.world,
                 ));
             }
@@ -292,7 +291,7 @@ impl TypstState {
         if let Some(warnings) = compiled_warnings {
             diagnostics.extend(TypstDiagnostic::from_diagnostics(
                 warnings,
-                &context,
+                context,
                 &self.world,
             ));
         }
@@ -304,7 +303,7 @@ impl TypstState {
             Err(source_diagnostics) => {
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
-                    &context,
+                    context,
                     &self.world,
                 ));
             }
@@ -333,8 +332,7 @@ impl TypstState {
 
         let aux_lines = aux_source.lines();
 
-        while queue.len() > 0 {
-            let curr = queue.pop().unwrap();
+        while let Some(curr) = queue.pop() {
             let tag = typst_syntax::highlight(&curr);
             let range = curr.range();
 
@@ -345,19 +343,16 @@ impl TypstState {
 
                 let mut css_class = tag.css_class().to_string();
 
-                match tag {
-                    Tag::Heading => {
-                        let node = curr.get();
+                if tag == Tag::Heading {
+                    let node = curr.get();
 
-                        let Some(marker_node) = node.children().next() else {
-                            unreachable!()
-                        };
-                        let level = marker_node.leaf_text().len();
+                    let Some(marker_node) = node.children().next() else {
+                        unreachable!()
+                    };
+                    let level = marker_node.leaf_text().len();
 
-                        css_class += " typ-heading-level-";
-                        css_class += level.to_string().as_str();
-                    }
-                    _ => {}
+                    css_class += " typ-heading-level-";
+                    css_class += level.to_string().as_str();
                 }
 
                 Some(TypstHighlight {
@@ -533,7 +528,7 @@ impl TypstState {
 
     //     let compiled = compile(&self.world);
     //     let mut diagnostics =
-    //         TypstDiagnostic::from_diagnostics(compiled.warnings, &context, &self.world).into_vec();
+    //         TypstDiagnostic::from_diagnostics(compiled.warnings, context, &self.world).into_vec();
 
     //     let bytes = match compiled.output {
     //         Ok(document) => {
@@ -542,7 +537,7 @@ impl TypstState {
     //                 Err(source_diagnostics) => {
     //                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
     //                         source_diagnostics,
-    //                         &context,
+    //                         context,
     //                         &self.world,
     //                     ));
 
@@ -553,7 +548,7 @@ impl TypstState {
     //         Err(source_diagnostics) => {
     //             diagnostics.extend(TypstDiagnostic::from_diagnostics(
     //                 source_diagnostics,
-    //                 &context,
+    //                 context,
     //                 &self.world,
     //             ));
 
@@ -596,7 +591,7 @@ impl TypstState {
 
                             diagnostics.extend(TypstDiagnostic::from_diagnostics(
                                 source_diagnostics,
-                                &context,
+                                context,
                                 &self.world,
                             ));
 
@@ -615,14 +610,14 @@ impl TypstState {
                     diagnostics.extend(TypstDiagnostic::from_diagnostics(
                         source_diagnostics.clone(),
                         context,
-                        &mut self.world,
+                        &self.world,
                     ));
 
                     crate::error!("[ERRORS]: {diagnostics:?}");
 
                     let indicies = remove_errornous_block(
                         &ast_blocks,
-                        source_diagnostics,
+                        &source_diagnostics,
                         context,
                         &mut self.world,
                     );
@@ -641,7 +636,7 @@ impl TypstState {
         if let Some(warnings) = compiled_warnings {
             diagnostics.extend(TypstDiagnostic::from_diagnostics(
                 warnings,
-                &context,
+                context,
                 &self.world,
             ));
         }
@@ -654,11 +649,11 @@ impl TypstState {
 }
 
 impl TypstState {
-    pub fn world(&self) -> &MnemoWorld {
+    pub const fn world(&self) -> &MnemoWorld {
         &self.world
     }
 
-    pub fn world_mut(&mut self) -> &mut MnemoWorld {
+    pub const fn world_mut(&mut self) -> &mut MnemoWorld {
         &mut self.world
     }
 
@@ -672,16 +667,12 @@ impl TypstState {
 
     pub fn get_space_context(&self, id: &TypstFileId) -> &SpaceContext {
         let space_id = &self.get_source_context(id).space_id;
-        let space_ctx = self.space_context_map.get(space_id).unwrap();
-
-        space_ctx
+        self.space_context_map.get(space_id).unwrap()
     }
 
     pub fn get_space_context_mut(&mut self, id: &TypstFileId) -> &mut SpaceContext {
         let space_id = self.get_source_context(id).space_id.clone();
-        let space_ctx = self.space_context_map.get_mut(&space_id).unwrap();
-
-        space_ctx
+        self.space_context_map.get_mut(&space_id).unwrap()
     }
 }
 
@@ -704,9 +695,9 @@ impl TypstState {
             }
             RenderTarget::Pdf => {
                 formatdoc!(
-                    r#"
+                    r"
                         #set page(width:{width},height:auto,margin:16pt)
-                    "#,
+                    ",
                     width = source_ctx.width,
                 )
             }
@@ -774,6 +765,7 @@ pub struct SpaceContext {
 }
 
 impl SpaceContext {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             font: String::from("Maple Mono"),
@@ -785,12 +777,18 @@ impl SpaceContext {
     }
 }
 
+impl Default for SpaceContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Context for a single Typst source file, tracking both main and aux sources and their mapping.
 #[derive(Debug)]
 pub struct SourceContext {
-    /// FileId of the main (intermediate/compiled) source.
+    /// File id of the main (intermediate/compiled) source.
     pub main_id: FileId,
-    /// FileId of the aux (user/editor) source.
+    /// File id of the aux (user/editor) source.
     pub aux_id: FileId,
     /// The space this source belongs to.
     pub space_id: String,
@@ -809,6 +807,7 @@ pub struct SourceContext {
 }
 
 impl SourceContext {
+    #[must_use]
     pub fn new(main_id: FileId, space_id: String) -> Self {
         let aux_id = FileId::new(RootedPath::new(
             main_id.root().clone(),
@@ -844,18 +843,22 @@ impl SourceContext {
         world.files.get_mut(&self.aux_id)?.source_mut()
     }
 
+    #[must_use]
     pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
         self.index_mapper.map_main_to_aux_from_right(main_idx)
     }
 
+    #[must_use]
     pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
         self.index_mapper.map_aux_to_main_from_right(aux_idx)
     }
 
+    #[must_use]
     pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
         self.index_mapper.map_main_to_aux_from_left(main_idx)
     }
 
+    #[must_use]
     pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
         self.index_mapper.map_aux_to_main_from_left(aux_idx)
     }
@@ -898,8 +901,9 @@ pub enum TypstRequest {
     },
 }
 
-#[wasm_bindgen]
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Debug, Clone, Copy, Hash, Serialize, Deserialize)]
+#[wasm_bindgen]
 pub struct ThemeColors {
     background: Rgb,
     on_background: Rgb,
@@ -962,6 +966,8 @@ impl Default for ThemeColors {
 
 #[wasm_bindgen]
 impl ThemeColors {
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn, clippy::too_many_arguments)]
     #[wasm_bindgen(constructor)]
     pub fn new(
         background: Rgb,
@@ -1049,8 +1055,9 @@ impl fmt::Display for ThemeColors {
     }
 }
 
-#[wasm_bindgen]
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Default, Debug, Clone, Copy, Hash, Serialize, Deserialize)]
+#[wasm_bindgen]
 pub struct Rgb(u8, u8, u8);
 
 impl Rgb {
@@ -1060,11 +1067,14 @@ impl Rgb {
 
 #[wasm_bindgen]
 impl Rgb {
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
     #[wasm_bindgen(constructor)]
     pub fn new(r: u8, g: u8, b: u8) -> Self {
         Self(r, g, b)
     }
 
+    #[must_use]
     #[wasm_bindgen(js_name = toString)]
     pub fn to_js_string(&self) -> String {
         format!("rgb({},{},{})", self.0, self.1, self.2)

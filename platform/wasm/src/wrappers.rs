@@ -17,11 +17,13 @@ use crate::{state::SourceContext, world::MnemoWorld};
 pub struct TypstFileId(pub(crate) FileId);
 
 impl TypstFileId {
-    pub fn new(id: FileId) -> Self {
+    #[must_use]
+    pub const fn new(id: FileId) -> Self {
         Self(id)
     }
 
-    pub fn inner(&self) -> FileId {
+    #[must_use]
+    pub const fn inner(&self) -> FileId {
         self.0
     }
 }
@@ -43,7 +45,7 @@ impl TypstDiagnostic {
     ) -> Box<[Self]> {
         diagnostics
             .into_iter()
-            .flat_map(|mut diagnostic| {
+            .filter_map(|mut diagnostic| {
                 if diagnostic.message == "failed to load file" {
                     let source = world.source(diagnostic.span.id().unwrap()).unwrap();
                     let text = source
@@ -102,7 +104,7 @@ pub fn map_main_span(
             if main_range.is_some() {
                 break;
             } else if Some(context.main_id) == tracepoint.span.id() {
-                main_range = world.range(tracepoint.span)
+                main_range = world.range(tracepoint.span);
             }
         }
     }
@@ -117,7 +119,7 @@ pub fn map_aux_span(
     context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let aux_source = context.aux_source(&world)?;
+    let aux_source = context.aux_source(world)?;
 
     let main_range = map_main_span(span, is_error, trace, context, world);
 
@@ -153,7 +155,8 @@ pub enum TypstDiagnosticSeverity {
 }
 
 impl TypstDiagnosticSeverity {
-    pub fn from_severity(severity: Severity) -> Self {
+    #[must_use]
+    pub const fn from_severity(severity: Severity) -> Self {
         match severity {
             Severity::Error => Self::Error,
             Severity::Warning => Self::Warning,
@@ -192,7 +195,7 @@ impl TypstJump {
                     return None;
                 }
 
-                let aux_source = context.aux_source(&world)?;
+                let aux_source = context.aux_source(world)?;
                 let aux_position = context.map_main_to_aux_from_right(main_position);
                 let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
 

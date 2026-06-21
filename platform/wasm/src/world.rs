@@ -107,30 +107,28 @@ impl World for MnemoWorld {
     }
 
     fn source(&self, id: FileId) -> FileResult<Source> {
-        match self.get_source(id) {
-            Some(source) => Ok(source.clone()),
-            None => {
-                match id.root() {
-                    VirtualRoot::Project => self.requested_sources.insert(id.vpath().clone()),
-                    VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
-                };
+        if let Some(source) = self.get_source(id) {
+            Ok(source.clone())
+        } else {
+            match id.root() {
+                VirtualRoot::Project => self.requested_sources.insert(id.vpath().clone()),
+                VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
+            };
 
-                Err(FileError::Other(None))
-            }
+            Err(FileError::Other(None))
         }
     }
 
     fn file(&self, id: FileId) -> FileResult<Bytes> {
-        match self.get_file(id) {
-            Some(file) => Ok(file.bytes()),
-            None => {
-                match id.root() {
-                    VirtualRoot::Project => self.requested_files.insert(id.vpath().clone()),
-                    VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
-                };
+        if let Some(file) = self.get_file(id) {
+            Ok(file.bytes())
+        } else {
+            match id.root() {
+                VirtualRoot::Project => self.requested_files.insert(id.vpath().clone()),
+                VirtualRoot::Package(spec) => self.requested_packages.insert(spec.clone()),
+            };
 
-                Err(FileError::Other(None))
-            }
+            Err(FileError::Other(None))
         }
     }
 
@@ -140,6 +138,7 @@ impl World for MnemoWorld {
 
     fn today(&self, offset: Option<Duration>) -> Option<Datetime> {
         let now = if let Some(duration) = offset {
+            #[allow(clippy::cast_possible_truncation)]
             OffsetDateTime::now_utc()
                 .to_offset(UtcOffset::from_hms(duration.hours() as i8, 0, 0).unwrap())
         } else {
@@ -166,20 +165,22 @@ pub enum FileSlot {
 }
 
 impl FileSlot {
-    pub fn source(&self) -> Option<&Source> {
+    #[must_use]
+    pub const fn source(&self) -> Option<&Source> {
         match self {
             FileSlot::Source(source) => Some(source),
-            _ => None,
+            FileSlot::Bytes(..) => None,
         }
     }
 
-    pub fn source_mut(&mut self) -> Option<&mut Source> {
+    pub const fn source_mut(&mut self) -> Option<&mut Source> {
         match self {
             FileSlot::Source(source) => Some(source),
-            _ => None,
+            FileSlot::Bytes(..) => None,
         }
     }
 
+    #[must_use]
     pub fn bytes(&self) -> Bytes {
         match self {
             FileSlot::Source(source) => Bytes::from_string(source.text().to_string()),

@@ -1,26 +1,14 @@
-use std::{
-    cmp,
-    hash::{BuildHasher, Hash, Hasher},
-    iter,
-    ops::Range,
-};
+use std::{hash::BuildHasher, ops::Range};
 
-use ecow::eco_vec;
 use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
-use typst::{compile, diag::Severity, introspection::Tag, syntax::Span};
-// use ecow::{EcoString, eco_format};
-// use typst_library::diag::{At, SourceResult, StrResult, bail};
-// use typst_library::foundations::Repr;
-// use typst_library::introspection::Introspector;
-// use typst_syntax::Span;
-use typst_html::{HtmlDocument, HtmlElement, HtmlNode, HtmlOptions, tag};
+use typst::{compile, diag::Severity};
+use typst_html::{HtmlDocument, HtmlOptions};
 
 use crate::{
     renderer::{RenderTarget, sync_source_state},
-    state::{SourceContext, TypstState},
-    world::MnemoWorld,
+    state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
 
@@ -64,12 +52,9 @@ pub fn render(
                 vec![HTMLRangedFrame {
                     range: 0..text.len(),
                     render: HTMLFrameRender {
-                        html: element.to_string(),
-                        hash: {
-                            let mut hasher = FxBuildHasher::default().build_hasher();
-                            element.to_string().hash(&mut hasher);
-                            hasher.finish() as u32
-                        },
+                        html: element.clone(),
+                        #[allow(clippy::cast_possible_truncation)]
+                        hash: FxBuildHasher.hash_one(&element) as u32,
                     },
                 }]
             }
@@ -81,7 +66,7 @@ pub fn render(
                             diagnostic.span,
                             diagnostic.severity == Severity::Error,
                             &diagnostic.trace,
-                            &context,
+                            context,
                             &state.world,
                         )
                     })
@@ -125,7 +110,7 @@ pub fn render(
 
                 diagnostics.extend(TypstDiagnostic::from_diagnostics(
                     source_diagnostics,
-                    &context,
+                    context,
                     &state.world,
                 ));
 
@@ -146,7 +131,7 @@ pub fn render(
     if let Some(warnings) = compiled_warnings {
         diagnostics.extend(TypstDiagnostic::from_diagnostics(
             warnings,
-            &context,
+            context,
             &state.world,
         ));
     }

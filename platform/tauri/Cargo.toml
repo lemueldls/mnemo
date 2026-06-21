@@ -1,9 +1,9 @@
 [package]
-description = "Local-first note-taking app leveraging the Typst ecosystem."
 name = "mnemo"
 
 authors.workspace = true
 categories.workspace = true
+description.workspace = true
 edition.workspace = true
 keywords.workspace = true
 license.workspace = true
@@ -13,8 +13,10 @@ version.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib", "staticlib"]
 
-[build-dependencies]
-tauri-build = { version = "2.6.3", features = [] }
+[features]
+# this feature is used for production builds or when `devUrl` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -25,12 +27,13 @@ tauri-plugin-deep-link = "2.4.9"
 tauri-plugin-opener = "2.5.4"
 tauri-plugin-process = "2.3.1"
 
-[features]
-# this feature is used for production builds or when `devUrl` points to the filesystem
-# DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
-
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-cli = "2.4.1"
 tauri-plugin-single-instance = { version = "2.4.2", features = ["deep-link"] }
 tauri-plugin-updater = "2.10.1"
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[lints]
+workspace = true

@@ -109,6 +109,7 @@ pub fn render_svgs_by_items(
 }
 
 /// Renders a single SVG frame from a set of frame items and metadata.
+#[allow(clippy::too_many_arguments)]
 #[comemo::memoize]
 #[typst_macros::time]
 fn render_svg(
@@ -121,6 +122,7 @@ fn render_svg(
     document_width: Abs,
     link_resolver: Tracked<LateLinkResolver>,
 ) -> SvgRangedFrame {
+    #[allow(clippy::cast_possible_truncation)]
     let hash = FxBuildHasher.hash_one(&items) as u32;
 
     let mut frame = Frame::soft(Size::new(document_width, height));
@@ -172,7 +174,8 @@ pub struct SvgRangedFrame {
 }
 
 impl SvgRangedFrame {
-    pub fn new(range: Range<usize>, render: SvgFrameRender) -> Self {
+    #[must_use]
+    pub const fn new(range: Range<usize>, render: SvgFrameRender) -> Self {
         Self { range, render }
     }
 }
