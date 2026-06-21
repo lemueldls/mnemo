@@ -42,11 +42,13 @@ NUXT_SESSION_PASSWORD=change-me-to-a-long-random-secret
 NUXT_OAUTH_GITHUB_CLIENT_ID=
 NUXT_OAUTH_GITHUB_CLIENT_SECRET=
 NUXT_OAUTH_GITHUB_REDIRECT_URL=
+```
 
+<!-- ```dotenv
 # Optional: Polar integration (incomplete)
 NUXT_POLAR_ACCESS_TOKEN=
 NUXT_POLAR_WEBHOOK_SECRET=
-```
+``` -->
 
 ## Self-Hosting
 
