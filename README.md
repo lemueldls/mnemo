@@ -29,7 +29,7 @@ pnpm dev
 
 ### Environment Variables
 
-Create `.env` in the repository root with the following:
+Create a `.env` in the repository root with the following:
 
 ```dotenv
 # Required only for production Tauri builds.
