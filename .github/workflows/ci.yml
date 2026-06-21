@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-slim
 
     steps:
-      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+      - uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213 # v6.1.0
         with:
           configuration-path: .github/labeler.yml
 
@@ -49,7 +49,7 @@ jobs:
           fetch-depth: 1
 
       - name: 🔍 Check for changes
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
           filters: |
@@ -176,7 +176,7 @@ jobs:
     if: always()
     steps:
       - name: Check whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6
+        uses: re-actors/alls-green@a638d6464689bbb24c325bb3fe9404d63a913030
         with:
           allowed-skips: >-
             aur,
