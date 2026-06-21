@@ -27,6 +27,9 @@ jobs:
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
       - name: 📝 Extract version from tauri.conf.json
         id: get-version
         run: |
@@ -62,7 +65,7 @@ jobs:
       - name: 🛠️ Install NDK
         run: sdkmanager "ndk;27.0.11902837"
 
-      - name: 🌙 Setup Moon
+      - name: 🌙 Setup moon
         uses: ./.github/actions/setup-moon
 
       - name: 📥 Install frontend dependencies
