@@ -60,7 +60,7 @@ pub fn sync_source_state(
     prelude: &str,
     render_target: RenderTarget,
     state: &mut TypstState,
-) -> (String, Vec<AstBlock>) {
+) -> SourceSyncResult {
     let prelude = state.prelude(id, render_target) + prelude + "\n";
     let context = state.source_context_map.get_mut(id).unwrap();
 
@@ -76,7 +76,7 @@ pub fn sync_source_context(
     prelude: String,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
-) -> (String, Vec<AstBlock>) {
+) -> SourceSyncResult {
     let mut ir = prelude;
 
     context.index_mapper = IndexMapper::default();
@@ -96,6 +96,8 @@ pub fn sync_source_context(
     let children = aux_source.root().children();
     let text = aux_source.text();
 
+    let mut equation_ranges = Vec::new();
+
     let mut ast_blocks = Vec::<AstBlock>::new();
     let mut in_block = false;
 
@@ -103,6 +105,10 @@ pub fn sync_source_context(
 
     for node in children {
         let range = world.range(node.span()).unwrap();
+
+        if node.kind() == SyntaxKind::Equation {
+            equation_ranges.push(range.clone());
+        }
 
         if let Some(until_newline) = node.leaf_text().chars().position(|ch| ch == '\n') {
             in_block = false;
@@ -141,7 +147,17 @@ pub fn sync_source_context(
     //     &ir[(state.prelude(id, RenderTarget::Svg) + prelude + "\n").len()..]
     // );
 
-    (ir, ast_blocks)
+    SourceSyncResult {
+        ir,
+        ast_blocks,
+        equation_ranges,
+    }
+}
+
+pub struct SourceSyncResult {
+    pub ir: String,
+    pub ast_blocks: Vec<AstBlock>,
+    pub equation_ranges: Vec<Range<usize>>,
 }
 
 /// Wraps a block of Typst source for rendering, updating the intermediate representation and block metadata.
@@ -257,36 +273,37 @@ pub fn remove_errornous_block(
 #[typst_macros::time]
 pub fn try_mark_errornous(
     source_diagnostics: &EcoVec<SourceDiagnostic>,
+    eq_ranges: &[Range<usize>],
     context: &mut SourceContext,
     world: &mut MnemoWorld,
 ) -> MarkedErrors {
-    let main_source = context.main_source(world).unwrap();
+    let pre_text = "#math.italic(text(fill:theme.error)[";
+    let post_text = "])";
+    let pre_text_len = pre_text.len();
+    let post_text_len = post_text.len();
+    let total_wrap_len = pre_text_len + post_text_len;
+
+    if eq_ranges.is_empty() {
+        return MarkedErrors {
+            marks: Vec::new(),
+            pre_text_len,
+            post_text_len,
+            total_wrap_len,
+        };
+    }
+
+    let eq_ranges = eq_ranges
+        .iter()
+        .map(|eq_range| {
+            let main_start = context.map_aux_to_main_from_left(eq_range.start);
+            let main_end = context.map_aux_to_main_from_right(eq_range.end);
+
+            main_start..main_end
+        })
+        .collect::<Vec<_>>();
 
     let error_ranges = source_diagnostics
         .iter()
-        .filter(|diagnostic| {
-            crate::log!("span: {:?}, trace: {:?}", diagnostic.span, diagnostic.trace);
-
-            // main_source.find(diagnostic.span).is_some_and(|node| {
-            //     // crate::log!(
-            //     //     "err@{node:?}\n |> {:?}\n |> {:?}",
-            //     //     node.parent(),
-            //     //     node.parent().and_then(|node| node.parent())
-            //     // );
-
-            //     matches!(node.kind(), SyntaxKind::MathIdent)
-            //         || node.parent().is_some_and(|node| {
-            //             matches!(
-            //                 node.kind(),
-            //                 SyntaxKind::MathAttach | SyntaxKind::MathFrac | SyntaxKind::FieldAccess
-            //             )
-            //             // || node
-            //             //     .parent_kind()
-            //             //     .is_some_and(|parent| matches!(parent, SyntaxKind::Math))
-            //         })
-            // })
-            false
-        })
         .filter_map(|diagnostic| {
             map_main_span(
                 diagnostic.span,
@@ -296,17 +313,14 @@ pub fn try_mark_errornous(
                 world,
             )
         })
+        .filter(|range| {
+            #[allow(clippy::suspicious_operation_groupings)]
+            eq_ranges.iter().any(|eq_range| {
+                (range.start >= eq_range.start && range.start <= eq_range.end)
+                    || (range.end >= eq_range.start && range.end <= eq_range.end)
+            })
+        })
         .collect::<Vec<_>>();
-
-    // if error_ranges.is_empty() {
-    //     return Vec::new();
-    // }
-
-    let pre_text = "#emph(text(fill:theme.error)[";
-    let post_text = "])";
-    let pre_text_len = pre_text.len();
-    let post_text_len = post_text.len();
-    let total_wrap_len = pre_text_len + post_text_len;
 
     let marks = error_ranges
         .into_iter()
@@ -370,6 +384,7 @@ pub fn map_error_mark_index(marked_errors: &MarkedErrors, context: &mut SourceCo
     }
 }
 
+#[derive(Debug)]
 pub struct MarkedErrors {
     pub marks: Vec<ErrorMark>,
     pub pre_text_len: usize,
@@ -377,6 +392,7 @@ pub struct MarkedErrors {
     pub total_wrap_len: usize,
 }
 
+#[derive(Debug)]
 pub struct ErrorMark {
     pub text: String,
     pub main_range: Range<usize>,

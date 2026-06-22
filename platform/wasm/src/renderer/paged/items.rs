@@ -10,7 +10,7 @@ use typst_layout::PagedDocument;
 
 use crate::{
     renderer::{
-        AstBlock, RenderTarget, map_error_mark_index,
+        AstBlock, RenderTarget, SourceSyncResult, map_error_mark_index,
         paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
         remove_errornous_block, sync_source_context, try_mark_errornous,
     },
@@ -30,7 +30,11 @@ pub fn chunk_by_items(
 ) -> PagedRender {
     let prelude = state.prelude(id, render_target) + prelude + "\n";
     let context = state.source_context_map.get_mut(id).unwrap();
-    let (ir, mut ast_blocks) = sync_source_context(text, prelude, context, &mut state.world);
+    let SourceSyncResult {
+        ir,
+        mut ast_blocks,
+        equation_ranges,
+    } = sync_source_context(text, prelude, context, &mut state.world);
 
     context
         .main_source_mut(&mut state.world)
@@ -39,13 +43,20 @@ pub fn chunk_by_items(
 
     let mut divergence = 0_u8;
 
-    chunk_by_items_with_ast_blocks(&mut ast_blocks, &mut divergence, context, &mut state.world)
+    chunk_by_items_with_ast_blocks(
+        &mut ast_blocks,
+        &equation_ranges,
+        &mut divergence,
+        context,
+        &mut state.world,
+    )
 }
 
 #[allow(clippy::iter_with_drain)]
 #[typst_macros::time]
 pub fn chunk_by_items_with_ast_blocks(
     ast_blocks: &mut Vec<AstBlock>,
+    eq_ranges: &Vec<Range<usize>>,
     divergence: &mut u8,
     context: &mut SourceContext,
     world: &mut MnemoWorld,
@@ -194,20 +205,12 @@ pub fn chunk_by_items_with_ast_blocks(
                     }
                 }
 
-                // let has_errornous_marks=  false;
-
-                // let document = if has_errornous_marks && let Some(document) = context.paged_document {
-                //     document.clone();
-                // }else {
-                //     document
-                // }
-
                 (chunks, sink.tooltips, Some(document))
             }
             Err(source_diagnostics) => {
                 *divergence += 1;
-                if *divergence >= 32 {
-                    crate::error!("COULD NOT CONVERGE ‼️");
+                if *divergence >= 5 {
+                    crate::error!("COULD NOT CONVERGE AFTER 5 ITERATIONS ‼️");
 
                     break;
                 }
@@ -220,7 +223,8 @@ pub fn chunk_by_items_with_ast_blocks(
 
                 crate::error!("[ERRORS]: {diagnostics:?}");
 
-                let marked_errors = try_mark_errornous(&source_diagnostics, context, world);
+                let marked_errors =
+                    try_mark_errornous(&source_diagnostics, eq_ranges, context, world);
 
                 if !marked_errors.marks.is_empty() {
                     // let source = context.main_source_mut(world).unwrap();
@@ -229,8 +233,10 @@ pub fn chunk_by_items_with_ast_blocks(
                     map_error_mark_index(&marked_errors, context);
 
                     // let marked_text = source.text().to_string();
-                    let marked_render =
-                        chunk_by_items_with_ast_blocks(ast_blocks, divergence, context, world);
+                    // crate::log!("marked_text:\n{marked_text}");
+                    let marked_render = chunk_by_items_with_ast_blocks(
+                        ast_blocks, eq_ranges, divergence, context, world,
+                    );
 
                     context.index_mapper = index_mapper;
 
@@ -240,15 +246,16 @@ pub fn chunk_by_items_with_ast_blocks(
                         let start_byte = mark.main_range.start;
                         let end_byte = mark.main_range.end;
 
-                        // fill with whitespace to stablize ranges
+                        // fill with placeholder to stablize ranges
                         let byte_length = end_byte - start_byte;
-                        let whitespace = " ".repeat(byte_length);
-                        source.edit(start_byte..end_byte, &whitespace);
+                        let placeholder = format!("{:>byte_length$}", "\"\"");
+                        source.edit(start_byte..end_byte, &placeholder);
                     }
 
                     // let stable_text = source.text().to_string();
-                    let stable_render =
-                        chunk_by_items_with_ast_blocks(ast_blocks, divergence, context, world);
+                    let stable_render = chunk_by_items_with_ast_blocks(
+                        ast_blocks, eq_ranges, divergence, context, world,
+                    );
 
                     let source = context.main_source_mut(world).unwrap();
 
@@ -400,15 +407,15 @@ fn bound_frame(
             let bbox = text.bbox();
 
             Rect::new(
-                // not a mistake: text runs use a y-up coordinate system
+                // text runs use a y-up coordinate system
                 Point::new(point.x + bbox.min.x, point.y + bbox.max.y),
                 Point::new(point.x + bbox.max.x, point.y + bbox.min.y),
             )
         }
         FrameItem::Group(group) => {
             if group.transform.is_identity() {
-                let point = if let Some(parnet_point) = parent_point {
-                    parnet_point + *point
+                let point = if let Some(parent_point) = parent_point {
+                    parent_point + *point
                 } else {
                     *point
                 };
@@ -477,6 +484,7 @@ fn bound_frame(
         }
         FrameItem::Shape(shape, _span) => {
             let bbox = shape.bbox(true);
+
             Rect::new(
                 Point::new(point.x + bbox.min.x, point.y + bbox.min.y),
                 Point::new(point.x + bbox.max.x, point.y + bbox.max.y),
@@ -518,11 +526,11 @@ struct BoundFrameSink {
 
 // #[comemo::track]
 impl BoundFrameSink {
-    pub fn process_tooltips(&mut self, block: &BoundFrameItem) {
+    pub fn process_tooltips(&mut self, item: &BoundFrameItem) {
         if let Some((name, _span)) = self.tag_stack.last()
             && *name == "equation"
         {
-            self.tooltips.last_mut().unwrap().push(block.clone());
+            self.tooltips.last_mut().unwrap().push(item.clone());
         }
     }
 

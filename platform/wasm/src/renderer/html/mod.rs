@@ -7,7 +7,7 @@ use typst::{compile, diag::Severity};
 use typst_html::{HtmlDocument, HtmlOptions};
 
 use crate::{
-    renderer::{RenderTarget, sync_source_state},
+    renderer::{RenderTarget, SourceSyncResult, sync_source_state},
     state::TypstState,
     wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
 };
@@ -18,7 +18,8 @@ pub fn render(
     prelude: &str,
     state: &mut TypstState,
 ) -> HTMLRenderResult {
-    let (ir, ast_blocks) = sync_source_state(id, text, prelude, RenderTarget::Html, state);
+    let SourceSyncResult { ir, ast_blocks, .. } =
+        sync_source_state(id, text, prelude, RenderTarget::Html, state);
 
     let mut last_document = None;
 

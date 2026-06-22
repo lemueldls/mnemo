@@ -4,6 +4,7 @@
   "collaborators": [
     "Lemuel DLS"
   ],
+  "description": "Local-first note-taking app leveraging the Typst ecosystem.",
   "version": "0.3.4",
   "license": "AGPL-3.0",
   "repository": {

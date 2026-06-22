@@ -31,7 +31,7 @@ use wasm_bindgen::prelude::*;
 use crate::{
     index_mapper::IndexMapper,
     renderer::{
-        RenderTarget,
+        RenderTarget, SourceSyncResult,
         html::{self, RenderHtmlResult},
         paged::svg::{SvgRangedFrame, render_svgs_by_items},
         remove_errornous_block, sync_source_state,
@@ -233,7 +233,8 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkPaged")]
     pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_state(id, text, prelude, RenderTarget::Svg, self);
+        let SourceSyncResult { ir, .. } =
+            sync_source_state(id, text, prelude, RenderTarget::Svg, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -275,7 +276,8 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkHTML")]
     pub fn check_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let (ir, _) = sync_source_state(id, text, prelude, RenderTarget::Html, self);
+        let SourceSyncResult { ir, .. } =
+            sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
@@ -561,7 +563,8 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = renderHtml)]
     pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
-        let (ir, ast_blocks) = sync_source_state(id, text, prelude, RenderTarget::Html, self);
+        let SourceSyncResult { ir, ast_blocks, .. } =
+            sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let mut diagnostics = Vec::new();
         let mut compiled_warnings = None;
