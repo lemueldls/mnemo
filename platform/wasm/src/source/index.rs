@@ -2,22 +2,22 @@ use std::cmp;
 
 /// Maps byte indices between aux (user/editor) and main (compiled) sources.
 ///
-/// Maintains inflection points to efficiently translate positions in either direction.
+/// Maintains anchor points to efficiently translate positions in either direction.
 #[derive(Debug, Default, Clone)]
 pub struct IndexMapper {
-    inflections: Vec<(usize, usize)>,
+    anchors: Vec<(usize, usize)>,
 }
 
 impl IndexMapper {
-    /// Add an inflection point mapping an aux (editor) index to a main (compiled) index.
-    pub fn push_aux_to_main(&mut self, aux_idx: usize, main_idx: usize) {
-        self.inflections.push((aux_idx, main_idx));
+    /// Add an anchor point mapping an aux (editor) index to a main (compiled) index.
+    pub fn push_aux_to_main_unchecked(&mut self, aux_idx: usize, main_idx: usize) {
+        self.anchors.push((aux_idx, main_idx));
     }
 
-    /// Add an inflection point mapping an aux (editor) index to a main (compiled) index, keeping the inflections sorted by aux index.
-    pub fn push_aux_to_main_sorted(&mut self, aux: usize, main: usize) {
-        match self.inflections.binary_search_by_key(&aux, |&(a, _)| a) {
-            Ok(idx) | Err(idx) => self.inflections.insert(idx, (aux, main)),
+    /// Add an anchor point mapping an aux (editor) index to a main (compiled) index, keeping the anchors sorted by aux index.
+    pub fn push_aux_to_main(&mut self, aux: usize, main: usize) {
+        match self.anchors.binary_search_by_key(&aux, |&(a, _)| a) {
+            Ok(idx) | Err(idx) => self.anchors.insert(idx, (aux, main)),
         }
     }
 
@@ -26,12 +26,12 @@ impl IndexMapper {
     /// Returns the closest aux index corresponding to the given main index.
     #[must_use]
     pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
-        if self.inflections.is_empty() {
+        if self.anchors.is_empty() {
             return main_idx;
         }
 
-        // Binary search for the rightmost inflection where mapped_idx <= main_idx
-        let search = self.inflections.binary_search_by(|&(_, mapped_idx)| {
+        // Binary search for the rightmost anchor where mapped_idx <= main_idx
+        let search = self.anchors.binary_search_by(|&(_, mapped_idx)| {
             if mapped_idx > main_idx {
                 cmp::Ordering::Greater
             } else {
@@ -50,7 +50,7 @@ impl IndexMapper {
             }
         };
 
-        let (aux_idx, mapped_idx) = self.inflections[idx];
+        let (aux_idx, mapped_idx) = self.anchors[idx];
 
         aux_idx + (main_idx - mapped_idx)
     }
@@ -60,12 +60,12 @@ impl IndexMapper {
     /// Returns the closest main index corresponding to the given aux index.
     #[must_use]
     pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
-        if self.inflections.is_empty() {
+        if self.anchors.is_empty() {
             return aux_idx;
         }
 
-        // Binary search for the rightmost inflection where mapped_idx <= aux_idx
-        let search = self.inflections.binary_search_by(|&(mapped_idx, _)| {
+        // Binary search for the rightmost anchor where mapped_idx <= aux_idx
+        let search = self.anchors.binary_search_by(|&(mapped_idx, _)| {
             if mapped_idx > aux_idx {
                 cmp::Ordering::Greater
             } else {
@@ -84,7 +84,7 @@ impl IndexMapper {
             }
         };
 
-        let (mapped_idx, main_idx) = self.inflections[idx];
+        let (mapped_idx, main_idx) = self.anchors[idx];
 
         main_idx + (aux_idx - mapped_idx)
     }
@@ -96,8 +96,8 @@ impl IndexMapper {
     pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
         let mut mapped_idx = None;
 
-        let mut inflections = self.inflections.iter().peekable();
-        while let Some((aux_idx, mapped_main_idx)) = inflections.next() {
+        let mut anchors = self.anchors.iter().peekable();
+        while let Some((aux_idx, mapped_main_idx)) = anchors.next() {
             let mapped_aux_idx = aux_idx + (main_idx - mapped_main_idx);
 
             if main_idx == *mapped_main_idx {
@@ -105,7 +105,7 @@ impl IndexMapper {
                 break;
             }
 
-            if let Some((_, next_mapped_main_idx)) = inflections.peek() {
+            if let Some((_, next_mapped_main_idx)) = anchors.peek() {
                 if main_idx < *next_mapped_main_idx {
                     mapped_idx = Some(mapped_aux_idx);
                     break;
@@ -126,8 +126,8 @@ impl IndexMapper {
     pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
         let mut mapped_idx = None;
 
-        let mut inflections = self.inflections.iter().peekable();
-        while let Some((mapped_aux_idx, main_idx)) = inflections.next() {
+        let mut anchors = self.anchors.iter().peekable();
+        while let Some((mapped_aux_idx, main_idx)) = anchors.next() {
             let mapped_main_idx = main_idx + (aux_idx - mapped_aux_idx);
 
             if aux_idx == *mapped_aux_idx {
@@ -135,7 +135,7 @@ impl IndexMapper {
                 break;
             }
 
-            if let Some((next_mapped_aux_idx, _)) = inflections.peek() {
+            if let Some((next_mapped_aux_idx, _)) = anchors.peek() {
                 if aux_idx < *next_mapped_aux_idx {
                     mapped_idx = Some(mapped_main_idx);
                     break;
@@ -150,7 +150,7 @@ impl IndexMapper {
     }
 
     pub fn bump_main_from(&mut self, main_idx: usize, delta: usize) {
-        for (_, mapped_main_idx) in &mut self.inflections {
+        for (_, mapped_main_idx) in &mut self.anchors {
             if *mapped_main_idx >= main_idx {
                 *mapped_main_idx += delta;
             }
@@ -161,80 +161,80 @@ impl IndexMapper {
 #[test]
 fn test_push_and_map_aux_to_main_from_right() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(5, 10);
-    mapper.push_aux_to_main(10, 20);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(5, 10);
+    mapper.push_aux_to_main_unchecked(10, 20);
 
-    // Exact inflection points
+    // Exact anchor points
     assert_eq!(mapper.map_aux_to_main_from_right(0), 0);
     assert_eq!(mapper.map_aux_to_main_from_right(5), 10);
     assert_eq!(mapper.map_aux_to_main_from_right(10), 20);
 
-    // Between inflection points
+    // Between anchor points
     assert_eq!(mapper.map_aux_to_main_from_right(7), 12);
     assert_eq!(mapper.map_aux_to_main_from_right(9), 14);
 
-    // Before first inflection
+    // Before first anchor
     assert_eq!(mapper.map_aux_to_main_from_right(2), 2);
 }
 
 #[test]
 fn test_push_and_map_main_to_aux_from_right() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(5, 10);
-    mapper.push_aux_to_main(10, 20);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(5, 10);
+    mapper.push_aux_to_main_unchecked(10, 20);
 
-    // Exact inflection points
+    // Exact anchor points
     assert_eq!(mapper.map_main_to_aux_from_right(0), 0);
     assert_eq!(mapper.map_main_to_aux_from_right(10), 5);
     assert_eq!(mapper.map_main_to_aux_from_right(20), 10);
 
-    // Between inflection points
+    // Between anchor points
     assert_eq!(mapper.map_main_to_aux_from_right(12), 7);
     assert_eq!(mapper.map_main_to_aux_from_right(19), 14);
 
-    // Before first inflection
+    // Before first anchor
     assert_eq!(mapper.map_main_to_aux_from_right(2), 2);
 }
 
 #[test]
 fn test_map_aux_to_main_from_left() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(5, 10);
-    mapper.push_aux_to_main(10, 20);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(5, 10);
+    mapper.push_aux_to_main_unchecked(10, 20);
 
-    // Exact inflection points
+    // Exact anchor points
     assert_eq!(mapper.map_aux_to_main_from_left(0), 0);
     assert_eq!(mapper.map_aux_to_main_from_left(5), 10);
     assert_eq!(mapper.map_aux_to_main_from_left(10), 20);
 
-    // Between inflection points
+    // Between anchor points
     assert_eq!(mapper.map_aux_to_main_from_left(7), 12);
     assert_eq!(mapper.map_aux_to_main_from_left(9), 14);
 
-    // Before first inflection
+    // Before first anchor
     assert_eq!(mapper.map_aux_to_main_from_left(2), 2);
 }
 
 #[test]
 fn test_map_main_to_aux_from_left() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(5, 10);
-    mapper.push_aux_to_main(10, 20);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(5, 10);
+    mapper.push_aux_to_main_unchecked(10, 20);
 
-    // Exact inflection points
+    // Exact anchor points
     assert_eq!(mapper.map_main_to_aux_from_left(0), 0);
     assert_eq!(mapper.map_main_to_aux_from_left(10), 5);
     assert_eq!(mapper.map_main_to_aux_from_left(20), 10);
 
-    // Between inflection points
+    // Between anchor points
     assert_eq!(mapper.map_main_to_aux_from_left(12), 7);
     assert_eq!(mapper.map_main_to_aux_from_left(19), 14);
 
-    // Before first inflection
+    // Before first anchor
     assert_eq!(mapper.map_main_to_aux_from_left(2), 2);
 }
 
@@ -249,45 +249,45 @@ fn test_empty_mapper_returns_index() {
 }
 
 #[test]
-fn test_duplicate_aux_inflections() {
+fn test_duplicate_aux_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(0, 5); // same aux, different main
-    mapper.push_aux_to_main(5, 10);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(0, 5); // same aux, different main
+    mapper.push_aux_to_main_unchecked(5, 10);
 
-    // Should use the last inflection with aux=0 for right search
+    // Should use the last anchor with aux=0 for right search
     assert_eq!(mapper.map_aux_to_main_from_right(0), 5);
     assert_eq!(mapper.map_main_to_aux_from_right(5), 0);
 
-    // After inflections
+    // After anchors
     assert_eq!(mapper.map_aux_to_main_from_right(6), 11);
     assert_eq!(mapper.map_main_to_aux_from_right(12), 7);
 }
 
 #[test]
-fn test_duplicate_main_inflections() {
+fn test_duplicate_main_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(5, 0); // same main, different aux
-    mapper.push_aux_to_main(10, 10);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(5, 0); // same main, different aux
+    mapper.push_aux_to_main_unchecked(10, 10);
 
-    // Should use the last inflection with main=0 for right search
+    // Should use the last anchor with main=0 for right search
     assert_eq!(mapper.map_main_to_aux_from_right(0), 5);
     assert_eq!(mapper.map_aux_to_main_from_right(5), 0);
 
-    // After inflections
+    // After anchors
     assert_eq!(mapper.map_main_to_aux_from_right(12), 12);
     assert_eq!(mapper.map_aux_to_main_from_right(12), 12);
 }
 
 #[test]
-fn test_duplicate_aux_and_main_inflections() {
+fn test_duplicate_aux_and_main_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(0, 0); // identical inflection
-    mapper.push_aux_to_main(5, 5);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(0, 0); // identical anchor
+    mapper.push_aux_to_main_unchecked(5, 5);
 
-    // Should use the last inflection for right search
+    // Should use the last anchor for right search
     assert_eq!(mapper.map_aux_to_main_from_right(0), 0);
     assert_eq!(mapper.map_main_to_aux_from_right(0), 0);
     assert_eq!(mapper.map_aux_to_main_from_right(5), 5);
@@ -295,63 +295,63 @@ fn test_duplicate_aux_and_main_inflections() {
 }
 
 #[test]
-fn test_single_inflection() {
+fn test_single_anchor() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(3, 7);
+    mapper.push_aux_to_main_unchecked(3, 7);
 
-    // Before inflection
+    // Before anchor
     assert_eq!(mapper.map_aux_to_main_from_right(2), 2);
     assert_eq!(mapper.map_main_to_aux_from_right(6), 6);
 
-    // At inflection
+    // At anchor
     assert_eq!(mapper.map_aux_to_main_from_right(3), 7);
     assert_eq!(mapper.map_main_to_aux_from_right(7), 3);
 
-    // After inflection
+    // After anchor
     assert_eq!(mapper.map_aux_to_main_from_right(5), 9);
     assert_eq!(mapper.map_main_to_aux_from_right(9), 5);
 }
 
 #[test]
-fn test_non_monotonic_inflections() {
+fn test_non_monotonic_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(10, 5); // non-monotonic: aux increases, main decreases
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(10, 5); // non-monotonic: aux increases, main decreases
 
-    // Before second inflection
+    // Before second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(5), 5);
     assert_eq!(mapper.map_main_to_aux_from_right(3), 3);
 
-    // At second inflection
+    // At second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(10), 5);
     assert_eq!(mapper.map_main_to_aux_from_right(5), 10);
 
-    // After second inflection
+    // After second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(12), 7);
     assert_eq!(mapper.map_main_to_aux_from_right(7), 12);
 }
 
 #[test]
-fn test_sparse_inflections() {
+fn test_sparse_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(100, 200);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(100, 200);
 
-    // Before second inflection
+    // Before second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(50), 50);
     assert_eq!(mapper.map_main_to_aux_from_right(150), 150);
 
-    // At second inflection
+    // At second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(100), 200);
     assert_eq!(mapper.map_main_to_aux_from_right(200), 100);
 
-    // After second inflection
+    // After second anchor
     assert_eq!(mapper.map_aux_to_main_from_right(110), 210);
     assert_eq!(mapper.map_main_to_aux_from_right(210), 110);
 }
 
 #[test]
-fn test_empty_inflections_edge_cases() {
+fn test_empty_anchors_edge_cases() {
     let mapper = IndexMapper::default();
 
     assert_eq!(mapper.map_aux_to_main_from_right(0), 0);
@@ -365,13 +365,13 @@ fn test_empty_inflections_edge_cases() {
 }
 
 #[test]
-fn test_multiple_close_inflections() {
+fn test_multiple_close_anchors() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(0, 0);
-    mapper.push_aux_to_main(1, 2);
-    mapper.push_aux_to_main(2, 4);
+    mapper.push_aux_to_main_unchecked(0, 0);
+    mapper.push_aux_to_main_unchecked(1, 2);
+    mapper.push_aux_to_main_unchecked(2, 4);
 
-    // Test all mappings between inflections
+    // Test all mappings between anchors
     assert_eq!(mapper.map_aux_to_main_from_right(0), 0);
     assert_eq!(mapper.map_aux_to_main_from_right(1), 2);
     assert_eq!(mapper.map_aux_to_main_from_right(2), 4);
@@ -385,15 +385,15 @@ fn test_multiple_close_inflections() {
 #[test]
 fn test_duplicate_aux_indices_different_main() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(2, 10);
-    mapper.push_aux_to_main(2, 20);
-    mapper.push_aux_to_main(4, 30);
+    mapper.push_aux_to_main_unchecked(2, 10);
+    mapper.push_aux_to_main_unchecked(2, 20);
+    mapper.push_aux_to_main_unchecked(4, 30);
 
-    // Should use the last inflection with aux=2 for right search
+    // Should use the last anchor with aux=2 for right search
     assert_eq!(mapper.map_aux_to_main_from_right(2), 20);
     assert_eq!(mapper.map_main_to_aux_from_right(20), 2);
 
-    // After inflections
+    // After anchors
     assert_eq!(mapper.map_aux_to_main_from_right(4), 30);
     assert_eq!(mapper.map_main_to_aux_from_right(30), 4);
 }
@@ -401,15 +401,15 @@ fn test_duplicate_aux_indices_different_main() {
 #[test]
 fn test_duplicate_main_indices_different_aux() {
     let mut mapper = IndexMapper::default();
-    mapper.push_aux_to_main(1, 5);
-    mapper.push_aux_to_main(3, 5);
-    mapper.push_aux_to_main(5, 10);
+    mapper.push_aux_to_main_unchecked(1, 5);
+    mapper.push_aux_to_main_unchecked(3, 5);
+    mapper.push_aux_to_main_unchecked(5, 10);
 
-    // Should use the last inflection with main=5 for right search
+    // Should use the last anchor with main=5 for right search
     assert_eq!(mapper.map_main_to_aux_from_right(5), 3);
     assert_eq!(mapper.map_aux_to_main_from_right(3), 5);
 
-    // After inflections
+    // After anchors
     assert_eq!(mapper.map_main_to_aux_from_right(10), 5);
     assert_eq!(mapper.map_aux_to_main_from_right(5), 10);
 }

@@ -7,7 +7,7 @@ use std::{collections::VecDeque, hash::Hash, ops::Range};
 use typst::layout::{FrameItem, Point, Rect};
 use typst_layout::PagedDocument;
 
-use crate::wrappers::TypstDiagnostic;
+use crate::bindings::TypstDiagnostic;
 
 /// Result of paged rendering, containing chunks, diagnostics, and document context.
 #[derive(Debug)]

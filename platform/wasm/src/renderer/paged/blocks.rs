@@ -14,7 +14,7 @@ use crate::{
         sync_source_context,
     },
     state::TypstState,
-    wrappers::{TypstDiagnostic, TypstFileId},
+    bindings::{TypstDiagnostic, TypstFileId},
 };
 
 pub fn chunk_by_blocks(

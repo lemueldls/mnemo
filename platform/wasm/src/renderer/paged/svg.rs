@@ -12,12 +12,10 @@ use typst_svg::svg_in_html;
 
 use super::BoundFrameItem;
 use crate::{
-    renderer::{
-        RenderTarget,
-        paged::{PagedRender, items::chunk_by_items},
-    },
+    bindings::{TypstDiagnostic, TypstFileId},
+    renderer::paged::{PagedRender, items::chunk_by_items},
+    source::RenderTarget,
     state::TypstState,
-    wrappers::{TypstDiagnostic, TypstFileId},
 };
 
 /// Renders SVG frames for each chunked item in a Typst document.

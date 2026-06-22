@@ -9,14 +9,14 @@ use typst::{
 use typst_layout::PagedDocument;
 
 use crate::{
+    bindings::{TypstDiagnostic, TypstFileId},
     renderer::{
-        AstBlock, RenderTarget, SourceSyncResult, map_error_mark_index,
         paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
-        remove_errornous_block, sync_source_context, try_mark_errornous,
+        recovery::{map_error_mark_index, remove_errornous_block, try_mark_errornous},
     },
-    state::{SourceContext, TypstState},
+    source::{AstBlock, RenderTarget, SourceContext, SourceSyncResult, sync_source_context},
+    state::TypstState,
     world::MnemoWorld,
-    wrappers::{TypstDiagnostic, TypstFileId},
 };
 
 /// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error divergence.

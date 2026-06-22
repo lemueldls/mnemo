@@ -1,11 +1,12 @@
 extern crate alloc;
 
+pub mod bindings;
 pub mod fonts;
-pub mod index_mapper;
 pub mod renderer;
+pub mod source;
 pub mod state;
+pub mod theme;
 pub mod world;
-pub mod wrappers;
 
 mod utils;
 

@@ -12,7 +12,7 @@ use typst::{
 use typst_ide::IdeWorld;
 use typst_syntax::{VirtualPath, VirtualRoot, package::PackageSpec};
 
-use crate::{fonts::FontLoader, index_mapper::IndexMapper};
+use crate::{fonts::FontLoader, source::IndexMapper};
 
 /// Implementation of Typst's `World` for Mnemo, managing all loaded files, fonts, and compilation state.
 #[derive(Debug)]

@@ -16,7 +16,7 @@ fn benchmark_renderers(c: &mut Criterion) {
         include_bytes!("../../../public/fonts/new-cm/otf/NewCMMath-Regular.otf").to_vec(),
     );
 
-    let id = state.create_file_id(filename);
+    let id = state.create_file_id(&filename);
     state.insert_source(&id, text.clone());
 
     let prelude = "";
@@ -26,7 +26,7 @@ fn benchmark_renderers(c: &mut Criterion) {
     // });
 
     c.bench_function("render by items", |b| {
-        b.iter(|| render_svgs_by_items(&id, &text, prelude, &mut state))
+        b.iter(|| render_svgs_by_items(&id, &text, prelude, &mut state));
     });
 }
 

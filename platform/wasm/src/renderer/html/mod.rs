@@ -7,9 +7,9 @@ use typst::{compile, diag::Severity};
 use typst_html::{HtmlDocument, HtmlOptions};
 
 use crate::{
-    renderer::{RenderTarget, SourceSyncResult, sync_source_state},
+    source::{RenderTarget, SourceSyncResult, sync_source_state},
     state::TypstState,
-    wrappers::{TypstDiagnostic, TypstFileId, map_main_span},
+    bindings::{TypstDiagnostic, TypstFileId, map_main_span},
 };
 
 pub fn render(

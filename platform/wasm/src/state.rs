@@ -1,5 +1,4 @@
 use std::{
-    fmt,
     io::{Cursor, Read},
     num::NonZeroUsize,
     path::PathBuf,
@@ -18,7 +17,7 @@ use typst::{
     foundations::Bytes,
     introspection::{HtmlPosition, PagedPosition},
     layout::{Abs, Point},
-    syntax::{FileId, Source, VirtualPath, package::PackageSpec},
+    syntax::{FileId, VirtualPath, package::PackageSpec},
 };
 use typst_html::{HtmlDocument, HtmlOptions};
 use typst_ide::Tooltip;
@@ -29,15 +28,18 @@ use typst_syntax::{LinkedNode, RootedPath, Side, Tag, VirtualRoot};
 use wasm_bindgen::prelude::*;
 
 use crate::{
-    index_mapper::IndexMapper,
-    renderer::{
-        RenderTarget, SourceSyncResult,
-        html::{self, RenderHtmlResult},
-        paged::svg::{SvgRangedFrame, render_svgs_by_items},
-        remove_errornous_block, sync_source_state,
+    bindings::{
+        CheckResult, CompileHTMLResult, CompilePagedResult, TypstCompletion, TypstDiagnostic,
+        TypstFileId, TypstHighlight, TypstJump,
     },
+    renderer::{
+        html::{self, RenderHtmlResult},
+        paged::svg::render_svgs_by_items,
+        recovery::remove_errornous_block,
+    },
+    source::{RenderTarget, SourceContext, SourceSyncResult, SpaceContext, sync_source_state},
+    theme::ThemeColors,
     world::MnemoWorld,
-    wrappers::{TypstCompletion, TypstDiagnostic, TypstFileId, TypstHighlight, TypstJump},
 };
 
 /// Global state for Typst rendering and compilation in Mnemo.
@@ -752,145 +754,6 @@ impl TypstState {
     }
 }
 
-/// Per-space configuration for rendering (fonts, theme, locale).
-#[derive(Debug, Hash)]
-pub struct SpaceContext {
-    /// Default font for this space.
-    pub font: String,
-    /// Math font for this space.
-    pub math_font: Option<String>,
-    /// Code font for this space.
-    pub code_font: Option<String>,
-    /// Theme colors for this space.
-    pub theme: ThemeColors,
-    /// Locale for this space.
-    pub locale: String,
-}
-
-impl SpaceContext {
-    #[must_use]
-    pub fn new() -> Self {
-        Self {
-            font: String::from("Maple Mono"),
-            math_font: Some(String::from("New Computer Modern Math")),
-            code_font: Some(String::from("Maple Mono")),
-            theme: ThemeColors::default(),
-            locale: String::from("en"),
-        }
-    }
-}
-
-impl Default for SpaceContext {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Context for a single Typst source file, tracking both main and aux sources and their mapping.
-#[derive(Debug)]
-pub struct SourceContext {
-    /// File id of the main (intermediate/compiled) source.
-    pub main_id: FileId,
-    /// File id of the aux (user/editor) source.
-    pub aux_id: FileId,
-    /// The space this source belongs to.
-    pub space_id: String,
-    /// Index mapping between aux and main sources.
-    pub index_mapper: IndexMapper,
-    /// Cached paged document for this source, if available.
-    pub paged_document: Option<PagedDocument>,
-    /// Cached HTML document for this source, if available.
-    pub html_document: Option<HtmlDocument>,
-    /// Page width setting for this source.
-    pub width: String,
-    /// Page height setting for this source.
-    pub height: Option<f64>,
-    /// Text size for rendering.
-    pub text_size: f64,
-}
-
-impl SourceContext {
-    #[must_use]
-    pub fn new(main_id: FileId, space_id: String) -> Self {
-        let aux_id = FileId::new(RootedPath::new(
-            main_id.root().clone(),
-            main_id.vpath().with_extension("$.typ"),
-        ));
-
-        Self {
-            main_id,
-            aux_id,
-            space_id,
-            index_mapper: IndexMapper::default(),
-            paged_document: None,
-            html_document: None,
-            width: String::from("auto"),
-            height: None,
-            text_size: 16.0,
-        }
-    }
-
-    pub fn main_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
-        world.files.get(&self.main_id)?.source()
-    }
-
-    pub fn main_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
-        world.files.get_mut(&self.main_id)?.source_mut()
-    }
-
-    pub fn aux_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
-        world.files.get(&self.aux_id)?.source()
-    }
-
-    pub fn aux_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
-        world.files.get_mut(&self.aux_id)?.source_mut()
-    }
-
-    #[must_use]
-    pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
-        self.index_mapper.map_main_to_aux_from_right(main_idx)
-    }
-
-    #[must_use]
-    pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
-        self.index_mapper.map_aux_to_main_from_right(aux_idx)
-    }
-
-    #[must_use]
-    pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
-        self.index_mapper.map_main_to_aux_from_left(main_idx)
-    }
-
-    #[must_use]
-    pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
-        self.index_mapper.map_aux_to_main_from_left(aux_idx)
-    }
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompilePagedResult {
-    pub frames: Vec<SvgRangedFrame>,
-    pub tooltips: Vec<SvgRangedFrame>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-    pub requests: Vec<TypstRequest>,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CompileHTMLResult {
-    pub frames: Vec<html::HTMLRangedFrame>,
-    pub diagnostics: Vec<TypstDiagnostic>,
-    pub requests: Vec<TypstRequest>,
-}
-
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CheckResult {
-    pub diagnostics: Vec<TypstDiagnostic>,
-    pub requests: Vec<TypstRequest>,
-}
-
 #[derive(Tsify, Serialize, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type", content = "value", rename_all = "kebab-case")]
@@ -902,192 +765,6 @@ pub enum TypstRequest {
         name: String,
         version: String,
     },
-}
-
-#[allow(clippy::unsafe_derive_deserialize)]
-#[derive(Debug, Clone, Copy, Hash, Serialize, Deserialize)]
-#[wasm_bindgen]
-pub struct ThemeColors {
-    background: Rgb,
-    on_background: Rgb,
-
-    outline: Rgb,
-    outline_variant: Rgb,
-
-    primary: Rgb,
-    on_primary: Rgb,
-    primary_container: Rgb,
-    on_primary_container: Rgb,
-
-    secondary: Rgb,
-    on_secondary: Rgb,
-    secondary_container: Rgb,
-    on_secondary_container: Rgb,
-
-    tertiary: Rgb,
-    on_tertiary: Rgb,
-    tertiary_container: Rgb,
-    on_tertiary_container: Rgb,
-
-    error: Rgb,
-    on_error: Rgb,
-    error_container: Rgb,
-    on_error_container: Rgb,
-}
-
-impl Default for ThemeColors {
-    fn default() -> Self {
-        Self {
-            background: Rgb::WHITE,
-            on_background: Rgb::BLACK,
-
-            outline: Rgb::BLACK,
-            outline_variant: Rgb::BLACK,
-
-            primary: Rgb::BLACK,
-            on_primary: Rgb::WHITE,
-            primary_container: Rgb::BLACK,
-            on_primary_container: Rgb::WHITE,
-
-            secondary: Rgb::BLACK,
-            on_secondary: Rgb::WHITE,
-            secondary_container: Rgb::BLACK,
-            on_secondary_container: Rgb::WHITE,
-
-            tertiary: Rgb::BLACK,
-            on_tertiary: Rgb::WHITE,
-            tertiary_container: Rgb::BLACK,
-            on_tertiary_container: Rgb::WHITE,
-
-            error: Rgb::BLACK,
-            on_error: Rgb::WHITE,
-            error_container: Rgb::BLACK,
-            on_error_container: Rgb::WHITE,
-        }
-    }
-}
-
-#[wasm_bindgen]
-impl ThemeColors {
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn, clippy::too_many_arguments)]
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        background: Rgb,
-        on_background: Rgb,
-
-        outline: Rgb,
-        outline_variant: Rgb,
-
-        primary: Rgb,
-        on_primary: Rgb,
-        primary_container: Rgb,
-        on_primary_container: Rgb,
-
-        secondary: Rgb,
-        on_secondary: Rgb,
-        secondary_container: Rgb,
-        on_secondary_container: Rgb,
-
-        tertiary: Rgb,
-        on_tertiary: Rgb,
-        tertiary_container: Rgb,
-        on_tertiary_container: Rgb,
-
-        error: Rgb,
-        on_error: Rgb,
-        error_container: Rgb,
-        on_error_container: Rgb,
-    ) -> Self {
-        Self {
-            background,
-            on_background,
-
-            outline,
-            outline_variant,
-
-            primary,
-            on_primary,
-            primary_container,
-            on_primary_container,
-
-            secondary,
-            on_secondary,
-            secondary_container,
-            on_secondary_container,
-
-            tertiary,
-            on_tertiary,
-            tertiary_container,
-            on_tertiary_container,
-
-            error,
-            on_error,
-            error_container,
-            on_error_container,
-        }
-    }
-}
-
-impl fmt::Display for ThemeColors {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "(background:{},on-background:{},outline:{},outline-variant:{},primary:{},on-primary:{},primary-container:{},on-primary-container:{},secondary:{},on-secondary:{},secondary-container:{},on-secondary-container:{},tertiary:{},on-tertiary:{},tertiary-container:{},on-tertiary-container:{},error:{},on-error:{},error-container:{},on-error-container:{})",
-            self.background,
-            self.on_background,
-            self.outline,
-            self.outline_variant,
-            self.primary,
-            self.on_primary,
-            self.primary_container,
-            self.on_primary_container,
-            self.secondary,
-            self.on_secondary,
-            self.secondary_container,
-            self.on_secondary_container,
-            self.tertiary,
-            self.on_tertiary,
-            self.tertiary_container,
-            self.on_tertiary_container,
-            self.error,
-            self.on_error,
-            self.error_container,
-            self.on_error_container,
-        )
-    }
-}
-
-#[allow(clippy::unsafe_derive_deserialize)]
-#[derive(Default, Debug, Clone, Copy, Hash, Serialize, Deserialize)]
-#[wasm_bindgen]
-pub struct Rgb(u8, u8, u8);
-
-impl Rgb {
-    pub const BLACK: Self = Self(0, 0, 0);
-    pub const WHITE: Self = Self(255, 255, 255);
-}
-
-#[wasm_bindgen]
-impl Rgb {
-    #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
-    #[wasm_bindgen(constructor)]
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Self(r, g, b)
-    }
-
-    #[must_use]
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_js_string(&self) -> String {
-        format!("rgb({},{},{})", self.0, self.1, self.2)
-    }
-}
-
-impl fmt::Display for Rgb {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "rgb({},{},{})", self.0, self.1, self.2)
-    }
 }
 
 #[derive(Tsify, Serialize, Deserialize)]

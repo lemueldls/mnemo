@@ -5,10 +5,9 @@ use std::{
 };
 
 use mnemo_wasm::{
-    renderer::paged::{items::chunk_by_items, svg::render_svgs_by_items},
-    state::TypstState,
-    world::MnemoWorld,
+    renderer::paged::svg::render_svgs_by_items, state::TypstState, world::MnemoWorld,
 };
+use typst::WorldExt;
 use typst_syntax::Span;
 use walkdir::WalkDir;
 
@@ -42,12 +41,12 @@ pub fn snapshot(state: &mut TypstState) {
 
     for entry in walk {
         let path = entry.path();
-        let mut text = fs::read_to_string(&path).unwrap();
+        let mut text = fs::read_to_string(path).unwrap();
 
         let relative_path = path.strip_prefix(&root).unwrap();
 
         let id = state.create_source_id(
-            relative_path.to_string_lossy().to_string(),
+            relative_path.to_string_lossy().as_ref(),
             String::from("test"),
         );
         state.insert_source(&id, text.clone());
@@ -78,7 +77,8 @@ pub fn snapshot(state: &mut TypstState) {
 fn resolve_span(world: &MnemoWorld, span: Span) -> Option<(String, u32)> {
     let id = span.id()?;
     let source = world.get_source(id)?;
-    let range = source.range(span)?;
+    let range = world.range(span)?;
     let line = source.lines().byte_to_line(range.start)?;
+
     Some((format!("{id:?}"), line as u32 + 1))
 }
