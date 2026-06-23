@@ -14,12 +14,13 @@ use crate::{
         paged::{BoundFrameItem, FrameItemsChunk, PagedRender},
         recovery::{map_error_mark_index, remove_errornous_block, try_mark_errornous},
     },
-    source::{AstBlock, RenderTarget, SourceContext, SourceSyncResult, sync_source_context},
+    source::{AstBlock, RenderTarget, SourceContext, SynthResult, sync_source_context},
     state::TypstState,
     world::MnemoWorld,
 };
 
-/// Chunks a Typst document into renderable blocks by frame items, handling diagnostics and error divergence.
+/// Chunks a Typst document into renderable blocks by frame items, handling
+/// diagnostics and error divergence.
 #[typst_macros::time]
 pub fn chunk_by_items(
     id: &TypstFileId,
@@ -30,21 +31,21 @@ pub fn chunk_by_items(
 ) -> PagedRender {
     let prelude = state.prelude(id, render_target) + prelude + "\n";
     let context = state.source_context_map.get_mut(id).unwrap();
-    let SourceSyncResult {
-        ir,
-        mut ast_blocks,
+    let SynthResult {
+        synth,
+        mut blocks,
         equation_ranges,
     } = sync_source_context(text, prelude, context, &mut state.world);
 
     context
-        .main_source_mut(&mut state.world)
+        .synth_source_mut(&mut state.world)
         .unwrap()
-        .replace(&ir);
+        .replace(&synth);
 
     let mut divergence = 0_u8;
 
-    chunk_by_items_with_ast_blocks(
-        &mut ast_blocks,
+    chunk_by_items_with_blocks(
+        &mut blocks,
         &equation_ranges,
         &mut divergence,
         context,
@@ -54,8 +55,8 @@ pub fn chunk_by_items(
 
 #[allow(clippy::iter_with_drain)]
 #[typst_macros::time]
-pub fn chunk_by_items_with_ast_blocks(
-    ast_blocks: &mut Vec<AstBlock>,
+pub fn chunk_by_items_with_blocks(
+    blocks: &mut Vec<AstBlock>,
     eq_ranges: &Vec<Range<usize>>,
     divergence: &mut u8,
     context: &mut SourceContext,
@@ -89,21 +90,21 @@ pub fn chunk_by_items_with_ast_blocks(
 
                 let mut bound_frame_items = bound_frame_items.into_iter().peekable();
 
-                let mut chunks = Vec::with_capacity(ast_blocks.len());
+                let mut chunks = Vec::with_capacity(blocks.len());
                 let mut remaining_items = Vec::<BoundFrameItem>::new();
 
-                for ast_block in ast_blocks.iter() {
-                    let aux_source = context.aux_source(world).unwrap();
+                for block in blocks.iter() {
+                    let raw_source = context.raw_source(world).unwrap();
 
-                    let aux_range = &ast_block.range;
-                    let aux_lines = aux_source.lines();
-                    let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start).unwrap();
-                    let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end).unwrap();
-                    let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+                    let raw_range = &block.range;
+                    let raw_lines = raw_source.lines();
+                    let raw_start_utf16 = raw_lines.byte_to_utf16(raw_range.start).unwrap();
+                    let raw_end_utf16 = raw_lines.byte_to_utf16(raw_range.end).unwrap();
+                    let raw_range_utf16 = raw_start_utf16..raw_end_utf16;
 
-                    // let main_range_start = context.map_aux_to_main_from_left(aux_range.start);
-                    let main_range_end = context.map_aux_to_main_from_right(aux_range.end);
-                    // let main_range = main_range_start..main_range_end;
+                    // let synth_range_start = context.map_raw_to_synth_from_left(raw_range.start);
+                    let synth_range_end = context.map_raw_to_synth_from_right(raw_range.end);
+                    // let synth_range = synth_range_start..synth_range_end;
 
                     let mut chunk_items = VecDeque::<BoundFrameItem>::new();
                     let mut deferred_items = Vec::<BoundFrameItem>::new();
@@ -115,7 +116,7 @@ pub fn chunk_by_items_with_ast_blocks(
 
                     while let Some(frame_block) = bound_frame_items.peek() {
                         if let Some(range) = &frame_block.range {
-                            if range.end <= main_range_end {
+                            if range.end <= synth_range_end {
                                 let frame_block = bound_frame_items.next().unwrap();
 
                                 // crate::log!("{frame_block:#?}");
@@ -163,7 +164,7 @@ pub fn chunk_by_items_with_ast_blocks(
                         _ => {}
                     }
 
-                    if ast_block.is_inline {
+                    if block.is_inline {
                         let length = remaining_items.len();
                         chunk_items.reserve(length.saturating_add(1));
 
@@ -186,7 +187,7 @@ pub fn chunk_by_items_with_ast_blocks(
 
                     chunks.push(FrameItemsChunk {
                         items: chunk_items,
-                        range: aux_range_utf16,
+                        range: raw_range_utf16,
                         width: block_width,
                         height: block_height,
                         x_offset: block_start_width,
@@ -227,24 +228,23 @@ pub fn chunk_by_items_with_ast_blocks(
                     try_mark_errornous(&source_diagnostics, eq_ranges, context, world);
 
                 if !marked_errors.marks.is_empty() {
-                    // let source = context.main_source_mut(world).unwrap();
+                    // let source = context.synth_source_mut(world).unwrap();
 
                     let index_mapper = context.index_mapper.clone();
                     map_error_mark_index(&marked_errors, context);
 
                     // let marked_text = source.text().to_string();
                     // crate::log!("marked_text:\n{marked_text}");
-                    let marked_render = chunk_by_items_with_ast_blocks(
-                        ast_blocks, eq_ranges, divergence, context, world,
-                    );
+                    let marked_render =
+                        chunk_by_items_with_blocks(blocks, eq_ranges, divergence, context, world);
 
                     context.index_mapper = index_mapper;
 
-                    let source = context.main_source_mut(world).unwrap();
+                    let source = context.synth_source_mut(world).unwrap();
 
                     for mark in &marked_errors.marks {
-                        let start_byte = mark.main_range.start;
-                        let end_byte = mark.main_range.end;
+                        let start_byte = mark.synth_range.start;
+                        let end_byte = mark.synth_range.end;
 
                         // fill with placeholder to stablize ranges
                         let byte_length = end_byte - start_byte;
@@ -253,14 +253,13 @@ pub fn chunk_by_items_with_ast_blocks(
                     }
 
                     // let stable_text = source.text().to_string();
-                    let stable_render = chunk_by_items_with_ast_blocks(
-                        ast_blocks, eq_ranges, divergence, context, world,
-                    );
+                    let stable_render =
+                        chunk_by_items_with_blocks(blocks, eq_ranges, divergence, context, world);
 
-                    let source = context.main_source_mut(world).unwrap();
+                    let source = context.synth_source_mut(world).unwrap();
 
                     for mark in marked_errors.marks {
-                        let start_byte = mark.main_range.start;
+                        let start_byte = mark.synth_range.start;
                         source.edit(start_byte..(start_byte + mark.text.len()), &mark.text);
                     }
 
@@ -277,8 +276,7 @@ pub fn chunk_by_items_with_ast_blocks(
                     };
                 }
 
-                let indicies =
-                    remove_errornous_block(ast_blocks, &source_diagnostics, context, world);
+                let indicies = remove_errornous_block(blocks, &source_diagnostics, context, world);
 
                 if indicies.is_empty() {
                     crate::error!("NO ERROR BLOCKS FOUND ‼️");
@@ -286,7 +284,7 @@ pub fn chunk_by_items_with_ast_blocks(
                 }
 
                 for idx in indicies.iter().rev() {
-                    ast_blocks.remove(*idx);
+                    blocks.remove(*idx);
                 }
 
                 (Vec::new(), Vec::new(), None)
@@ -298,7 +296,7 @@ pub fn chunk_by_items_with_ast_blocks(
         diagnostics.extend(TypstDiagnostic::from_diagnostics(warnings, context, world));
     }
 
-    // context.main_source_mut(world).unwrap().replace(&ir);
+    // context.synth_source_mut(world).unwrap().replace(&ir);
 
     let tooltips = tooltips
         .into_iter()
@@ -337,7 +335,7 @@ pub fn chunk_by_items_with_ast_blocks(
             let block_end_width = block_end_width?.to_pt();
             let block_end_height = block_end_height?.to_pt();
 
-            let main_range = items
+            let synth_range = items
                 .iter()
                 .filter_map(|item| item.range.clone())
                 .fold(None::<Range<usize>>, |range, item_range| {
@@ -353,25 +351,25 @@ pub fn chunk_by_items_with_ast_blocks(
                 })
                 .unwrap_or(0..0);
 
-            // crate::log!("main_range: {main_range:?}");
+            // crate::log!("synth_range: {synth_range:?}");
 
-            let aux_start = context.map_main_to_aux_from_left(main_range.start);
-            let aux_end = context.map_main_to_aux_from_right(main_range.end);
+            let raw_start = context.map_synth_to_raw_from_left(synth_range.start);
+            let raw_end = context.map_synth_to_raw_from_right(synth_range.end);
 
-            // crate::log!("aux_range: {:?}", aux_start..aux_end);
+            // crate::log!("raw_range: {:?}", raw_start..raw_end);
 
-            let aux_source = context.aux_source(world)?;
+            let raw_source = context.raw_source(world)?;
 
-            let aux_lines = aux_source.lines();
-            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_start - 1)?;
-            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_end + 1)?;
-            let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+            let raw_lines = raw_source.lines();
+            let raw_start_utf16 = raw_lines.byte_to_utf16(raw_start - 1)?;
+            let raw_end_utf16 = raw_lines.byte_to_utf16(raw_end + 1)?;
+            let raw_range_utf16 = raw_start_utf16..raw_end_utf16;
 
-            // crate::log!("aux_range_utf16: {:?}", aux_start_utf16..aux_end_utf16);
+            // crate::log!("raw_range_utf16: {:?}", raw_start_utf16..raw_end_utf16);
 
             Some(FrameItemsChunk {
                 items: VecDeque::from(items),
-                range: aux_range_utf16,
+                range: raw_range_utf16,
                 width: block_end_width - block_start_width,
                 height: block_end_height - block_start_height,
                 x_offset: block_start_width,
@@ -390,7 +388,8 @@ pub fn chunk_by_items_with_ast_blocks(
     }
 }
 
-/// Recursively bounds a frame item, producing frame blocks with position and range.
+/// Recursively bounds a frame item, producing frame blocks with position and
+/// range.
 // #[comemo::memoize]
 #[typst_macros::time]
 fn bound_frame(
@@ -544,7 +543,8 @@ impl BoundFrameSink {
     }
 }
 
-/// Determines the source range for a frame item, using tag stack for introspectable tags.
+/// Determines the source range for a frame item, using tag stack for
+/// introspectable tags.
 #[typst_macros::time]
 fn frame_item_range(
     item: &FrameItem,
@@ -602,7 +602,7 @@ fn frame_item_range(
                     // if let Ok(content) = content {
                     //     let span = content.span();
 
-                    //     if Some(context.main_id) == span.id() {
+                    //     if Some(context.synth_id) == span.id() {
                     //         let range = world.range(span);
 
                     //         return range.map(|range| range.end..range.end);
@@ -617,7 +617,7 @@ fn frame_item_range(
         }
     };
 
-    if Some(context.main_id) == span.id() {
+    if Some(context.synth_id) == span.id() {
         world.range(span)
     } else {
         None

@@ -9,12 +9,12 @@ use typst::{
 
 // use typst_svg::{svg, svg_merged};
 use crate::{
+    bindings::{TypstDiagnostic, TypstFileId},
     renderer::{
         paged::{FrameRender, RangedFrame, RenderResult},
         sync_source_context,
     },
     state::TypstState,
-    bindings::{TypstDiagnostic, TypstFileId},
 };
 
 pub fn chunk_by_blocks(
@@ -23,7 +23,7 @@ pub fn chunk_by_blocks(
     prelude: &str,
     state: &mut TypstState,
 ) -> RenderResult {
-    let (ir, ast_blocks) = sync_source_context(id, text, prelude, state);
+    let (ir, blocks) = sync_source_context(id, text, prelude, state);
 
     let mut last_document = None;
 
@@ -33,7 +33,7 @@ pub fn chunk_by_blocks(
 
     let context = state.source_context_map.get_mut(id).unwrap();
 
-    let chunks = ast_blocks
+    let chunks = blocks
         .into_iter()
         .filter_map(|block| {
             match context.height {
@@ -41,25 +41,25 @@ pub fn chunk_by_blocks(
                 _ => {}
             }
 
-            let aux_source = context.aux_source(&state.world)?;
+            let raw_source = context.raw_source(&state.world)?;
 
-            let aux_range = block.range;
-            let aux_lines = aux_source.lines();
-            let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start)?;
-            let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end)?;
-            let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+            let raw_range = block.range;
+            let raw_lines = raw_source.lines();
+            let raw_start_utf16 = raw_lines.byte_to_utf16(raw_range.start)?;
+            let raw_end_utf16 = raw_lines.byte_to_utf16(raw_range.end)?;
+            let raw_range_utf16 = raw_start_utf16..raw_end_utf16;
 
-            let mut end_byte = context.map_aux_to_main(aux_range.end);
+            let mut end_byte = context.map_raw_to_synth(raw_range.end);
             if block.is_inline {
                 // TODO: proper offsetting (?)
                 end_byte += 29;
             }
 
-            let source = context.main_source_mut(&mut state.world)?;
+            let source = context.synth_source_mut(&mut state.world)?;
             let source_len = source.text().len();
             source.edit(source_len..source_len, ir.get(source_len..end_byte)?);
 
-            // crate::log!("[RANGE_UTF8]: {aux_range:?}");
+            // crate::log!("[RANGE_UTF8]: {raw_range:?}");
             // crate::log!("[RANGE_UTF16]: {range_utf16:?}");
 
             let compiled = compile::<PagedDocument>(&state.world);
@@ -82,7 +82,7 @@ pub fn chunk_by_blocks(
                         return None;
                     }
 
-                    let chunk = Some((aux_range_utf16, height, y_offset));
+                    let chunk = Some((raw_range_utf16, height, y_offset));
 
                     y_offset = document_height - 1.0;
                     last_document = Some(document);
@@ -98,11 +98,11 @@ pub fn chunk_by_blocks(
 
                     // crate::error!("[ERRORS]: {diagnostics:?}");
 
-                    let start_byte = context.map_aux_to_main(aux_range.start);
+                    let start_byte = context.map_raw_to_synth(raw_range.start);
 
                     let range_delta = end_byte - start_byte;
 
-                    let source = context.main_source_mut(&mut state.world)?;
+                    let source = context.synth_source_mut(&mut state.world)?;
                     source.edit(start_byte..end_byte, &(" ".repeat(range_delta)));
 
                     None
@@ -154,8 +154,8 @@ pub fn chunk_by_blocks(
     }
 
     context.document = last_document;
-    if let Some(main_source) = context.main_source_mut(&mut state.world) {
-        main_source.replace(&ir);
+    if let Some(synth_source) = context.synth_source_mut(&mut state.world) {
+        synth_source.replace(&ir);
     }
 
     RenderResult {

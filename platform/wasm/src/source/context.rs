@@ -38,40 +38,67 @@ impl Default for SpaceContext {
     }
 }
 
-/// Context for a single Typst source file, tracking both main and aux sources and their mapping.
+/// Per-note rendering context.
+///
+/// Holds the two source file identities (raw and synth), the current page
+/// geometry, the offset map tracking their correspondence, and the last
+/// successfully compiled documents for this note.
+///
+/// One `SourceContext` exists per open note. It is created by
+/// [`TypstState::create_source_id`] and stored
+/// in `TypstState::source_context_map`.
 #[derive(Debug)]
 pub struct SourceContext {
-    /// File id of the main (intermediate/compiled) source.
-    pub main_id: FileId,
-    /// File id of the aux (user/editor) source.
-    pub aux_id: FileId,
-    /// The space this source belongs to.
+    /// File ID for the synth: the synthesized intermediate source
+    /// that Typst actually compiles. Built fresh by
+    /// `sync_source_context` on each recompile.
+    pub synth_id: FileId,
+
+    /// File ID for the raw source: exactly what the user typed.
+    /// Never modified by the renderer. All positions returned to the
+    /// editor are in raw coordinates.
+    pub raw_id: FileId,
+
+    /// Which space (notebook) this note belongs to. Used to look up
+    /// the associated [`SpaceContext`] for theme and font settings.
     pub space_id: String,
-    /// Index mapping between aux and main sources.
+
+    /// Tracks the byte-offset correspondence between the raw source
+    /// and the synth. Rebuilt on each call to `sync_source_context`.
     pub index_mapper: IndexMapper,
-    /// Cached paged document for this source, if available.
+
+    /// The most recently compiled paged document for this note, if any.
+    /// Cached here so hover and jump-to-source queries can avoid
+    /// recompiling.
     pub paged_document: Option<PagedDocument>,
-    /// Cached HTML document for this source, if available.
+
+    /// The most recently compiled HTML document for this note, if any.
     pub html_document: Option<HtmlDocument>,
-    /// Page width setting for this source.
+
+    /// Rendered page width, as a Typst dimension string (e.g. `"420pt"`
+    /// or `"auto"`). Updated by [`TypstState::resize`].
     pub width: String,
-    /// Page height setting for this source.
+
+    /// Maximum render height in points, if the note is in a fixed-height
+    /// context (e.g. a locked sticky note). `None` for scrolling notes.
     pub height: Option<f64>,
-    /// Text size for rendering.
+
+    /// Body text size in points. Drives `#set text(size: ...)` in the
+    /// generated prelude.
     pub text_size: f64,
 }
 
 impl SourceContext {
     #[must_use]
-    pub fn new(main_id: FileId, space_id: String) -> Self {
-        let aux_id = FileId::new(RootedPath::new(
-            main_id.root().clone(),
-            main_id.vpath().with_extension("$.typ"),
+    pub fn new(synth_id: FileId, space_id: String) -> Self {
+        let raw_id = FileId::new(RootedPath::new(
+            synth_id.root().clone(),
+            synth_id.vpath().with_extension("$.typ"),
         ));
 
         Self {
-            main_id,
-            aux_id,
+            synth_id,
+            raw_id,
             space_id,
             index_mapper: IndexMapper::default(),
             paged_document: None,
@@ -82,39 +109,39 @@ impl SourceContext {
         }
     }
 
-    pub fn main_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
-        world.files.get(&self.main_id)?.source()
+    pub fn synth_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
+        world.files.get(&self.synth_id)?.source()
     }
 
-    pub fn main_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
-        world.files.get_mut(&self.main_id)?.source_mut()
+    pub fn synth_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
+        world.files.get_mut(&self.synth_id)?.source_mut()
     }
 
-    pub fn aux_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
-        world.files.get(&self.aux_id)?.source()
+    pub fn raw_source<'a>(&self, world: &'a MnemoWorld) -> Option<&'a Source> {
+        world.files.get(&self.raw_id)?.source()
     }
 
-    pub fn aux_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
-        world.files.get_mut(&self.aux_id)?.source_mut()
-    }
-
-    #[must_use]
-    pub fn map_main_to_aux_from_right(&self, main_idx: usize) -> usize {
-        self.index_mapper.map_main_to_aux_from_right(main_idx)
+    pub fn raw_source_mut<'a>(&self, world: &'a mut MnemoWorld) -> Option<&'a mut Source> {
+        world.files.get_mut(&self.raw_id)?.source_mut()
     }
 
     #[must_use]
-    pub fn map_aux_to_main_from_right(&self, aux_idx: usize) -> usize {
-        self.index_mapper.map_aux_to_main_from_right(aux_idx)
+    pub fn map_synth_to_raw_from_right(&self, synth_idx: usize) -> usize {
+        self.index_mapper.map_synth_to_raw_from_right(synth_idx)
     }
 
     #[must_use]
-    pub fn map_main_to_aux_from_left(&self, main_idx: usize) -> usize {
-        self.index_mapper.map_main_to_aux_from_left(main_idx)
+    pub fn map_raw_to_synth_from_right(&self, raw_idx: usize) -> usize {
+        self.index_mapper.map_raw_to_synth_from_right(raw_idx)
     }
 
     #[must_use]
-    pub fn map_aux_to_main_from_left(&self, aux_idx: usize) -> usize {
-        self.index_mapper.map_aux_to_main_from_left(aux_idx)
+    pub fn map_synth_to_raw_from_left(&self, synth_idx: usize) -> usize {
+        self.index_mapper.map_synth_to_raw_from_left(synth_idx)
+    }
+
+    #[must_use]
+    pub fn map_raw_to_synth_from_left(&self, raw_idx: usize) -> usize {
+        self.index_mapper.map_raw_to_synth_from_left(raw_idx)
     }
 }

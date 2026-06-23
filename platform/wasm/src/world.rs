@@ -14,16 +14,17 @@ use typst_syntax::{VirtualPath, VirtualRoot, package::PackageSpec};
 
 use crate::{fonts::FontLoader, source::IndexMapper};
 
-/// Implementation of Typst's `World` for Mnemo, managing all loaded files, fonts, and compilation state.
+/// Implementation of Typst's `World` for Mnemo, managing all loaded files,
+/// fonts, and compilation state.
 #[derive(Debug)]
 pub struct MnemoWorld {
-    /// The main (compiled/intermediate) source file id.
-    pub main_id: Option<FileId>,
-    /// The aux (user/editor/origin) source file id.
-    pub aux_id: Option<FileId>,
+    /// The synth source file id.
+    pub synth_id: Option<FileId>,
+    /// The raw (user/editor/origin) source file id.
+    pub raw_id: Option<FileId>,
     /// All loaded files (sources and binaries) by id.
     pub files: FxHashMap<FileId, FileSlot>,
-    /// Index mapping between aux and main sources.
+    /// Index mapping between raw and synth sources.
     pub index_mapper: IndexMapper,
     /// The Typst standard library for this world.
     library: LazyHash<Library>,
@@ -44,8 +45,8 @@ impl Default for MnemoWorld {
         let library = Library::builder().with_features(features).build();
 
         Self {
-            main_id: None,
-            aux_id: None,
+            synth_id: None,
+            raw_id: None,
             files: FxHashMap::default(),
             index_mapper: IndexMapper::default(),
             library: LazyHash::new(library),
@@ -103,7 +104,7 @@ impl World for MnemoWorld {
     }
 
     fn main(&self) -> FileId {
-        self.main_id.unwrap()
+        self.synth_id.unwrap()
     }
 
     fn source(&self, id: FileId) -> FileResult<Source> {

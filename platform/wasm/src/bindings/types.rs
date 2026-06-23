@@ -56,7 +56,7 @@ impl TypstDiagnostic {
                     diagnostic.message = eco_format!("failed to load file: {text}");
                 }
 
-                map_aux_span(
+                map_raw_span(
                     diagnostic.span,
                     diagnostic.severity == Severity::Error,
                     &diagnostic.trace,
@@ -80,7 +80,7 @@ impl TypstDiagnostic {
     }
 }
 
-pub fn map_main_span(
+pub fn map_synth_span(
     span: impl Into<DiagSpan>,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
@@ -89,59 +89,59 @@ pub fn map_main_span(
 ) -> Option<Range<usize>> {
     let span = span.into();
 
-    let mut main_range = if Some(context.main_id) == span.id() {
+    let mut synth_range = if Some(context.synth_id) == span.id() {
         world.range(span)
     } else {
         None
     };
 
-    if main_range.is_none() {
+    if synth_range.is_none() {
         if !is_error {
             return None;
         }
 
         for tracepoint in trace {
-            if main_range.is_some() {
+            if synth_range.is_some() {
                 break;
-            } else if Some(context.main_id) == tracepoint.span.id() {
-                main_range = world.range(tracepoint.span);
+            } else if Some(context.synth_id) == tracepoint.span.id() {
+                synth_range = world.range(tracepoint.span);
             }
         }
     }
 
-    main_range
+    synth_range
 }
 
-pub fn map_aux_span(
+pub fn map_raw_span(
     span: impl Into<DiagSpan>,
     is_error: bool,
     trace: &[Spanned<Tracepoint>],
     context: &SourceContext,
     world: &MnemoWorld,
 ) -> Option<Range<usize>> {
-    let aux_source = context.aux_source(world)?;
+    let raw_source = context.raw_source(world)?;
 
-    let main_range = map_main_span(span, is_error, trace, context, world);
+    let synth_range = map_synth_span(span, is_error, trace, context, world);
 
-    let aux_range = if let Some(main_range) = main_range {
-        let aux_start = context.map_main_to_aux_from_right(main_range.start);
-        let aux_end = context.map_main_to_aux_from_left(main_range.end);
+    let raw_range = if let Some(synth_range) = synth_range {
+        let raw_start = context.map_synth_to_raw_from_right(synth_range.start);
+        let raw_end = context.map_synth_to_raw_from_left(synth_range.end);
 
-        aux_start..aux_end
+        raw_start..raw_end
     } else {
         if !is_error {
             return None;
         }
 
-        0..aux_source.text().len()
+        0..raw_source.text().len()
     };
 
-    let aux_lines = aux_source.lines();
-    let aux_start_utf16 = aux_lines.byte_to_utf16(aux_range.start)?;
-    let aux_end_utf16 = aux_lines.byte_to_utf16(aux_range.end)?;
-    let aux_range_utf16 = aux_start_utf16..aux_end_utf16;
+    let raw_lines = raw_source.lines();
+    let raw_start_utf16 = raw_lines.byte_to_utf16(raw_range.start)?;
+    let raw_end_utf16 = raw_lines.byte_to_utf16(raw_range.end)?;
+    let raw_range_utf16 = raw_start_utf16..raw_end_utf16;
 
-    Some(aux_range_utf16)
+    Some(raw_range_utf16)
 }
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
@@ -190,18 +190,18 @@ impl TypstJump {
         world: &MnemoWorld,
     ) -> Option<Self> {
         match jump {
-            typst_ide::Jump::File(id, main_position) => {
-                if id != context.main_id {
+            typst_ide::Jump::File(id, synth_position) => {
+                if id != context.synth_id {
                     return None;
                 }
 
-                let aux_source = context.aux_source(world)?;
-                let aux_position = context.map_main_to_aux_from_right(main_position);
-                let aux_position_utf16 = aux_source.lines().byte_to_utf16(aux_position)?;
+                let raw_source = context.raw_source(world)?;
+                let raw_position = context.map_synth_to_raw_from_right(synth_position);
+                let raw_position_utf16 = raw_source.lines().byte_to_utf16(raw_position)?;
 
                 Some(Self::File {
                     // id: state.finish(),
-                    position: aux_position_utf16,
+                    position: raw_position_utf16,
                 })
             }
             typst_ide::Jump::Url(..) => None,

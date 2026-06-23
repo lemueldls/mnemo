@@ -37,14 +37,15 @@ use crate::{
         paged::svg::render_svgs_by_items,
         recovery::remove_errornous_block,
     },
-    source::{RenderTarget, SourceContext, SourceSyncResult, SpaceContext, sync_source_state},
+    source::{RenderTarget, SourceContext, SpaceContext, SynthResult, sync_source_state},
     theme::ThemeColors,
     world::MnemoWorld,
 };
 
 /// Global state for Typst rendering and compilation in Mnemo.
 ///
-/// Holds the world, all open source and space contexts, and manages the mapping between user/editor state and Typst's compilation model.
+/// Holds the world, all open source and space contexts, and manages the mapping
+/// between user/editor state and Typst's compilation model.
 #[wasm_bindgen]
 #[derive(Default, Debug)]
 pub struct TypstState {
@@ -52,7 +53,8 @@ pub struct TypstState {
     pub(crate) world: MnemoWorld,
     /// Mapping from space IDs to their context (fonts, theme, locale).
     pub(crate) space_context_map: FxHashMap<String, SpaceContext>,
-    /// Mapping from file IDs to their source context (main/aux sources, index mapping, etc).
+    /// Mapping from file IDs to their source context (main/raw sources, index
+    /// mapping, etc).
     pub(crate) source_context_map: FxHashMap<TypstFileId, SourceContext>,
 }
 
@@ -100,7 +102,7 @@ impl TypstState {
         let id_wrapper = TypstFileId::new(id);
 
         let source_ctx = SourceContext::new(id, space_id.clone());
-        self.world.insert_source(source_ctx.aux_id, String::new());
+        self.world.insert_source(source_ctx.raw_id, String::new());
         self.source_context_map.insert(id_wrapper, source_ctx);
 
         let space_ctx = SpaceContext::new();
@@ -235,14 +237,14 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkPaged")]
     pub fn check_paged(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let SourceSyncResult { ir, .. } =
+        let SynthResult { synth, .. } =
             sync_source_state(id, text, prelude, RenderTarget::Svg, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
-            .main_source_mut(&mut self.world)
+            .synth_source_mut(&mut self.world)
             .unwrap()
-            .replace(&ir);
+            .replace(&synth);
 
         let compiled = compile::<PagedDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -278,14 +280,14 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = "checkHTML")]
     pub fn check_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> CheckResult {
-        let SourceSyncResult { ir, .. } =
+        let SynthResult { synth, .. } =
             sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let context = self.source_context_map.get_mut(id).unwrap();
         context
-            .main_source_mut(&mut self.world)
+            .synth_source_mut(&mut self.world)
             .unwrap()
-            .replace(&ir);
+            .replace(&synth);
 
         let compiled = compile::<HtmlDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -326,24 +328,24 @@ impl TypstState {
         };
 
         let root = typst_syntax::parse(text);
-        let Some(aux_source) = context.aux_source_mut(&mut self.world) else {
+        let Some(raw_source) = context.raw_source_mut(&mut self.world) else {
             return Vec::new();
         };
-        aux_source.replace(text);
+        raw_source.replace(text);
 
         let mut queue = vec![LinkedNode::new(&root)];
         let mut highlights = Vec::new();
 
-        let aux_lines = aux_source.lines();
+        let raw_lines = raw_source.lines();
 
         while let Some(curr) = queue.pop() {
             let tag = typst_syntax::highlight(&curr);
             let range = curr.range();
 
             let highlight = tag.and_then(|tag| {
-                let aux_range_start_utf16 = aux_lines.byte_to_utf16(range.start)?;
-                let aux_range_end_utf16 = aux_lines.byte_to_utf16(range.end)?;
-                let aux_range_utf16 = aux_range_start_utf16..aux_range_end_utf16;
+                let raw_range_start_utf16 = raw_lines.byte_to_utf16(range.start)?;
+                let raw_range_end_utf16 = raw_lines.byte_to_utf16(range.end)?;
+                let raw_range_utf16 = raw_range_start_utf16..raw_range_end_utf16;
 
                 let mut css_class = tag.css_class().to_string();
 
@@ -361,7 +363,7 @@ impl TypstState {
 
                 Some(TypstHighlight {
                     tag: css_class,
-                    range: aux_range_utf16,
+                    range: raw_range_utf16,
                 })
             });
 
@@ -429,36 +431,36 @@ impl TypstState {
     pub fn autocomplete(
         &self,
         id: &TypstFileId,
-        aux_cursor_utf16: usize,
+        raw_cursor_utf16: usize,
         explicit: bool,
     ) -> Option<Autocomplete> {
         let context = self.source_context_map.get(id)?;
 
-        let main_source = context.main_source(&self.world)?;
-        let aux_source = context.aux_source(&self.world)?;
+        let synth_source = context.synth_source(&self.world)?;
+        let raw_source = context.raw_source(&self.world)?;
 
-        let aux_lines = aux_source.lines();
-        let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main_from_left(aux_cursor);
+        let raw_lines = raw_source.lines();
+        let raw_cursor = raw_lines.utf16_to_byte(raw_cursor_utf16)?;
+        let synth_cursor = context.map_raw_to_synth_from_left(raw_cursor);
 
         // crate::log!(
-        //     "aux_cursor: {aux_cursor}, left_cursor: {main_cursor}, right_cursor: {}",
-        //     context.map_aux_to_main_from_right(aux_cursor)
+        //     "raw_cursor: {raw_cursor}, left_cursor: {synth_cursor}, right_cursor:
+        // {}",     context.map_raw_to_synth_from_right(raw_cursor)
         // );
 
-        let (main_offset, completions) = typst_ide::autocomplete(
+        let (synth_offset, completions) = typst_ide::autocomplete(
             &self.world,
             context.paged_document.as_ref(),
-            main_source,
-            main_cursor,
+            synth_source,
+            synth_cursor,
             explicit,
         )?;
 
-        let aux_offset = context.map_main_to_aux_from_left(main_offset);
-        let aux_offset_utf16 = aux_lines.byte_to_utf16(aux_offset)?;
+        let raw_offset = context.map_synth_to_raw_from_left(synth_offset);
+        let raw_offset_utf16 = raw_lines.byte_to_utf16(raw_offset)?;
 
         Some(Autocomplete {
-            offset: aux_offset_utf16,
+            offset: raw_offset_utf16,
             completions: completions
                 .into_iter()
                 .map(TypstCompletion::from)
@@ -467,15 +469,15 @@ impl TypstState {
     }
 
     #[wasm_bindgen]
-    pub fn hover(&self, id: &TypstFileId, aux_cursor_utf16: usize, side: i8) -> Option<String> {
+    pub fn hover(&self, id: &TypstFileId, raw_cursor_utf16: usize, side: i8) -> Option<String> {
         let context = self.source_context_map.get(id).unwrap();
 
-        let main_source = context.main_source(&self.world)?;
-        let aux_source = context.aux_source(&self.world)?;
+        let synth_source = context.synth_source(&self.world)?;
+        let raw_source = context.raw_source(&self.world)?;
 
-        let aux_lines = aux_source.lines();
-        let aux_cursor = aux_lines.utf16_to_byte(aux_cursor_utf16)?;
-        let main_cursor = context.map_aux_to_main_from_right(aux_cursor);
+        let raw_lines = raw_source.lines();
+        let raw_cursor = raw_lines.utf16_to_byte(raw_cursor_utf16)?;
+        let synth_cursor = context.map_raw_to_synth_from_right(raw_cursor);
 
         let side = if side == -1 {
             Side::Before
@@ -486,8 +488,8 @@ impl TypstState {
         let tooltip = typst_ide::tooltip(
             &self.world,
             context.paged_document.as_ref(),
-            main_source,
-            main_cursor,
+            synth_source,
+            synth_cursor,
             side,
         );
 
@@ -516,23 +518,24 @@ impl TypstState {
 
     // #[wasm_bindgen(js_name = renderPdf)]
     // pub fn render_pdf(&mut self, id: &TypstFileId) -> RenderPdfResult {
-    //     self.world.main_id = Some(id.inner());
+    //     self.world.synth_id = Some(id.inner());
 
     //     let mut ir = self.prelude(id, RenderTarget::Pdf);
 
     //     let context = self.source_context_map.get_mut(id).unwrap();
-    //     let main_source = context.main_source_mut(&mut self.world).unwrap();
-    //     let text = main_source.text().to_string();
+    //     let synth_source = context.synth_source_mut(&mut self.world).unwrap();
+    //     let text = synth_source.text().to_string();
     //     ir += &text;
 
-    //     main_source.replace(&ir);
+    //     synth_source.replace(&ir);
 
-    //     self.world.insert_source(context.aux_id, text);
-    //     self.world.aux_id = Some(context.aux_id);
+    //     self.world.insert_source(context.raw_id, text);
+    //     self.world.raw_id = Some(context.raw_id);
 
     //     let compiled = compile(&self.world);
     //     let mut diagnostics =
-    //         TypstDiagnostic::from_diagnostics(compiled.warnings, context, &self.world).into_vec();
+    //         TypstDiagnostic::from_diagnostics(compiled.warnings, context,
+    // &self.world).into_vec();
 
     //     let bytes = match compiled.output {
     //         Ok(document) => {
@@ -565,7 +568,7 @@ impl TypstState {
 
     #[wasm_bindgen(js_name = renderHtml)]
     pub fn render_html(&mut self, id: &TypstFileId, text: &str, prelude: &str) -> RenderHtmlResult {
-        let SourceSyncResult { ir, ast_blocks, .. } =
+        let SynthResult { synth, blocks, .. } =
             sync_source_state(id, text, prelude, RenderTarget::Html, self);
 
         let mut diagnostics = Vec::new();
@@ -574,9 +577,9 @@ impl TypstState {
         let context = self.source_context_map.get_mut(id).unwrap();
 
         context
-            .main_source_mut(&mut self.world)
+            .synth_source_mut(&mut self.world)
             .unwrap()
-            .replace(&ir);
+            .replace(&synth);
 
         let mut document = None;
         let mut convergence = 0_u8;
@@ -621,7 +624,7 @@ impl TypstState {
                     crate::error!("[ERRORS]: {diagnostics:?}");
 
                     let indicies = remove_errornous_block(
-                        &ast_blocks,
+                        &blocks,
                         &source_diagnostics,
                         context,
                         &mut self.world,
