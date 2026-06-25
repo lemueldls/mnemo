@@ -18,11 +18,8 @@ pub fn render(
     prelude: &str,
     state: &mut TypstState,
 ) -> HTMLRenderResult {
-    let SynthResult {
-        synth: ir,
-        blocks: blocks,
-        ..
-    } = sync_source_state(id, text, prelude, RenderTarget::Html, state);
+    let SynthResult { synth, blocks, .. } =
+        sync_source_state(id, text, prelude, RenderTarget::Html, state);
 
     let mut last_document = None;
 
@@ -36,7 +33,7 @@ pub fn render(
     context
         .synth_source_mut(&mut state.world)
         .unwrap()
-        .replace(&ir);
+        .replace(&synth);
 
     let mut frames = Vec::new();
 

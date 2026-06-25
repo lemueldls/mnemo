@@ -6,7 +6,7 @@ dependsOn:
 
 tasks:
   dev:
-    command: "pnpm nuxt dev"
+    command: "pnpm nuxt dev --public"
     deps:
       - "wasm:build-dev"
     options:
@@ -34,13 +34,6 @@ tasks:
       - "$NUXT_*"
       - "$TAURI_*"
       - "project://wasm"
-    outputs:
-      - ".output/**/*"
-
-  generate:
-    command: "pnpm nuxt generate"
-    deps:
-      - "wasm:build"
     outputs:
       - ".output/**/*"
 

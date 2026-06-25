@@ -5,7 +5,6 @@
   "scripts": {
     "build": "moon run web:build",
     "dev": "moon run web:dev",
-    "generate": "moon run web:generate",
     "preview": "moon run web:preview",
     "wasm:build": "moon run wasm:build",
     "postinstall": "nuxt prepare",
