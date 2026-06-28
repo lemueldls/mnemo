@@ -123,7 +123,12 @@ jobs:
     name: Nix
     needs: changes
     # if: needs.changes.outputs.nix == 'true'
+    permissions:
+      contents: write
     uses: ./.github/workflows/nix.yml
+    secrets: inherit
+    with:
+      branch: ${{ needs.changes.outputs.branch }}
 
   aur:
     name: AUR
