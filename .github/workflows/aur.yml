@@ -1,10 +1,10 @@
-name: Arch linux AUR
+name: Arch Linux AUR
 
 on:
-  workflow_call:
-  workflow_dispatch:
   release:
     types: [released]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   release-info:
@@ -12,16 +12,16 @@ jobs:
       packages: read
     runs-on: ubuntu-slim
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tagName: ${{ steps.version.outputs.tagName }}
+      version: ${{ steps.release-info.outputs.version }}
+      tagName: ${{ steps.release-info.outputs.tagName }}
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 1
 
-      - name: 🏷️ Get version info
-        id: version
+      - name: 🏷️ Get release info
+        id: release-info
         uses: ./.github/actions/latest-release-info
 
   update-aur:
@@ -66,7 +66,8 @@ jobs:
             cd ~/lint
             bash "$o/platform/aur/makepkg-lint.sh"
           '
-      - name: 🛠️ Setup Deployment keys
+
+      - name: 🛠️ Setup deployment keys
         if: github.event.release.tag_name
         shell: bash
         run: |
@@ -82,7 +83,7 @@ jobs:
             ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts
           '
 
-      - name: 🔄 Clone AUR Repo
+      - name: 🔄 Clone AUR repo
         if: github.event.release.tag_name
         shell: bash
         run: |

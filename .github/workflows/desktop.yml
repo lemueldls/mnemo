@@ -1,12 +1,8 @@
-name: "Reusable desktop tauri build workflow"
+name: Desktop tauri build workflow
 
 on:
   workflow_call:
     inputs:
-      branch:
-        required: false
-        type: string
-        default: ""
       tagName:
         required: false
         type: string

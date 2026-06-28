@@ -1,10 +1,10 @@
 name: Publish Desktop Release to WinGet
 
 on:
-  workflow_call:
-  workflow_dispatch:
   release:
     types: [released]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🏷️
+      - name: 🏷️ Get release info
         id: release-info
         uses: ./.github/actions/latest-release-info
 
@@ -33,7 +33,7 @@ jobs:
           echo "URL: $URL"
           echo "Version: $VERSION"
 
-      - name: 🆙 sync our fork of winget-pkgs
+      - name: 🆙 Sync our fork of winget-pkgs
         uses: michidk/run-komac@9b27eadc6e9235c252444a437d246c139da2f57f # v2.1.0
         with:
           args: "sync-fork --token=${{ secrets.WINGET_TOKEN }}"
