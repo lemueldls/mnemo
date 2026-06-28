@@ -1,26 +1,25 @@
+name: Nix Derivations
+
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - platform/**
-      - package.json
-      - pnpm-lock.yaml
+  release:
+    types: [released]
+  workflow_call:
   workflow_dispatch:
 
 jobs:
-  build:
+  update-nix:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: write
     steps:
       - name: 🔄 Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
 
-      - uses: DeterminateSystems/determinate-nix-action@89ab342bd48ff7318caf8d39d6a330c7b1df8f2f # v3.15.2
-
-      - uses: DeterminateSystems/flakehub-cache-action@91ca310d06020a14c188943f8277d38678b576e5 # v3.15.2
+      - name: 🏷️ Get release info
+        id: release-info
+        uses: ./.github/actions/latest-release-info
 
       - name: ⚙️ Setup SSH signing key
         run: |
@@ -32,15 +31,20 @@ jobs:
           git config --global user.name "Lemuel DLS"
           git config --global user.email "noreply@git.lemueldls.dev"
 
-      - run: nix flake check -L
+      - name: ❄️ Install nix
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
 
-      - name: 🔨 Fix hash mismatches
-        if: failure()
-        id: fix-hashes
-        run: determinate-nixd fix hashes --auto-apply
+      - name: 🔄 Update nix flake
+        run: |
+          nix run nixpkgs#nix-update -- --flake --version "${{ steps.release-info.outputs.tag }}" mnemo
+          nix run nixpkgs#nix-update -- --flake --version "${{ steps.release-info.outputs.tag }}" mnemo-bin
 
-      - name: 💾⬆️ Commit and push
+      - name: 💾🏷️⬆️ Commit and push
         run: |
           git add -A
-          git commit -S -m "chore: update nix hashes" || echo "No changes to commit"
+          git commit -S -m "chore: update nix flake" || echo "No changes to commit"
           git push

@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       tagName:
-        description: "The tag name of the release to publish to"
         required: false
         type: string
+
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   XBPS_ALLOW_RESTRICTED: yes
@@ -22,7 +22,8 @@ jobs:
       - name: 🔄 Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 1
+          ref: ${{ inputs.tagName || github.ref }}
+          fetch-depth: ${{ inputs.tagName && '0' || '1' }}
 
       - name: 🔄 Clone Void Packages and binary bootstrap
         shell: bash
@@ -53,7 +54,7 @@ jobs:
           VERSION="${{ steps.get-version-config.outputs.version || steps.get-version-release.outputs.version }}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: 🔢 Get Source Tarball Checksum
+      - name: 🔢 Get source tarball checksum
         id: get-checksum
         shell: bash
         run: |
@@ -62,7 +63,7 @@ jobs:
           SUM=$(curl -LfsS "$URL" | sha256sum | cut -f1 -d ' ')
           echo "sha256=$SUM" >> $GITHUB_OUTPUT
 
-      - name: 🌀  Generate template
+      - name: 🌀 Generate template
         shell: bash
         run: |
           mkdir -p ~/void-packages/srcpkgs/mnemo
@@ -115,3 +116,4 @@ jobs:
           generate_release_notes: false
           files: |
             ~/void-packages/hostdir/binpkgs/mnemo-${{ steps.get-version.outputs.version }}_1.x86_64.xbps
+            ~/void-packages/hostdir/binpkgs/x86_64-repodata

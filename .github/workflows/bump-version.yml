@@ -49,19 +49,21 @@ jobs:
           git config --global user.name "Lemuel DLS"
           git config --global user.email "noreply@git.lemueldls.dev"
 
-      - name: 🔄 Update cargo and tauri versions
+      - name: 🔄 Update cargo, tauri and nix versions
         run: |
           sed -i '0,/\(version *= *\).*/s//\1"${{ steps.semver.outputs.semantic-version }}"/' platform/Cargo.toml
           jq --indent 4 '.version="${{ steps.semver.outputs.semantic-version }}"' platform/wasm/pkg/package.json > package.json.new && mv package.json.new platform/wasm/pkg/package.json
           jq --indent 4 '.version="${{ steps.semver.outputs.semantic-version }}"' platform/tauri/tauri.conf.json > tauri.config.json.new && mv tauri.config.json.new platform/tauri/tauri.conf.json
           sed -i '/name = "mnemo"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
           sed -i '/name = "mnemo-wasm"/{N;s/\(version *= *\)".*"/\1"'"${{ steps.semver.outputs.semantic-version }}"'"/;}' platform/Cargo.lock
+          sed -i 's/version = "[0-9.]*";/version = "${{ steps.semver.outputs.semantic-version }}";/' platform/nix/default.nix
+          sed -i 's/version = "[0-9.]*";/version = "${{ steps.semver.outputs.semantic-version }}";/' platform/nix/package.nix
 
       - name: 💾🏷️⬆️ Commit, tag and push
         if: ${{ !inputs.dry-run }}
         run: |
           git add -A
-          git commit -S -m "chore: bump version to ${{ steps.semver.outputs.semantic-version }}"
+          git commit -S -m "chore: bump version to ${{ steps.semver.outputs.semantic-version }}" || echo "No changes to commit"
           git push
           git tag -s -a mnemo-v${{ steps.semver.outputs.semantic-version }} -m "Mnemo Release v${{ steps.semver.outputs.semantic-version}}"
           git push --tags

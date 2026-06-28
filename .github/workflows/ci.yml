@@ -1,4 +1,4 @@
-name: "CI"
+name: CI
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ concurrency:
 jobs:
   label-pr:
     if: github.event_name == 'pull_request'
-    name: "🏷️ Label PR"
+    name: 🏷️ Label PR
     permissions:
       contents: read # Needed to read repository contents
       pull-requests: write # Needed to apply labels
@@ -31,7 +31,7 @@ jobs:
           configuration-path: .github/labeler.yml
 
   changes:
-    name: "🔍 Detect Changes"
+    name: 🔍 Detect Changes
     runs-on: ubuntu-slim
     outputs:
       android: ${{ steps.filter.outputs.android }}
@@ -39,6 +39,7 @@ jobs:
       branch: ${{ steps.branch.outputs.branch }}
       desktop: ${{ steps.filter.outputs.desktop }}
       docker: ${{ steps.filter.outputs.docker }}
+      nix: ${{ steps.filter.outputs.nix }}
       tauri: ${{ steps.filter.outputs.tauri }}
       void: ${{ steps.filter.outputs.void }}
       winget: ${{ steps.filter.outputs.winget }}
@@ -60,8 +61,8 @@ jobs:
               - 'platform/tauri/tauri.conf.json'
               - 'platform/tauri/tauri.package.conf.json'
             aur:
-              - '.github/workflows/aur.yml'
               - '.github/actions/latest-release-info/action.yml'
+              - '.github/workflows/aur.yml'
               - 'platform/aur/**'
             desktop:
               - '.github/workflows/desktop.yml'
@@ -74,6 +75,12 @@ jobs:
               - 'platform/tauri/tauri.conf.json'
             docker:
               - '.github/docker/**'
+            nix:
+              - '.github/workflows/nix.yml'
+              - '.github/actions/**'
+              - 'platform/nix/**'
+              - 'flake.nix'
+              - 'flake.lock'
             tauri:
               - '.github/actions/setup-*/**'
               - 'app/**'
@@ -100,16 +107,23 @@ jobs:
               - 'uno.config.ts'
               - 'wrangler.toml'
             void:
+              - '.github/actions/latest-release-info/action.yml'
               - '.github/workflows/void.yml'
               - 'platform/void/**'
             winget:
-              - '.github/workflows/winget.yml'
               - '.github/actions/latest-release-info/action.yml'
+              - '.github/workflows/winget.yml'
 
       - name: Output branch name
         id: branch
         run: |
           echo "branch=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
+
+  nix:
+    name: Nix
+    needs: changes
+    # if: needs.changes.outputs.nix == 'true'
+    uses: ./.github/workflows/nix.yml
 
   aur:
     name: AUR
@@ -131,7 +145,7 @@ jobs:
     secrets: inherit
 
   android:
-    name: "📱"
+    name: 📱 Android
     needs: changes
     # if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.android == 'true'
     permissions:
@@ -142,7 +156,7 @@ jobs:
       branch: ${{ needs.changes.outputs.branch }}
 
   desktop:
-    name: "🖥️"
+    name: 🖥️ Desktop
     needs: changes
     # if: needs.changes.outputs.tauri == 'true' || needs.changes.outputs.desktop == 'true'
     permissions:
@@ -153,7 +167,7 @@ jobs:
       branch: ${{ needs.changes.outputs.branch }}
 
   docker:
-    name: "🐳"
+    name: 🐳 Docker
     needs: changes
     # if: needs.changes.outputs.docker == 'true'
     permissions:
@@ -167,6 +181,7 @@ jobs:
     name: CI Status
     runs-on: ubuntu-latest
     needs:
+      - nix
       - aur
       - void
       - winget
@@ -179,6 +194,7 @@ jobs:
         uses: re-actors/alls-green@a638d6464689bbb24c325bb3fe9404d63a913030
         with:
           allowed-skips: >-
+            nix,
             aur,
             void,
             winget,

@@ -3,6 +3,8 @@ name: Deploy Cloudflare Workers
 on:
   push:
     paths:
+      - .github/workflows/deploy.yml
+      - .moon/**
       - app/**
       - server/**
       - modules/**
@@ -10,20 +12,18 @@ on:
       - i18n/**
       - public/**
       - platform/wasm/**
-      - .moon/**
       - moon.yml
       - nuxt.config.ts
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
       - wrangler.toml
-      - .github/workflows/deploy.yml
   workflow_dispatch:
     inputs:
       environment:
         description: "Choose an environment to deploy to: <dev|staging|prod>"
         required: true
-        default: "dev"
+        default: dev
 
 jobs:
   deploy:
