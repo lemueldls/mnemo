@@ -21,11 +21,11 @@
     "mnemo-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1770127053,
-        "narHash": "sha256-Vo36cqJ46IuPzjC73gkdvGpRkhDficqljp6fBDYWEi4=",
+        "lastModified": 1782661856,
+        "narHash": "sha256-a5RNDkcpOOeJjjwBYitUM3JAyWYO0hrl4nkuENctSIg=",
         "owner": "lemueldls",
         "repo": "mnemo",
-        "rev": "091139ca78cf778b699993f22e55d19999eceeac",
+        "rev": "4411e2792bb7e2085df1267a0aef6e14bda86d09",
         "type": "github"
       },
       "original": {
