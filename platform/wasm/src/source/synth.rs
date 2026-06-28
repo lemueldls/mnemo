@@ -237,6 +237,9 @@ fn wrap_block(
         }
     }
 
+    context
+        .index_mapper
+        .push_raw_to_synth_unchecked(last_block.range.end, ir.len());
     *ir += "\n";
     context
         .index_mapper

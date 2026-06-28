@@ -24,7 +24,7 @@ use typst_ide::Tooltip;
 use typst_layout::PagedDocument;
 // use typst_html::html;
 // use typst_pdf::{PdfOptions, pdf};
-use typst_syntax::{LinkedNode, RootedPath, Side, Tag, VirtualRoot};
+use typst_syntax::{LinkedNode, RootedPath, Side, Source, Tag, VirtualRoot};
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -180,24 +180,25 @@ impl TypstState {
     fn process_requests(&self) -> Vec<TypstRequest> {
         let mut requests = Vec::new();
 
-        for source in self.world.requested_sources.iter() {
+        self.world.requested_sources.retain(|source| {
             requests.push(TypstRequest::Source(PathBuf::from(source.get_with_slash())));
-        }
-        self.world.requested_sources.clear();
+            false
+        });
 
-        for file in self.world.requested_files.iter() {
+        self.world.requested_files.retain(|file| {
             requests.push(TypstRequest::File(PathBuf::from(file.get_with_slash())));
-        }
-        self.world.requested_files.clear();
+            false
+        });
 
-        for package in self.world.requested_packages.iter() {
+        self.world.requested_packages.retain(|package| {
             requests.push(TypstRequest::Package {
                 namespace: package.namespace.to_string(),
                 name: package.name.to_string(),
                 version: package.version.to_string(),
             });
-        }
-        self.world.requested_packages.clear();
+
+            false
+        });
 
         requests
     }
@@ -245,6 +246,7 @@ impl TypstState {
             .synth_source_mut(&mut self.world)
             .unwrap()
             .replace(&synth);
+        context.unstable_synth = synth;
 
         let compiled = compile::<PagedDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -288,6 +290,7 @@ impl TypstState {
             .synth_source_mut(&mut self.world)
             .unwrap()
             .replace(&synth);
+        context.unstable_synth = synth;
 
         let compiled = compile::<HtmlDocument>(&self.world);
         let compiled_warnings = Some(compiled.warnings);
@@ -429,24 +432,24 @@ impl TypstState {
 
     #[wasm_bindgen]
     pub fn autocomplete(
-        &self,
+        &mut self,
         id: &TypstFileId,
         raw_cursor_utf16: usize,
         explicit: bool,
     ) -> Option<Autocomplete> {
         let context = self.source_context_map.get(id)?;
 
-        let synth_source = context.synth_source(&self.world)?;
         let raw_source = context.raw_source(&self.world)?;
+        // let synth_source = context.synth_source(&self.world)?;
+        let synth_source = &Source::new(id.inner(), context.unstable_synth.clone());
 
         let raw_lines = raw_source.lines();
         let raw_cursor = raw_lines.utf16_to_byte(raw_cursor_utf16)?;
         let synth_cursor = context.map_raw_to_synth_from_left(raw_cursor);
 
-        // crate::log!(
-        //     "raw_cursor: {raw_cursor}, left_cursor: {synth_cursor}, right_cursor:
-        // {}",     context.map_raw_to_synth_from_right(raw_cursor)
-        // );
+        let text = synth_source.text();
+        // let text = context.unstable_synth.as_str();
+        crate::log!("{}|{}", &text[..synth_cursor], &text[synth_cursor..]);
 
         let (synth_offset, completions) = typst_ide::autocomplete(
             &self.world,
@@ -580,6 +583,7 @@ impl TypstState {
             .synth_source_mut(&mut self.world)
             .unwrap()
             .replace(&synth);
+        context.unstable_synth = synth;
 
         let mut document = None;
         let mut convergence = 0_u8;

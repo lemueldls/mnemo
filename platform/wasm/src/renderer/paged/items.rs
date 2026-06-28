@@ -41,6 +41,7 @@ pub fn chunk_by_items(
         .synth_source_mut(&mut state.world)
         .unwrap()
         .replace(&synth);
+    context.unstable_synth = synth;
 
     let mut divergence = 0_u8;
 
@@ -228,19 +229,13 @@ pub fn chunk_by_items_with_blocks(
                     try_mark_errornous(&source_diagnostics, eq_ranges, context, world);
 
                 if !marked_errors.marks.is_empty() {
-                    // let source = context.synth_source_mut(world).unwrap();
-
                     let index_mapper = context.index_mapper.clone();
                     map_error_mark_index(&marked_errors, context);
 
-                    // let marked_text = source.text().to_string();
-                    // crate::log!("marked_text:\n{marked_text}");
                     let marked_render =
                         chunk_by_items_with_blocks(blocks, eq_ranges, divergence, context, world);
 
-                    context.index_mapper = index_mapper;
-
-                    let source = context.synth_source_mut(world).unwrap();
+                    let synth_source = context.synth_source_mut(world).unwrap();
 
                     for mark in &marked_errors.marks {
                         let start_byte = mark.synth_range.start;
@@ -249,24 +244,20 @@ pub fn chunk_by_items_with_blocks(
                         // fill with placeholder to stablize ranges
                         let byte_length = end_byte - start_byte;
                         let placeholder = format!("{:>byte_length$}", "\"\"");
-                        source.edit(start_byte..end_byte, &placeholder);
+                        synth_source.edit(start_byte..end_byte, &placeholder);
                     }
 
-                    // let stable_text = source.text().to_string();
                     let stable_render =
                         chunk_by_items_with_blocks(blocks, eq_ranges, divergence, context, world);
 
-                    let source = context.synth_source_mut(world).unwrap();
+                    let synth_source = context.synth_source_mut(world).unwrap();
 
                     for mark in marked_errors.marks {
                         let start_byte = mark.synth_range.start;
-                        source.edit(start_byte..(start_byte + mark.text.len()), &mark.text);
+                        synth_source.edit(start_byte..(start_byte + mark.text.len()), &mark.text);
                     }
 
-                    // crate::log!("index_mapper: {:#?}", context.index_mapper);
-
-                    // let text = source.text().to_string();
-                    // crate::log!("marked_text:\n{text}");
+                    context.index_mapper = index_mapper;
 
                     return PagedRender {
                         chunks: marked_render.chunks,

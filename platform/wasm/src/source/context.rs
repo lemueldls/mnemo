@@ -49,27 +49,30 @@ impl Default for SpaceContext {
 /// in `TypstState::source_context_map`.
 #[derive(Debug)]
 pub struct SourceContext {
-    /// File ID for the synth: the synthesized intermediate source
-    /// that Typst actually compiles. Built fresh by
-    /// `sync_source_context` on each recompile.
+    /// File ID for the synth: the synthesized intermediate source that Typst
+    /// actually compiles. Built fresh by `sync_source_context` on
+    /// each recompile.
     pub synth_id: FileId,
 
-    /// File ID for the raw source: exactly what the user typed.
-    /// Never modified by the renderer. All positions returned to the
-    /// editor are in raw coordinates.
+    /// File ID for the raw source: exactly what the user typed. Never modified
+    /// by the renderer. All positions returned to the editor are in
+    /// raw coordinates.
     pub raw_id: FileId,
 
-    /// Which space (notebook) this note belongs to. Used to look up
-    /// the associated [`SpaceContext`] for theme and font settings.
+    /// Which space this note belongs to. Used to look up the associated
+    /// [`SpaceContext`] for theme and font settings.
     pub space_id: String,
+
+    /// The synth source text before modifications by error recovery. Used for
+    /// more accurate autocompletion and hover information.
+    pub unstable_synth: String,
 
     /// Tracks the byte-offset correspondence between the raw source
     /// and the synth. Rebuilt on each call to `sync_source_context`.
     pub index_mapper: IndexMapper,
 
     /// The most recently compiled paged document for this note, if any.
-    /// Cached here so hover and jump-to-source queries can avoid
-    /// recompiling.
+    /// Cached here so hover and jump-to-source queries can avoid recompiling.
     pub paged_document: Option<PagedDocument>,
 
     /// The most recently compiled HTML document for this note, if any.
@@ -100,6 +103,7 @@ impl SourceContext {
             synth_id,
             raw_id,
             space_id,
+            unstable_synth: String::new(),
             index_mapper: IndexMapper::default(),
             paged_document: None,
             html_document: None,

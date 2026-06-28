@@ -34,6 +34,7 @@ pub fn render(
         .synth_source_mut(&mut state.world)
         .unwrap()
         .replace(&synth);
+    context.unstable_synth = synth;
 
     let mut frames = Vec::new();
 
