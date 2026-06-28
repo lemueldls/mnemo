@@ -39,12 +39,12 @@ jobs:
             accept-flake-config = true
 
       - name: ❄️ Install nix-update
-        run: nix profile install nixpkgs#nix-update
+        run: nix profile add nixpkgs#nix-update
 
       - name: 🔄 Update nix derivations
         run: |
-          nix-update --flake --version "${{ steps.release-info.outputs.tag }}" mnemo
-          nix-update --flake --version "${{ steps.release-info.outputs.tag }}" mnemo-bin
+          nix-update --flake --version "${{ steps.release-info.outputs.version }}" mnemo
+          nix-update --flake --version "${{ steps.release-info.outputs.version }}" mnemo-bin
 
       - name: 💾🏷️⬆️ Commit and push
         run: |
