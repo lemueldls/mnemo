@@ -126,6 +126,7 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/nix.yml
+    secrets: inherit
 
   aur:
     name: AUR
@@ -154,8 +155,6 @@ jobs:
       contents: write
     uses: ./.github/workflows/android.yml
     secrets: inherit
-    with:
-      branch: ${{ needs.changes.outputs.branch }}
 
   desktop:
     name: 🖥️ Desktop
@@ -165,8 +164,6 @@ jobs:
       contents: write
     uses: ./.github/workflows/desktop.yml
     secrets: inherit
-    with:
-      branch: ${{ needs.changes.outputs.branch }}
 
   docker:
     name: 🐳 Docker
