@@ -5,7 +5,6 @@
   cargo-tauri,
   cmake,
   curl,
-  # fetchFromGitHub,
   glib-networking,
   nodejs,
   openssl,
@@ -20,30 +19,23 @@
 
   mnemo-src ? ../../.,
   apiBaseUrl ? "https://mnemo.world",
-
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mnemo";
   version = "0.3.1";
 
-  # src = fetchFromGitHub {
-  #   owner = "lemueldls";
-  #   repo = "mnemo";
-  #   tag = "mnemo-v${finalAttrs.version}";
-  #   hash = "sha256-T5DYBcupkvxwQlZACu4bxQe/3SEgARXWnVNi6m9EMjA=";
-  # };
   src = mnemo-src;
 
   cargoRoot = "platform";
-  cargoHash = "sha256-gWugZs8EfKoIod3bcIgNwL4Qc92yH399gUS2SgzMSjg=";
+  cargoHash = "sha256-XC6ulPbHS66ft660Qd/m9vO+rsetwxIEanF0VxU2MIY=";
 
   buildAndTestSubdir = "${finalAttrs.cargoRoot}/tauri";
 
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    fetcherVersion = 2;
-    hash = "sha256-J+crwjYQCfNONelWAOdnAHn4R4k9LQ/NeMJZKYMJTIo=";
+    fetcherVersion = 3;
+    hash = "sha256-nnHt4hTwAQecN6u4NJNBGsD5jvTGrf1MOaLnimy2wI8=";
   };
 
   nativeBuildInputs = [
@@ -85,7 +77,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://mnemo.world";
     changelog = "https://github.com/lemueldls/mnemo/releases/tag/mnemo-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ lemueldls ];
+    # maintainers = with lib.maintainers; [ lemueldls ];
     mainProgram = "mnemo";
     platforms = [ "x86_64-linux" ];
   };

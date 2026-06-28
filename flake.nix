@@ -1,5 +1,5 @@
 {
-  description = "Development environment for mnemo";
+  description = "Build and development environment for Mnemo.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";

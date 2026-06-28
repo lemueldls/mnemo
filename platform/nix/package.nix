@@ -1,6 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
+
   fetchurl,
   autoPatchelfHook,
   dpkg,
@@ -51,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://mnemo.world";
     changelog = "https://github.com/lemueldls/mnemo/releases/tag/mnemo-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ lemueldls ];
+    # maintainers = with lib.maintainers; [ lemueldls ];
     mainProgram = "mnemo";
     platforms = [ "x86_64-linux" ];
   };
