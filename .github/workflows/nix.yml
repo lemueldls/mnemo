@@ -38,10 +38,13 @@ jobs:
             experimental-features = nix-command flakes
             accept-flake-config = true
 
-      - name: 🔄 Update nix flake
+      - name: ❄️ Install nix-update
+        run: nix profile install nixpkgs#nix-update
+
+      - name: 🔄 Update nix derivations
         run: |
-          nix run nixpkgs#nix-update -- --flake --version "${{ steps.release-info.outputs.tag }}" mnemo
-          nix run nixpkgs#nix-update -- --flake --version "${{ steps.release-info.outputs.tag }}" mnemo-bin
+          nix-update --flake --version "${{ steps.release-info.outputs.tag }}" mnemo
+          nix-update --flake --version "${{ steps.release-info.outputs.tag }}" mnemo-bin
 
       - name: 💾🏷️⬆️ Commit and push
         run: |
