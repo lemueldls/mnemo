@@ -80,7 +80,7 @@
     "eslint-plugin-oxlint": "^1.56.0",
     "nitropack": "^2.13.1",
     "node-gyp": "^12.3.0",
-    "nuxt": "^4.4.2",
+    "nuxt": "^4.4.7",
     "nuxt-ssr-lit": "^1.6.32",
     "oxfmt": "^0.27.0",
     "oxlint": "^1.56.0",
