@@ -7,7 +7,7 @@ package.edition = "2024"
 package.keywords = [""]
 package.license = "AGPL-3.0"
 package.repository = "https://github.com/lemueldls/mnemo"
-package.version = "0.3.4"
+package.version = "0.3.5"
 resolver = "3"
 
 [workspace.lints.clippy]

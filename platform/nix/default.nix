@@ -23,7 +23,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mnemo";
-  version = "0.3.1";
+  version = "0.3.5";
 
   src = mnemo-src;
 

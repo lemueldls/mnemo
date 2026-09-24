@@ -3160,7 +3160,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "serde",
  "serde_json",
@@ -3176,7 +3176,7 @@ dependencies = [
 
 [[package]]
 name = "mnemo-wasm"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "comemo",
  "console_error_panic_hook",

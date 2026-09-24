@@ -1,27 +1,27 @@
 {
-  "name": "mnemo-wasm",
-  "type": "module",
-  "collaborators": [
-    "Lemuel DLS"
-  ],
-  "description": "Local-first note-taking app leveraging the Typst ecosystem.",
-  "version": "0.3.4",
-  "license": "AGPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lemueldls/mnemo"
-  },
-  "files": [
-    "mnemo_wasm_bg.wasm",
-    "mnemo_wasm.js",
-    "mnemo_wasm.d.ts"
-  ],
-  "main": "mnemo_wasm.js",
-  "types": "mnemo_wasm.d.ts",
-  "sideEffects": [
-    "./snippets/*"
-  ],
-  "keywords": [
-    ""
-  ]
+    "name": "mnemo-wasm",
+    "type": "module",
+    "collaborators": [
+        "Lemuel DLS"
+    ],
+    "description": "Local-first note-taking app leveraging the Typst ecosystem.",
+    "version": "0.3.5",
+    "license": "AGPL-3.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lemueldls/mnemo"
+    },
+    "files": [
+        "mnemo_wasm_bg.wasm",
+        "mnemo_wasm.js",
+        "mnemo_wasm.d.ts"
+    ],
+    "main": "mnemo_wasm.js",
+    "types": "mnemo_wasm.d.ts",
+    "sideEffects": [
+        "./snippets/*"
+    ],
+    "keywords": [
+        ""
+    ]
 }
