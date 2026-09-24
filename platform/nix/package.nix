@@ -15,7 +15,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mnemo";
-  version = "0.3.5";
+  version = "0.3.1";
 
   src = fetchurl {
     url = "https://github.com/lemueldls/mnemo/releases/download/mnemo-v${finalAttrs.version}/Mnemo_${finalAttrs.version}_amd64.deb";

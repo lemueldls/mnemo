@@ -23,19 +23,19 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mnemo";
-  version = "0.3.5";
+  version = "0.3.1";
 
   src = mnemo-src;
 
   cargoRoot = "platform";
-  cargoHash = "sha256-XC6ulPbHS66ft660Qd/m9vO+rsetwxIEanF0VxU2MIY=";
+  cargoHash = "sha256-gWugZs8EfKoIod3bcIgNwL4Qc92yH399gUS2SgzMSjg=";
 
   buildAndTestSubdir = "${finalAttrs.cargoRoot}/tauri";
 
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     fetcherVersion = 3;
-    hash = "sha256-nnHt4hTwAQecN6u4NJNBGsD5jvTGrf1MOaLnimy2wI8=";
+    hash = "sha256-dQxHksMdfzhk6FZC4sO86pBqlse8SbVAqiIFMRssxTc=";
   };
 
   nativeBuildInputs = [
